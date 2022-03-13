@@ -12,7 +12,7 @@ version = "1.0"
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
         }
         withJava()
     }

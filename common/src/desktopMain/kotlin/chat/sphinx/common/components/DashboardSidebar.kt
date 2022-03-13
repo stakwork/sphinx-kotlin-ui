@@ -54,7 +54,7 @@ fun DashboardSidebar() {
                 }
             )
 
-            ChatList()
+            ChatList(emptyList())
         }
     }
 }
