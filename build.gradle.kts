@@ -10,6 +10,7 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10")
         classpath("com.android.tools.build:gradle:4.0.2")
+        classpath("dev.icerock.moko:resources-generator:0.18.0")
     }
 }
 

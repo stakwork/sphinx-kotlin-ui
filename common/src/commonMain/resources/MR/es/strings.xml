@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="to">A</string>
+    <string name="from">De</string>
+
+    <string name="sat_name">sat</string>
+    <string name="sats_name">sats</string>
+    <string name="new_contact">Nuevo Contacto</string>
+    <string name="default_sats_amount">…</string>
+    <string name="uploading">Subiendo</string>
+    <string name="unknown">Desconocido</string>
+    <string name="decryption_error">ERROR DE DECRIPTACIÓN...</string>
+    <string name="null_name_error">ERROR: NOMBRE VACÍO</string>
+    <string name="public_key">Clave Pública</string>
+
+    <!--  Media Type Labels -->
+    <string name="media_type_label_audio">Audio</string>
+    <string name="media_type_label_video">Video</string>
+
+    <!--  Group Pin View -->
+    <string name="group_pin_label">Configuración de Privacidad</string>
+    <string name="new_contact_pin_standard_private_label">PIN Estandar / PIN Privado</string>
+
+    <string name="invalid_url">URL Inválida</string>
+    <string name="relay_url_http_message">La URL de Relay utiliza \'http\'. El tráfico de la red no estará encriptado. Se recomienda fuertemente el uso de Https. Por favor confirma si deseas proceder.</string>
+    <string name="relay_url_http_negative_keep_http">http</string>
+    <string name="relay_url_http_positive_change_to_https">https</string>
+
+    <!-- Tribe Member error messages -->
+    <string name="failed_to_approve_member">No se ha podido aprobar la solicitud</string>
+    <string name="failed_to_reject_member">No se ha podido denegar la solicitud</string>
+
+    <string name="newsletter_article">ARTÍCULO NEWSLETTER</string>
+
+    <string name="subscribe">SUSCRIBIRSE</string>
+    <string name="unsubscribe">DESUSCRIBIRSE</string>
+    <string name="feed_search_following_section">SIGUIENDO</string>
+    <string name="feed_search_directory_section">DIRECTORIO</string>
+
+    <string name="balance_too_low">Balance demasiado bajo</string>
+    <string name="boost_amount_too_low">El monto del Boost debe ser mayor a 0</string>
+</resources>

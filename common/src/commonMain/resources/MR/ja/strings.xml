@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="to">から</string>
+    <string name="from">へ</string>
+
+    <string name="sat_name">sat</string>
+    <string name="sats_name">sats</string>
+    <string name="new_contact">友だちを追加</string>
+    <string name="default_sats_amount">…</string>
+    <string name="uploading">アップロードしています</string>
+    <string name="unknown">ハンドル名のないユーザー</string>
+    <string name="decryption_error">復号エラー</string>
+    <string name="null_name_error">エラー: NULL NAME</string>
+    <string name="public_key">公開鍵</string>
+
+    <!--  Media Type Labels -->
+    <string name="media_type_label_audio">音声</string>
+    <string name="media_type_label_video">動画</string>
+
+    <!--  Group Pin View -->
+    <string name="group_pin_label">プライバシー設定</string>
+    <string name="new_contact_pin_standard_private_label">通常のPINコード／プライバシーPINコード</string>
+
+    <string name="invalid_url">無効なURL</string>
+
+    <string name="relay_url_http_message">Sphinx Relay URLは \'http\'で保存されます。ネットワークトラフィックは暗号化されません。httpsの利用をおすすめします。URL通信規格を選択してください。</string>
+    <string name="relay_url_http_negative_keep_http">http</string>
+    <string name="relay_url_http_positive_change_to_https">https</string>
+
+
+    <string name="failed_to_approve_member">メンバーを承認できませんでした</string>
+    <string name="failed_to_reject_member">メンバーを拒否できませんでした</string>
+
+    <string name="newsletter_article">NEWSLETTER ARTICLE</string>
+
+    <string name="subscribe">SUBSCRIBE</string>
+    <string name="unsubscribe">UNSUBSCRIBE</string>
+    <string name="feed_search_following_section">FOLLOWING</string>
+    <string name="feed_search_directory_section">DIRECTORY</string>
+
+    <string name="balance_too_low">Balance too low</string>
+    <string name="boost_amount_too_low">Boost amount must be greater than 0</string>
+</resources>

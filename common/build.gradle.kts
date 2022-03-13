@@ -4,7 +4,15 @@ plugins {
     id("com.android.library")
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.0.1"
+    id("dev.icerock.mobile.multiplatform-resources")
+}
 
+multiplatformResources {
+    multiplatformResourcesPackage = "chat.sphinx.resources" // required
+    multiplatformResourcesClassName = "SphinxResources" // optional, default MR
+//    multiplatformResourcesVisibility = MRVisibility.Internal // optional, default Public
+//    iosBaseLocalizationRegion = "en" // optional, default "en"
+//    multiplatformResourcesSourceSet = "commonClientMain"  // optional, default "commonMain"
 }
 
 group = "chat.sphinx"
@@ -16,6 +24,9 @@ kotlin {
         compilations.all {
             kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
         }
+    }
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
     }
     sourceSets {
         val commonMain by getting {
@@ -31,12 +42,14 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("dev.icerock.moko:resources-test:0.18.0")
             }
         }
         val androidMain by getting {
             dependencies {
                 api("androidx.appcompat:appcompat:1.3.1")
                 api("androidx.core:core-ktx:1.3.1")
+                api("dev.icerock.moko:resources-compose:0.18.0")
             }
         }
         val androidTest by getting {
@@ -50,6 +63,7 @@ kotlin {
                 api(compose.desktop.common)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 api(compose.desktop.components.splitPane)
+                api("dev.icerock.moko:resources-compose:0.18.0")
             }
         }
         val desktopTest by getting
