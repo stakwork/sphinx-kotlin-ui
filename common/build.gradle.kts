@@ -14,7 +14,7 @@ kotlin {
     android()
     jvm("desktop") {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
         }
     }
     sourceSets {
@@ -24,6 +24,8 @@ kotlin {
                 api(compose.foundation)
                 api(compose.material)
 //                api(compose.materialIconsExtended)
+                api(project(":sphinx-kotlin-core"))
+                api("dev.icerock.moko:resources:0.18.0")
             }
         }
         val commonTest by getting {
@@ -67,10 +69,10 @@ android {
         targetSdkVersion(31)
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 dependencies {
-    implementation("androidx.compose.ui:ui-tooling-preview:1.0.5")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
 }

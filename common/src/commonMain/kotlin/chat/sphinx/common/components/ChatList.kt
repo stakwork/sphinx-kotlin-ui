@@ -1,23 +1,18 @@
 package chat.sphinx.common.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Text
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.resources
 
 @Composable
-fun ChatList() {
-    Column {
-        Text(
-            text = "Being a Nerd"
-        )
+fun ChatList(dashboardChats: List<DashboardChat>) {
 
-        Text(
-            text = "Doing a Nerd Compose UI stuff"
-        )
+    LazyColumn {
+        items(dashboardChats) { dashboardChat ->
 
-        Text(
-            text = "Gonna be cards here..."
-        )
+        }
     }
 
 }
