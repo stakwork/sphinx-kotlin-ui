@@ -25,7 +25,6 @@ kotlin {
                 api(compose.material)
 //                api(compose.materialIconsExtended)
                 api(project(":sphinx-kotlin-core"))
-                api("dev.icerock.moko:resources:0.18.0")
             }
         }
         val commonTest by getting {
