@@ -14,6 +14,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.concepts.network.query.chat.model.ChatDto
+import chat.sphinx.concepts.network.query.message.model.MessageDto
+import chat.sphinx.wrapper.chat.*
+import chat.sphinx.wrapper.contact.Contact
+import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.message.Message
+import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 fun DashboardSidebar() {
@@ -54,7 +62,9 @@ fun DashboardSidebar() {
                 }
             )
 
-            ChatList(emptyList())
+            ChatList(
+                emptyList()
+            )
         }
     }
 }

@@ -21,6 +21,7 @@ import java.awt.Cursor
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
 import chat.sphinx.common.SplashScreen
+import chat.sphinx.common.state.SphinxState
 
 @OptIn(ExperimentalComposeUiApi::class)
 private fun Modifier.cursorForHorizontalResize(): Modifier =
@@ -28,7 +29,9 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
 
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
-actual fun Dashboard() {
+actual fun Dashboard(
+    sphinxState: SphinxState
+) {
     val splitterState = rememberSplitPaneState()
     val hSplitterState = rememberSplitPaneState()
     HorizontalSplitPane(
@@ -75,13 +78,5 @@ actual fun Dashboard() {
 fun SplashScreenPreview() {
     MaterialTheme {
         SplashScreen()
-    }
-}
-
-@Preview
-@Composable
-fun DashboardPreview() {
-    MaterialTheme {
-        Dashboard()
     }
 }

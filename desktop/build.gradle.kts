@@ -33,8 +33,19 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "jvm"
+            packageName = "Sphinx"
             packageVersion = "1.0.0"
+
+            val iconsRoot = project.file("../common/src/desktopMain/resources/images")
+            macOS {
+                iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
+            }
+            windows {
+                iconFile.set(iconsRoot.resolve("sphinx-logo.ico"))
+            }
+            linux {
+                iconFile.set(iconsRoot.resolve("sphinx-logo.png"))
+            }
         }
     }
 }

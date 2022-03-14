@@ -17,13 +17,17 @@ kotlin {
             kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
         }
     }
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+    }
     sourceSets {
+
         val commonMain by getting {
             dependencies {
                 api(compose.runtime)
                 api(compose.foundation)
                 api(compose.material)
-//                api(compose.materialIconsExtended)
+                api(compose.materialIconsExtended)
                 api(project(":sphinx-kotlin-core"))
             }
         }
@@ -74,4 +78,5 @@ android {
 }
 dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
+//    implementation("androidx.navigation:navigation-runtime-ktx:2.3.5")
 }
