@@ -119,9 +119,7 @@ fun ExistingUserScreen(
                     }
 
                     Button(
-                        onClick = {
-                            // TODO: Handle exiting user...
-                        }
+                        onClick = existingUserStore::onSubmitKeys
                     ) {
                         Text(
                             text = "Submit"

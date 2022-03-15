@@ -13,10 +13,7 @@ import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextAlign
 import chat.sphinx.common.Res
-import chat.sphinx.common.components.landing.ExistingUserScreen
-import chat.sphinx.common.components.landing.LandingUI
-import chat.sphinx.common.components.landing.NewUserScreen
-import chat.sphinx.common.components.landing.RestoreFromKeychainScreen
+import chat.sphinx.common.components.landing.*
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.store.ExistingUserStore
@@ -30,7 +27,6 @@ fun LandingScreen() {
     val existingUserStore = remember { ExistingUserStore() }
     val restoreFromKeystoreStore = remember { RestoreFromKeystoreStore() }
     val newUserStore = remember { NewUserStore() }
-    val newUserState = newUserStore.state
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -42,10 +38,7 @@ fun LandingScreen() {
             }
             LandingScreenType.NewUser -> {
                 NewUserScreen(
-                    newUserState.invitationCodeText,
-                    newUserState.errorMessage,
-                    newUserStore::onInvitationCodeTextChanged,
-                    newUserStore::onSubmitInvitationCode
+                    newUserStore
                 )
             }
             LandingScreenType.ExistingUser -> {
@@ -55,6 +48,10 @@ fun LandingScreen() {
                 RestoreFromKeychainScreen(restoreFromKeystoreStore)
             }
         }
+
+        ConnectingDialog()
     }
+
+
 
 }

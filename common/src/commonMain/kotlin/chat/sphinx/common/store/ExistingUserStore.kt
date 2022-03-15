@@ -11,7 +11,12 @@ class ExistingUserStore {
         private set
 
     fun onKeysTextChanged(text: String) {
-        setState { copy(sphinxKeys = text) }
+        setState {
+            copy(
+                sphinxKeys = text,
+                errorMessage = null
+            )
+        }
     }
 
     fun onSubmitKeys() {

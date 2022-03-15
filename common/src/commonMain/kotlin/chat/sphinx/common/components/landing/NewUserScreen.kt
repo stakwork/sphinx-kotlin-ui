@@ -19,16 +19,15 @@ import androidx.compose.ui.unit.dp
 import chat.sphinx.common.Res
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
+import chat.sphinx.common.state.NewUserState
+import chat.sphinx.common.store.NewUserStore
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun NewUserScreen(
-    invitationCodeText: String,
-    invitationCodeErrorMessage: String? = null,
-    onInvitationCodeTextChanged: (String) -> Unit,
-    onSubmitInvitationCode: () -> Unit
+    newUserStore: NewUserStore,
 ) {
     Row(
         modifier = Modifier.fillMaxSize()
@@ -102,17 +101,17 @@ fun NewUserScreen(
                             .fillMaxWidth(0.6f)
                     ) {
                         OutlinedTextField(
-                            value = invitationCodeText,
+                            value = newUserStore.state.invitationCodeText,
                             modifier = Modifier
                                 .weight(weight = 1F)
-                                .onKeyEvent(onKeyUp(Key.Enter, onSubmitInvitationCode)),
-                            onValueChange = onInvitationCodeTextChanged,
+                                .onKeyEvent(onKeyUp(Key.Enter, newUserStore::onSubmitInvitationCode)),
+                            onValueChange = newUserStore::onInvitationCodeTextChanged,
                             singleLine = true,
                             label = { Text(text = "Paste your invitation code") }
                         )
                     }
 
-                    invitationCodeErrorMessage?.let {
+                    newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
                         Text(
                             text = invitationCodeErrorMessage,
                             color = Color.Red
@@ -120,9 +119,7 @@ fun NewUserScreen(
                     }
 
                     Button(
-                        onClick = {
-                            // TODO: Handle exiting user...
-                        }
+                        onClick = newUserStore::onSubmitInvitationCode
                     ) {
                         Text(
                             text = "Submit"
@@ -136,4 +133,7 @@ fun NewUserScreen(
         }
     }
 
+    newUserStore.state.isProcessing?.let {
+
+    }
 }
