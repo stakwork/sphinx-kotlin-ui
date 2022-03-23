@@ -9,7 +9,6 @@ import chat.sphinx.common.models.DashboardChat
 fun ChatList(
     dashboardChats: List<DashboardChat>
 ) {
-
     LazyColumn {
         items(dashboardChats) { dashboardChat ->
 
