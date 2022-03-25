@@ -44,6 +44,9 @@ fun LandingScreen() {
             LandingScreenType.ExistingUser -> {
                 ExistingUserScreen(existingUserStore)
             }
+            LandingScreenType.ExistingUserPIN -> {
+                ExistingUserPINScreen(existingUserStore)
+            }
             LandingScreenType.RestoreFromKeystore -> {
                 RestoreFromKeychainScreen(restoreFromKeystoreStore)
             }

@@ -7,6 +7,7 @@ enum class LandingScreenType {
     LandingPage,
     NewUser,
     ExistingUser,
+    ExistingUserPIN,
     RestoreFromKeystore
 }
 
