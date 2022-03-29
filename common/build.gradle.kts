@@ -10,6 +10,11 @@ plugins {
 group = "chat.sphinx"
 version = "1.0"
 
+repositories {
+    mavenCentral()
+    maven(url = "https://jitpack.io")
+}
+
 kotlin {
     android()
     jvm("desktop") {

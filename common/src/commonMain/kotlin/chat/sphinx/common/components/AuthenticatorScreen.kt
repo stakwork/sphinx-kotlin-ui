@@ -18,7 +18,6 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.Res
-import chat.sphinx.common.models.AuthenticationViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
 
@@ -30,7 +29,7 @@ fun AuthenticatorScreen(
     onTextChanged: (String) -> Unit,
     onSubmitPin: () -> Unit
 ) {
-    val authenticationViewModel = AuthenticationViewModel()
+//    val authenticationViewModel = AuthenticationViewModel()
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

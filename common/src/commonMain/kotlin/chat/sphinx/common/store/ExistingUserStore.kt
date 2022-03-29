@@ -7,8 +7,6 @@ import chat.sphinx.authentication.KeyRestoreResponse
 import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
 import chat.sphinx.di.container.SphinxContainer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -160,6 +158,14 @@ class ExistingUserStore {
                                     setState {
                                         copy(
                                             infoMessage = "Encryping Relay",
+                                            errorMessage = null
+                                        )
+                                    }
+                                }
+                                KeyRestoreResponse.Error.FailedToSecureKeys -> {
+                                    setState {
+                                        copy(
+                                            infoMessage = "Failed to secure your keys",
                                             errorMessage = null
                                         )
                                     }
