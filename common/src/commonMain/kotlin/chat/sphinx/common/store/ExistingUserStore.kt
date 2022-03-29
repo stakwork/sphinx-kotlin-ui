@@ -10,8 +10,8 @@ import chat.sphinx.di.container.SphinxContainer
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class ExistingUserStore {
-    val scope = SphinxContainer.appModule.applicationScope
+class ExistingUserStore: PINHandlingViewModel() {
+
     val keyRestore = SphinxContainer.authenticationModule.keyRestore(
         SphinxContainer.networkModule.relayDataHandlerImpl
     )
@@ -28,8 +28,8 @@ class ExistingUserStore {
         }
     }
 
-    fun onPINTextChanged(text: String) {
-        setState {
+    override fun onPINTextChanged(text: String) {
+        setPINState {
             copy(
                 sphinxPIN = text,
                 errorMessage = null
@@ -55,7 +55,7 @@ class ExistingUserStore {
         }
     }
 
-    fun onSubmitPIN() {
+    override fun onSubmitPIN() {
         RedemptionCode.decode(
             state.sphinxKeys
         )?.let { redemptionCode ->
@@ -63,7 +63,7 @@ class ExistingUserStore {
                 // TODO: Decrypt keys...
                 scope.launch(SphinxContainer.appModule.dispatchers.default) {
 
-                    val pin = state.sphinxPIN.toCharArray()
+                    val pin = pinState.sphinxPIN.toCharArray()
 
 
                     try {
@@ -99,7 +99,7 @@ class ExistingUserStore {
 //                                    }
 //                                }
                                 KeyRestoreResponse.Error.InvalidUserPin -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             errorMessage = "Invalid PIN",
                                             infoMessage = null
@@ -107,7 +107,7 @@ class ExistingUserStore {
                                     }
                                 }
                                 KeyRestoreResponse.Error.KeysAlreadyPresent -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             errorMessage = "Key already loaded",
                                             infoMessage = null
@@ -115,7 +115,7 @@ class ExistingUserStore {
                                     }
                                 }
                                 KeyRestoreResponse.Error.KeysThatWereSetDidNotMatch -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             errorMessage = "Invalid Keys",
                                             infoMessage = null
@@ -123,7 +123,7 @@ class ExistingUserStore {
                                     }
                                 }
                                 KeyRestoreResponse.Error.PrivateKeyWasEmpty -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             errorMessage = "Invalid Keys",
                                             infoMessage = null
@@ -131,7 +131,7 @@ class ExistingUserStore {
                                     }
                                 }
                                 KeyRestoreResponse.Error.PublicKeyWasEmpty -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             errorMessage = "Invalid Keys",
                                             infoMessage = null
@@ -139,7 +139,7 @@ class ExistingUserStore {
                                     }
                                 }
                                 KeyRestoreResponse.NotifyState.EncryptingJavaWebToken -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             infoMessage = "Encrypting web token",
                                             errorMessage = null
@@ -147,7 +147,7 @@ class ExistingUserStore {
                                     }
                                 }
                                 KeyRestoreResponse.NotifyState.EncryptingKeysWithUserPin -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             infoMessage = "Saving keys...",
                                             errorMessage = null
@@ -155,7 +155,7 @@ class ExistingUserStore {
                                     }
                                 }
                                 KeyRestoreResponse.NotifyState.EncryptingRelayUrl -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             infoMessage = "Encryping Relay",
                                             errorMessage = null
@@ -163,7 +163,7 @@ class ExistingUserStore {
                                     }
                                 }
                                 KeyRestoreResponse.Error.FailedToSecureKeys -> {
-                                    setState {
+                                    setPINState {
                                         copy(
                                             infoMessage = "Failed to secure your keys",
                                             errorMessage = null
@@ -174,21 +174,20 @@ class ExistingUserStore {
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        setState {
+                        setPINState {
                             copy(errorMessage = "Invalid PIN")
                         }
                     }
-
 //                    LandingScreenState.screenState(LandingScreenType.ExistingUser)
                 }
 
             } else {
-                setState {
+                setPINState {
                     copy(errorMessage = "Keys not Account restoration. Try New User section.")
                 }
             }
         } ?: run {
-            setState {
+            setPINState {
                 copy(errorMessage = "Invalid keys")
             }
         }

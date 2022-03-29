@@ -1,7 +1,7 @@
 package chat.sphinx.common.state
 
-data class ExistingUserState(
-    val sphinxKeys: String = "",
+data class PINState(
+    val sphinxPIN: String = "",
     val errorMessage: String? = null,
     val infoMessage: String? = null
 ) {

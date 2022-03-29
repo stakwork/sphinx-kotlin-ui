@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.ImageBitmap
+import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.dashboard.ChatId
 import java.awt.image.BufferedImage
@@ -46,11 +47,12 @@ object ContentState {
             return
 
         scope.launch(Dispatchers.IO) {
-            delay(2000L).let {
+            if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+                onContentReady(ScreenType.DashboardScreen)
+            } else {
                 onContentReady(ScreenType.LandingScreen)
             }
         }
-
     }
 
     // preview/fullscreen image managing

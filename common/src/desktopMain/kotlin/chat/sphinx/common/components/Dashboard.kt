@@ -1,10 +1,6 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -19,9 +15,23 @@ import org.jetbrains.compose.splitpane.VerticalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
 import java.awt.Cursor
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import chat.sphinx.common.SplashScreen
+import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.state.LandingScreenState
+import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.state.SphinxState
+import chat.sphinx.common.store.DashboardStore
+import chat.sphinx.common.store.ExistingUserStore
+import chat.sphinx.di.container.SphinxContainer
 
 @OptIn(ExperimentalComposeUiApi::class)
 private fun Modifier.cursorForHorizontalResize(): Modifier =
@@ -32,42 +42,68 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
 actual fun Dashboard(
     sphinxState: SphinxState
 ) {
+    val dashboardStore = remember { DashboardStore() }
+
     val splitterState = rememberSplitPaneState()
     val hSplitterState = rememberSplitPaneState()
-    HorizontalSplitPane(
-        splitPaneState = splitterState
-    ) {
-        first(400.dp) {
-            DashboardSidebar()
-        }
-        second(300.dp) {
-            VerticalSplitPane(splitPaneState = hSplitterState) {
-                first(50.dp) {
-                    Box(Modifier.background(Color.Blue).fillMaxSize())
+    // TODO: check pin...
+    if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
+        HorizontalSplitPane(
+            splitPaneState = splitterState
+        ) {
+            first(400.dp) {
+                DashboardSidebar()
+            }
+            second(300.dp) {
+                VerticalSplitPane(splitPaneState = hSplitterState) {
+                    first(50.dp) {
+                        Box(Modifier.background(Color.Blue).fillMaxSize())
+                    }
+                    second(20.dp) {
+                        Box(Modifier.background(Color.Green).fillMaxSize())
+                    }
                 }
-                second(20.dp) {
-                    Box(Modifier.background(Color.Green).fillMaxSize())
+            }
+            splitter {
+                visiblePart {
+                    Box(
+                        Modifier
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colors.background)
+                    )
+                }
+                handle {
+                    Box(
+                        Modifier
+                            .markAsHandle()
+                            .cursorForHorizontalResize()
+                            .background(SolidColor(Color.Gray), alpha = 0.50f)
+                            .width(9.dp)
+                            .fillMaxHeight()
+                    )
                 }
             }
         }
-        splitter {
-            visiblePart {
-                Box(
-                    Modifier
-                        .width(1.dp)
-                        .fillMaxHeight()
-                        .background(MaterialTheme.colors.background)
-                )
-            }
-            handle {
-                Box(
-                    Modifier
-                        .markAsHandle()
-                        .cursorForHorizontalResize()
-                        .background(SolidColor(Color.Gray), alpha = 0.50f)
-                        .width(9.dp)
-                        .fillMaxHeight()
-                )
+    } else {
+        // Error handling...
+        Row(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(SolidColor(Color.Black), alpha = 0.50f)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxHeight()
+                ) {
+                    PINScreen(dashboardStore)
+                }
             }
         }
     }
