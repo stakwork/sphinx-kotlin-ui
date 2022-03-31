@@ -23,16 +23,16 @@ kotlin {
     }
     sourceSets {
         val jvmMain by getting {
-            val kmpTorVersion = "0.4.6.10+0.1.0-beta1"
+            val kmpTorBinaryVersion = "0.4.6.10"
 
             dependencies {
                 implementation(project(":common"))
                 implementation(compose.desktop.currentOs)
                 api(compose.preview)
 
-//                implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorVersion")
-//                implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorVersion")
-//                implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorVersion")
+                implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
+                implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorBinaryVersion")
+                implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorBinaryVersion")
             }
         }
         val jvmTest by getting
