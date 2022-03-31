@@ -26,9 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import chat.sphinx.common.SplashScreen
 import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.state.LandingScreenState
-import chat.sphinx.common.state.LandingScreenType
-import chat.sphinx.common.state.SphinxState
+import chat.sphinx.common.state.*
 import chat.sphinx.common.store.DashboardStore
 import chat.sphinx.common.store.ExistingUserStore
 import chat.sphinx.di.container.SphinxContainer
@@ -47,62 +45,64 @@ actual fun Dashboard(
     val splitterState = rememberSplitPaneState()
     val hSplitterState = rememberSplitPaneState()
     // TODO: check pin...
-    if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
-        HorizontalSplitPane(
-            splitPaneState = splitterState
-        ) {
-            first(400.dp) {
-                DashboardSidebar()
-            }
-            second(300.dp) {
-                VerticalSplitPane(splitPaneState = hSplitterState) {
-                    first(50.dp) {
-                        Box(Modifier.background(Color.Blue).fillMaxSize())
-                    }
-                    second(20.dp) {
-                        Box(Modifier.background(Color.Green).fillMaxSize())
+    when (DashboardState.screenState()) {
+        DashboardScreenType.Unlocked -> {
+            HorizontalSplitPane(
+                splitPaneState = splitterState
+            ) {
+                first(400.dp) {
+                    DashboardSidebar()
+                }
+                second(300.dp) {
+                    VerticalSplitPane(splitPaneState = hSplitterState) {
+                        first(50.dp) {
+                            Box(Modifier.background(Color.Blue).fillMaxSize())
+                        }
+                        second(20.dp) {
+                            Box(Modifier.background(Color.Green).fillMaxSize())
+                        }
                     }
                 }
-            }
-            splitter {
-                visiblePart {
-                    Box(
-                        Modifier
-                            .width(1.dp)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colors.background)
-                    )
-                }
-                handle {
-                    Box(
-                        Modifier
-                            .markAsHandle()
-                            .cursorForHorizontalResize()
-                            .background(SolidColor(Color.Gray), alpha = 0.50f)
-                            .width(9.dp)
-                            .fillMaxHeight()
-                    )
+                splitter {
+                    visiblePart {
+                        Box(
+                            Modifier
+                                .width(1.dp)
+                                .fillMaxHeight()
+                                .background(MaterialTheme.colors.background)
+                        )
+                    }
+                    handle {
+                        Box(
+                            Modifier
+                                .markAsHandle()
+                                .cursorForHorizontalResize()
+                                .background(SolidColor(Color.Gray), alpha = 0.50f)
+                                .width(9.dp)
+                                .fillMaxHeight()
+                        )
+                    }
                 }
             }
         }
-    } else {
-        // Error handling...
-        Row(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(SolidColor(Color.Black), alpha = 0.50f)
+        DashboardScreenType.Locked -> {
+            Row(
+                modifier = Modifier.fillMaxSize()
             ) {
-                Column(
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxHeight()
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(SolidColor(Color.Black), alpha = 0.50f)
                 ) {
-                    PINScreen(dashboardStore)
+                    Column(
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxHeight()
+                    ) {
+                        PINScreen(dashboardStore)
+                    }
                 }
             }
         }

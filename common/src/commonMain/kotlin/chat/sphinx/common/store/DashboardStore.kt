@@ -1,14 +1,25 @@
 package chat.sphinx.common.store
 
+import chat.sphinx.common.state.DashboardScreenType
+import chat.sphinx.common.state.DashboardState
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationResponse
+import chat.sphinx.concepts.authentication.core.model.UserInput
 import chat.sphinx.crypto.common.clazzes.Password
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
+import chat.sphinx.features.authentication.core.model.UserInputWriter
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 class DashboardStore: PINHandlingViewModel() {
 
+    init {
+        if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
+            DashboardState.screenState(DashboardScreenType.Unlocked)
+        }
+    }
     override fun onPINTextChanged(text: String) {
         setPINState {
             copy(
@@ -19,59 +30,50 @@ class DashboardStore: PINHandlingViewModel() {
     }
 
     override fun onSubmitPIN() {
-        val privateKey = Password(pinState.sphinxPIN.toCharArray())
-        val request = AuthenticationRequest.LogIn(privateKey)
-
-        setPINState {
-            copy(
-                infoMessage = "Entering PIN"
-            )
+        val password = Password(pinState.sphinxPIN.toCharArray())
+        val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
+        val userInput = authenticationCoreManager.getNewUserInput()
+        pinState.sphinxPIN.forEach {
+            userInput.addCharacter(it)
         }
+        val request = AuthenticationRequest.LogIn(password)
+
         scope.launch(SphinxContainer.appModule.dispatchers.default) {
             SphinxContainer.authenticationModule.authenticationCoreManager.authenticate(
-                privateKey,
-                request
-            ).firstOrNull().let { response ->
+                userInput,
+                listOf(request)
+            ).collect { response ->
+                when (response) {
+                    is AuthenticateFlowResponse.Success -> {
+                        setPINState {
+                            copy(
+                                infoMessage = "Valid PIN",
+                                errorMessage = null
+                            )
+                        }
 
-                if (response is AuthenticationResponse.Success.Key) {
-                    setPINState {
-                        copy(
-                            infoMessage = "Valid PIN",
-                            errorMessage = null
-                        )
+                        DashboardState.screenState(DashboardScreenType.Unlocked)
                     }
-                    // Update our persisted string value with new
-                    // login time.
-//                if (updateLastLoginTimeOnSuccess) {
-//                    updateSettingsImpl(
-//                        timeoutSettingHours.toInt(),
-//                        response.encryptionKey
-//                    )
-//                }
-                    response.encryptionKey
-                    val ek = SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey()
-                    if (ek == response.encryptionKey) {
-
+                    is AuthenticateFlowResponse.Error -> {
+                        setPINState {
+                            copy(
+                                infoMessage = "Invalid PIN",
+                                errorMessage = null
+                            )
+                        }
                     }
-                } else {
-                    setPINState {
-                        copy(
-                            errorMessage = "Invalid PIN",
-                            infoMessage = null
-                        )
+                    is AuthenticateFlowResponse.WrongPin -> {
+                        setPINState {
+                            copy(
+                                infoMessage = "Invalid PIN",
+                                errorMessage = null
+                            )
+                        }
                     }
-                    // Error validating the private key stored here
-                    // to login with, so clear it to require user
-                    // authentication
-//                updateSettingsImpl(
-//                    timeoutSettingHours.toInt(),
-//                    null
-//                )
-//                    null
+                    else -> { }
                 }
             }
         }
 
     }
-
 }

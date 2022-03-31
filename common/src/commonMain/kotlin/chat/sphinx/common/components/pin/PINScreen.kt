@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import chat.sphinx.common.store.PINHandlingViewModel
 import chat.sphinx.utils.onKeyUp
@@ -38,6 +39,7 @@ fun PINScreen(
                 modifier = Modifier
                     .weight(weight = 1F)
                     .onKeyEvent(onKeyUp(Key.Enter, pinHandlingViewModel::onSubmitPIN)),
+                visualTransformation = PasswordVisualTransformation(),
                 onValueChange = pinHandlingViewModel::onPINTextChanged,
                 singleLine = true,
                 label = { Text(text = "PIN to decrypt keys") }

@@ -83,5 +83,6 @@ android {
 }
 dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
+    implementation("androidx.compose.ui:ui-text:1.1.1")
 //    implementation("androidx.navigation:navigation-runtime-ktx:2.3.5")
 }
