@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.common.store.DashboardStore
 import chat.sphinx.concepts.network.query.chat.model.ChatDto
 import chat.sphinx.concepts.network.query.message.model.MessageDto
 import chat.sphinx.wrapper.chat.*
@@ -24,7 +25,7 @@ import chat.sphinx.wrapper.message.Message
 import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
-fun DashboardSidebar() {
+fun DashboardSidebar(dashboardStore: DashboardStore) {
     var text by remember { mutableStateOf(TextFieldValue("")) }
 
     Box(Modifier.background(SolidColor(Color.Red), alpha = 0.50f).fillMaxSize()) {
@@ -33,7 +34,7 @@ fun DashboardSidebar() {
                 title = { Text(text = "XXXX sats") },
                 elevation = 8.dp,
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = dashboardStore::networkRefresh) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh Connection")
                     }
                 },
@@ -62,9 +63,7 @@ fun DashboardSidebar() {
                 }
             )
 
-            ChatList(
-                emptyList()
-            )
+            ChatList()
         }
     }
 }
@@ -73,6 +72,6 @@ fun DashboardSidebar() {
 @Composable
 fun DashboardSidebarPreview() {
     MaterialTheme {
-        DashboardSidebar()
+        DashboardSidebar(DashboardStore())
     }
 }

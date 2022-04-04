@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.dashboard.ChatId
+import io.matthewnelson.kmp.tor.manager.common.event.TorManagerEvent
 import java.awt.image.BufferedImage
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -46,13 +47,10 @@ object ContentState {
         if (isContentReady.value)
             return
 
-        scope.launch(Dispatchers.IO) {
-            if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-                onContentReady(ScreenType.DashboardScreen)
-            } else {
-                onContentReady(ScreenType.LandingScreen)
-            }
-        }
+        // TODO: Check if tor starts up...
+        SphinxContainer.networkModule.torManager.addListener(
+            TorManagerListener()
+        )
     }
 
     // preview/fullscreen image managing
@@ -83,6 +81,35 @@ object ContentState {
         AppState.screenState(screenType)
         isContentReady.value = true
         isAppReady.value = true
+    }
+
+    private class TorManagerListener: TorManagerEvent.Listener() {
+
+        override fun managerEventState(state: TorManagerEvent.State) {
+
+            when {
+                state.isOff -> {
+                    // TODO: Say we are off
+                }
+                state.isOn -> {
+                    // TODO: we are on...
+                    scope.launch(Dispatchers.IO) {
+                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+                            onContentReady(ScreenType.DashboardScreen)
+                        } else {
+                            onContentReady(ScreenType.LandingScreen)
+                        }
+                    }
+                }
+                state.isStarting -> {
+                    // TODO: Say we are starting...
+                }
+                state.isStopping -> {
+                    // TODO: Say we are stopping...
+                }
+
+            }
+        }
     }
 }
 

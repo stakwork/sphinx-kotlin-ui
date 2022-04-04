@@ -51,7 +51,7 @@ actual fun Dashboard(
                 splitPaneState = splitterState
             ) {
                 first(400.dp) {
-                    DashboardSidebar()
+                    DashboardSidebar(dashboardStore)
                 }
                 second(300.dp) {
                     VerticalSplitPane(splitPaneState = hSplitterState) {
