@@ -2,7 +2,9 @@ package chat.sphinx.common.components
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -14,24 +16,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.store.DashboardStore
-import chat.sphinx.concepts.network.query.chat.model.ChatDto
-import chat.sphinx.concepts.network.query.message.model.MessageDto
-import chat.sphinx.wrapper.chat.*
-import chat.sphinx.wrapper.contact.Contact
-import chat.sphinx.wrapper.dashboard.ChatId
-import chat.sphinx.wrapper.message.Message
-import kotlinx.coroutines.flow.emptyFlow
 
 @Composable
 fun DashboardSidebar(dashboardStore: DashboardStore) {
     var text by remember { mutableStateOf(TextFieldValue("")) }
 
-    Box(Modifier.background(SolidColor(Color.Red), alpha = 0.50f).fillMaxSize()) {
+    Box(Modifier.background(SolidColor(Color.Gray), alpha = 0.40f).fillMaxSize()) {
         Column {
             TopAppBar(
                 title = { Text(text = "XXXX sats") },
+                backgroundColor = Color.Gray,
                 elevation = 8.dp,
                 navigationIcon = {
                     IconButton(onClick = dashboardStore::networkRefresh) {
@@ -46,6 +41,7 @@ fun DashboardSidebar(dashboardStore: DashboardStore) {
             )
 
             TopAppBar(
+                backgroundColor = Color.Gray,
                 title = {
                     TextField(
                         value = text,

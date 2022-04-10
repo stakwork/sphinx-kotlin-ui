@@ -1,7 +1,12 @@
 package chat.sphinx.common.components
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -9,27 +14,17 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import chat.sphinx.common.SplashScreen
+import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.state.DashboardScreenType
+import chat.sphinx.common.state.DashboardState
+import chat.sphinx.common.state.SphinxState
+import chat.sphinx.common.store.DashboardStore
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.VerticalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
 import java.awt.Cursor
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import chat.sphinx.common.SplashScreen
-import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.state.*
-import chat.sphinx.common.store.DashboardStore
-import chat.sphinx.common.store.ExistingUserStore
-import chat.sphinx.di.container.SphinxContainer
 
 @OptIn(ExperimentalComposeUiApi::class)
 private fun Modifier.cursorForHorizontalResize(): Modifier =
@@ -44,7 +39,7 @@ actual fun Dashboard(
 
     val splitterState = rememberSplitPaneState()
     val hSplitterState = rememberSplitPaneState()
-    // TODO: check pin...
+
     when (DashboardState.screenState()) {
         DashboardScreenType.Unlocked -> {
             HorizontalSplitPane(
@@ -56,10 +51,10 @@ actual fun Dashboard(
                 second(300.dp) {
                     VerticalSplitPane(splitPaneState = hSplitterState) {
                         first(50.dp) {
-                            Box(Modifier.background(Color.Blue).fillMaxSize())
+                            Box(Modifier.background(SolidColor(Color.Gray), alpha = 0.60f).fillMaxSize())
                         }
                         second(20.dp) {
-                            Box(Modifier.background(Color.Green).fillMaxSize())
+                            Box(Modifier.background(SolidColor(Color.Gray), alpha = 0.40f).fillMaxSize())
                         }
                     }
                 }

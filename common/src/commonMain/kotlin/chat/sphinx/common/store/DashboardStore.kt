@@ -1,6 +1,5 @@
 package chat.sphinx.common.store
 
-import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardState
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
@@ -22,6 +21,7 @@ class DashboardStore: PINHandlingViewModel() {
     val dispatchers = SphinxContainer.appModule.dispatchers
     val viewModelScope = SphinxContainer.appModule.applicationScope
     val repositoryDashboard = SphinxContainer.repositoryModule.repositoryDashboard
+    val contactRepository = SphinxContainer.repositoryModule.contactRepository
 
     init {
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
@@ -53,6 +53,18 @@ class DashboardStore: PINHandlingViewModel() {
         }
 
         jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
+            contactRepository.networkRefreshContacts.collect { response ->
+                Exhaustive@
+                when (response) {
+                    is LoadResponse.Loading -> {
+                    }
+                    is Response.Error -> {
+                    }
+                    is Response.Success -> {
+                    }
+                }
+            }
+
             repositoryDashboard.networkRefreshBalance.collect { response ->
                 Exhaustive@
                 when (response) {
@@ -78,8 +90,8 @@ class DashboardStore: PINHandlingViewModel() {
                     is Response.Success -> {
                         val restoreProgress = response.value
 
-                        if (restoreProgress/*restoreProgress.restoring*/) {
-                            _restoreStateFlow.value = RestoreProgress(restoreProgress, 100)
+                        if (restoreProgress.restoring) {
+                            _restoreStateFlow.value = restoreProgress
                         }
                     }
                 }

@@ -1,6 +1,8 @@
 package chat.sphinx.common.store
 
 import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.common.state.ChatListData
+import chat.sphinx.common.state.ChatListState
 import chat.sphinx.common.uistate.ChatFilter
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.SphinxDispatchers
@@ -12,7 +14,6 @@ import chat.sphinx.wrapper.contact.isTrue
 import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.invite.Invite
 import chat.sphinx.wrapper.message.Message
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -71,11 +72,18 @@ class ChatUIModel {
             }
         }
 
-        val allChats = repositoryDashboard.getAllChats.distinctUntilChanged()
-        scope.launch(dispatchers.default) {
+
+        scope.launch(dispatchers.mainImmediate) {
+            delay(25L)
+
+            val allChats = repositoryDashboard.getAllChats.distinctUntilChanged()
+
             allChats.collect { chats ->
                 collectionLock.withLock {
                     chatsCollectionInitialized = true
+                    if (chats.size > 0) {
+                        val check = 1
+                    }
                     val newList = ArrayList<DashboardChat>(chats.size)
                     val contactsAdded = mutableListOf<ContactId>()
 
@@ -148,10 +156,12 @@ class ChatUIModel {
                         updateDashboardChatLock,
                         dispatchers
                     )
-
                     // TODO: Do a difff operation instead...
-                    dashboardChats.clear()
-                    dashboardChats.addAll(newList)
+                    ChatListState.screenState(
+                        ChatListData.PopulatedChatListData(
+                            newList
+                        )
+                    )
                 }
             }
         }
@@ -298,6 +308,11 @@ class ChatUIModel {
                     ArrayList(currentChats).updateDashboardChats(
                         updateDashboardChatLock,
                         dispatchers
+                    )
+                    ChatListState.screenState(
+                        ChatListData.PopulatedChatListData(
+                            currentChats
+                        )
                     )
                     repositoryDashboard.updatedContactIds = mutableListOf()
                 }
