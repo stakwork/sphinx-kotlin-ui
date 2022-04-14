@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.SolidColor
 import chat.sphinx.platform.imageResource
 
 @Composable
-fun SplashScreen() {
+fun SphinxSplash() {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -25,12 +25,5 @@ fun SplashScreen() {
             contentDescription = "Sphinx Logo",
             modifier = Modifier.fillMaxSize()
         )
-    }
-}
-
-@Composable
-fun SplashScreenPreview() {
-    MaterialTheme {
-        SplashScreen()
     }
 }

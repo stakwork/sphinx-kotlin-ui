@@ -1,9 +1,8 @@
-package chat.sphinx.common.store
+package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
-import chat.sphinx.common.uistate.ChatFilter
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.SphinxDispatchers
 import chat.sphinx.wrapper.chat.isConversation
@@ -44,7 +43,7 @@ suspend fun ArrayList<DashboardChat>.updateDashboardChats(
 class ChatUIModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
-    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
+//    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
     val repositoryDashboard = SphinxContainer.repositoryModule.repositoryDashboard
     val accountOwner: StateFlow<Contact?> = SphinxContainer.repositoryModule.accountOwnerFlow
 
@@ -205,11 +204,14 @@ class ChatUIModel {
             }
 
             withContext(dispatchers.default) {
-                val currentChats = dashboardChats.toMutableList()
+                val currentChats: MutableList<DashboardChat> = when (val populatedChats = ChatListState.screenState()) {
+                    is ChatListData.PopulatedChatListData -> populatedChats.dashboardChats.toMutableList()
+                    else -> mutableListOf()
+                }
                 val chatContactIds = mutableListOf<ContactId>()
 
                 var updateChatViewState = false
-                for (chat in dashboardChats) {
+                for (chat in currentChats.toList()) {
 
                     val contact: Contact? = when (chat) {
                         is DashboardChat.Active.Conversation -> {
@@ -271,7 +273,7 @@ class ChatUIModel {
 
                         var updatedContactChat: DashboardChat = DashboardChat.Inactive.Conversation(contact)
 
-                        for (chat in dashboardChats) {
+                        for (chat in currentChats.toList()) {
                             if (chat is DashboardChat.Active.Conversation) {
                                 if (chat.contact.id == contact.id) {
                                     updatedContactChat = DashboardChat.Active.Conversation(

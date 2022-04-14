@@ -3,8 +3,11 @@ package chat.sphinx.common.components
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -14,15 +17,15 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import chat.sphinx.common.SplashScreen
+import chat.sphinx.common.Res
+import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.state.DashboardScreenType
-import chat.sphinx.common.state.DashboardState
-import chat.sphinx.common.state.SphinxState
-import chat.sphinx.common.store.DashboardStore
+import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.common.state.*
+import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.platform.imageResource
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
-import org.jetbrains.compose.splitpane.VerticalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
 import java.awt.Cursor
 
@@ -35,7 +38,7 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
 actual fun Dashboard(
     sphinxState: SphinxState
 ) {
-    val dashboardStore = remember { DashboardStore() }
+    val dashboardViewModel = remember { DashboardViewModel() }
 
     val splitterState = rememberSplitPaneState()
     val hSplitterState = rememberSplitPaneState()
@@ -46,17 +49,39 @@ actual fun Dashboard(
                 splitPaneState = splitterState
             ) {
                 first(400.dp) {
-                    DashboardSidebar(dashboardStore)
+                    DashboardSidebar(dashboardViewModel)
                 }
                 second(300.dp) {
-                    VerticalSplitPane(splitPaneState = hSplitterState) {
-                        first(50.dp) {
-                            Box(Modifier.background(SolidColor(Color.Gray), alpha = 0.60f).fillMaxSize())
+                    when(val chatDetailState = ChatDetailState.screenState()) {
+                        is ChatDetailData.EmptyChatDetailData -> {
+                            // TODO: Splash...
+                            SphinxSplash()
                         }
-                        second(20.dp) {
-                            Box(Modifier.background(SolidColor(Color.Gray), alpha = 0.40f).fillMaxSize())
+                        is ChatDetailData.SelectedChatDetail -> {
+                            // TODO: TopAppBar...
+                            val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
+
+                            Scaffold(
+                                scaffoldState = scaffoldState,
+                                topBar = {
+                                    SphinxChatDetailTopAppBar(chatDetailState.dashboardChat)
+                                },
+                                content = {
+                                    // TODO: Show ChatMessageList...
+                                    Text(
+                                        text = "Message List"
+                                    )
+                                },
+                                bottomBar = {
+                                    SphinxChatDetailBottomAppBar()
+                                }
+                            )
+
+                            // TODO: Input Message
+
                         }
                     }
+
                 }
                 splitter {
                     visiblePart {
@@ -96,7 +121,7 @@ actual fun Dashboard(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxHeight()
                     ) {
-                        PINScreen(dashboardStore)
+                        PINScreen(dashboardViewModel)
                     }
                 }
             }
@@ -104,10 +129,106 @@ actual fun Dashboard(
     }
 }
 
+@Composable
+fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat) {
+    val chatName = dashboardChat.chatName ?: "Unknown Chat"
+
+    TopAppBar(
+        title = {
+            Text(
+                text = chatName
+            )
+            // TODO: Lighting Indicator...
+        },
+        backgroundColor = MaterialTheme.colors.surface,
+        contentColor = MaterialTheme.colors.onSurface,
+        elevation = 8.dp,
+        navigationIcon = {
+            IconButton(onClick = {}) {
+                Icon(imageResource(Res.drawable.sphinx_logo), contentDescription = chatName)
+            }
+        },
+        actions = {
+            IconButton(onClick = {}) {
+                Icon(Icons.Default.Notifications, contentDescription = "Mute/Unmute")
+            }
+            IconButton(onClick = {}) {
+                Icon(Icons.Default.Phone, contentDescription = "Call")
+            }
+        }
+    )
+}
+
+@Composable
+fun SphinxChatDetailBottomAppBar() {
+    Surface(
+        color = Color.Gray,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // TODO: Attachment
+                IconButton(onClick = {}) {
+                    Icon(Icons.Default.Add, contentDescription = "Attachment")
+                }
+                // TODO: Giphy Attachment
+                // TODO: Emoji Keyboard...
+                IconButton(onClick = {}) {
+                    Icon(Icons.Default.Face, contentDescription = "Emoji")
+                }
+            }
+
+            // TODO: Text Input...
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                var messageText = ""
+                TextField(
+                    value = messageText,
+                    onValueChange = { newValue -> messageText = newValue },
+                    modifier = Modifier.padding(4.dp).fillMaxWidth(),
+                    placeholder = { Text("Message") }
+                )
+            }
+
+            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // TODO: Price Chip
+                    PriceChip()
+                    // TODO: Send Actions
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Default.Send, contentDescription = "Send")
+                    }
+                    // TODO: Record Action
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Default.Mic, contentDescription = "Microphone")
+                    }
+                }
+            }
+
+        }
+//        Box(
+//            modifier = Modifier.fillMaxWidth()
+//        ) {
+//
+//        }
+    }
+}
 @Preview
 @Composable
 fun SplashScreenPreview() {
     MaterialTheme {
-        SplashScreen()
+        SphinxSplash()
     }
 }

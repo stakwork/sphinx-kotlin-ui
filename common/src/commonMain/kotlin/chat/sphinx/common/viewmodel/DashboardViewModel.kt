@@ -1,4 +1,4 @@
-package chat.sphinx.common.store
+package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardState
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class DashboardStore: PINHandlingViewModel() {
+class DashboardViewModel: PINHandlingViewModel() {
     val dispatchers = SphinxContainer.appModule.dispatchers
     val viewModelScope = SphinxContainer.appModule.applicationScope
     val repositoryDashboard = SphinxContainer.repositoryModule.repositoryDashboard

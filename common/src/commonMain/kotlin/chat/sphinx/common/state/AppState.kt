@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 enum class ScreenType {
     SplashScreen,
     DashboardScreen,
-    AuthenticatorScreen,
     LandingScreen
 }
 

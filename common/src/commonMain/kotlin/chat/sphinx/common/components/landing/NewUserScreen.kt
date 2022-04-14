@@ -19,8 +19,7 @@ import androidx.compose.ui.unit.dp
 import chat.sphinx.common.Res
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
-import chat.sphinx.common.state.NewUserState
-import chat.sphinx.common.store.NewUserStore
+import chat.sphinx.common.viewmodel.NewUserStore
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
 

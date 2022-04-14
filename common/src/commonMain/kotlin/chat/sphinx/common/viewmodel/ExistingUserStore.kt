@@ -1,4 +1,4 @@
-package chat.sphinx.common.store
+package chat.sphinx.common.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

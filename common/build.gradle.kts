@@ -29,10 +29,11 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(compose.runtime)
-                api(compose.foundation)
-                api(compose.material)
-                api(compose.materialIconsExtended)
+                implementation(compose.ui)
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material)
+                implementation(compose.materialIconsExtended)
                 api(project(":sphinx-kotlin-core"))
             }
         }

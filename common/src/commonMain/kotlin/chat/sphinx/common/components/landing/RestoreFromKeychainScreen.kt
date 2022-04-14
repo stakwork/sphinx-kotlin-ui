@@ -12,17 +12,13 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.Res
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
-import chat.sphinx.common.store.ExistingUserStore
-import chat.sphinx.common.store.RestoreFromKeystoreStore
+import chat.sphinx.common.viewmodel.RestoreFromKeystoreStore
 import chat.sphinx.platform.imageResource
-import chat.sphinx.utils.onKeyUp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

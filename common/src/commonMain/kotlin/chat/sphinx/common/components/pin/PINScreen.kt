@@ -11,7 +11,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import chat.sphinx.common.store.PINHandlingViewModel
+import chat.sphinx.common.viewmodel.PINHandlingViewModel
 import chat.sphinx.utils.onKeyUp
 
 @OptIn(ExperimentalComposeUiApi::class)

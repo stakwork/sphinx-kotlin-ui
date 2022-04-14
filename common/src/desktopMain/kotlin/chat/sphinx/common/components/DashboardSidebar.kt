@@ -16,16 +16,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import chat.sphinx.common.store.DashboardStore
+import chat.sphinx.common.viewmodel.DashboardViewModel
 
 @Composable
-fun DashboardSidebar(dashboardStore: DashboardStore) {
+fun DashboardSidebar(dashboardStore: DashboardViewModel) {
     var text by remember { mutableStateOf(TextFieldValue("")) }
+    val balance by remember { mutableStateOf(TextFieldValue("0")) }
 
     Box(Modifier.background(SolidColor(Color.Gray), alpha = 0.40f).fillMaxSize()) {
         Column {
             TopAppBar(
-                title = { Text(text = "XXXX sats") },
+                title = { Text(text = "${balance.text} sats") },
                 backgroundColor = Color.Gray,
                 elevation = 8.dp,
                 navigationIcon = {
@@ -68,6 +69,6 @@ fun DashboardSidebar(dashboardStore: DashboardStore) {
 @Composable
 fun DashboardSidebarPreview() {
     MaterialTheme {
-        DashboardSidebar(DashboardStore())
+        DashboardSidebar(DashboardViewModel())
     }
 }
