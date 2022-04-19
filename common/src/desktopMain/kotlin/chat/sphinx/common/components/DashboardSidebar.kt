@@ -17,16 +17,28 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.di.container.SphinxContainer
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @Composable
 fun DashboardSidebar(dashboardStore: DashboardViewModel) {
+    val scope = SphinxContainer.appModule.applicationScope
+    val dispatchers = SphinxContainer.appModule.dispatchers
     var text by remember { mutableStateOf(TextFieldValue("")) }
-    val balance by remember { mutableStateOf(TextFieldValue("0")) }
+    val balance = mutableStateOf(0L)
 
+    scope.launch(dispatchers.main) {
+        dashboardStore.getAccountBalance().collect {
+            it?.let { nodeBalance ->
+                balance.value = nodeBalance.balance.value
+            }
+        }
+    }
     Box(Modifier.background(SolidColor(Color.Gray), alpha = 0.40f).fillMaxSize()) {
         Column {
             TopAppBar(
-                title = { Text(text = "${balance.text} sats") },
+                title = { Text(text = "${balance.value} sats") },
                 backgroundColor = Color.Gray,
                 elevation = 8.dp,
                 navigationIcon = {

@@ -10,6 +10,7 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.wrapper.dashboard.RestoreProgress
+import chat.sphinx.wrapper.lightning.NodeBalance
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +47,10 @@ class DashboardViewModel: PINHandlingViewModel() {
 
     private var jobNetworkRefresh: Job? = null
     private var jobPushNotificationRegistration: Job? = null
+
+    suspend fun getAccountBalance(): StateFlow<NodeBalance?> =
+        repositoryDashboard.getAccountBalanceStateFlow()
+
 
     fun networkRefresh() {
         if (jobNetworkRefresh?.isActive == true) {
@@ -143,6 +148,8 @@ class DashboardViewModel: PINHandlingViewModel() {
             }
         }
     }
+
+
 
     fun cancelRestore() {
         jobNetworkRefresh?.cancel()

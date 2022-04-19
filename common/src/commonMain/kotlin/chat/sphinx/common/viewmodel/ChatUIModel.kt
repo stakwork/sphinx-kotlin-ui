@@ -75,7 +75,7 @@ class ChatUIModel {
         scope.launch(dispatchers.mainImmediate) {
             delay(25L)
 
-            val allChats = repositoryDashboard.getAllChats.distinctUntilChanged()
+            val allChats = repositoryDashboard.getAllChatsFlow.distinctUntilChanged()
 
             allChats.collect { chats ->
                 collectionLock.withLock {
