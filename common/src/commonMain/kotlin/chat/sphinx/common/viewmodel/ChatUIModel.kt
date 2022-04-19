@@ -288,7 +288,7 @@ class ChatUIModel {
 
                         if (updatedContactChat is DashboardChat.Inactive.Conversation) {
                             //Contact unblocked
-                            repositoryDashboard.getConversationByContactId(contact.id).firstOrNull()?.let { contactChat ->
+                            repositoryDashboard.getConversationByContactIdFlow(contact.id).firstOrNull()?.let { contactChat ->
                                 val message: Message? = contactChat.latestMessageId?.let {
                                     repositoryDashboard.getMessageById(it).firstOrNull()
                                 }
