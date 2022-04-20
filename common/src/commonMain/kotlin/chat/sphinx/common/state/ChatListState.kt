@@ -4,12 +4,33 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import chat.sphinx.common.models.DashboardChat
 
+var listUpdateCounter = 0
 abstract class ChatListData {
     class EmptyChatListData: ChatListData()
 
     class PopulatedChatListData(
         val dashboardChats: List<DashboardChat>
-    ): ChatListData()
+    ): ChatListData() {
+        init {
+            listUpdateCounter++
+        }
+
+        override fun hashCode(): Int {
+
+            return dashboardChats.hashCode()
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as PopulatedChatListData
+
+            if (dashboardChats != other.dashboardChats) return false
+
+            return true
+        }
+    }
 }
 
 object ChatListState {
@@ -20,6 +41,8 @@ object ChatListState {
     }
 
     fun screenState(state: ChatListData) {
-        screen.value = state
+        if (screen.value != state) {
+            screen.value = state
+        }
     }
 }

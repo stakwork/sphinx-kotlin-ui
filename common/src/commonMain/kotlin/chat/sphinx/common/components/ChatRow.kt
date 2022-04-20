@@ -20,12 +20,9 @@ import chat.sphinx.wrapper.DateTime
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
-fun Chat(
+fun ChatRow(
     dashboardChat: DashboardChat
 ) {
-    val scope = SphinxContainer.appModule.applicationScope
-    val dispatchers = SphinxContainer.appModule.dispatchers
-
     // TODO: Create DashboardChatState...
     val today00: DateTime by lazy {
         DateTime.getToday00()
@@ -33,7 +30,26 @@ fun Chat(
 
     Row(
         modifier = Modifier.clickable {
-            ChatDetailState.screenState(ChatDetailData.SelectedChatDetail(dashboardChat))
+            when(dashboardChat) {
+                is DashboardChat.Active.Conversation -> {
+                    ChatDetailState.screenState(
+                        ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
+                            dashboardChat.chat.id,
+                            dashboardChat.contact.id,
+                            dashboardChat
+                        )
+                    )
+                }
+                is DashboardChat.Active.GroupOrTribe -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
+                        dashboardChat.chat.id,
+                        dashboardChat
+                    )
+                }
+                is DashboardChat.Inactive -> {
+                    // TODO: Implement inactive chat view
+                }
+            }
         }.padding(12.dp),
     ) {
         Box(

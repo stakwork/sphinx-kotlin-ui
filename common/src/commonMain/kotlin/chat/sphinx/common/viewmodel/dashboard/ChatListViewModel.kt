@@ -1,18 +1,25 @@
-package chat.sphinx.common.viewmodel
+package chat.sphinx.common.viewmodel.dashboard
 
 import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.common.models.viewstate.messageholder.BubbleBackground
+import chat.sphinx.common.models.viewstate.messageholder.InvoiceLinesHolderViewState
+import chat.sphinx.common.models.viewstate.messageholder.LayoutState
+import chat.sphinx.common.models.viewstate.messageholder.MessageHolderViewState
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.SphinxDispatchers
+import chat.sphinx.wrapper.DateTime
+import chat.sphinx.wrapper.PhotoUrl
+import chat.sphinx.wrapper.chat.Chat
+import chat.sphinx.wrapper.chat.ChatName
 import chat.sphinx.wrapper.chat.isConversation
-import chat.sphinx.wrapper.contact.Contact
-import chat.sphinx.wrapper.contact.isBlocked
-import chat.sphinx.wrapper.contact.isInviteContact
-import chat.sphinx.wrapper.contact.isTrue
+import chat.sphinx.wrapper.contact.*
+import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
+import chat.sphinx.wrapper.getMinutesDifferenceWithDateTime
 import chat.sphinx.wrapper.invite.Invite
-import chat.sphinx.wrapper.message.Message
+import chat.sphinx.wrapper.message.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -40,12 +47,11 @@ suspend fun ArrayList<DashboardChat>.updateDashboardChats(
     }
 }
 
-class ChatUIModel {
+class ChatListViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 //    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
     val repositoryDashboard = SphinxContainer.repositoryModule.repositoryDashboard
-    val accountOwner: StateFlow<Contact?> = SphinxContainer.repositoryModule.accountOwnerFlow
 
     private val _contactsStateFlow: MutableStateFlow<List<Contact>> by lazy {
         MutableStateFlow(emptyList())
@@ -70,7 +76,6 @@ class ChatUIModel {
                 updateChatListContacts(contacts)
             }
         }
-
 
         scope.launch(dispatchers.mainImmediate) {
             delay(25L)
@@ -155,7 +160,7 @@ class ChatUIModel {
                         updateDashboardChatLock,
                         dispatchers
                     )
-                    // TODO: Do a difff operation instead...
+                    // TODO: Do a diff operation instead...
                     ChatListState.screenState(
                         ChatListData.PopulatedChatListData(
                             newList
@@ -321,5 +326,4 @@ class ChatUIModel {
             }
         }
     }
-
 }

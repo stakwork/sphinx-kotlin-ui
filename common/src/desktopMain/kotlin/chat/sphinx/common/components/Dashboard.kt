@@ -57,8 +57,7 @@ actual fun Dashboard(
                             // TODO: Splash...
                             SphinxSplash()
                         }
-                        is ChatDetailData.SelectedChatDetail -> {
-                            // TODO: TopAppBar...
+                        is ChatDetailData.SelectedChatDetailData -> {
                             val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
 
                             Scaffold(
@@ -68,9 +67,7 @@ actual fun Dashboard(
                                 },
                                 content = {
                                     // TODO: Show ChatMessageList...
-                                    Text(
-                                        text = "Message List"
-                                    )
+                                    MessageList(chatDetailState)
                                 },
                                 bottomBar = {
                                     SphinxChatDetailBottomAppBar()
@@ -218,17 +215,5 @@ fun SphinxChatDetailBottomAppBar() {
             }
 
         }
-//        Box(
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//
-//        }
-    }
-}
-@Preview
-@Composable
-fun SplashScreenPreview() {
-    MaterialTheme {
-        SphinxSplash()
     }
 }

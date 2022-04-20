@@ -23,7 +23,7 @@ import chat.sphinx.wrapper.invite.Invite as InviteWrapper
  *  - [Inactive]: A contact without a conversation yet, or an Invite
  * */
 sealed class DashboardChat {
-
+    // TODO: Override equals...
     abstract val chatName: String?
     abstract val photoUrl: PhotoUrl?
     abstract val sortBy: Long
