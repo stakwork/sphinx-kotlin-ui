@@ -2,6 +2,7 @@ package chat.sphinx.common.viewmodel.chat
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.models.viewstate.messageholder.BubbleBackground
 import chat.sphinx.common.models.viewstate.messageholder.InvoiceLinesHolderViewState
@@ -68,20 +69,30 @@ abstract class ChatViewModel(
 
     init {
         scope.launch(dispatchers.mainImmediate) {
-            if (chatId != null) {
-                messageRepository.getAllMessagesToShowByChatId(chatId, 20).firstOrNull()?.let { messages ->
+            getChatOrNull()?.let { chat ->
+                messageRepository.getAllMessagesToShowByChatId(chat.id, 20).firstOrNull()?.let { messages ->
                     MessageListState.screenState(
                         MessageListData.PopulatedMessageListData(
-                            getMessageHolderViewStateList(messages)
+                            messages.map { message ->
+                                ChatMessage(
+                                    chat,
+                                    message
+                                )
+                            }
                         )
                     )
                 }
                 delay(1000L)
 
-                messageRepository.getAllMessagesToShowByChatId(chatId, 1000).distinctUntilChanged().collect { messages ->
+                messageRepository.getAllMessagesToShowByChatId(chat.id, 1000).distinctUntilChanged().collect { messages ->
                     MessageListState.screenState(
                         MessageListData.PopulatedMessageListData(
-                            getMessageHolderViewStateList(messages)
+                            messages.map { message ->
+                                ChatMessage(
+                                    chat,
+                                    message
+                                )
+                            }
                         )
                     )
                 }

@@ -2,7 +2,11 @@ package chat.sphinx.common.state
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
+import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
 
@@ -13,14 +17,21 @@ sealed class ChatDetailData {
         val chatId: ChatId,
         val dashboardChat: DashboardChat
     ): ChatDetailData() {
+        abstract val chatViewModel: ChatViewModel
+
         class SelectedContactChatDetail(
             chatId: ChatId,
-            val contactId: ContactId,
+            contactId: ContactId,
             dashboardChat: DashboardChat,
         ): SelectedChatDetailData(
             chatId,
             dashboardChat
-        )
+        ) {
+            override val chatViewModel: ChatViewModel = ChatContactViewModel(
+                chatId,
+                contactId
+            )
+        }
 
         class SelectedTribeChatDetail(
             chatId: ChatId,
@@ -28,7 +39,11 @@ sealed class ChatDetailData {
         ): SelectedChatDetailData(
             chatId,
             dashboardChat
-        )
+        ) {
+            override val chatViewModel: ChatViewModel = ChatTribeViewModel(
+                chatId
+            )
+        }
     }
 }
 

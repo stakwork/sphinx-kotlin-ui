@@ -30,26 +30,25 @@ fun ChatRow(
 
     Row(
         modifier = Modifier.clickable {
-            when(dashboardChat) {
-                is DashboardChat.Active.Conversation -> {
-                    ChatDetailState.screenState(
+            ChatDetailState.screenState(
+                when(dashboardChat) {
+                    is DashboardChat.Active.Conversation -> {
                         ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
                             dashboardChat.chat.id,
                             dashboardChat.contact.id,
                             dashboardChat
                         )
-                    )
+                    }
+                    is DashboardChat.Active.GroupOrTribe -> {
+                        ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
+                            dashboardChat.chat.id,
+                            dashboardChat
+                        )
+                    }
+                    else -> ChatDetailData.EmptyChatDetailData
                 }
-                is DashboardChat.Active.GroupOrTribe -> {
-                    ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
-                        dashboardChat.chat.id,
-                        dashboardChat
-                    )
-                }
-                is DashboardChat.Inactive -> {
-                    // TODO: Implement inactive chat view
-                }
-            }
+            )
+
         }.padding(12.dp),
     ) {
         Box(

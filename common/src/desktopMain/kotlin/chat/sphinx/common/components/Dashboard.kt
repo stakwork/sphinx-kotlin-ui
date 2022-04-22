@@ -54,7 +54,6 @@ actual fun Dashboard(
                 second(300.dp) {
                     when(val chatDetailState = ChatDetailState.screenState()) {
                         is ChatDetailData.EmptyChatDetailData -> {
-                            // TODO: Splash...
                             SphinxSplash()
                         }
                         is ChatDetailData.SelectedChatDetailData -> {
@@ -66,16 +65,12 @@ actual fun Dashboard(
                                     SphinxChatDetailTopAppBar(chatDetailState.dashboardChat)
                                 },
                                 content = {
-                                    // TODO: Show ChatMessageList...
-                                    MessageList(chatDetailState)
+                                    MessageList()
                                 },
                                 bottomBar = {
                                     SphinxChatDetailBottomAppBar()
                                 }
                             )
-
-                            // TODO: Input Message
-
                         }
                     }
 

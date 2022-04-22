@@ -2,14 +2,13 @@ package chat.sphinx.common.state
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import chat.sphinx.common.models.DashboardChat
-import chat.sphinx.common.models.viewstate.messageholder.MessageHolderViewState
+import chat.sphinx.common.models.ChatMessage
 
 abstract class MessageListData {
     class EmptyMessageListData: MessageListData()
 
     class PopulatedMessageListData(
-        val messageHolderViewStates: List<MessageHolderViewState>
+        val chatMessages: List<ChatMessage>
     ): MessageListData()
 }
 
