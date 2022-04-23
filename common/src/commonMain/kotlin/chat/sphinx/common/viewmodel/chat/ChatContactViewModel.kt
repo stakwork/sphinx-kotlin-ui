@@ -1,8 +1,6 @@
 package chat.sphinx.common.viewmodel.chat
 
-import androidx.compose.runtime.MutableState
-import chat.sphinx.common.models.viewstate.messageholder.MessageHolderViewState
-import chat.sphinx.common.state.MessageListData
+
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName

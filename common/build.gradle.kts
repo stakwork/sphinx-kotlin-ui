@@ -26,6 +26,7 @@ kotlin {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
     }
     sourceSets {
+        val paging_version = "3.1.0"
 
         val commonMain by getting {
             dependencies {
@@ -34,6 +35,7 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material)
                 implementation(compose.materialIconsExtended)
+
                 api(project(":sphinx-kotlin-core"))
             }
         }
@@ -59,6 +61,9 @@ kotlin {
                 api(compose.desktop.common)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 api(compose.desktop.components.splitPane)
+
+//                implementation("androidx.paging:paging-runtime-ktx:$paging_version")
+//                implementation("androidx.paging:paging-compose:1.0.0-alpha14")
             }
         }
         val desktopTest by getting

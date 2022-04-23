@@ -1,6 +1,5 @@
 package chat.sphinx.common.components
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -49,7 +48,7 @@ actual fun Dashboard(
                 splitPaneState = splitterState
             ) {
                 first(400.dp) {
-                    DashboardSidebar(dashboardViewModel)
+                    DashboardSidebarUI(dashboardViewModel)
                 }
                 second(300.dp) {
                     when(val chatDetailState = ChatDetailState.screenState()) {
@@ -64,13 +63,19 @@ actual fun Dashboard(
                                 topBar = {
                                     SphinxChatDetailTopAppBar(chatDetailState.dashboardChat)
                                 },
-                                content = {
-                                    MessageList()
-                                },
                                 bottomBar = {
                                     SphinxChatDetailBottomAppBar()
                                 }
-                            )
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    MessageListUI()
+                                }
+
+                            }
                         }
                     }
 

@@ -1,10 +1,6 @@
 package chat.sphinx.common.viewmodel.dashboard
 
 import chat.sphinx.common.models.DashboardChat
-import chat.sphinx.common.models.viewstate.messageholder.BubbleBackground
-import chat.sphinx.common.models.viewstate.messageholder.InvoiceLinesHolderViewState
-import chat.sphinx.common.models.viewstate.messageholder.LayoutState
-import chat.sphinx.common.models.viewstate.messageholder.MessageHolderViewState
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.di.container.SphinxContainer

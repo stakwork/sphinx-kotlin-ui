@@ -22,7 +22,7 @@ import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
-fun ChatList() {
+fun ChatListUI() {
     val listState = rememberLazyListState()
     val chatListViewModel = ChatListViewModel()
 

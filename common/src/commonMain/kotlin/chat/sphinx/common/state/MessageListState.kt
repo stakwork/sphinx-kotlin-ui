@@ -2,13 +2,15 @@ package chat.sphinx.common.state
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.paging.PagingData
 import chat.sphinx.common.models.ChatMessage
+import kotlinx.coroutines.flow.Flow
 
 abstract class MessageListData {
     class EmptyMessageListData: MessageListData()
 
     class PopulatedMessageListData(
-        val chatMessages: List<ChatMessage>
+        val pagingData: Flow<PagingData<ChatMessage>>
     ): MessageListData()
 }
 

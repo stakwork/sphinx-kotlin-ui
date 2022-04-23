@@ -1,6 +1,5 @@
 package chat.sphinx.common.models
 
-import chat.sphinx.common.models.viewstate.messageholder.MessageHolderViewState
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
@@ -33,10 +32,17 @@ class ChatMessage(
         !isSent
     }
 
+    private val unsupportedMessageTypes: List<MessageType> by lazy {
+        listOf(
+            MessageType.Attachment,
+            MessageType.Payment,
+            MessageType.GroupAction.TribeDelete,
+        )
+    }
 
     val unsupportedMessageType: String? by lazy {
         if (
-            MessageHolderViewState.unsupportedMessageTypes.contains(message.type) && message.messageMedia?.mediaType?.isSphinxText != true &&
+            unsupportedMessageTypes.contains(message.type) && message.messageMedia?.mediaType?.isSphinxText != true &&
             message.messageMedia?.mediaType?.isImage != true && message.messageMedia?.mediaType?.isAudio != true &&
             message.messageMedia?.mediaType?.isVideo != true
         ) {

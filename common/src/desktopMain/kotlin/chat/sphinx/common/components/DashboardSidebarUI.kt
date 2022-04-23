@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Composable
-fun DashboardSidebar(dashboardStore: DashboardViewModel) {
+fun DashboardSidebarUI(dashboardStore: DashboardViewModel) {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
     var text by remember { mutableStateOf(TextFieldValue("")) }
@@ -72,7 +72,7 @@ fun DashboardSidebar(dashboardStore: DashboardViewModel) {
                 }
             )
 
-            ChatList()
+            ChatListUI()
         }
     }
 }
@@ -81,6 +81,6 @@ fun DashboardSidebar(dashboardStore: DashboardViewModel) {
 @Composable
 fun DashboardSidebarPreview() {
     MaterialTheme {
-        DashboardSidebar(DashboardViewModel())
+        DashboardSidebarUI(DashboardViewModel())
     }
 }
