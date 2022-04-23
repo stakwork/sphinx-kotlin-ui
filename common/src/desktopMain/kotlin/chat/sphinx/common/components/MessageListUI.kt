@@ -50,10 +50,7 @@ fun MessageListUI(
                         if (chatMessage != null) {
                             ChatMessageUI(chatMessage)
                         } else {
-                            // TODO: ChatMessageUIPlaceholder
-                            Text(
-                                text = "..."
-                            )
+                            ChatMessageUIPlaceholder()
                         }
                     }
                 }

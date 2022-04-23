@@ -1,6 +1,7 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -67,5 +68,18 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
             }
         }
     }
+}
 
+@Composable
+fun ChatMessageUIPlaceholder() {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+            .padding(
+                vertical = 30.dp
+            )
+    ) {
+        LinearProgressIndicator(
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
