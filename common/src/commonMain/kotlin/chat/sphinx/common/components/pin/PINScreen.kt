@@ -1,7 +1,9 @@
 package chat.sphinx.common.components.pin
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -38,7 +40,8 @@ fun PINScreen(
                 value = pinHandlingViewModel.pinState.sphinxPIN,
                 modifier = Modifier
                     .weight(weight = 1F)
-                    .onKeyEvent(onKeyUp(Key.Enter, pinHandlingViewModel::onSubmitPIN)),
+                    .onKeyEvent(onKeyUp(Key.Enter, pinHandlingViewModel::onSubmitPIN))
+                    .onKeyEvent(onKeyUp(Key.NumPadEnter, pinHandlingViewModel::onSubmitPIN)),
                 visualTransformation = PasswordVisualTransformation(),
                 onValueChange = pinHandlingViewModel::onPINTextChanged,
                 singleLine = true,

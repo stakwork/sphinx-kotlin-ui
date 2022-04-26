@@ -1,7 +1,9 @@
 package chat.sphinx.common.viewmodel.chat
 
-import androidx.compose.runtime.MutableState
-import chat.sphinx.common.state.MessageListData
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
@@ -23,4 +25,10 @@ class ChatTribeViewModel(
 
     override suspend fun getChatInfo(): Triple<ChatName?, PhotoUrl?, String>? = null
 
+    override var editMessageState: EditMessageState by mutableStateOf(initialState())
+        set
+
+    override fun initialState(): EditMessageState = EditMessageState(
+        chatId = chatId
+    )
 }

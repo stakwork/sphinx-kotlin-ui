@@ -22,6 +22,7 @@ import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
@@ -64,7 +65,7 @@ actual fun Dashboard(
                                     SphinxChatDetailTopAppBar(chatDetailState.dashboardChat)
                                 },
                                 bottomBar = {
-                                    SphinxChatDetailBottomAppBar()
+                                    SphinxChatDetailBottomAppBar(chatDetailState.chatViewModel)
                                 }
                             ) {
                                 Column(
@@ -156,8 +157,11 @@ fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat) {
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SphinxChatDetailBottomAppBar() {
+fun SphinxChatDetailBottomAppBar(
+    chatViewModel: ChatViewModel
+) {
     Surface(
         color = Color.Gray,
         modifier = Modifier.fillMaxWidth()
@@ -187,11 +191,13 @@ fun SphinxChatDetailBottomAppBar() {
                     .weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                var messageText = ""
                 TextField(
-                    value = messageText,
-                    onValueChange = { newValue -> messageText = newValue },
-                    modifier = Modifier.padding(4.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .fillMaxWidth(),
+                    // TODO: Make this conditional on whether user want's to send message on enter...
+                    value = chatViewModel.editMessageState.messageText,
+                    onValueChange = chatViewModel::onMessageTextChanged,
                     placeholder = { Text("Message") }
                 )
             }
@@ -204,7 +210,7 @@ fun SphinxChatDetailBottomAppBar() {
                     // TODO: Price Chip
                     PriceChip()
                     // TODO: Send Actions
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = chatViewModel::onSendMessage) {
                         Icon(Icons.Default.Send, contentDescription = "Send")
                     }
                     // TODO: Record Action

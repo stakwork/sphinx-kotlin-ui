@@ -61,9 +61,6 @@ kotlin {
                 api(compose.desktop.common)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 api(compose.desktop.components.splitPane)
-
-//                implementation("androidx.paging:paging-runtime-ktx:$paging_version")
-//                implementation("androidx.paging:paging-compose:1.0.0-alpha14")
             }
         }
         val desktopTest by getting

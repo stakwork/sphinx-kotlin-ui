@@ -1,6 +1,10 @@
 package chat.sphinx.common.viewmodel.chat
 
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
@@ -14,7 +18,7 @@ import kotlinx.coroutines.flow.*
 
 class ChatContactViewModel(
     chatId: ChatId?,
-    contactId: ContactId
+    val contactId: ContactId
 ): ChatViewModel(
     chatId
 ) {
@@ -76,5 +80,13 @@ class ChatContactViewModel(
             )
         }
     }
+
+    override var editMessageState: EditMessageState by mutableStateOf(initialState())
+        protected set
+
+    override fun initialState(): EditMessageState = EditMessageState(
+        chatId = chatId,
+        contactId = contactId
+    )
 
 }

@@ -4,19 +4,18 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
-import chat.sphinx.database.core.MessageDbo
+import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.SphinxDispatchers
-import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
 import chat.sphinx.wrapper.contact.*
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.message.*
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -75,33 +74,6 @@ abstract class ChatViewModel(
 
                     )
                 )
-
-//                messageRepository.getAllMessagesToShowByChatId(chat.id, 20).firstOrNull()?.let { messages ->
-//                    MessageListState.screenState(
-//                        MessageListData.PopulatedMessageListData(
-//                            messages.map { message ->
-//                                ChatMessage(
-//                                    chat,
-//                                    message
-//                                )
-//                            }
-//                        )
-//                    )
-//                }
-//                delay(1000L)
-//
-//                messageRepository.getAllMessagesToShowByChatId(chat.id, 1000).distinctUntilChanged().collect { messages ->
-//                    MessageListState.screenState(
-//                        MessageListData.PopulatedMessageListData(
-//                            messages.map { message ->
-//                                ChatMessage(
-//                                    chat,
-//                                    message
-//                                )
-//                            }
-//                        )
-//                    )
-//                }
             }
         }
     }
@@ -111,62 +83,49 @@ abstract class ChatViewModel(
         return "#212121"
     }
 
-    private fun areUrlLinkPreviewsEnabled(): Boolean = false
-
     protected abstract val chatSharedFlow: SharedFlow<Chat?>
 
     suspend fun getChatOrNull(): Chat? {
         return chatId?.let { chatRepository.getChatById(it) }
     }
 
-    protected suspend fun getChat(): Chat {
-
-        chatSharedFlow.replayCache.firstOrNull()?.let { chat ->
-            return chat
-        }
-
-        chatSharedFlow.firstOrNull()?.let { chat ->
-            return chat
-        }
-
-        var chat: Chat? = null
-
-        try {
-            chatSharedFlow.collect {
-                if (it != null) {
-                    chat = it
-                    throw Exception()
-                }
-            }
-        } catch (e: Exception) {}
-        delay(25L)
-
-        return chat!!
-    }
-
-
-    private suspend fun getOwner(): Contact {
-        return contactRepository.accountOwner.value.let { contact ->
-            if (contact != null) {
-                contact
-            } else {
-                var resolvedOwner: Contact? = null
-                try {
-                    contactRepository.accountOwner.collect { ownerContact ->
-                        if (ownerContact != null) {
-                            resolvedOwner = ownerContact
-                            throw Exception()
-                        }
-                    }
-                } catch (e: Exception) {
-                }
-                delay(25L)
-
-                resolvedOwner!!
-            }
-        }
-    }
-
     protected abstract suspend fun getChatInfo(): Triple<ChatName?, PhotoUrl?, String>?
+
+    // Message sending logic...
+    abstract var editMessageState: EditMessageState
+        protected set
+
+    abstract fun initialState(): EditMessageState
+
+    private inline fun setEditMessageState(update: EditMessageState.() -> EditMessageState) {
+        editMessageState = editMessageState.update()
+    }
+
+    fun onMessageTextChanged(text: String) {
+        setEditMessageState {
+            copy(
+                messageText = text
+            )
+        }
+    }
+
+    fun onSendMessage() {
+        val sendMessage = SendMessage.Builder()
+            .setChatId(editMessageState.chatId)
+            .setContactId(editMessageState.contactId)
+            .setText(editMessageState.messageText)
+            .build()
+
+        if (sendMessage.second != null) {
+            // TODO: update user on error...
+        } else if (sendMessage.first != null) {
+            sendMessage.first?.let { message ->
+                messageRepository.sendMessage(message)
+                setEditMessageState {
+                    initialState()
+                }
+            }
+        }
+    }
 
 }
