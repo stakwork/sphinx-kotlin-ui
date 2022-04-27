@@ -2,10 +2,9 @@ package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardState
-import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
-import chat.sphinx.crypto.common.clazzes.Password
+import chat.sphinx.concepts.socket_io.SocketIOManager
+import chat.sphinx.concepts.socket_io.SocketIOState
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
@@ -15,19 +14,27 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class DashboardViewModel: PINHandlingViewModel() {
+class DashboardViewModel {
     val dispatchers = SphinxContainer.appModule.dispatchers
     val viewModelScope = SphinxContainer.appModule.applicationScope
     val repositoryDashboard = SphinxContainer.repositoryModule.repositoryDashboard
     val contactRepository = SphinxContainer.repositoryModule.contactRepository
+    val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
 
     init {
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
             DashboardState.screenState(DashboardScreenType.Unlocked)
             networkRefresh()
+        }
+
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            socketIOManager.socketIOStateFlow.collect { state ->
+                if (state is SocketIOState.Uninitialized) {
+                    socketIOManager.connect()
+                }
+            }
         }
     }
 
@@ -161,63 +168,5 @@ class DashboardViewModel: PINHandlingViewModel() {
 
             repositoryDashboard.didCancelRestore()
         }
-    }
-
-
-    override fun onPINTextChanged(text: String) {
-        setPINState {
-            copy(
-                sphinxPIN = text,
-                errorMessage = null
-            )
-        }
-    }
-
-    override fun onSubmitPIN() {
-        val password = Password(pinState.sphinxPIN.toCharArray())
-        val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
-        val userInput = authenticationCoreManager.getNewUserInput()
-        pinState.sphinxPIN.forEach {
-            userInput.addCharacter(it)
-        }
-        val request = AuthenticationRequest.LogIn(password)
-
-        scope.launch(SphinxContainer.appModule.dispatchers.default) {
-            SphinxContainer.authenticationModule.authenticationCoreManager.authenticate(
-                userInput,
-                listOf(request)
-            ).collect { response ->
-                when (response) {
-                    is AuthenticateFlowResponse.Success -> {
-                        setPINState {
-                            copy(
-                                infoMessage = "Valid PIN",
-                                errorMessage = null
-                            )
-                        }
-
-                        DashboardState.screenState(DashboardScreenType.Unlocked)
-                    }
-                    is AuthenticateFlowResponse.Error -> {
-                        setPINState {
-                            copy(
-                                infoMessage = "Invalid PIN",
-                                errorMessage = null
-                            )
-                        }
-                    }
-                    is AuthenticateFlowResponse.WrongPin -> {
-                        setPINState {
-                            copy(
-                                infoMessage = "Invalid PIN",
-                                errorMessage = null
-                            )
-                        }
-                    }
-                    else -> { }
-                }
-            }
-        }
-
     }
 }

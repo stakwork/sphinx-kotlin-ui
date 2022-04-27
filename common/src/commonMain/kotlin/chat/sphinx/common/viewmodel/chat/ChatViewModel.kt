@@ -3,44 +3,19 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.paging.PagingData
 import androidx.paging.map
 import chat.sphinx.common.models.ChatMessage
-import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.utils.SphinxDispatchers
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
-import chat.sphinx.wrapper.contact.*
 import chat.sphinx.wrapper.dashboard.ChatId
-import chat.sphinx.wrapper.message.*
-import kotlinx.coroutines.flow.*
+import chat.sphinx.wrapper.message.Message
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
-
-/**
- * Sorts and filters the provided list.
- *
- * @param [dashboardChats] if `null` uses the current, already sorted list.
- * @param [filter] the type of filtering to apply to the list. See [ChatFilter].
- * */
-suspend fun ArrayList<DashboardChat>.updateDashboardChats(
-    lock: Mutex,
-    dispatchers: SphinxDispatchers
-) {
-    lock.withLock {
-        val sortedDashboardChats = withContext(dispatchers.default) {
-            this@updateDashboardChats.sortedByDescending { it.sortBy }
-        }
-
-        this@updateDashboardChats.clear()
-        this@updateDashboardChats.addAll(sortedDashboardChats)
-    }
-}
 
 abstract class ChatViewModel(
     val chatId: ChatId?

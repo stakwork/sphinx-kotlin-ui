@@ -22,6 +22,7 @@ import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
@@ -38,13 +39,13 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
 actual fun Dashboard(
     sphinxState: SphinxState
 ) {
-    val dashboardViewModel = remember { DashboardViewModel() }
-
     val splitterState = rememberSplitPaneState()
     val hSplitterState = rememberSplitPaneState()
 
     when (DashboardState.screenState()) {
         DashboardScreenType.Unlocked -> {
+            val dashboardViewModel = remember { DashboardViewModel() }
+
             HorizontalSplitPane(
                 splitPaneState = splitterState
             ) {
@@ -104,6 +105,7 @@ actual fun Dashboard(
             }
         }
         DashboardScreenType.Locked -> {
+            val lockedDashboardViewModel = remember { LockedDashboardViewModel() }
             Row(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -119,7 +121,7 @@ actual fun Dashboard(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxHeight()
                     ) {
-                        PINScreen(dashboardViewModel)
+                        PINScreen(lockedDashboardViewModel)
                     }
                 }
             }
