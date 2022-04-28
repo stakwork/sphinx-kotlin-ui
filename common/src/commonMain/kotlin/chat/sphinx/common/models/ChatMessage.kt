@@ -32,6 +32,22 @@ class ChatMessage(
         !isSent
     }
 
+    val showSendingIcon: Boolean by lazy {
+        isSent && message.id.isProvisionalMessage && message.status.isPending()
+    }
+
+    val showLockIcon: Boolean by lazy {
+        message.messageContentDecrypted != null || message.messageMedia?.mediaKeyDecrypted != null
+    }
+
+    val showBoltIcon: Boolean by lazy {
+        isSent && (message.status.isReceived() || message.status.isConfirmed())
+    }
+
+    val showFailedContainer: Boolean by lazy {
+        isSent && message.status.isFailed()
+    }
+
     private val unsupportedMessageTypes: List<MessageType> by lazy {
         listOf(
             MessageType.Attachment,
