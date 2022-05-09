@@ -9,6 +9,10 @@ The following need to be installed to easily get started with compose-mpp:
 - IntelliJ IDEA Community Edition or Ultimate Edition 2020.3 or later (other editors could be used, but we assume you are using IntelliJ IDEA in this tutorial)
 - Compose Multiplaform Preview Plugin (to preview UI changes without needing to app execute)
 
+### Running The Desktop App
+
+After opening and loading the `sphinx-kotlin-ui` project you should be able to run the desktop app via the `compose desktop` `run` task.
+
 ## PENDING Multiplatform Support
 
 - [Navigation](https://github.com/stakwork/sphinx-kotlin-ui/issues/1) 
