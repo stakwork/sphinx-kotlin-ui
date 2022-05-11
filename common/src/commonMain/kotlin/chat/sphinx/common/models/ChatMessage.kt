@@ -32,6 +32,13 @@ class ChatMessage(
         !isSent
     }
 
+    val isDeleted: Boolean by lazy {
+        message.status.isDeleted()
+    }
+
+    val isFlagged: Boolean by lazy {
+        message.isFlagged && !isDeleted
+    }
     val showSendingIcon: Boolean by lazy {
         isSent && message.id.isProvisionalMessage && message.status.isPending()
     }

@@ -83,13 +83,29 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                     )
                 }
 
-                chatMessage.message.retrieveTextToShow()?.let { messageText ->
+                if (chatMessage.isDeleted) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = messageText,
-                        fontWeight = FontWeight.W400,
+                        text = "This message has been deleted",
+                        fontWeight = FontWeight.W300,
                         textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
                     )
+                } else if (chatMessage.isFlagged) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "This message has been flagged",
+                        fontWeight = FontWeight.W300,
+                        textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
+                    )
+                } else {
+                    chatMessage.message.retrieveTextToShow()?.let { messageText ->
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = messageText,
+                            fontWeight = FontWeight.W400,
+                            textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
+                        )
+                    }
                 }
 
                 if (chatMessage.showFailedContainer) {
