@@ -11,8 +11,11 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
+import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.message.Message
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -34,6 +37,7 @@ abstract class ChatViewModel(
 
     init {
         scope.launch(dispatchers.mainImmediate) {
+            val owner = getOwner()
             getChatOrNull()?.let { chat ->
                 MessageListState.screenState(
                     MessageListData.PopulatedMessageListData(
@@ -42,7 +46,8 @@ abstract class ChatViewModel(
                                 pagingData.map { message: Message ->
                                     ChatMessage(
                                         chat,
-                                        message
+                                        message,
+                                        accountOwner = { owner }
                                     )
                                 }
                             }
@@ -56,6 +61,28 @@ abstract class ChatViewModel(
     fun getRandomHexCode(): String {
         // TODO: Randomly generate a colour.
         return "#212121"
+    }
+
+    private suspend fun getOwner(): Contact {
+        return contactRepository.accountOwner.value.let { contact ->
+            if (contact != null) {
+                contact
+            } else {
+                var resolvedOwner: Contact? = null
+                try {
+                    contactRepository.accountOwner.collect { ownerContact ->
+                        if (ownerContact != null) {
+                            resolvedOwner = ownerContact
+                            throw Exception()
+                        }
+                    }
+                } catch (e: Exception) {
+                }
+                delay(25L)
+
+                resolvedOwner!!
+            }
+        }
     }
 
     protected abstract val chatSharedFlow: SharedFlow<Chat?>

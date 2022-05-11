@@ -1,6 +1,8 @@
 package chat.sphinx.common.models
 
 import chat.sphinx.wrapper.chat.Chat
+import chat.sphinx.wrapper.chat.ChatType
+import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.isAudio
@@ -10,7 +12,8 @@ import chat.sphinx.wrapper.message.media.isVideo
 
 class ChatMessage(
     val chat: Chat,
-    val message: Message
+    val message: Message,
+    accountOwner: () -> Contact
 ) {
 
     val messageUISpacerWidth: Int by lazy {
@@ -23,6 +26,11 @@ class ChatMessage(
         } ?: 40
     }
 
+    val isAdminView = if (chat.ownerPubKey == null || accountOwner().nodePubKey == null) {
+        false
+    } else {
+        chat.ownerPubKey == accountOwner().nodePubKey
+    }
 
     val isSent: Boolean by lazy {
         message.sender == chat.contactIds.firstOrNull()
@@ -85,6 +93,34 @@ class ChatMessage(
                 }
             }
         } else {
+            null
+        }
+    }
+
+    val groupActionSubjectName: String = message.senderAlias?.value ?: ""
+    val groupActionLabelText: String? = when (message.type) {
+        MessageType.GroupAction.Join -> {
+            if (chat.type == ChatType.Tribe) {
+                "$groupActionSubjectName has joined the tribe"
+            } else {
+                "$groupActionSubjectName has joined the group"
+            }
+        }
+        MessageType.GroupAction.Leave -> {
+            if (chat.type == ChatType.Tribe) {
+                "$groupActionSubjectName has left the tribe"
+            } else {
+                "$groupActionSubjectName has left the group"
+            }
+        }
+        MessageType.GroupAction.MemberApprove -> {
+            if (chat.type == ChatType.Tribe) {
+                "Welcome! You are now a member"
+            } else {
+                null
+            }
+        }
+        else -> {
             null
         }
     }
