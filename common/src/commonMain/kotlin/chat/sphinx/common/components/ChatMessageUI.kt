@@ -6,10 +6,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,7 +18,9 @@ import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
 import chat.sphinx.wrapper.message.isFailed
+import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
+import chat.sphinx.wrapper.message.retrieveUrlAndMessageMedia
 
 @Composable
 fun ChatMessageUI(chatMessage: ChatMessage) {
@@ -81,6 +80,27 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                         fontWeight = FontWeight.W200,
                         textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
                     )
+                }
+
+                chatMessage.message.messageMedia?.let { media ->
+                    // TODO: Show attachment
+                    if (media.mediaType.isImage) {
+//                        val mediaData = chatMessage.message.retrieveUrlAndMessageMedia()
+                        Icon(
+                            Icons.Default.Image,
+                            contentDescription = "Image",
+                            tint = Color.Green,
+                            modifier = Modifier.size(88.dp).padding(4.dp)
+                        )
+                    } else {
+                        // show
+                        Icon(
+                            Icons.Default.AttachFile,
+                            contentDescription = "Attachment",
+                            tint = Color.Green,
+                            modifier = Modifier.size(88.dp).padding(4.dp)
+                        )
+                    }
                 }
 
                 if (chatMessage.isDeleted) {
