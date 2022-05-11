@@ -1,10 +1,8 @@
 package chat.sphinx.common.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.LinearProgressIndicator
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
@@ -92,6 +90,66 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                         )
                     }
 
+                    chatMessage.message.replyMessage?.let { replyMessage ->
+                        Row(
+                            modifier = Modifier.height(44.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(4.dp)
+                                    .fillMaxHeight()
+                                    .background(Color.Green)
+                                    .padding(16.dp),
+                            )
+                            // TODO: Image if available...
+                            replyMessage.messageMedia?.let { media ->
+                                if (media.mediaType.isImage) {
+                                    Icon(
+                                        Icons.Default.Image,
+                                        contentDescription = "Image",
+                                        tint = Color.Green,
+                                        modifier = Modifier.size(88.dp).padding(4.dp)
+                                    )
+                                } else {
+                                    // show
+                                    Icon(
+                                        Icons.Default.AttachFile,
+                                        contentDescription = "Attachment",
+                                        tint = Color.Green,
+                                        modifier = Modifier.size(88.dp).padding(4.dp)
+                                    )
+                                }
+                            }
+                            Column(
+                                modifier = Modifier.padding(
+                                    start = 8.dp
+                                ),
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                replyMessage.senderAlias?.let { senderAlias ->
+                                    Text(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = senderAlias.value,
+                                        fontWeight = FontWeight.W300,
+                                        textAlign = TextAlign.Start,
+                                        maxLines = 1
+                                    )
+                                }
+                                replyMessage.retrieveTextToShow()?.let { replyMessageText ->
+                                    if (replyMessageText.isNotEmpty()) {
+                                        Text(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            text = replyMessageText,
+                                            fontWeight = FontWeight.W300,
+                                            textAlign = TextAlign.Start,
+                                            maxLines = 1
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        // TODO: Might want a divider here....
+                    }
                     chatMessage.message.messageMedia?.let { media ->
                         // TODO: Show attachment
                         if (media.mediaType.isImage) {
