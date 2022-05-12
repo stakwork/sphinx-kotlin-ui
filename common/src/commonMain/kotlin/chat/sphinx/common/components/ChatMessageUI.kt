@@ -1,17 +1,22 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.wrapper.chat.ChatType
 import chat.sphinx.wrapper.chat.isTribe
@@ -21,6 +26,8 @@ import chat.sphinx.wrapper.message.media.isImage
 
 @Composable
 fun ChatMessageUI(chatMessage: ChatMessage) {
+
+    val isMessageMenuVisible = mutableStateOf(false)
 
     Column(
         modifier = Modifier.padding(8.dp)
@@ -50,6 +57,13 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                         horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (chatMessage.isSent) {
+                            KebabMenu(
+                                contentDescription = "Menu for message",
+                                onClick = { isMessageMenuVisible.value = true }
+                            )
+                        }
+
                         if (chatMessage.chat.isTribe()) {
                             Text(
                                 text = chatMessage.message.senderAlias?.value ?: "",
@@ -87,6 +101,21 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                             text = chatMessage.message.date.chatTimeFormat(),
                             fontWeight = FontWeight.W200,
                             textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
+                        )
+
+                        if (chatMessage.isReceived) {
+                            KebabMenu(
+                                contentDescription = "Menu for message",
+                                onClick = { isMessageMenuVisible.value = true }
+                            )
+                        }
+
+                        MessageMenu(
+                            chatMessage = chatMessage,
+                            replyToTextAction = {
+                                // TODO: Set chatMessage in the reply text...
+                            },
+                            isVisible = isMessageMenuVisible
                         )
                     }
 
