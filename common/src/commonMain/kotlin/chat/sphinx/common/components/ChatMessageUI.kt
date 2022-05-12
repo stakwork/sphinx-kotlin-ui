@@ -214,13 +214,19 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                         )
                     } else {
                         chatMessage.message.retrieveTextToShow()?.let { messageText ->
-                            SelectionContainer {
-                                Text(
-                                    messageText.toAnnotatedString(),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    fontWeight = FontWeight.W400
-                                )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                SelectionContainer {
+                                    Text(
+                                        messageText.toAnnotatedString(),
+                                        fontWeight = FontWeight.W400
+                                    )
+                                }
                             }
+
                         }
                     }
 
