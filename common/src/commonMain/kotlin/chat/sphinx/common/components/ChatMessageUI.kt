@@ -36,12 +36,12 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                 )
             }
         } else {
-            Row {
-                if (chatMessage.isSent) {
-                    Spacer(
-                        modifier = Modifier.width(chatMessage.messageUISpacerWidth.dp)
-                    )
-                }
+            Row(
+                modifier = Modifier.padding(
+                    start = if (chatMessage.isSent) chatMessage.messageUISpacerWidth.dp else 0.dp,
+                    end = if (chatMessage.isSent) 0.dp else chatMessage.messageUISpacerWidth.dp
+                )
+            ) {
 
                 Column {
 
@@ -190,8 +190,7 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                             Text(
                                 modifier = Modifier.fillMaxWidth(),
                                 text = messageText,
-                                fontWeight = FontWeight.W400,
-                                textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
+                                fontWeight = FontWeight.W400
                             )
                         }
                     }
@@ -220,11 +219,6 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                     // TODO: Attachment not supported... but give download functionality...
                 }
 
-                if (chatMessage.isReceived) {
-                    Spacer(
-                        modifier = Modifier.width(chatMessage.messageUISpacerWidth.dp)
-                    )
-                }
             }
         }
     }

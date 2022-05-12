@@ -19,9 +19,9 @@ class ChatMessage(
     val messageUISpacerWidth: Int by lazy {
         message.retrieveTextToShow()?.let { messageText ->
             when {
-                messageText.length > 100 -> 20
-                messageText.length > 50 -> 30
-                else -> 40
+                messageText.length > 100 -> 40
+                messageText.length > 50 -> 50
+                else -> 60
             }
         } ?: 40
     }
