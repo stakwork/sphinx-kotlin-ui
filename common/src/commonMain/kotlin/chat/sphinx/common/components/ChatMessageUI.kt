@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
 import chat.sphinx.wrapper.message.*
@@ -215,8 +216,8 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
                         chatMessage.message.retrieveTextToShow()?.let { messageText ->
                             SelectionContainer {
                                 Text(
+                                    messageText.toAnnotatedString(),
                                     modifier = Modifier.fillMaxWidth(),
-                                    text = messageText,
                                     fontWeight = FontWeight.W400
                                 )
                             }
