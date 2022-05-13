@@ -7,6 +7,5 @@ import chat.sphinx.common.models.ChatMessage
 @Composable
 expect fun MessageMenu(
     chatMessage: ChatMessage,
-    replyToTextAction: (chatMessage: ChatMessage) -> Unit,
     isVisible: MutableState<Boolean>
 )

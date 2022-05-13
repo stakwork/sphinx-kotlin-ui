@@ -1,7 +1,9 @@
 package chat.sphinx.common.models
 
+import androidx.compose.runtime.MutableState
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatType
+import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
@@ -15,7 +17,30 @@ class ChatMessage(
     val message: Message,
     accountOwner: () -> Contact,
     val boostMessage: () -> Unit,
+    val flagMessage: () -> Unit,
+    val deleteMessage: () -> Unit,
+    private val replyToMessage: MutableState<ChatMessage?>
 ) {
+    fun setAsReplyToMessage() {
+        replyToMessage.value = this
+    }
+    val replyToMessageSenderAliasPreview: String by lazy {
+        val senderAlias = when {
+            message.sender == chat.contactIds.firstOrNull() -> {
+                accountOwner().alias?.value ?: ""
+            }
+            else -> {
+                message.senderAlias?.value ?: ""
+            }
+        }
+
+        senderAlias
+    }
+
+    val replyToMessageTextPreview: String by lazy {
+        val messageMediaText = if (message.messageMedia != null) "attachment" else ""
+        message.retrieveTextToShow() ?: messageMediaText
+    }
 
     val messageUISpacerWidth: Int by lazy {
         message.retrieveTextToShow()?.let { messageText ->

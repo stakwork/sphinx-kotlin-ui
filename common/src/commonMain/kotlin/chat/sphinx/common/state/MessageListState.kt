@@ -10,7 +10,8 @@ abstract class MessageListData {
     class EmptyMessageListData: MessageListData()
 
     class PopulatedMessageListData(
-        val pagingData: Flow<PagingData<ChatMessage>>
+        val pagingData: Flow<PagingData<ChatMessage>>,
+        val replyToMessage: MutableState<ChatMessage?>
     ): MessageListData()
 }
 

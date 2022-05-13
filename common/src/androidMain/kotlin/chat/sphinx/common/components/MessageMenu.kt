@@ -8,7 +8,6 @@ import chat.sphinx.common.models.ChatMessage
 @Composable
 actual fun MessageMenu(
     chatMessage: ChatMessage,
-    replyToTextAction: (chatMessage: ChatMessage) -> Unit,
     isVisible: MutableState<Boolean>
 ) {
     Text(

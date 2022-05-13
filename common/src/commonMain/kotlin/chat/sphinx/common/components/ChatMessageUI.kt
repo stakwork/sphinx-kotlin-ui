@@ -110,9 +110,6 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
 
                         MessageMenu(
                             chatMessage = chatMessage,
-                            replyToTextAction = {
-                                // TODO: Set chatMessage in the reply text...
-                            },
                             isVisible = isMessageMenuVisible
                         )
                     }

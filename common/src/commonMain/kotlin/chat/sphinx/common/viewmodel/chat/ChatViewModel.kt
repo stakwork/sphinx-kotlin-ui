@@ -1,11 +1,16 @@
 package chat.sphinx.common.viewmodel.chat
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.paging.PagingData
 import androidx.paging.map
+import chat.sphinx.common.components.landing.SphinxDialog
 import chat.sphinx.common.models.ChatMessage
-import chat.sphinx.common.state.EditMessageState
-import chat.sphinx.common.state.MessageListData
-import chat.sphinx.common.state.MessageListState
+import chat.sphinx.common.state.*
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.Response
@@ -38,6 +43,8 @@ abstract class ChatViewModel(
     val memeServerTokenHandler = SphinxContainer.repositoryModule.memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
 
+    val replyToMessage: MutableState<ChatMessage?> = mutableStateOf(null)
+
     init {
         scope.launch(dispatchers.mainImmediate) {
             val owner = getOwner()
@@ -54,16 +61,20 @@ abstract class ChatViewModel(
                                         boostMessage = {
                                             boostMessage(chat, message.uuid)
                                         },
-                                        // TODO: Reply To Message Action
-                                        // TODO: Delete Message Action...
-                                        // TODO: Flag message...
+                                        flagMessage = {
+                                            // TODO: Requires confirmation
+                                            flagMessage(chat, message)
+                                        },
+                                        deleteMessage = {
+                                            // TODO: Requires confirmation...
+                                            deleteMessage(message)
+                                        },
+                                        replyToMessage
                                     )
                                 }
-                            }
-
+                            },
+                        replyToMessage
                     ),
-
-
                 )
             }
         }
@@ -83,6 +94,23 @@ abstract class ChatViewModel(
             when (response) {
                 is Response.Error -> {
                     // TODO: submitSideEffect(ChatSideEffect.Notify(app.getString(R.string.notify_boost_failure)))
+                }
+                is Response.Success -> {}
+            }
+        }
+    }
+
+    fun flagMessage(chat: Chat, message: Message) {
+        scope.launch(dispatchers.mainImmediate) {
+            messageRepository.flagMessage(message, chat)
+        }
+    }
+
+    fun deleteMessage(message: Message) {
+        scope.launch(dispatchers.mainImmediate) {
+            when (messageRepository.deleteMessage(message)) {
+                is Response.Error -> {
+                    // TODO: submitSideEffect(ChatSideEffect.Notify("Failed to delete Message"))
                 }
                 is Response.Success -> {}
             }
