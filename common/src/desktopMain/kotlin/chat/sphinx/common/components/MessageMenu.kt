@@ -44,7 +44,7 @@ actual fun MessageMenu(
         }
         if (chatMessage.isReceived) {
             DropdownMenuItem(onClick = {
-                // TODO: Boost chatMessage
+                chatMessage.boostMessage()
                 dismissKebab()
             }) {
                 Text("boost")

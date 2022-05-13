@@ -13,7 +13,8 @@ import chat.sphinx.wrapper.message.media.isVideo
 class ChatMessage(
     val chat: Chat,
     val message: Message,
-    accountOwner: () -> Contact
+    accountOwner: () -> Contact,
+    val boostMessage: () -> Unit,
 ) {
 
     val messageUISpacerWidth: Int by lazy {

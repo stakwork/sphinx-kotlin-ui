@@ -8,12 +8,15 @@ import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.response.Response
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.message.Message
+import chat.sphinx.wrapper.message.MessageUUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.SharedFlow
@@ -47,13 +50,41 @@ abstract class ChatViewModel(
                                     ChatMessage(
                                         chat,
                                         message,
-                                        accountOwner = { owner }
+                                        accountOwner = { owner },
+                                        boostMessage = {
+                                            boostMessage(chat, message.uuid)
+                                        },
+                                        // TODO: Reply To Message Action
+                                        // TODO: Delete Message Action...
+                                        // TODO: Flag message...
                                     )
                                 }
                             }
 
-                    )
+                    ),
+
+
                 )
+            }
+        }
+    }
+
+    private fun boostMessage(chat: Chat, messageUUID: MessageUUID?) {
+        if (messageUUID == null) return
+
+        scope.launch(dispatchers.mainImmediate) {
+            val response = messageRepository.boostMessage(
+                chat.id,
+                chat.pricePerMessage ?: Sat(0),
+                chat.escrowAmount ?: Sat(0),
+                messageUUID,
+            )
+
+            when (response) {
+                is Response.Error -> {
+                    // TODO: submitSideEffect(ChatSideEffect.Notify(app.getString(R.string.notify_boost_failure)))
+                }
+                is Response.Success -> {}
             }
         }
     }
