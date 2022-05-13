@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.paging.PagingData
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import kotlinx.coroutines.flow.Flow
 
 abstract class MessageListData {
@@ -11,7 +12,7 @@ abstract class MessageListData {
 
     class PopulatedMessageListData(
         val pagingData: Flow<PagingData<ChatMessage>>,
-        val replyToMessage: MutableState<ChatMessage?>
+        val chatViewModel: ChatViewModel
     ): MessageListData()
 }
 

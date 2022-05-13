@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
@@ -23,7 +24,10 @@ import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.isImage
 
 @Composable
-fun ChatMessageUI(chatMessage: ChatMessage) {
+fun ChatMessageUI(
+    chatMessage: ChatMessage,
+    editMessageState: EditMessageState
+) {
 
     val isMessageMenuVisible = mutableStateOf(false)
 
@@ -110,6 +114,7 @@ fun ChatMessageUI(chatMessage: ChatMessage) {
 
                         MessageMenu(
                             chatMessage = chatMessage,
+                            editMessageState = editMessageState,
                             isVisible = isMessageMenuVisible
                         )
                     }

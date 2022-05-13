@@ -86,7 +86,7 @@ class ChatContactViewModel(
 
     override fun initialState(): EditMessageState = EditMessageState(
         chatId = chatId,
-        contactId = contactId
+        contactId = contactId,
     )
 
 }

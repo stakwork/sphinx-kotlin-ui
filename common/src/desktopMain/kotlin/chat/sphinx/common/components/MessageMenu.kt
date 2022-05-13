@@ -5,12 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.platform.LocalClipboardManager
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.message.retrieveTextToShow
 
 @Composable
 actual fun MessageMenu(
     chatMessage: ChatMessage,
+    editMessageState: EditMessageState,
     isVisible: MutableState<Boolean>
 ) {
     val dismissKebab = {
@@ -35,7 +37,7 @@ actual fun MessageMenu(
         }
 
         DropdownMenuItem(onClick = {
-            chatMessage.setAsReplyToMessage()
+            chatMessage.setAsReplyToMessage(editMessageState)
             dismissKebab()
         }) {
             Text("reply")

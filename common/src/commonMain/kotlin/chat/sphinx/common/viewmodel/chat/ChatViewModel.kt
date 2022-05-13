@@ -22,6 +22,7 @@ import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.message.Message
 import chat.sphinx.wrapper.message.MessageUUID
+import chat.sphinx.wrapper.message.toReplyUUID
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.SharedFlow
@@ -42,8 +43,6 @@ abstract class ChatViewModel(
     val repositoryMedia = SphinxContainer.repositoryModule.repositoryMedia
     val memeServerTokenHandler = SphinxContainer.repositoryModule.memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
-
-    val replyToMessage: MutableState<ChatMessage?> = mutableStateOf(null)
 
     init {
         scope.launch(dispatchers.mainImmediate) {
@@ -68,12 +67,11 @@ abstract class ChatViewModel(
                                         deleteMessage = {
                                             // TODO: Requires confirmation...
                                             deleteMessage(message)
-                                        },
-                                        replyToMessage
+                                        }
                                     )
                                 }
                             },
-                        replyToMessage
+                        chatViewModel = this@ChatViewModel
                     ),
                 )
             }
@@ -175,6 +173,11 @@ abstract class ChatViewModel(
             .setChatId(editMessageState.chatId)
             .setContactId(editMessageState.contactId)
             .setText(editMessageState.messageText)
+            .also { builder ->
+                editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
+                    builder.setReplyUUID(replyUUID)
+                }
+            }
             .build()
 
         if (sendMessage.second != null) {

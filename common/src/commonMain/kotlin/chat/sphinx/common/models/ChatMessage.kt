@@ -1,6 +1,7 @@
 package chat.sphinx.common.models
 
 import androidx.compose.runtime.MutableState
+import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatType
 import chat.sphinx.wrapper.chat.isConversation
@@ -19,11 +20,12 @@ class ChatMessage(
     val boostMessage: () -> Unit,
     val flagMessage: () -> Unit,
     val deleteMessage: () -> Unit,
-    private val replyToMessage: MutableState<ChatMessage?>
+//    val replyToMessageAction: () -> Unit
 ) {
-    fun setAsReplyToMessage() {
-        replyToMessage.value = this
+    fun setAsReplyToMessage(editMessageState: EditMessageState) {
+        editMessageState.replyToMessage.value = this
     }
+
     val replyToMessageSenderAliasPreview: String by lazy {
         val senderAlias = when {
             message.sender == chat.contactIds.firstOrNull() -> {

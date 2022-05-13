@@ -56,7 +56,10 @@ fun MessageListUI(
                 ) {
                     items(lazyPagingItems) { chatMessage ->
                         if (chatMessage != null) {
-                            ChatMessageUI(chatMessage)
+                            ChatMessageUI(
+                                chatMessage,
+                                messageListData.chatViewModel.editMessageState
+                            )
                         } else {
                             ChatMessageUIPlaceholder()
                         }
@@ -67,7 +70,7 @@ fun MessageListUI(
                     reverseLayout = true,
                     adapter = rememberScrollbarAdapter(scrollState = listState)
                 )
-                messageListData.replyToMessage.value?.let { replyToMessage ->
+                messageListData.chatViewModel.editMessageState.replyToMessage.value?.let { replyToMessage ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -128,7 +131,7 @@ fun MessageListUI(
                                 .padding(start = 1.dp, top = 25.dp, end = 1.dp, bottom = 25.dp)
                                 .clickable(
                                     onClick = {
-                                        messageListData.replyToMessage.value = null
+                                        messageListData.chatViewModel.editMessageState.replyToMessage.value = null
                                     }
                                 ),
                         )
