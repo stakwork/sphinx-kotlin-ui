@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.common.state.listUpdateCounter
@@ -29,11 +30,7 @@ fun ChatListUI() {
     Box {
         when (val chatListData = ChatListState.screenState()) {
             is ChatListData.EmptyChatListData -> {
-                Text(
-                    text = "Start chatting with Sphinx",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                SphinxSplash()
             }
             is ChatListData.PopulatedChatListData -> {
                 Text(

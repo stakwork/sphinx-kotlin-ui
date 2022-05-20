@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.common.models.ChatMessage
@@ -161,7 +162,8 @@ fun ChatMessageUI(
                                         text = senderAlias.value,
                                         fontWeight = FontWeight.W300,
                                         textAlign = TextAlign.Start,
-                                        maxLines = 1
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                                 replyMessage.retrieveTextToShow()?.let { replyMessageText ->
@@ -171,7 +173,8 @@ fun ChatMessageUI(
                                             text = replyMessageText,
                                             fontWeight = FontWeight.W300,
                                             textAlign = TextAlign.Start,
-                                            maxLines = 1
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
                                 }

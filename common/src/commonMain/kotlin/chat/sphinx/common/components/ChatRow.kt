@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.DashboardChat
@@ -72,7 +73,8 @@ fun ChatRow(
                     fontSize = 30.sp,
                     maxLines = 1,
                     modifier = Modifier
-                        .weight(3f)
+                        .weight(3f),
+                    overflow = TextOverflow.Ellipsis
                 )
                 // TODO: Muted icon...
                 Text(
@@ -89,7 +91,8 @@ fun ChatRow(
                     text = dashboardChat.getMessageText(),
                     fontSize = 15.sp,
                     fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 // TODO: Unread count...
 //                dashboardChat.unseenMessageCount?.let { unseenMessageCount ->
