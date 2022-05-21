@@ -2,6 +2,7 @@ package chat.sphinx.common.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -11,6 +12,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -18,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.EditMessageState
+import chat.sphinx.utils.linkify.LinkTag
+import chat.sphinx.utils.linkify.SphinxLinkify
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
@@ -29,7 +34,7 @@ fun ChatMessageUI(
     chatMessage: ChatMessage,
     editMessageState: EditMessageState
 ) {
-
+    val uriHandler = LocalUriHandler.current
     val isMessageMenuVisible = mutableStateOf(false)
 
     Column(
@@ -224,12 +229,40 @@ fun ChatMessageUI(
                                 horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                SelectionContainer {
-                                    Text(
-                                        messageText.toAnnotatedString(),
+                                val annotatedString = messageText.toAnnotatedString()
+                                ClickableText(
+                                    annotatedString,
+                                    style = TextStyle(
                                         fontWeight = FontWeight.W400
-                                    )
-                                }
+                                    ),
+                                    onClick = { offset ->
+                                        annotatedString.getStringAnnotations(
+                                            tag = LinkTag.WebURL.name,
+                                            start = offset,
+                                            end = offset
+                                        ).firstOrNull()?.let { annotation ->
+                                            // If yes, we log its value
+                                            uriHandler.openUri(annotation.item)
+                                            annotation
+                                        } ?: annotatedString.getStringAnnotations(
+                                            tag = LinkTag.BitcoinAddress.name,
+                                            start = offset,
+                                            end = offset
+                                        ).firstOrNull()?.let { annotation ->
+                                            // Handling bitcoin address using bip21 uri scheme
+                                            val bitcoinUriScheme = if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
+                                            val bitcoinURI = "$bitcoinUriScheme${annotation.item}"
+
+                                            uriHandler.openUri(bitcoinURI)
+                                            annotation
+                                        }
+                                    }
+                                )
+
+                                // TODO: Make clickable text compatible with selectable text...
+//                                SelectionContainer {
+//
+//                                }
                             }
 
                         }
