@@ -237,24 +237,20 @@ fun ChatMessageUI(
                                     ),
                                     onClick = { offset ->
                                         annotatedString.getStringAnnotations(
-                                            tag = LinkTag.WebURL.name,
                                             start = offset,
                                             end = offset
                                         ).firstOrNull()?.let { annotation ->
-                                            // If yes, we log its value
-                                            uriHandler.openUri(annotation.item)
-                                            annotation
-                                        } ?: annotatedString.getStringAnnotations(
-                                            tag = LinkTag.BitcoinAddress.name,
-                                            start = offset,
-                                            end = offset
-                                        ).firstOrNull()?.let { annotation ->
-                                            // Handling bitcoin address using bip21 uri scheme
-                                            val bitcoinUriScheme = if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
-                                            val bitcoinURI = "$bitcoinUriScheme${annotation.item}"
+                                            when(annotation.tag) {
+                                                LinkTag.WebURL.name -> {
+                                                    uriHandler.openUri(annotation.item)
+                                                }
+                                                LinkTag.BitcoinAddress.name -> {
+                                                    val bitcoinUriScheme = if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
+                                                    val bitcoinURI = "$bitcoinUriScheme${annotation.item}"
 
-                                            uriHandler.openUri(bitcoinURI)
-                                            annotation
+                                                    uriHandler.openUri(bitcoinURI)
+                                                }
+                                            }
                                         }
                                     }
                                 )
