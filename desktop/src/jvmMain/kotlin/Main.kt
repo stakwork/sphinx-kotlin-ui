@@ -5,6 +5,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.*
+import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.SphinxSplash
@@ -22,7 +23,7 @@ fun main() = application {
     val content = remember {
         ContentState.applyContent(windowState)
     }
-    val icon = imageResource(Res.drawable.sphinx_logo)
+    val icon = imageResource(DesktopResource.drawable.sphinx_icon)
 
     val sphinxStore = remember { SphinxStore() }
     val sphinxState = sphinxStore.state
