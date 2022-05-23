@@ -11,23 +11,43 @@ import androidx.paging.map
 import chat.sphinx.common.components.landing.SphinxDialog
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
+import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
+import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.Response
+import chat.sphinx.utils.createAttachmentFileDownload
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.lightning.Sat
-import chat.sphinx.wrapper.message.Message
-import chat.sphinx.wrapper.message.MessageUUID
-import chat.sphinx.wrapper.message.toReplyUUID
+import chat.sphinx.wrapper.message.*
+import chat.sphinx.wrapper.message.media.MessageMedia
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.io.FileInputStream
+import java.io.InputStream
+
+suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
+    url: String,
+    memeServerTokenHandler: MemeServerTokenHandler,
+    memeInputStreamHandler: MemeInputStreamHandler
+): InputStream? {
+    return localFile?.toFile()?.inputStream() ?: host?.let { mediaHost ->
+        memeServerTokenHandler.retrieveAuthenticationToken(mediaHost)?.let { authenticationToken ->
+            memeInputStreamHandler.retrieveMediaInputStream(
+                url,
+                authenticationToken,
+                mediaKeyDecrypted
+            )
+        }
+    }
+}
 
 abstract class ChatViewModel(
     val chatId: ChatId?
@@ -43,6 +63,10 @@ abstract class ChatViewModel(
     val repositoryMedia = SphinxContainer.repositoryModule.repositoryMedia
     val memeServerTokenHandler = SphinxContainer.repositoryModule.memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
+    val attachmentFileDownloader: chat.sphinx.utils.AttachmentFileDownloader = createAttachmentFileDownload(
+        memeServerTokenHandler,
+        memeInputStreamHandler
+    )
 
     init {
         scope.launch(dispatchers.mainImmediate) {
@@ -192,4 +216,7 @@ abstract class ChatViewModel(
         }
     }
 
+    fun saveFile(message: Message) {
+        attachmentFileDownloader.saveFile(message)
+    }
 }

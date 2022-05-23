@@ -2,16 +2,18 @@ package chat.sphinx.common.models
 
 import androidx.compose.runtime.MutableState
 import chat.sphinx.common.state.EditMessageState
+import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
+import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
+import chat.sphinx.logger.e
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatType
 import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
-import chat.sphinx.wrapper.message.media.isAudio
-import chat.sphinx.wrapper.message.media.isImage
-import chat.sphinx.wrapper.message.media.isSphinxText
-import chat.sphinx.wrapper.message.media.isVideo
+import chat.sphinx.wrapper.message.media.*
+import java.io.FileInputStream
+import java.io.InputStream
 
 class ChatMessage(
     val chat: Chat,
@@ -152,4 +154,6 @@ class ChatMessage(
             null
         }
     }
+
+
 }

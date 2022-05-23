@@ -3,7 +3,6 @@ package chat.sphinx.common.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -21,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.EditMessageState
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
-import chat.sphinx.utils.linkify.SphinxLinkify
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
@@ -32,7 +31,8 @@ import chat.sphinx.wrapper.message.media.isImage
 @Composable
 fun ChatMessageUI(
     chatMessage: ChatMessage,
-    editMessageState: EditMessageState
+    editMessageState: EditMessageState,
+    chatViewModel: ChatViewModel
 ) {
     val uriHandler = LocalUriHandler.current
     val isMessageMenuVisible = mutableStateOf(false)
@@ -121,7 +121,8 @@ fun ChatMessageUI(
                         MessageMenu(
                             chatMessage = chatMessage,
                             editMessageState = editMessageState,
-                            isVisible = isMessageMenuVisible
+                            isVisible = isMessageMenuVisible,
+                            chatViewModel
                         )
                     }
 

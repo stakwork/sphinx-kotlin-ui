@@ -59,7 +59,8 @@ fun MessageListUI(
                         if (chatMessage != null) {
                             ChatMessageUI(
                                 chatMessage,
-                                messageListData.chatViewModel.editMessageState
+                                messageListData.chatViewModel.editMessageState,
+                                messageListData.chatViewModel
                             )
                         } else {
                             ChatMessageUIPlaceholder()
