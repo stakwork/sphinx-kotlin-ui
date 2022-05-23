@@ -8,6 +8,7 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
+import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
 import kotlinx.coroutines.Job
@@ -20,8 +21,9 @@ import kotlinx.coroutines.launch
 class DashboardViewModel {
     val dispatchers = SphinxContainer.appModule.dispatchers
     val viewModelScope = SphinxContainer.appModule.applicationScope
-    val repositoryDashboard = SphinxContainer.repositoryModule.repositoryDashboard
-    val contactRepository = SphinxContainer.repositoryModule.contactRepository
+    val sphinxNotificationManager = createSphinxNotificationManager()
+    val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+    val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
 
     init {

@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
-import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.wrapper.DateTime
 
 @OptIn(ExperimentalStdlibApi::class)

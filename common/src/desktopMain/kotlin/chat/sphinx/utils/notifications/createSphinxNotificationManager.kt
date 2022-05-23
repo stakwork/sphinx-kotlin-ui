@@ -1,0 +1,6 @@
+package chat.sphinx.utils.notifications
+
+import chat.sphinx.concepts.notification.SphinxNotificationManager
+import chat.sphinx.utils.DesktopSphinxNotificationManager
+
+actual fun createSphinxNotificationManager(): SphinxNotificationManager = DesktopSphinxNotificationManager

@@ -1,14 +1,7 @@
 package chat.sphinx.common.viewmodel.chat
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.paging.PagingData
 import androidx.paging.map
-import chat.sphinx.common.components.landing.SphinxDialog
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
@@ -17,6 +10,7 @@ import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.Response
 import chat.sphinx.utils.createAttachmentFileDownload
+import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
@@ -30,7 +24,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.io.FileInputStream
 import java.io.InputStream
 
 suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
@@ -56,12 +49,13 @@ abstract class ChatViewModel(
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 //    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
-    val messageRepository = SphinxContainer.repositoryModule.messageRepository
-    val repositoryDashboard = SphinxContainer.repositoryModule.repositoryDashboard
-    val contactRepository = SphinxContainer.repositoryModule.contactRepository
-    val chatRepository = SphinxContainer.repositoryModule.chatRepository
-    val repositoryMedia = SphinxContainer.repositoryModule.repositoryMedia
-    val memeServerTokenHandler = SphinxContainer.repositoryModule.memeServerTokenHandler
+    val sphinxNotificationManager = createSphinxNotificationManager()
+    val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
+    val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+    val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
+    val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
+    val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
     val attachmentFileDownloader: chat.sphinx.utils.AttachmentFileDownloader = createAttachmentFileDownload(
         memeServerTokenHandler,

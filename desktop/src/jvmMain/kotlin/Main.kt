@@ -6,7 +6,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.*
 import chat.sphinx.common.DesktopResource
-import chat.sphinx.common.Res
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.LandingScreen
@@ -15,6 +14,7 @@ import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.state.ScreenType
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.platform.imageResource
+import chat.sphinx.utils.DesktopSphinxNotificationManager
 import chat.sphinx.utils.getPreferredWindowSize
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -23,11 +23,32 @@ fun main() = application {
     val content = remember {
         ContentState.applyContent(windowState)
     }
-    val icon = imageResource(DesktopResource.drawable.sphinx_icon)
+    val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
 
     val sphinxStore = remember { SphinxStore() }
     val sphinxState = sphinxStore.state
 
+    val rememberSphinxTray = remember {
+        DesktopSphinxNotificationManager.sphinxTrayState
+    }
+    Tray(
+        state = rememberSphinxTray,
+        icon = sphinxIcon,
+        menu = {
+            Item(
+                "Send notification",
+                onClick = {
+                    rememberSphinxTray.sendNotification(
+                        Notification("Sphinx Notification", "Message from Sphinx App!")
+                    )
+                }
+            )
+            Item(
+                "Exit",
+                onClick = ::exitApplication
+            )
+        }
+    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
             Window(
@@ -38,7 +59,7 @@ fun main() = application {
                     size = getPreferredWindowSize(500, 350)
                 ),
                 undecorated = true,
-                icon = icon,
+                icon = sphinxIcon,
             ) {
                 MaterialTheme {
                     SphinxSplash()
@@ -46,6 +67,8 @@ fun main() = application {
             }
         }
         ScreenType.DashboardScreen -> {
+
+
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Sphinx",
@@ -54,11 +77,11 @@ fun main() = application {
                     size = getPreferredWindowSize(950, 600)
                 ),
 
-                icon = icon
+                icon = sphinxIcon
             ) {
                 MenuBar {
                     Menu("Sphinx") {
-                        Item("About", icon = icon, onClick = { })
+                        Item("About", icon = sphinxIcon, onClick = { })
                         Item("Remove Account from this machine", onClick = {
                             sphinxStore.removeAccount()
                         })
@@ -78,11 +101,11 @@ fun main() = application {
                     position = WindowPosition.Aligned(Alignment.Center),
                     size = getPreferredWindowSize(800, 800)
                 ),
-                icon = icon
+                icon = sphinxIcon
             ) {
                 MenuBar {
                     Menu("Sphinx") {
-                        Item("About", icon = icon, onClick = { })
+                        Item("About", icon = sphinxIcon, onClick = { })
                         Item("Exit", onClick = ::exitApplication, shortcut = KeyShortcut(Key.Escape))
                     }
                 }

@@ -5,15 +5,10 @@ import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.SphinxDispatchers
-import chat.sphinx.wrapper.DateTime
-import chat.sphinx.wrapper.PhotoUrl
-import chat.sphinx.wrapper.chat.Chat
-import chat.sphinx.wrapper.chat.ChatName
+import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.contact.*
-import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
-import chat.sphinx.wrapper.getMinutesDifferenceWithDateTime
 import chat.sphinx.wrapper.invite.Invite
 import chat.sphinx.wrapper.message.*
 import kotlinx.coroutines.delay
@@ -47,7 +42,8 @@ class ChatListViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 //    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
-    val repositoryDashboard = SphinxContainer.repositoryModule.repositoryDashboard
+    val sphinxNotificationManager = createSphinxNotificationManager()
+    val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
 
     private val _contactsStateFlow: MutableStateFlow<List<Contact>> by lazy {
         MutableStateFlow(emptyList())

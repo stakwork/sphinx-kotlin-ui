@@ -3,19 +3,15 @@ package chat.sphinx.common.state
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.ImageBitmap
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.dashboard.ChatId
 import io.matthewnelson.kmp.tor.manager.common.event.TorManagerEvent
 import java.awt.image.BufferedImage
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import org.jetbrains.skia.Image
 
 object ContentState {
     lateinit var windowState: WindowState
