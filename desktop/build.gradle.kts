@@ -41,7 +41,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "desktop/src/jvmMain/kotlin/Main.kt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
@@ -52,7 +52,7 @@ compose.desktop {
                 iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
             }
             windows {
-                iconFile.set(iconsRoot.resolve("sphinx-logo.ico"))
+                iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
             }
             linux {
                 iconFile.set(iconsRoot.resolve("sphinx-logo.png"))

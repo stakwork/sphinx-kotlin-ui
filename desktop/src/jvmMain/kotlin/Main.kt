@@ -58,7 +58,7 @@ fun main() = application {
                 title = "Sphinx",
                 state = WindowState(
                     position = WindowPosition.Aligned(Alignment.Center),
-                    size = getPreferredWindowSize(500, 350)
+                    size = getPreferredWindowSize(800, 500)
                 ),
                 undecorated = true,
                 icon = sphinxIcon,
@@ -76,7 +76,7 @@ fun main() = application {
                 title = "Sphinx",
                 state = WindowState(
                     position = WindowPosition.Aligned(Alignment.Center),
-                    size = getPreferredWindowSize(950, 600)
+                    size = getPreferredWindowSize(800, 500)
                 ),
 
                 icon = sphinxIcon
@@ -101,7 +101,7 @@ fun main() = application {
                 title = "Sphinx",
                 state = WindowState(
                     position = WindowPosition.Aligned(Alignment.Center),
-                    size = getPreferredWindowSize(800, 800)
+                    size = getPreferredWindowSize(1000, 800)
                 ),
                 icon = sphinxIcon
             ) {
