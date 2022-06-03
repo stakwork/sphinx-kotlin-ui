@@ -35,7 +35,8 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.material)
                 implementation(compose.materialIconsExtended)
-
+                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+                implementation(compose.material3)
                 api(project(":sphinx-kotlin-core"))
             }
         }
@@ -87,5 +88,7 @@ android {
 dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
     implementation("androidx.compose.ui:ui-text:1.1.1")
+    implementation("com.google.android.material:material:1.6.1")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.1.1")
 //    implementation("androidx.navigation:navigation-runtime-ktx:2.3.5")
 }

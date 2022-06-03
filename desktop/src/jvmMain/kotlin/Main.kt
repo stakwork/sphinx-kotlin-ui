@@ -16,6 +16,8 @@ import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.DesktopSphinxNotificationManager
 import chat.sphinx.utils.getPreferredWindowSize
+import com.example.compose.AppTheme
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -61,7 +63,7 @@ fun main() = application {
                 undecorated = true,
                 icon = sphinxIcon,
             ) {
-                MaterialTheme {
+                AppTheme {
                     SphinxSplash()
                 }
             }
@@ -88,7 +90,7 @@ fun main() = application {
                         Item("Exit", onClick = ::exitApplication)
                     }
                 }
-                MaterialTheme {
+                AppTheme {
                     Dashboard(sphinxState)
                 }
             }
@@ -109,7 +111,7 @@ fun main() = application {
                         Item("Exit", onClick = ::exitApplication, shortcut = KeyShortcut(Key.Escape))
                     }
                 }
-                MaterialTheme {
+                AppTheme(useDarkTheme = true) {
                     LandingScreen()
                 }
             }
