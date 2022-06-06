@@ -1,14 +1,17 @@
 package chat.sphinx.common.components.landing
 
 import CommonButton
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -18,6 +21,9 @@ import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,16 +33,20 @@ import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.NewUserStore
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
+import kotlinx.coroutines.delay
 import org.intellij.lang.annotations.JdkConstants
 
 @OptIn(ExperimentalComposeUiApi::class)
+
 @Composable
 fun NewUserScreen(
     newUserStore: NewUserStore,
 ) {
+
     Row(
         modifier = Modifier.fillMaxSize()
     ) {
+
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -44,20 +54,48 @@ fun NewUserScreen(
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.secondary)
         ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Box(){
                 Image(
                     painter = imageResource(Res.drawable.new_user_image),
                     contentDescription = "Sphinx new user graphic",
                     modifier = Modifier.fillMaxWidth()
                 )
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxHeight().fillMaxWidth(), verticalArrangement = Arrangement.Center) {
+                    Spacer(modifier = Modifier.height(200.dp))
+                    Row {
+                        Text(
+                            text = "Paste",
+                            textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary,
+                        )
+                        Text(
+                            text = "your ",
+                            textAlign = TextAlign.Center, fontSize = 18.sp, color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.9f),fontWeight = FontWeight.Thin,
+                        )
+                        Text(
+                            text = "invitation",
+                            textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Row {
+                        Text(
+                            text = "code ",
+                            textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary
+                        )
+                        Text(
+                            text = "into sphinx",
+                            textAlign = TextAlign.Center, fontSize = 18.sp, color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.9f),fontWeight = FontWeight.Thin,
+                        )
+                    }
+                }
+            }
+            Column(
+//                verticalArrangement = Arrangement.Center,
+//                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-                Text(
-                    text = "Paste your invitation code into sphinx",
-                    textAlign = TextAlign.Center
-                )
+
+
             }
 
         }
@@ -80,9 +118,9 @@ fun NewUserScreen(
                         IconButton(onClick = {
                             LandingScreenState.screenState(LandingScreenType.LandingPage)
                         }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Go back")
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = MaterialTheme.colorScheme.tertiary)
                         }
-                        Text("Back")
+                        Text("Back", color =MaterialTheme.colorScheme.tertiary )
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -96,17 +134,20 @@ fun NewUserScreen(
 
                     Text(
                         text = "NEW USER",
-                        textAlign = TextAlign.Center, color = Color.White, fontSize = 36.sp
+                        textAlign = TextAlign.Center, color = Color.White, fontSize = 32.sp
                     )
-
+                        Spacer(modifier = Modifier.height(20.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(0.6f)
                     ) {
                         OutlinedTextField(
+                            shape= RoundedCornerShape(56.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                focusedBorderColor = MaterialTheme.colorScheme.onBackground,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.onBackground),
+
+                                focusedBorderColor = MaterialTheme.colorScheme.background,
+                                backgroundColor=MaterialTheme.colorScheme.tertiary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)),
                             value = newUserStore.state.invitationCodeText,
 
                             modifier = Modifier
@@ -130,7 +171,7 @@ fun NewUserScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                   CommonButton(text = "Submit",newUserStore::onSubmitInvitationCode)
+                    CommonButton(text = "Submit",newUserStore::onSubmitInvitationCode)
                 }
             }
 

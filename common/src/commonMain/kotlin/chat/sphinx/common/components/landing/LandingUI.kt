@@ -180,23 +180,23 @@ fun RightPortion() {
                 LandingScreenState.screenState(LandingScreenType.ExistingUser)
             }
             Spacer(modifier = Modifier.weight(1f))
-            TextButton(
-                onClick = {
-                    LandingScreenState.screenState(LandingScreenType.RestoreFromKeystore)
-                }
-            ) {
-                Row (horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
-                    Text(
-                        text = "Restore from Keychain",
-                        color = Color.White,
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Image(
-                        painter = imageResource(Res.drawable.IC_KEY),
-                        contentDescription = "Key"
-                    )
-                }
-            }
+//            TextButton(
+//                onClick = {
+//                    LandingScreenState.screenState(LandingScreenType.RestoreFromKeystore)
+//                }
+//            ) {
+//                Row (horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
+//                    Text(
+//                        text = "Restore from Keychain",
+//                        color = Color.White,
+//                    )
+//                    Spacer(modifier = Modifier.width(5.dp))
+//                    Image(
+//                        painter = imageResource(Res.drawable.IC_KEY),
+//                        contentDescription = "Key"
+//                    )
+//                }
+//            }
             Spacer(modifier = Modifier.height(42.dp))
         }
     }

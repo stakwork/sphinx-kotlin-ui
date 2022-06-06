@@ -9,6 +9,7 @@ import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.LandingScreen
+import chat.sphinx.common.components.landing.ConnectingDialog
 import chat.sphinx.common.state.AppState
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.state.ScreenType
@@ -33,24 +34,24 @@ fun main() = application {
     val rememberSphinxTray = remember {
         DesktopSphinxNotificationManager.sphinxTrayState
     }
-    Tray(
-        state = rememberSphinxTray,
-        icon = sphinxIcon,
-        menu = {
-            Item(
-                "Send notification",
-                onClick = {
-                    rememberSphinxTray.sendNotification(
-                        Notification("Sphinx Notification", "Message from Sphinx App!")
-                    )
-                }
-            )
-            Item(
-                "Exit",
-                onClick = ::exitApplication
-            )
-        }
-    )
+//    Tray(
+//        state = rememberSphinxTray,
+//        icon = sphinxIcon,
+//        menu = {
+//            Item(
+//                "Send notification",
+//                onClick = {
+//                    rememberSphinxTray.sendNotification(
+//                        Notification("Sphinx Notification", "Message from Sphinx App!")
+//                    )
+//                }
+//            )
+//            Item(
+//                "Exit",
+//                onClick = ::exitApplication
+//            )
+//        }
+//    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
             Window(
