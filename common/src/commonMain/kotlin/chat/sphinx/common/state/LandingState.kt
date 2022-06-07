@@ -8,7 +8,8 @@ enum class LandingScreenType {
     NewUser,
     ExistingUser,
     ExistingUserPIN,
-    RestoreFromKeystore
+    RestoreFromKeystore,
+    Loading
 }
 
 object LandingScreenState {

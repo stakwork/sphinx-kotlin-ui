@@ -37,19 +37,15 @@ fun ExistingUserPINScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxHeight()
             ) {
-                TopAppBar(
-                    title = { Spacer(modifier = Modifier.height(8.dp)) },
-
-                    elevation = 0.dp,
-                    backgroundColor = Color.Transparent,
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            LandingScreenState.screenState(LandingScreenType.ExistingUser)
-                        }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Go back")
-                        }
-                    }
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.background)){
+                IconButton(onClick = {
+                    LandingScreenState.screenState(LandingScreenType.ExistingUser)
+                }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
+                }
+                Text("Back",color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
+                Spacer(modifier = Modifier.weight(1f))
+            }
 
                 PINScreen(existingUserStore)
             }

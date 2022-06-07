@@ -24,97 +24,115 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.WelcomeScreen
+import chat.sphinx.common.components.landing.ConnectingDialog
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.PINHandlingViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
+import utils.AnimatedContainer
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PINScreen(
     pinHandlingViewModel: PINHandlingViewModel
 ) {
-    Column {
 
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.background(MaterialTheme.colorScheme.background)){
-                IconButton(onClick = {
-                    LandingScreenState.screenState(LandingScreenType.LandingPage)
-                }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = MaterialTheme.colorScheme.tertiary)
-                }
-                Text("Back",color = MaterialTheme.colorScheme.tertiary)
-                Spacer(modifier = Modifier.weight(1f))
-            }
+       Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)) {
+           pinHandlingViewModel.pinState.let { state->
+               if(state.isLoading==true){
+                   ConnectingDialog()
+               }
+               else if(state.infoMessage=="success"){
+                   WelcomeScreen()
+               }
+               else{
+                   Column(modifier = Modifier.background(color = MaterialTheme.colorScheme.background)) {
 
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxHeight().background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-        ) {
-            // TODO: Have sphinx image...
+//            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.background(MaterialTheme.colorScheme.background)){
+//                IconButton(onClick = {
+//                    LandingScreenState.screenState(LandingScreenType.LandingPage)
+//                }) {
+//                    Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = MaterialTheme.colorScheme.tertiary)
+//                }
+//                Text("Back",color = MaterialTheme.colorScheme.tertiary)
+//                Spacer(modifier = Modifier.weight(1f))
+//            }
 
-            Icon(
-                Icons.Outlined.Lock,
-                "contentDescription",
+                       Column(
+                           verticalArrangement = Arrangement.Center,
+                           horizontalAlignment = Alignment.CenterHorizontally,
+                           modifier = Modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.background)
+                       ) {
+                           // TODO: Have sphinx image...
 
-                modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.tertiary)
-            Spacer(modifier = Modifier.height(16.dp))
-            Image(
-                painter = imageResource(Res.drawable.enter_pin),
-                contentDescription = "Sphinx new user graphic",
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(0.6f)
-            ) {
-                OutlinedTextField(
-                    shape= RoundedCornerShape(56.dp),
-                    textStyle= TextStyle(fontSize = 24.sp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                           AnimatedContainer(fromTopToBottom = 10) {
+                               Icon(
+                                   Icons.Outlined.Lock,
+                                   "contentDescription",
 
-                        focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                        backgroundColor=MaterialTheme.colorScheme.tertiary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)),
+                                   modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.tertiary)
+                           }
+                           Spacer(modifier = Modifier.height(16.dp))
+                           AnimatedContainer (fromTopToBottom = 30, delayTime = 20){
+                               Image(
+                                   painter = imageResource(Res.drawable.enter_pin),
+                                   contentDescription = "Sphinx new user graphic",
+                                   modifier = Modifier.fillMaxWidth()
+                               )
+                           }
+                           Spacer(modifier = Modifier.height(16.dp))
+                           AnimatedContainer(fromBottomToTop = 10) {
+                               Row(
+                                   modifier = Modifier
+                                       .fillMaxWidth(0.6f)
+                               ) {
+                                   OutlinedTextField(
+                                       shape= RoundedCornerShape(56.dp),
+                                       textStyle= TextStyle(fontSize = 24.sp),
+                                       colors = TextFieldDefaults.outlinedTextFieldColors(
+
+                                           focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                                           backgroundColor=MaterialTheme.colorScheme.tertiary,
+                                           unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)),
 
 
-                    value = pinHandlingViewModel.pinState.sphinxPIN,
-                    modifier = Modifier
-                        .weight(weight = 1F)
-                        .onKeyEvent(onKeyUp(Key.Enter, pinHandlingViewModel::onSubmitPIN))
-                        .onKeyEvent(onKeyUp(Key.NumPadEnter, pinHandlingViewModel::onSubmitPIN)),
-                    visualTransformation = PasswordVisualTransformation(),
-                    onValueChange = pinHandlingViewModel::onPINTextChanged,
-                    singleLine = true,
-                    label = { Text(text = "PIN to decrypt keys") }
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            pinHandlingViewModel.pinState.errorMessage?.let { errorMessage ->
-                Text(
-                    text = errorMessage,
-                    color = Color.Red
-                )
-            }
+                                       value = pinHandlingViewModel.pinState.sphinxPIN,
+                                       modifier = Modifier
+                                           .weight(weight = 1F)
+                                           .onKeyEvent(onKeyUp(Key.Enter, pinHandlingViewModel::onSubmitPIN))
+                                           .onKeyEvent(onKeyUp(Key.NumPadEnter, pinHandlingViewModel::onSubmitPIN)),
+                                       visualTransformation = PasswordVisualTransformation(),
+                                       onValueChange = pinHandlingViewModel::onPINTextChanged,
+                                       singleLine = true,
+                                       placeholder = { Text(text = "PIN to decrypt keys") }
+                                   )
+                               }
+                           }
+                           Spacer(modifier = Modifier.height(16.dp))
+                           pinHandlingViewModel.pinState.errorMessage?.let { errorMessage ->
+                               Text(
+                                   text = errorMessage,
+                                   color = Color.Red
+                               )
+                           }
 
-            pinHandlingViewModel.pinState.infoMessage?.let { infoMessage ->
-                Text(
-                    text = infoMessage,
+                           pinHandlingViewModel.pinState.infoMessage?.let { infoMessage ->
+                               Text(
+                                   text = infoMessage,
 //                color = Color.Red
-                )
-            }
+                               )
 
-//        Button(
-//            onClick = pinHandlingViewModel::onSubmitPIN
-//        ) {
-//            Text(
-//                text = "Submit"
-//            )
-//        }
-        }
-    }
+                         }
+
+                       }
+                   }
+               }
+           }
+       }
+
+
 
 
 }

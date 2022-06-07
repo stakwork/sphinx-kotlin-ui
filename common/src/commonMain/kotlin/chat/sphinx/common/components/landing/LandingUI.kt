@@ -22,7 +22,10 @@ import CommonButton
 import androidx.compose.animation.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalDensity
-
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.platform.Font
 import kotlinx.coroutines.delay
 
 @Composable
@@ -30,14 +33,11 @@ fun LandingUI() {
     Row(
         modifier = Modifier.fillMaxSize()
     ) {
-        Box(
-//            contentAlignment = Alignment.Center,
-            modifier = Modifier
+        Box(modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.secondary)
         ) { LeftPortion() }
-
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -64,6 +64,7 @@ fun LeftPortion() {
         AnimatedVisibility(visible = visible,
             enter = slideInVertically {
                 // Slide in from 40 dp from the top.
+
                 with(density) { 10.dp.roundToPx() }
             } + fadeIn(
                 // Fade in with the initial alpha of 0.3f.
@@ -88,7 +89,6 @@ fun LeftPortion() {
                 contentDescription = "Sphinx landing page graphic",
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier.paddingFromBaseline(top = 16.dp)
-//                    modifier = Modifier.height(150.dp).width(150.dp)
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -111,7 +111,6 @@ fun LeftPortion() {
     Box(
 
         modifier = Modifier
-//            .fillMaxWidth()
             .paddingFromBaseline(bottom = 50.dp), contentAlignment = Alignment.TopCenter
     ) {
         Column(horizontalAlignment = Alignment.End) {
@@ -126,7 +125,7 @@ fun LeftPortion() {
                 ),
                 exit = slideOutVertically() + shrinkVertically() + fadeOut()
             ) {
-                Spacer(modifier = Modifier.height(20.dp))
+//                Spacer(modifier = Modifier.height(20.dp))
                 Image(
                     painter = imageResource(Res.drawable.landing_page_image),
                     contentDescription = "Sphinx landing page graphic",
@@ -169,34 +168,17 @@ fun RightPortion() {
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "WELCOME",
-                textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp
+                textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.W700
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(48.dp))
             CommonButton(text = "New User") {
                 LandingScreenState.screenState(LandingScreenType.NewUser)
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             CommonButton(text = "Existing user") {
                 LandingScreenState.screenState(LandingScreenType.ExistingUser)
             }
             Spacer(modifier = Modifier.weight(1f))
-//            TextButton(
-//                onClick = {
-//                    LandingScreenState.screenState(LandingScreenType.RestoreFromKeystore)
-//                }
-//            ) {
-//                Row (horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
-//                    Text(
-//                        text = "Restore from Keychain",
-//                        color = Color.White,
-//                    )
-//                    Spacer(modifier = Modifier.width(5.dp))
-//                    Image(
-//                        painter = imageResource(Res.drawable.IC_KEY),
-//                        contentDescription = "Key"
-//                    )
-//                }
-//            }
             Spacer(modifier = Modifier.height(42.dp))
         }
     }

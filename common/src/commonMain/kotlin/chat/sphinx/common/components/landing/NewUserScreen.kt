@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +37,7 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
 import kotlinx.coroutines.delay
 import org.intellij.lang.annotations.JdkConstants
+import utils.AnimatedContainer
 
 @OptIn(ExperimentalComposeUiApi::class)
 
@@ -42,63 +45,16 @@ import org.intellij.lang.annotations.JdkConstants
 fun NewUserScreen(
     newUserStore: NewUserStore,
 ) {
-
     Row(
         modifier = Modifier.fillMaxSize()
     ) {
-
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .weight(1f)
                 .fillMaxHeight()
+                .weight(1f)
                 .background(MaterialTheme.colorScheme.secondary)
-        ) {
-            Box(){
-                Image(
-                    painter = imageResource(Res.drawable.new_user_image),
-                    contentDescription = "Sphinx new user graphic",
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxHeight().fillMaxWidth(), verticalArrangement = Arrangement.Center) {
-                    Spacer(modifier = Modifier.height(200.dp))
-                    Row {
-                        Text(
-                            text = "Paste",
-                            textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary,
-                        )
-                        Text(
-                            text = "your ",
-                            textAlign = TextAlign.Center, fontSize = 18.sp, color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.9f),fontWeight = FontWeight.Thin,
-                        )
-                        Text(
-                            text = "invitation",
-                            textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Row {
-                        Text(
-                            text = "code ",
-                            textAlign = TextAlign.Center, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary
-                        )
-                        Text(
-                            text = "into sphinx",
-                            textAlign = TextAlign.Center, fontSize = 18.sp, color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.9f),fontWeight = FontWeight.Thin,
-                        )
-                    }
-                }
-            }
-            Column(
-//                verticalArrangement = Arrangement.Center,
-//                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-
-
-            }
-
-        }
+        ) {RightPortionNewUser()}
 
         Box(
             contentAlignment = Alignment.Center,
@@ -107,40 +63,80 @@ fun NewUserScreen(
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // TODO: Back Button here...
-            Column(
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxHeight()
-            ) {
-                IconButton({}){
-                    Row(verticalAlignment = Alignment.CenterVertically, ){
-                        IconButton(onClick = {
-                            LandingScreenState.screenState(LandingScreenType.LandingPage)
-                        }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = MaterialTheme.colorScheme.tertiary)
-                        }
-                        Text("Back", color =MaterialTheme.colorScheme.tertiary )
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
+            LeftPortionNewUser(newUserStore)
+        }
+    }
 
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxHeight()
-                ) {
+    newUserStore.state.isProcessing?.let {
 
+    }
+}
+@Composable
+fun RightPortionNewUser(){
+        Box(){
+            AnimatedContainer (fromTopToBottom = 20){
+                Image(
+                    painter = imageResource(Res.drawable.new_user_image),
+                    contentDescription = "Sphinx new user graphic",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-                    Text(
-                        text = "NEW USER",
-                        textAlign = TextAlign.Center, color = Color.White, fontSize = 32.sp
+            AnimatedContainer(fromBottomToTop = 20){
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxHeight().fillMaxWidth(), verticalArrangement = Arrangement.Center) {
+                    Spacer(modifier = Modifier.height(230.dp))
+                    Image(
+                        painter = imageResource(Res.drawable.paste_your_invitation),
+                        contentDescription = "Sphinx new user graphic",
+                        modifier = Modifier.fillMaxWidth()
                     )
-                        Spacer(modifier = Modifier.height(20.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(0.6f)
-                    ) {
+                }
+            }
+        }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun LeftPortionNewUser(newUserStore: NewUserStore){
+    Column(
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxHeight()
+    ) {
+        IconButton({}){
+            Row(verticalAlignment = Alignment.CenterVertically, ){
+                IconButton(onClick = {
+                    LandingScreenState.screenState(LandingScreenType.LandingPage)
+                }) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = MaterialTheme.colorScheme.tertiary)
+                }
+                Text("Back", color =MaterialTheme.colorScheme.tertiary )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxHeight()
+        ) {
+
+
+            AnimatedContainer(fromTopToBottom = 20) {
+                Text(
+                    text = "NEW USER",
+                    textAlign = TextAlign.Center, color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.W700
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            AnimatedContainer(fromTopToBottom = 20) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                ) {
+                    Box(
+                        modifier = Modifier.height(56.dp).fillMaxWidth(), contentAlignment = Alignment.Center){
+
                         OutlinedTextField(
                             shape= RoundedCornerShape(56.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -151,7 +147,6 @@ fun NewUserScreen(
                             value = newUserStore.state.invitationCodeText,
 
                             modifier = Modifier
-                                .weight(weight = 1F)
                                 .onKeyEvent(
                                     onKeyUp(
                                         Key.Enter,
@@ -160,27 +155,28 @@ fun NewUserScreen(
                                 ),
                             onValueChange = newUserStore::onInvitationCodeTextChanged,
                             singleLine = true,
-                            label = { Text(text = "Paste your invitation code") }
+                            placeholder = { Text(text = "Paste your invitation code") }
                         )
                     }
-
-                    newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
-                        Text(
-                            text = invitationCodeErrorMessage,
-                            color = Color.Red
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CommonButton(text = "Submit",newUserStore::onSubmitInvitationCode)
                 }
             }
 
-
-
+            newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
+                Text(
+                    text = invitationCodeErrorMessage,
+                    color = Color.Red
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            AnimatedContainer(fromBottomToTop = 20) {
+                Box(
+                    modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center){
+                    CommonButton(text = "Submit",true,newUserStore::onSubmitInvitationCode)
+                    Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
+                        Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+                    }
+                }
+            }
         }
-    }
-
-    newUserStore.state.isProcessing?.let {
-
     }
 }

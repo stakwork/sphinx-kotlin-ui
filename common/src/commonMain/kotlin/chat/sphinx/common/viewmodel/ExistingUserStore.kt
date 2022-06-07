@@ -7,6 +7,7 @@ import chat.sphinx.authentication.KeyRestoreResponse
 import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
 import chat.sphinx.di.container.SphinxContainer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -41,12 +42,14 @@ class ExistingUserStore: PINHandlingViewModel() {
         RedemptionCode.decode(
             state.sphinxKeys
         )?.let { redemptionCode ->
+
             if (redemptionCode is RedemptionCode.AccountRestoration) {
                 LandingScreenState.screenState(LandingScreenType.ExistingUserPIN)
             } else {
                 setState {
                     copy(errorMessage = "Keys not Account restoration. Try New User section.")
                 }
+                LandingScreenState.screenState(LandingScreenType.RestoreFromKeystore)
             }
         } ?: run {
             setState {
@@ -77,7 +80,14 @@ class ExistingUserStore: PINHandlingViewModel() {
                                 errorMessage = "Keys decrypted..."
                             )
                         }
-
+//                                    LandingScreenState.screenState(LandingScreenType.Loading)
+                        setPINState {
+                            copy(
+                                errorMessage = null,
+                                isLoading = true
+                            )
+                        }
+                        delay(1000L)
                         keyRestore.restoreKeys(
                             privateKey = decryptedCode.privateKey,
                             publicKey = decryptedCode.publicKey,
@@ -88,6 +98,13 @@ class ExistingUserStore: PINHandlingViewModel() {
 
                             when (flowResponse) {
                                 is KeyRestoreResponse.Success -> {
+                                    setPINState {
+                                        copy(
+                                            errorMessage = "null",
+                                            isLoading = false,
+                                            infoMessage = "success"
+                                        )
+                                    }
                                     OnboardingState.status(OnboardingStatus.Successful)
                                     // TODO: Might want to go the dashboard
                                 }
@@ -102,6 +119,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             errorMessage = "Invalid PIN",
+                                            isLoading = false,
                                             infoMessage = null
                                         )
                                     }
@@ -110,6 +128,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             errorMessage = "Key already loaded",
+                                            isLoading = false,
                                             infoMessage = null
                                         )
                                     }
@@ -118,6 +137,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             errorMessage = "Invalid Keys",
+                                            isLoading = false,
                                             infoMessage = null
                                         )
                                     }
@@ -126,6 +146,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             errorMessage = "Invalid Keys",
+                                            isLoading = false,
                                             infoMessage = null
                                         )
                                     }
@@ -134,6 +155,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             errorMessage = "Invalid Keys",
+                                            isLoading = false,
                                             infoMessage = null
                                         )
                                     }
@@ -142,6 +164,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             infoMessage = "Encrypting web token",
+                                            isLoading = false,
                                             errorMessage = null
                                         )
                                     }
@@ -150,6 +173,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             infoMessage = "Saving keys...",
+
                                             errorMessage = null
                                         )
                                     }
@@ -158,6 +182,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             infoMessage = "Encryping Relay",
+                                            isLoading = false,
                                             errorMessage = null
                                         )
                                     }
@@ -166,6 +191,7 @@ class ExistingUserStore: PINHandlingViewModel() {
                                     setPINState {
                                         copy(
                                             infoMessage = "Failed to secure your keys",
+                                            isLoading = false,
                                             errorMessage = null
                                         )
                                     }

@@ -15,6 +15,7 @@ import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.NewUserStore
 import chat.sphinx.common.viewmodel.RestoreFromKeystoreStore
 import kotlinx.coroutines.FlowPreview
+import utils.AnimatedContainer
 
 
 @Composable
@@ -27,28 +28,36 @@ fun LandingScreen() {
         modifier = Modifier.fillMaxSize(),
         color = Gray
     ) {
+
         when (LandingScreenState.screenState()) {
             LandingScreenType.LandingPage -> {
+//                WelcomeScreen()
 //                val lockedDashboardViewModel = remember { LockedDashboardViewModel() }
                 LandingUI()
 
             }
             LandingScreenType.NewUser -> {
-                NewUserScreen(
+             NewUserScreen(
                     newUserStore
                 )
             }
             LandingScreenType.ExistingUser -> {
 //                                val lockedDashboardViewModel = remember { LockedDashboardViewModel() }
 //                PINScreen(lockedDashboardViewModel)
-                ExistingUserScreen(existingUserStore)
+
+                    ExistingUserScreen(existingUserStore)
+
             }
             LandingScreenType.ExistingUserPIN -> {
-                ExistingUserPINScreen(existingUserStore)
+
+                    ExistingUserPINScreen(existingUserStore)
+
             }
             LandingScreenType.RestoreFromKeystore -> {
-                RestoreFromKeychainScreen(restoreFromKeystoreStore)
+
+                    RestoreFromKeychainScreen(restoreFromKeystoreStore)
             }
+            LandingScreenType.Loading ->  ConnectingDialog()
         }
 
 //        ConnectingDialog()
