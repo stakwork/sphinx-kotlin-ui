@@ -31,6 +31,7 @@ import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.PINHandlingViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
+import chat.sphinx.utils.SphinxFonts
 import utils.AnimatedContainer
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -106,7 +107,12 @@ fun PINScreen(
                                        visualTransformation = PasswordVisualTransformation(),
                                        onValueChange = pinHandlingViewModel::onPINTextChanged,
                                        singleLine = true,
-                                       placeholder = { Text(text = "PIN to decrypt keys") }
+                                       placeholder = {
+                                           Text(
+                                               text = "PIN to decrypt keys",
+                                               fontFamily = SphinxFonts.greatVibesFamily
+                                           )
+                                       }
                                    )
                                }
                            }
