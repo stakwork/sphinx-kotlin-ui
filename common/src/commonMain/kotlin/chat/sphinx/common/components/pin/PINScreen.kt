@@ -110,7 +110,7 @@ fun PINScreen(
                                        placeholder = {
                                            Text(
                                                text = "PIN to decrypt keys",
-                                               fontFamily = SphinxFonts.greatVibesFamily
+                                               fontFamily = SphinxFonts.montserratFamily
                                            )
                                        }
                                    )
