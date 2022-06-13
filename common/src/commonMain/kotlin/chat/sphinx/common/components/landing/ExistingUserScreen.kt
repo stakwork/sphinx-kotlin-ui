@@ -29,6 +29,7 @@ import chat.sphinx.common.viewmodel.ExistingUserStore
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
 import utils.AnimatedContainer
+import views.BackButton
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -82,17 +83,7 @@ fun ExistingUserScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxHeight()
             ) {
-                IconButton({}){
-                    Row(verticalAlignment = Alignment.CenterVertically, ){
-                        IconButton(onClick = {
-                            LandingScreenState.screenState(LandingScreenType.LandingPage)
-                        }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = MaterialTheme.colorScheme.tertiary)
-                        }
-                        Text("Back", color =MaterialTheme.colorScheme.tertiary )
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
+                BackButton()
 
                 Column(
                     verticalArrangement = Arrangement.Center,
@@ -114,7 +105,7 @@ fun ExistingUserScreen(
                                 .fillMaxWidth(0.6f)
                         ) {
                             Box(
-                                modifier = Modifier.height(56.dp).fillMaxWidth(), contentAlignment = Alignment.Center){
+                                modifier = Modifier.height(48.dp).fillMaxWidth(), contentAlignment = Alignment.Center){
 
                                 OutlinedTextField(
                                     shape= RoundedCornerShape(56.dp),
@@ -144,9 +135,10 @@ fun ExistingUserScreen(
                     AnimatedContainer(fromTopToBottom =20) {
                         Box(
                             modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center){
-                            CommonButton(text = "Submit",true,  existingUserStore::onSubmitKeys)
+                            CommonButton(text = "Submit",existingUserStore.state.sphinxKeys.isEmpty().not(),  existingUserStore::onSubmitKeys)
                             Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
-                                Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+                                val textColor=if(existingUserStore.state.sphinxKeys.isEmpty().not())androidx.compose.material3.MaterialTheme.colorScheme.tertiary else Color.Black
+                                Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = textColor)
                             }
                         }
                     }

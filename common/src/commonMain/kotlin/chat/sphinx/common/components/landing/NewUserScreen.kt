@@ -38,6 +38,7 @@ import chat.sphinx.utils.onKeyUp
 import kotlinx.coroutines.delay
 import org.intellij.lang.annotations.JdkConstants
 import utils.AnimatedContainer
+import views.BackButton
 
 @OptIn(ExperimentalComposeUiApi::class)
 
@@ -103,17 +104,7 @@ fun LeftPortionNewUser(newUserStore: NewUserStore){
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxHeight()
     ) {
-        IconButton({}){
-            Row(verticalAlignment = Alignment.CenterVertically, ){
-                IconButton(onClick = {
-                    LandingScreenState.screenState(LandingScreenType.LandingPage)
-                }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = MaterialTheme.colorScheme.tertiary)
-                }
-                Text("Back", color =MaterialTheme.colorScheme.tertiary )
-                Spacer(modifier = Modifier.weight(1f))
-            }
-        }
+        BackButton()
 
         Column(
             verticalArrangement = Arrangement.Center,
@@ -171,9 +162,10 @@ fun LeftPortionNewUser(newUserStore: NewUserStore){
             AnimatedContainer(fromBottomToTop = 20) {
                 Box(
                     modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center){
-                    CommonButton(text = "Submit",true,newUserStore::onSubmitInvitationCode)
+                    CommonButton(text = "Submit",newUserStore.state.invitationCodeText.isNotEmpty(),newUserStore::onSubmitInvitationCode)
                     Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
-                        Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+                        val textColor=if(newUserStore.state.invitationCodeText.isNotEmpty())androidx.compose.material3.MaterialTheme.colorScheme.tertiary else Color.Black
+                        Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = textColor)
                     }
                 }
             }

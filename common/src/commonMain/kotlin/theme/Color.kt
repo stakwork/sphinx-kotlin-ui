@@ -57,6 +57,8 @@ val md_theme_dark_inverseOnSurface = Color(0xFF1b1b1f)
 val md_theme_dark_inverseSurface = Color(0xFFe4e2e6)
 val md_theme_dark_inversePrimary = Color(0xFF2954cf)
 val md_theme_dark_shadow = Color(0xFF000000)
+val md_theme_dark_purple = Color(0xFFA986F9)
+
 
 
 

@@ -25,7 +25,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.platform.Font
+
 import kotlinx.coroutines.delay
 
 @Composable
@@ -111,7 +111,7 @@ fun LeftPortion() {
     Box(
 
         modifier = Modifier
-            .paddingFromBaseline(bottom = 50.dp), contentAlignment = Alignment.TopCenter
+            .paddingFromBaseline(bottom = 50.dp), contentAlignment = Alignment.BottomCenter
     ) {
         Column(horizontalAlignment = Alignment.End) {
             AnimatedVisibility(
