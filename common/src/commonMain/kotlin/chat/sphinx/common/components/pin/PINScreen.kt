@@ -75,7 +75,7 @@ fun PINScreen(
 
                                    modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.tertiary)
                            }
-                           Spacer(modifier = Modifier.height(16.dp))
+                           Spacer(modifier = Modifier.height(32.dp))
                            AnimatedContainer (fromTopToBottom = 30, delayTime = 20){
                                Image(
                                    painter = imageResource(Res.drawable.enter_pin),
@@ -83,7 +83,7 @@ fun PINScreen(
                                    modifier = Modifier.fillMaxWidth()
                                )
                            }
-                           Spacer(modifier = Modifier.height(16.dp))
+                           Spacer(modifier = Modifier.height(32.dp))
                            AnimatedContainer(fromBottomToTop = 10) {
                                Row(
                                    modifier = Modifier
@@ -116,7 +116,7 @@ fun PINScreen(
                                    )
                                }
                            }
-                           Spacer(modifier = Modifier.height(16.dp))
+                           Spacer(modifier = Modifier.height(32.dp))
                            pinHandlingViewModel.pinState.errorMessage?.let { errorMessage ->
                                Text(
                                    text = errorMessage,
