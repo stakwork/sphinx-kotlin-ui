@@ -30,12 +30,16 @@ class ExistingUserStore: PINHandlingViewModel() {
     }
 
     override fun onPINTextChanged(text: String) {
-        setPINState {
-            copy(
-                sphinxPIN = text,
-                errorMessage = null
-            )
+        if(text.length==6){
+            onSubmitPIN()
         }
+            setPINState {
+                copy(
+                    sphinxPIN = text,
+                    errorMessage = null
+                )
+            }
+
     }
 
     fun onSubmitKeys() {

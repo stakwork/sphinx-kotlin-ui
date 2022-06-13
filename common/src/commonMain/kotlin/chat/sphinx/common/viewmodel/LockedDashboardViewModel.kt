@@ -12,6 +12,9 @@ import kotlinx.coroutines.launch
 class LockedDashboardViewModel: PINHandlingViewModel() {
 
     override fun onPINTextChanged(text: String) {
+        if(text.length==6){
+            onSubmitPIN()
+        }
         setPINState {
             copy(
                 sphinxPIN = text,

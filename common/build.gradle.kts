@@ -90,5 +90,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-text:1.1.1")
     implementation("com.google.android.material:material:1.6.1")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.1.1")
+//    implementation ("com.github.skydoves:landscapist-glide:1.3.6")
+    implementation ("io.coil-kt:coil-compose:1.4.0")
 //    implementation("androidx.navigation:navigation-runtime-ktx:2.3.5")
 }

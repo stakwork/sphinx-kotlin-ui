@@ -42,7 +42,7 @@ fun MessageListUI(
     Box(
         modifier = Modifier.padding(
             bottom = 65.dp
-        )
+        ).background( color=androidx.compose.material3.MaterialTheme.colorScheme.tertiary,)
     ) {
         when(val messageListData = MessageListState.screenState()) {
             is MessageListData.EmptyMessageListData -> {
@@ -76,7 +76,7 @@ fun MessageListUI(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.Gray)
+                            .background( color=androidx.compose.material3.MaterialTheme.colorScheme.tertiary,)
                             .align(Alignment.BottomCenter)
                     ) {
                         Row(

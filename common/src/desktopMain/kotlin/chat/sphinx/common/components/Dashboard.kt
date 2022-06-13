@@ -140,8 +140,8 @@ fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat) {
             )
             // TODO: Lighting Indicator...
         },
-        backgroundColor = MaterialTheme.colors.surface,
-        contentColor = MaterialTheme.colors.onSurface,
+        backgroundColor =  androidx.compose.material3.MaterialTheme.colorScheme.background,
+        contentColor =   androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
         elevation = 8.dp,
         navigationIcon = {
             IconButton(onClick = {}) {
@@ -165,7 +165,7 @@ fun SphinxChatDetailBottomAppBar(
     chatViewModel: ChatViewModel
 ) {
     Surface(
-        color = Color.Gray,
+        color =  androidx.compose.material3.MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -177,12 +177,12 @@ fun SphinxChatDetailBottomAppBar(
             ) {
                 // TODO: Attachment
                 IconButton(onClick = {}) {
-                    Icon(Icons.Default.Add, contentDescription = "Attachment")
+                    Icon(Icons.Default.Add, contentDescription = "Attachment", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
                 }
                 // TODO: Giphy Attachment
                 // TODO: Emoji Keyboard...
                 IconButton(onClick = {}) {
-                    Icon(Icons.Default.Face, contentDescription = "Emoji")
+                    Icon(Icons.Default.Face, contentDescription = "Emoji", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
                 }
             }
 
@@ -213,11 +213,11 @@ fun SphinxChatDetailBottomAppBar(
                     PriceChip()
                     // TODO: Send Actions
                     IconButton(onClick = chatViewModel::onSendMessage) {
-                        Icon(Icons.Default.Send, contentDescription = "Send")
+                        Icon(Icons.Default.Send, contentDescription = "Send", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
                     }
                     // TODO: Record Action
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.Mic, contentDescription = "Microphone")
+                        Icon(Icons.Default.Mic, contentDescription = "Microphone", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
                     }
                 }
             }

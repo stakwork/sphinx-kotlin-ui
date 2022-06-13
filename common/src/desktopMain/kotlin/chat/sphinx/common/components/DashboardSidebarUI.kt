@@ -2,11 +2,11 @@ package chat.sphinx.common.components
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.di.container.SphinxContainer
 import kotlinx.coroutines.flow.collect
@@ -35,33 +36,41 @@ fun DashboardSidebarUI(dashboardStore: DashboardViewModel) {
             }
         }
     }
-    Box(Modifier.background(SolidColor(Color.Gray), alpha = 0.40f).fillMaxSize()) {
+    Box(
+        Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.background)
+            .fillMaxSize()
+    ) {
         Column {
             TopAppBar(
-                title = { Text(text = "${balance.value} sats") },
-                backgroundColor = Color.Gray,
+                title = { Text(text = "${balance.value} sats", fontSize = 14.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary) },
+                backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 elevation = 8.dp,
                 navigationIcon = {
                     IconButton(onClick = dashboardStore::networkRefresh) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh Connection")
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = "Refresh Connection",
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.Phone, contentDescription = "Connection Status")
+                        Icon(Icons.Default.FlashOn, contentDescription = "Connection Status", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
                     }
                 }
             )
 
             TopAppBar(
-                backgroundColor = Color.Gray,
+                backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 title = {
-                    TextField(
+                    OutlinedTextField(
                         value = text,
+                        shape = RoundedCornerShape(64.dp),
                         onValueChange = { newValue -> text = newValue },
 //                        modifier = Modifier.padding(8.dp).fillMaxWidth(),
 //                        label = { Text("label") },
-                        placeholder = { Text("search") }
+                        placeholder = { Text("search") }, modifier = Modifier.height(50.dp)
                     )
                 },
                 elevation = 8.dp,

@@ -1,14 +1,19 @@
 package chat.sphinx.common.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -67,10 +72,13 @@ fun ChatRow(
         Column {
 
             Row {
+
+
                 Text(
                     text = dashboardChat.chatName ?: "Unknown Chat",
-                    fontSize = 30.sp,
+                    fontSize = 14.sp,
                     maxLines = 1,
+                    color=androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier
                         .weight(3f),
                     overflow = TextOverflow.Ellipsis
@@ -80,6 +88,7 @@ fun ChatRow(
                     text = dashboardChat.getDisplayTime(today00),
                     fontSize = 12.sp,
                     maxLines = 1,
+                    color=androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier
                         .weight(1f)
                 )
@@ -88,7 +97,8 @@ fun ChatRow(
             Row {
                 Text(
                     text = dashboardChat.getMessageText(),
-                    fontSize = 15.sp,
+                    fontSize = 12.sp,
+                    color=Color.Gray,
                     fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
