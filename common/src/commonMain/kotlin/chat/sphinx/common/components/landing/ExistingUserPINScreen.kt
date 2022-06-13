@@ -16,6 +16,7 @@ import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.ExistingUserStore
+import views.BackButton
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -38,11 +39,7 @@ fun ExistingUserPINScreen(
                 modifier = Modifier.fillMaxHeight()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.background)){
-                IconButton(onClick = {
-                    LandingScreenState.screenState(LandingScreenType.ExistingUser)
-                }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
-                }
+                BackButton()
                 Text("Back",color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
                 Spacer(modifier = Modifier.weight(1f))
             }
