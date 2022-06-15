@@ -3,9 +3,7 @@ package chat.sphinx.common.components.landing
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,8 +20,6 @@ import CommonButton
 import androidx.compose.animation.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 
 import kotlinx.coroutines.delay
@@ -176,7 +172,7 @@ fun RightPortion() {
             }
             Spacer(modifier = Modifier.height(24.dp))
             CommonButton(text = "Existing user") {
-                LandingScreenState.screenState(LandingScreenType.ExistingUser)
+                LandingScreenState.screenState(LandingScreenType.RestoreExistingUser)
             }
             Spacer(modifier = Modifier.weight(1f))
             Spacer(modifier = Modifier.height(42.dp))

@@ -91,7 +91,7 @@ fun main() = application {
                         Item("Exit", onClick = ::exitApplication)
                     }
                 }
-                AppTheme {
+                AppTheme(useDarkTheme = true) {
                     Dashboard(sphinxState)
                 }
             }

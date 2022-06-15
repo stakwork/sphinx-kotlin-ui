@@ -39,17 +39,10 @@ import utils.AnimatedContainer
 fun PINScreen(
     pinHandlingViewModel: PINHandlingViewModel
 ) {
-
-       Box(modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)) {
-           pinHandlingViewModel.pinState.let { state->
-               if(state.isLoading==true){
-                   ConnectingDialog()
-               }
-               else if(state.infoMessage=="success"){
-                   WelcomeScreen()
-               }
-               else{
-                   Column(modifier = Modifier.background(color = MaterialTheme.colorScheme.background)) {
+       Box(
+           modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
+       ) {
+           Column(modifier = Modifier.background(color = MaterialTheme.colorScheme.background)) {
 
 //            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.background(MaterialTheme.colorScheme.background)){
 //                IconButton(onClick = {
@@ -61,81 +54,79 @@ fun PINScreen(
 //                Spacer(modifier = Modifier.weight(1f))
 //            }
 
-                       Column(
-                           verticalArrangement = Arrangement.Center,
-                           horizontalAlignment = Alignment.CenterHorizontally,
-                           modifier = Modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.background)
+               Column(
+                   verticalArrangement = Arrangement.Center,
+                   horizontalAlignment = Alignment.CenterHorizontally,
+                   modifier = Modifier.fillMaxHeight().background(color = MaterialTheme.colorScheme.background)
+               ) {
+                   // TODO: Have sphinx image...
+
+                   AnimatedContainer(fromTopToBottom = 10) {
+                       Icon(
+                           Icons.Outlined.Lock,
+                           "contentDescription",
+
+                           modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.tertiary)
+                   }
+                   Spacer(modifier = Modifier.height(32.dp))
+                   AnimatedContainer (fromTopToBottom = 30, delayTime = 20){
+                       Image(
+                           painter = imageResource(Res.drawable.enter_pin),
+                           contentDescription = "Sphinx new user graphic",
+                           modifier = Modifier.fillMaxWidth()
+                       )
+                   }
+                   Spacer(modifier = Modifier.height(32.dp))
+                   AnimatedContainer(fromBottomToTop = 10) {
+                       Row(
+                           modifier = Modifier
+                               .fillMaxWidth(0.6f)
                        ) {
-                           // TODO: Have sphinx image...
+                           OutlinedTextField(
+                               shape= RoundedCornerShape(56.dp),
+                               textStyle= TextStyle(fontSize = 24.sp),
+                               colors = TextFieldDefaults.outlinedTextFieldColors(
 
-                           AnimatedContainer(fromTopToBottom = 10) {
-                               Icon(
-                                   Icons.Outlined.Lock,
-                                   "contentDescription",
-
-                                   modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.tertiary)
-                           }
-                           Spacer(modifier = Modifier.height(32.dp))
-                           AnimatedContainer (fromTopToBottom = 30, delayTime = 20){
-                               Image(
-                                   painter = imageResource(Res.drawable.enter_pin),
-                                   contentDescription = "Sphinx new user graphic",
-                                   modifier = Modifier.fillMaxWidth()
-                               )
-                           }
-                           Spacer(modifier = Modifier.height(32.dp))
-                           AnimatedContainer(fromBottomToTop = 10) {
-                               Row(
-                                   modifier = Modifier
-                                       .fillMaxWidth(0.6f)
-                               ) {
-                                   OutlinedTextField(
-                                       shape= RoundedCornerShape(56.dp),
-                                       textStyle= TextStyle(fontSize = 24.sp),
-                                       colors = TextFieldDefaults.outlinedTextFieldColors(
-
-                                           focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                                           backgroundColor=MaterialTheme.colorScheme.tertiary,
-                                           unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)),
+                                   focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                                   backgroundColor=MaterialTheme.colorScheme.tertiary,
+                                   unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)),
 
 
-                                       value = pinHandlingViewModel.pinState.sphinxPIN,
-                                       modifier = Modifier
-                                           .weight(weight = 1F)
-                                           .onKeyEvent(onKeyUp(Key.Enter, pinHandlingViewModel::onSubmitPIN))
-                                           .onKeyEvent(onKeyUp(Key.NumPadEnter, pinHandlingViewModel::onSubmitPIN)),
-                                       visualTransformation = PasswordVisualTransformation(),
-                                       onValueChange = pinHandlingViewModel::onPINTextChanged,
-                                       singleLine = true,
-                                       placeholder = {
-                                           Text(
-                                               text = "PIN to decrypt keys",
-                                               fontFamily = SphinxFonts.montserratFamily
-                                           )
-                                       }
+                               value = pinHandlingViewModel.pinState.sphinxPIN,
+                               modifier = Modifier
+                                   .weight(weight = 1F)
+                                   .onKeyEvent(onKeyUp(Key.Enter, pinHandlingViewModel::onSubmitPIN))
+                                   .onKeyEvent(onKeyUp(Key.NumPadEnter, pinHandlingViewModel::onSubmitPIN)),
+                               visualTransformation = PasswordVisualTransformation(),
+                               onValueChange = pinHandlingViewModel::onPINTextChanged,
+                               singleLine = true,
+                               placeholder = {
+                                   Text(
+                                       text = "PIN to decrypt keys",
+                                       fontFamily = SphinxFonts.montserratFamily
                                    )
                                }
-                           }
-                           Spacer(modifier = Modifier.height(32.dp))
-                           pinHandlingViewModel.pinState.errorMessage?.let { errorMessage ->
-                               Text(
-                                   text = errorMessage,
-                                   color = Color.Red
-                               )
-                           }
-
-                           pinHandlingViewModel.pinState.infoMessage?.let { infoMessage ->
-                               Text(
-                                   text = infoMessage,
-//                color = Color.Red
-                               )
-
-                         }
-
+                           )
                        }
                    }
+                   Spacer(modifier = Modifier.height(32.dp))
+                   pinHandlingViewModel.pinState.errorMessage?.let { errorMessage ->
+                       Text(
+                           text = errorMessage,
+                           color = Color.Red
+                       )
+                   }
+
+                   pinHandlingViewModel.pinState.infoMessage?.let { infoMessage ->
+                       Text(
+                           text = infoMessage,
+                       )
+
+                   }
+
                }
            }
+
 
        }
 

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -15,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.font.FontWeight
@@ -23,9 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
-import chat.sphinx.common.state.LandingScreenState
-import chat.sphinx.common.state.LandingScreenType
-import chat.sphinx.common.viewmodel.ExistingUserStore
+import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
 import utils.AnimatedContainer
@@ -33,8 +29,8 @@ import views.BackButton
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ExistingUserScreen(
-    existingUserStore: ExistingUserStore
+fun RestoreExistingUserScreen(
+    restoreExistingUserViewModel: RestoreExistingUserViewModel
 ) {
     Row(
         modifier = Modifier.fillMaxSize()
@@ -56,8 +52,6 @@ fun ExistingUserScreen(
                         contentDescription = "Existing user graphic",
                         modifier = Modifier.fillMaxWidth()
                     )
-
-
                 }
             }
            AnimatedContainer(fromBottomToTop = 20) {
@@ -68,7 +62,6 @@ fun ExistingUserScreen(
                )
            }
         }
-
 
         Box(
             contentAlignment = Alignment.Center,
@@ -114,10 +107,10 @@ fun ExistingUserScreen(
                                         focusedBorderColor = MaterialTheme.colorScheme.background,
                                         backgroundColor=MaterialTheme.colorScheme.tertiary,
                                         unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)),
-                                    value = existingUserStore.state.sphinxKeys,
+                                    value = restoreExistingUserViewModel.state.sphinxKeys,
                                     modifier = Modifier
-                                        .onKeyEvent(onKeyUp(Key.Enter, existingUserStore::onSubmitKeys)),
-                                    onValueChange = existingUserStore::onKeysTextChanged,
+                                        .onKeyEvent(onKeyUp(Key.Enter, restoreExistingUserViewModel::onSubmitKeys)),
+                                    onValueChange = restoreExistingUserViewModel::onKeysTextChanged,
                                     singleLine = true,
                                     placeholder = { Text(text = "Paste your keys...") }
                                 )
@@ -125,7 +118,7 @@ fun ExistingUserScreen(
                         }
                     }
 
-                    existingUserStore.state.errorMessage?.let { errorMessage ->
+                    restoreExistingUserViewModel.state.errorMessage?.let { errorMessage ->
                         Text(
                             text = errorMessage,
                             color = Color.Red
@@ -135,9 +128,9 @@ fun ExistingUserScreen(
                     AnimatedContainer(fromTopToBottom =20) {
                         Box(
                             modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center){
-                            CommonButton(text = "Submit",existingUserStore.state.sphinxKeys.isEmpty().not(),  existingUserStore::onSubmitKeys)
+                            CommonButton(text = "Submit",restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not(),  restoreExistingUserViewModel::onSubmitKeys)
                             Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
-                                val textColor=if(existingUserStore.state.sphinxKeys.isEmpty().not())androidx.compose.material3.MaterialTheme.colorScheme.tertiary else Color.Black
+                                val textColor=if(restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not())androidx.compose.material3.MaterialTheme.colorScheme.tertiary else Color.Black
                                 Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = textColor)
                             }
                         }

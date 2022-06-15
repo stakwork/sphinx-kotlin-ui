@@ -6,7 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 enum class LandingScreenType {
     LandingPage,
     NewUser,
-    ExistingUser,
+    RestoreExistingUser,
+    RestoreExistingUserSuccess,
     ExistingUserPIN,
     RestoreFromKeystore,
     Loading
