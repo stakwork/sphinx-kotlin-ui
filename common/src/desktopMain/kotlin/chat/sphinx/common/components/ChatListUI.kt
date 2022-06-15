@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -19,13 +20,14 @@ import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.common.state.listUpdateCounter
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun ChatListUI() {
     val listState = rememberLazyListState()
-    val chatListViewModel = ChatListViewModel()
+    val chatListViewModel = remember { ChatListViewModel() }
 
     Box {
         when (val chatListData = ChatListState.screenState()) {
