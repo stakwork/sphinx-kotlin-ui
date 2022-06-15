@@ -37,6 +37,12 @@ fun ChatRow(
         modifier = Modifier.clickable {
             ChatDetailState.screenState(
                 when(dashboardChat) {
+                    is DashboardChat.Inactive.Conversation -> {
+                        ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
+                            dashboardChat.contact.id,
+                            dashboardChat
+                        )
+                    }
                     is DashboardChat.Active.Conversation -> {
                         ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
                             dashboardChat.chat.id,
