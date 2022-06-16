@@ -2,6 +2,7 @@ package chat.sphinx.common.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -15,7 +16,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.pin.PINScreen
@@ -135,25 +138,32 @@ fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat) {
 
     TopAppBar(
         title = {
-            Text(
-                text = chatName
-            )
+            Column{
+                Text(
+                    text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Contributed: 1285 sats", fontSize = 14.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                )
+            }
             // TODO: Lighting Indicator...
         },
+
         backgroundColor =  androidx.compose.material3.MaterialTheme.colorScheme.background,
         contentColor =   androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
         elevation = 8.dp,
         navigationIcon = {
             IconButton(onClick = {}) {
-                Icon(imageResource(Res.drawable.sphinx_logo), contentDescription = chatName)
+                Icon(imageResource(Res.drawable.sphinx_logo), contentDescription = chatName, modifier = Modifier.size(40.dp))
             }
         },
         actions = {
             IconButton(onClick = {}) {
-                Icon(Icons.Default.Notifications, contentDescription = "Mute/Unmute")
+                Icon(Icons.Default.Notifications, contentDescription = "Mute/Unmute", tint  = androidx.compose.material3.MaterialTheme.colorScheme.onBackground )
             }
             IconButton(onClick = {}) {
-                Icon(Icons.Default.Phone, contentDescription = "Call")
+                Icon(Icons.Default.Phone, contentDescription = "Call",tint  = androidx.compose.material3.MaterialTheme.colorScheme.onBackground )
             }
         }
     )
@@ -193,14 +203,33 @@ fun SphinxChatDetailBottomAppBar(
                     .weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextField(
+//                TextField(
+//                    modifier = Modifier
+//                        .padding(4.dp)
+//                        .fillMaxWidth(),
+//                    // TODO: Make this conditional on whether user want's to send message on enter...
+//                    value = chatViewModel.editMessageState.messageText,
+//                    onValueChange = chatViewModel::onMessageTextChanged,
+//                    placeholder = { Text("Message") }
+//                )
+                CustomTextField(
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.Search,
+                            null,
+                            tint = Color(0xFF3b4755)
+                        )
+                    },
+                    trailingIcon = null,
                     modifier = Modifier
+                        .background(
+                            Color(0xFF151e27),
+                            RoundedCornerShape(percent = 50)
+                        )
                         .padding(4.dp)
-                        .fillMaxWidth(),
-                    // TODO: Make this conditional on whether user want's to send message on enter...
-                    value = chatViewModel.editMessageState.messageText,
-                    onValueChange = chatViewModel::onMessageTextChanged,
-                    placeholder = { Text("Message") }
+                        .height(20.dp),
+                    fontSize = 10.sp,
+                    placeholderText = "Message"
                 )
             }
 

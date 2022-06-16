@@ -2,26 +2,40 @@ package chat.sphinx.common.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.Res
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
+import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.DateTime
+import chat.sphinx.wrapper.chat.ChatMuted
+
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
@@ -36,13 +50,9 @@ fun ChatRow(
     Row(
         modifier = Modifier.clickable {
             ChatDetailState.screenState(
-                when(dashboardChat) {
-                    is DashboardChat.Inactive.Conversation -> {
-                        ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
-                            dashboardChat.contact.id,
-                            dashboardChat
-                        )
-                    }
+
+                when (dashboardChat) {
+
                     is DashboardChat.Active.Conversation -> {
                         ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
                             dashboardChat.chat.id,
@@ -62,6 +72,11 @@ fun ChatRow(
 
         }.padding(12.dp),
     ) {
+//        AsyncImage(
+//            model = "https://example.com/image.jpg",
+//            contentDescription = null
+//        )
+
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -75,51 +90,124 @@ fun ChatRow(
             )
         }
 
-        Column {
+      Row{
+          Image(
+              painter = imageResource(Res.drawable.sphinx_logo),
+              contentDescription = "avatar",
+              contentScale = ContentScale.Crop,            // crop the image if it's not a square
+              modifier = Modifier
+                  .size(40.dp)
+                  .clip(CircleShape)                       // clip to the circle shape
+                  .border(2.dp, Color.Gray, CircleShape)   // add a border (optional)
+          )
+          Spacer(modifier = Modifier.width(6.dp))
+          Column {
 
-            Row {
+              Row(verticalAlignment = Alignment.CenterVertically) {
 
 
-                Text(
-                    text = dashboardChat.chatName ?: "Unknown Chat",
-                    fontSize = 14.sp,
-                    maxLines = 1,
-                    color=androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier
-                        .weight(3f),
-                    overflow = TextOverflow.Ellipsis
-                )
-                // TODO: Muted icon...
-                Text(
-                    text = dashboardChat.getDisplayTime(today00),
-                    fontSize = 12.sp,
-                    maxLines = 1,
-                    color=androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier
-                        .weight(1f)
-                )
-            }
+                  Text(
+                      text = dashboardChat.chatName ?: "Unknown Chat",
+                      fontSize = 15.sp,
+                      maxLines = 1,
+                      color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                      overflow = TextOverflow.Ellipsis
+                  )
+                  // TODO: Muted icon...
+                  Spacer(modifier = Modifier.width(4.dp))
+                  if(dashboardChat.isEncrypted())
+                  Icon(
+                      Icons.Filled.Lock,
+                      contentDescription = null,
+                      modifier = Modifier.size(14.dp),
+                      tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                  )
+                  Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                      Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                          if(dashboardChat is DashboardChat.Active){
+                              if(dashboardChat.chat.isMuted.value== ChatMuted.MUTED)
+                                  Icon(
+                                      Icons.Filled.NotificationsOff,
+                                      contentDescription = null,
+                                      modifier = Modifier.size(14.dp),
+                                      tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                  )
+                          }
 
-            Row {
-                Text(
-                    text = dashboardChat.getMessageText(),
-                    fontSize = 12.sp,
-                    color=Color.Gray,
-                    fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                // TODO: Unread count...
-//                dashboardChat.unseenMessageCount?.let { unseenMessageCount ->
-//                    Text(
-//                        text = unseenMessageCount.toString()
-//                    )
+                          Spacer(modifier = Modifier.width(2.dp))
+                          Text(
+                              text = dashboardChat.getDisplayTime(today00),
+                              fontSize = 10.sp,
+                              maxLines = 1,
+                              color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+
+                              )
+
+                      }
+
+                  }
+              }
+              Spacer(modifier = Modifier.height(4.dp))
+
+              Row (modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,){
+                  Text(
+                      text = dashboardChat.getMessageText(),
+                      fontSize = 13.sp,
+                      fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis,
+                      modifier = Modifier.weight(1f),
+                      color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                  )
+
+                dashboardChat.unseenMessageFlow?.collectAsState(0)?.let {
+                    if(it.value!=0L)
+                    MessageCount(it.value.toString())
+                }
+
 //                }
 
-            }
-        }
 
+              }
+
+
+          }
+      }
 
     }
+}
 
+@Composable
+fun MessageCount(messageCount:String){
+    Box(contentAlignment= Alignment.Center,
+        modifier = Modifier
+            .background( color=androidx.compose.material3.MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(16.dp))
+//            .layout(){ measurable, constraints ->
+//                // Measure the composable
+//                val placeable = measurable.measure(constraints)
+//
+//                //get the current max dimension to assign width=height
+//                val currentHeight = placeable.height
+//                var heightCircle = currentHeight
+//                if (placeable.width > heightCircle)
+//                    heightCircle = placeable.width
+//
+//                //assign the dimension and the center position
+//                layout(heightCircle, heightCircle) {
+//                    // Where the composable gets placed
+//                    placeable.placeRelative(0, (heightCircle-currentHeight)/2)
+//                }
+//            }
+            ) {
+
+        Text(
+            text = messageCount,
+            textAlign = TextAlign.Center,
+            color = Color.White,
+            modifier = Modifier.padding(4.dp).defaultMinSize(24.dp),
+            fontSize = 11.sp
+            //Use a min size for short text.
+        )
+    }
 }

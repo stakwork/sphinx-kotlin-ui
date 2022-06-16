@@ -16,7 +16,7 @@ import chat.sphinx.common.state.LandingScreenType
 
 @Composable
 fun CommonButton(text:String,enabled:Boolean?=true,callback:()->Unit){
-    val color=if(enabled == true)androidx.compose.material3.MaterialTheme.colorScheme.secondary else Color(0xFF556171)
+    val color=if(enabled == true)androidx.compose.material3.MaterialTheme.colorScheme.secondary else androidx.compose.material3.MaterialTheme.colorScheme.onBackground
     val textColor=if(enabled == true)androidx.compose.material3.MaterialTheme.colorScheme.tertiary else Color.Black
     Button(
         shape = RoundedCornerShape(23.dp),

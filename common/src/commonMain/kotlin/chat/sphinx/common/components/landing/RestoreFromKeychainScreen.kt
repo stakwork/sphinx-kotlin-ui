@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -33,7 +34,7 @@ fun RestoreFromKeychainScreen(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .background(SolidColor(Color.Blue), alpha = 0.50f)
+                .background(MaterialTheme.colorScheme.onBackground)
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
@@ -60,7 +61,7 @@ fun RestoreFromKeychainScreen(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .background(SolidColor(Color.Black), alpha = 0.50f)
+                .background(SolidColor(MaterialTheme.colorScheme.onTertiary), alpha = 0.50f)
         ) {
             Column(
                 verticalArrangement = Arrangement.Top,

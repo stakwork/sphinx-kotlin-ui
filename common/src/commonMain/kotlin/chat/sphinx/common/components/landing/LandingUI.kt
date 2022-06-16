@@ -21,6 +21,7 @@ import androidx.compose.animation.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import chat.sphinx.utils.SphinxFonts
 
 import kotlinx.coroutines.delay
 
@@ -98,7 +99,7 @@ fun LeftPortion() {
             Text(
                 text = "LIGHTNING CHAT",
                 textAlign = TextAlign.Center,
-                color = Color.White
+                color = MaterialTheme.colorScheme.tertiary
             )
         }
 
@@ -164,7 +165,7 @@ fun RightPortion() {
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "WELCOME",
-                textAlign = TextAlign.Center, color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.W700
+                textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.tertiary, fontSize = 30.sp, fontWeight = FontWeight.W700, fontFamily = SphinxFonts.montserratFamily
             )
             Spacer(modifier = Modifier.height(48.dp))
             CommonButton(text = "New User") {

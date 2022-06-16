@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.platform.imageResource
+import chat.sphinx.utils.SphinxFonts
 import kotlin.math.roundToInt
 @Composable
 fun ConnectingDialog() {
@@ -66,9 +67,10 @@ fun ConnectingDialog() {
             Text(
                 text = connectingContent,
                 fontSize = 16.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onTertiary,
                 fontWeight = FontWeight.W700,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
+                fontFamily = SphinxFonts.montserratFamily
                 // textAlign = TextAlign.Center
             )
         }

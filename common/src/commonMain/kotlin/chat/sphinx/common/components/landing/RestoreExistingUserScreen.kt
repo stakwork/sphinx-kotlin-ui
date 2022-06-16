@@ -88,7 +88,7 @@ fun RestoreExistingUserScreen(
                     AnimatedContainer(fromTopToBottom = 20) {
                         Text(
                             text = "CONNECT",
-                            textAlign = TextAlign.Center, color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.W700
+                            textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.tertiary, fontSize = 32.sp, fontWeight = FontWeight.W700
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
@@ -121,7 +121,7 @@ fun RestoreExistingUserScreen(
                     restoreExistingUserViewModel.state.errorMessage?.let { errorMessage ->
                         Text(
                             text = errorMessage,
-                            color = Color.Red
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -130,7 +130,7 @@ fun RestoreExistingUserScreen(
                             modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center){
                             CommonButton(text = "Submit",restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not(),  restoreExistingUserViewModel::onSubmitKeys)
                             Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
-                                val textColor=if(restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not())androidx.compose.material3.MaterialTheme.colorScheme.tertiary else Color.Black
+                                val textColor=if(restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not())MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
                                 Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = textColor)
                             }
                         }

@@ -22,6 +22,7 @@ import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.state.ScreenType
 import chat.sphinx.platform.imageResource
+import chat.sphinx.utils.SphinxFonts
 
 @Composable
 fun WelcomeScreen() {
@@ -47,6 +48,7 @@ fun WelcomeScreen() {
                 color = Color.White,
                 fontWeight = FontWeight.W700,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
+                fontFamily = SphinxFonts.montserratFamily
                 // textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))

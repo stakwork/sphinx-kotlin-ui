@@ -3,6 +3,7 @@ package chat.sphinx.common.components.landing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -26,7 +27,7 @@ fun ExistingUserPINScreen(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .background(SolidColor(Color.Red), alpha = 0.50f)
+                .background(SolidColor(MaterialTheme.colorScheme.error), alpha = 0.50f)
         ) {
             Column(
                 verticalArrangement = Arrangement.Top,
