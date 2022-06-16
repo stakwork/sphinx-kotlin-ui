@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
-import chat.sphinx.common.state.listUpdateCounter
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 
@@ -35,11 +34,6 @@ fun ChatListUI() {
                 SphinxSplash()
             }
             is ChatListData.PopulatedChatListData -> {
-                Text(
-                    text = listUpdateCounter.toString(),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(4.dp)

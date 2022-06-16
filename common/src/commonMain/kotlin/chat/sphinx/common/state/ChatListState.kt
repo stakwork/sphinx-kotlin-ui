@@ -4,16 +4,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import chat.sphinx.common.models.DashboardChat
 
-var listUpdateCounter = 0
 abstract class ChatListData {
     class EmptyChatListData: ChatListData()
 
     class PopulatedChatListData(
         val dashboardChats: List<DashboardChat>
     ): ChatListData() {
-        init {
-            listUpdateCounter++
-        }
 
         override fun hashCode(): Int {
 
