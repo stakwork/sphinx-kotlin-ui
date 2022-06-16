@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,6 +51,10 @@ fun MessageListUI(
             }
             is MessageListData.PopulatedMessageListData -> {
                 val lazyPagingItems = messageListData.pagingData.collectAsLazyPagingItems()
+                LaunchedEffect(lazyPagingItems.itemCount) {
+                    // If item count changes read messages...
+                    messageListData.chatViewModel.readMessages()
+                }
                 LazyColumn(
                     state = listState,
                     reverseLayout = true,

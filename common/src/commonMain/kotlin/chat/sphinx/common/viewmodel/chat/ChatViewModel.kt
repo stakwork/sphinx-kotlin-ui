@@ -133,6 +133,12 @@ abstract class ChatViewModel(
         }
     }
 
+    suspend fun readMessages() {
+        chatId?.let {
+            messageRepository.readMessages(chatId)
+        }
+    }
+
     fun getRandomHexCode(): String {
         // TODO: Randomly generate a colour.
         return "#212121"
