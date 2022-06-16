@@ -1,6 +1,5 @@
 package chat.sphinx.common.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,26 +12,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import chat.sphinx.common.Res
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
-import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.ChatMuted
 
@@ -91,15 +84,14 @@ fun ChatRow(
         }
 
       Row{
-          Image(
-              painter = imageResource(Res.drawable.sphinx_logo),
-              contentDescription = "avatar",
-              contentScale = ContentScale.Crop,            // crop the image if it's not a square
+          PhotoUrlImage(
+              dashboardChat.photoUrl,
               modifier = Modifier
                   .size(40.dp)
                   .clip(CircleShape)                       // clip to the circle shape
                   .border(2.dp, Color.Gray, CircleShape)   // add a border (optional)
           )
+
           Spacer(modifier = Modifier.width(6.dp))
           Column {
 

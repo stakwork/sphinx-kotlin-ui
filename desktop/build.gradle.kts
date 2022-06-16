@@ -43,7 +43,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "desktop/src/jvmMain/kotlin/MainKt"
+        mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"

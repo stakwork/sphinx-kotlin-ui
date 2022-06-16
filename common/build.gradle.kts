@@ -38,6 +38,7 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.material3)
                 api(project(":sphinx-kotlin-core"))
+                implementation("com.alialbaali.kamel:kamel-image:0.3.0")
             }
         }
         val commonTest by getting {
