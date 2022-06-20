@@ -134,7 +134,7 @@ abstract class ChatViewModel(
         }
     }
 
-    suspend fun readMessages() {
+    fun readMessages() {
         chatId?.let {
             messageRepository.readMessages(chatId)
         }
