@@ -89,6 +89,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 }
             )
 
+            var searchText by rememberSaveable { mutableStateOf("") }
             TopAppBar(
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 title = {
@@ -100,6 +101,10 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                                 null,
                                 tint = Color(0xFF3b4755)
                             )
+                        },
+                        value = searchText,
+                        onValueChange = { input ->
+                            searchText = input
                         },
                         trailingIcon = null,
                         modifier = Modifier
@@ -140,23 +145,22 @@ fun CustomTextField(
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     placeholderText: String = "Placeholder",
+    value: String,
+    onValueChange: (String) -> Unit,
     fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
 ) {
-    var text by rememberSaveable { mutableStateOf("") }
     BasicTextField(modifier = modifier
         .background(
             Color(0xFF151e27),
             MaterialTheme.shapes.small,
         )
         .fillMaxWidth(),
-        value = text,
-        onValueChange = {
-            text = it
-        },
+        value = value,
+        onValueChange = onValueChange,
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colors.primary),
         textStyle = LocalTextStyle.current.copy(
-            color = MaterialTheme.colors.onSurface,
+            color = MaterialTheme.colors.secondary,
             fontSize = fontSize
         ),
         decorationBox = { innerTextField ->
@@ -166,13 +170,14 @@ fun CustomTextField(
             ) {
                 if (leadingIcon != null) leadingIcon()
                 Box(Modifier.weight(1f)) {
-                    if (text.isEmpty()) Text(
-                        placeholderText,
-                        style = LocalTextStyle.current.copy(
-                            color = Color(0xFF3b4755),
-                            fontSize = fontSize
+                    if (value.isEmpty())
+                        Text(
+                            placeholderText,
+                            style = LocalTextStyle.current.copy(
+                                color = Color(0xFF3b4755),
+                                fontSize = fontSize
+                            )
                         )
-                    )
                     innerTextField()
                 }
                 if (trailingIcon != null) trailingIcon()

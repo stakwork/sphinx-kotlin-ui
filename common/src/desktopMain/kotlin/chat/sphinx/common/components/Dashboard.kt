@@ -220,6 +220,8 @@ fun SphinxChatDetailBottomAppBar(
                             tint = Color(0xFF3b4755)
                         )
                     },
+                    value = chatViewModel.editMessageState.messageText,
+                    onValueChange = chatViewModel::onMessageTextChanged,
                     trailingIcon = null,
                     modifier = Modifier
                         .background(
