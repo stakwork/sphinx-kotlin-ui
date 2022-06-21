@@ -1,5 +1,6 @@
 package chat.sphinx.common.state
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.paging.PagingData
@@ -11,7 +12,7 @@ abstract class MessageListData {
     class EmptyMessageListData: MessageListData()
 
     class PopulatedMessageListData(
-        val pagingData: Flow<PagingData<ChatMessage>>,
+        val chatMessagesFlow: Flow<List<ChatMessage>>,
         val chatViewModel: ChatViewModel
     ): MessageListData()
 }

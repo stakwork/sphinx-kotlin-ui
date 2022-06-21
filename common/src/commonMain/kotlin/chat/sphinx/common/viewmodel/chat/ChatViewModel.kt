@@ -20,9 +20,7 @@ import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MessageMedia
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.InputStream
 
@@ -64,36 +62,39 @@ abstract class ChatViewModel(
 
     init {
         scope.launch(dispatchers.mainImmediate) {
-            val owner = getOwner()
-            getChatOrNull()?.let { chat ->
-                MessageListState.screenState(
-                    MessageListData.PopulatedMessageListData(
-                        messageRepository.getAllMessagesToShowByChatIdPaginated(chat.id)
-                            .map { pagingData: PagingData<Message> ->
-                                pagingData.map { message: Message ->
-                                    ChatMessage(
-                                        chat,
-                                        message,
-                                        accountOwner = { owner },
-                                        boostMessage = {
-                                            boostMessage(chat, message.uuid)
-                                        },
-                                        flagMessage = {
-                                            // TODO: Requires confirmation
-                                            flagMessage(chat, message)
-                                        },
-                                        deleteMessage = {
-                                            // TODO: Requires confirmation...
-                                            deleteMessage(message)
-                                        }
-                                    )
-                                }
-                            },
-                        chatViewModel = this@ChatViewModel
-                    ),
-                )
-            }
+            MessageListState.screenState(
+                MessageListData.PopulatedMessageListData(
+                    getChatMessages(20),
+                    chatViewModel = this@ChatViewModel
+                ),
+            )
         }
+    }
+
+    suspend fun getChatMessages(limit: Long): Flow<List<ChatMessage>> {
+        val owner = getOwner()
+        return getChatOrNull()?.let{ chat ->
+            messageRepository.getAllMessagesToShowByChatId(chat.id, limit).map { messages ->
+                messages.reversed().map { message ->
+                    ChatMessage(
+                        chat,
+                        message,
+                        accountOwner = { owner },
+                        boostMessage = {
+                            boostMessage(chat, message.uuid)
+                        },
+                        flagMessage = {
+                            // TODO: Requires confirmation
+                            flagMessage(chat, message)
+                        },
+                        deleteMessage = {
+                            // TODO: Requires confirmation...
+                            deleteMessage(message)
+                        }
+                    )
+                }
+            }
+        } ?: emptyFlow()
     }
 
     private fun boostMessage(chat: Chat, messageUUID: MessageUUID?) {
@@ -130,6 +131,12 @@ abstract class ChatViewModel(
                 }
                 is Response.Success -> {}
             }
+        }
+    }
+
+    fun readMessages() {
+        chatId?.let {
+            messageRepository.readMessages(chatId)
         }
     }
 
