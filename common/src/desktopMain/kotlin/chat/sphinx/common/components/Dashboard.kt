@@ -1,7 +1,9 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -179,47 +182,32 @@ fun SphinxChatDetailBottomAppBar(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            Spacer(modifier = Modifier.width(4.dp))
+            IconButton(onClick = {  },
+                modifier=Modifier.clip(CircleShape).size(30.dp),
             ) {
-                // TODO: Attachment
-                IconButton(onClick = {}) {
-                    Icon(Icons.Default.Add, contentDescription = "Attachment", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
-                }
-                // TODO: Giphy Attachment
-                // TODO: Emoji Keyboard...
-                IconButton(onClick = {}) {
-                    Icon(Icons.Default.Face, contentDescription = "Emoji", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
-                }
+                Icon(Icons.Default.Add, contentDescription = "content description", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
             }
-
-            // TODO: Text Input...
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(onClick = {}, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(30.dp),) {
+                Icon(Icons.Default.UploadFile, contentDescription = "Emoji", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(onClick = {}, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(30.dp),) {
+                Icon(Icons.Default.EmojiEmotions, contentDescription = "Emoji", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
+            }
+            Spacer(modifier = Modifier.width(4.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-//                TextField(
-//                    modifier = Modifier
-//                        .padding(4.dp)
-//                        .fillMaxWidth(),
-//                    // TODO: Make this conditional on whether user want's to send message on enter...
-//                    value = chatViewModel.editMessageState.messageText,
-//                    onValueChange = chatViewModel::onMessageTextChanged,
-//                    placeholder = { Text("Message") }
-//                )
+
                 CustomTextField(
-                    leadingIcon = {
-                        Icon(
-                            Icons.Filled.Search,
-                            null,
-                            tint = Color(0xFF3b4755)
-                        )
-                    },
                     trailingIcon = null,
                     modifier = Modifier
                         .background(
@@ -227,26 +215,27 @@ fun SphinxChatDetailBottomAppBar(
                             RoundedCornerShape(percent = 50)
                         )
                         .padding(4.dp)
-                        .height(20.dp),
+                        .height(24.dp),
                     fontSize = 10.sp,
                     placeholderText = "Message"
                 )
             }
 
+            Spacer(modifier = Modifier.width(8.dp))
             CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                 Row(
-                    horizontalArrangement = Arrangement.End,
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    // TODO: Price Chip
+                    Spacer(modifier = Modifier.width(4.dp))
                     PriceChip()
-                    // TODO: Send Actions
-                    IconButton(onClick = chatViewModel::onSendMessage) {
-                        Icon(Icons.Default.Send, contentDescription = "Send", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(onClick = chatViewModel::onSendMessage, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(30.dp),) {
+                        Icon(Icons.Default.Send, contentDescription = "Send", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
                     }
                     // TODO: Record Action
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Mic, contentDescription = "Microphone", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
+                    IconButton(onClick = {}, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(30.dp),) {
+                        Icon(Icons.Default.Mic, contentDescription = "Microphone", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
                     }
                 }
             }

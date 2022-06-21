@@ -70,7 +70,7 @@ fun ChatRow(
                 }
             )
 
-        }.padding(12.dp),
+        }.padding(start = 4.dp, top = 8.dp, bottom = 8.dp, end = 10.dp),
     ) {
 //        AsyncImage(
 //            model = "https://example.com/image.jpg",

@@ -1,6 +1,7 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
@@ -24,14 +25,14 @@ fun PriceChip(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        color = Color.Green,
-        contentColor = Color.White,
+        color = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
+//        contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,
         shape = RoundedCornerShape(32.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = Color.Green
-        ),
-        modifier = modifier
+//        border = BorderStroke(
+//            width = 1.dp,
+//            color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+//        ),
+//        modifier = modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,)
     ) {
         Row(
             modifier = Modifier.padding(
@@ -42,6 +43,7 @@ fun PriceChip(
             Text(
                 text = "Price:",
                 style = MaterialTheme.typography.body2,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(
                     start = 16.dp,
                     end = 8.dp,
