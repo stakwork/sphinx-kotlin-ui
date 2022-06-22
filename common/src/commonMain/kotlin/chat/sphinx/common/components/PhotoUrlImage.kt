@@ -27,6 +27,7 @@ import io.kamel.image.config.LocalKamelConfig
 import io.kamel.image.lazyPainterResource
 import io.ktor.client.features.*
 import io.ktor.http.*
+import views.LoadingShimmerEffect
 
 val TWO_HOURS_IN_SECONDS = 7_200
 
@@ -61,12 +62,13 @@ fun PhotoUrlImage(
                  crossfade = true, // false by default
                  animationSpec = tween(),
                  onLoading = {
-                     Box(modifier = Modifier.fillMaxSize()) {
-                         CircularProgressIndicator(
-                             strokeWidth = 2.dp,
-                             modifier = Modifier.size(30.dp)
-                         )
-                     }
+                             LoadingShimmerEffect()
+//                     Box() {
+//                         CircularProgressIndicator(
+//                             strokeWidth = 2.dp,
+//                             modifier = Modifier.size(30.dp)
+//                         )
+//                     }
                  },
                  onFailure = {
                      Image(
