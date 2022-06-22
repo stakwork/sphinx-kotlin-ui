@@ -217,7 +217,7 @@ fun SphinxChatDetailBottomAppBar(
                         .padding(4.dp)
                         .height(24.dp),
                     fontSize = 10.sp,
-                    placeholderText = "Message"
+                    placeholderText = "Message", onValueChange = {},value=""
                 )
             }
 
