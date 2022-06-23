@@ -7,18 +7,19 @@ package chat.sphinx.common
  */
 object Res {
     object drawable {
-        val sphinx_logo = "drawable/sphinx_logo.xml"
-        val IC_KEY = "drawable/ic_key.xml"
-        val existing_user_image = "drawable/existinguserimage.png"
-        val new_user_image = "drawable/newuserimage.png"
-        val enter_pin = "drawable/ic_enter_pin.xml"
-        val landing_page_image = "drawable/landingpageimage.png"
-        val LANDING_WORD_MARK =  "drawable/ic_wordmark.xml"
-        val connection_image =  "drawable/ic_preloader.xml"
-        val ic_done =  "drawable/ic_done.xml"
-        val paste_your_invitation =  "drawable/ic_paste_your_invitation__code_into_sphinx.xml"
-        val ic_giphy =  "drawable/ic_giphy_logo_1.xml"
-        val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"
+        const val sphinx_logo = "drawable/sphinx_logo.xml"
+        const val profile_avatar = "drawable/profile_avatar_circle.xml"
+        const val IC_KEY = "drawable/ic_key.xml"
+        const val existing_user_image = "drawable/existinguserimage.png"
+        const val new_user_image = "drawable/newuserimage.png"
+        const val enter_pin = "drawable/ic_enter_pin.xml"
+        const val landing_page_image = "drawable/landingpageimage.png"
+        const val LANDING_WORD_MARK =  "drawable/ic_wordmark.xml"
+        const val connection_image =  "drawable/ic_preloader.xml"
+        const val ic_done =  "drawable/ic_done.xml"
+        const val paste_your_invitation =  "drawable/ic_paste_your_invitation__code_into_sphinx.xml"
+        const val ic_giphy =  "drawable/ic_giphy_logo_1.xml"
+        const val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"
     }
 
     object string {
@@ -26,28 +27,28 @@ object Res {
     }
     object Font{
         object Montserrat {
-            val black = "font/montserrate/montserrat_black.ttf"
-            val blackitalic = "font/montserrate/montserrat_blackitalic.ttf"
-            val bold = "font/montserrate/montserrat_bold.ttf"
-            val bolditalic = "font/montserrate/montserrat_bolditalic.ttf"
-            val extrabold = "font/montserrate/montserrat_extrabold.ttf"
-            val extrabolditalic = "font/montserrate/montserrat_extrabolditalic.ttf"
-            val extralight = "font/montserrate/montserrat_extralight.ttf"
-            val extralightitalic = "font/montserrate/montserrat_extralightitalic.ttf"
-            val italic = "font/montserrate/montserrat_italic.ttf"
-            val light = "font/montserrate/montserrat_light.ttf"
-            val lightitalic = "font/montserrate/montserrat_lightitalic.ttf"
-            val medium = "font/montserrate/montserrat_medium.ttf"
-            val mediumitalic = "font/montserrate/montserrat_mediumitalic.ttf"
-            val regular = "font/montserrate/montserrat_regular.ttf"
-            val semibold = "font/montserrate/montserrat_semibold.ttf"
-            val semibolditalic = "font/montserrate/montserrat_semibolditalic.ttf"
-            val thin = "font/montserrate/montserrat_thin.ttf"
-            val thinitalic = "font/montserrate/montserrat_thinitalic.ttf"
+            const val black = "font/montserrate/montserrat_black.ttf"
+            const val blackitalic = "font/montserrate/montserrat_blackitalic.ttf"
+            const val bold = "font/montserrate/montserrat_bold.ttf"
+            const val bolditalic = "font/montserrate/montserrat_bolditalic.ttf"
+            const val extrabold = "font/montserrate/montserrat_extrabold.ttf"
+            const val extrabolditalic = "font/montserrate/montserrat_extrabolditalic.ttf"
+            const val extralight = "font/montserrate/montserrat_extralight.ttf"
+            const val extralightitalic = "font/montserrate/montserrat_extralightitalic.ttf"
+            const val italic = "font/montserrate/montserrat_italic.ttf"
+            const val light = "font/montserrate/montserrat_light.ttf"
+            const val lightitalic = "font/montserrate/montserrat_lightitalic.ttf"
+            const val medium = "font/montserrate/montserrat_medium.ttf"
+            const val mediumitalic = "font/montserrate/montserrat_mediumitalic.ttf"
+            const val regular = "font/montserrate/montserrat_regular.ttf"
+            const val semibold = "font/montserrate/montserrat_semibold.ttf"
+            const val semibolditalic = "font/montserrate/montserrat_semibolditalic.ttf"
+            const val thin = "font/montserrate/montserrat_thin.ttf"
+            const val thinitalic = "font/montserrate/montserrat_thinitalic.ttf"
         }
 
         object Others {
-            val great_vibes_regular = "font/others/great_vibes_regular.ttf"
+            const val great_vibes_regular = "font/others/great_vibes_regular.ttf"
         }
     }
 }

@@ -11,7 +11,9 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
+import chat.sphinx.wrapper.lightning.Sat
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +28,13 @@ class DashboardViewModel {
     val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
 
+    private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    val balanceStateFlow: StateFlow<NodeBalance?>
+        get() = _balanceStateFlow.asStateFlow()
+
     init {
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
             DashboardState.screenState(DashboardScreenType.Unlocked)
@@ -37,6 +46,12 @@ class DashboardViewModel {
                 if (state is SocketIOState.Uninitialized) {
                     socketIOManager.connect()
                 }
+            }
+        }
+
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            repositoryDashboard.getAccountBalanceStateFlow().collect {
+                _balanceStateFlow.value = it
             }
         }
     }
@@ -57,9 +72,6 @@ class DashboardViewModel {
 
     private var jobNetworkRefresh: Job? = null
     private var jobPushNotificationRegistration: Job? = null
-
-    suspend fun getAccountBalance(): StateFlow<NodeBalance?> =
-        repositoryDashboard.getAccountBalanceStateFlow()
 
 
     fun networkRefresh() {

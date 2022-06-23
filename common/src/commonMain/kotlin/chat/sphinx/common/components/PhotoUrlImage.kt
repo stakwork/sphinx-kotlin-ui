@@ -52,6 +52,7 @@ fun PhotoUrlImage(
     }
     if (photoUrl != null) {
          CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
+
              val photoUrlResource = lazyPainterResource(
                 data = photoUrl.value
              )
@@ -59,37 +60,33 @@ fun PhotoUrlImage(
              KamelImage(
                  resource = photoUrlResource,
                  contentDescription = "avatar",
-                 crossfade = true, // false by default
                  animationSpec = tween(),
                  onLoading = {
-                             LoadingShimmerEffect()
-//                     Box() {
-//                         CircularProgressIndicator(
-//                             strokeWidth = 2.dp,
-//                             modifier = Modifier.size(30.dp)
-//                         )
-//                     }
+                     Image(
+                         modifier = modifier,
+                         painter = imageResource(Res.drawable.profile_avatar),
+                         contentDescription = "avatar",
+                         contentScale = ContentScale.Crop
+                     )
                  },
                  onFailure = {
                      Image(
-                         painter = imageResource(Res.drawable.sphinx_logo),
+                         modifier = modifier,
+                         painter = imageResource(Res.drawable.profile_avatar),
                          contentDescription = "avatar",
-                         contentScale = ContentScale.Crop,            // crop the image if it's not a square
-                         modifier = modifier
-                             .border(2.dp, Color.Red, CircleShape)   // add a border (optional)
+                         contentScale = ContentScale.Crop
                      )
                  },
-                 contentScale = ContentScale.Crop,            // crop the image if it's not a square
+                 contentScale = ContentScale.Crop,
                  modifier = modifier
              )
         }
     } else {
-        // Show a default
         Image(
-            painter = imageResource(Res.drawable.sphinx_logo),
+            modifier = modifier,
+            painter = imageResource(Res.drawable.profile_avatar),
             contentDescription = "avatar",
-            contentScale = ContentScale.Crop,            // crop the image if it's not a square
-            modifier = modifier
+            contentScale = ContentScale.Crop
         )
     }
 }

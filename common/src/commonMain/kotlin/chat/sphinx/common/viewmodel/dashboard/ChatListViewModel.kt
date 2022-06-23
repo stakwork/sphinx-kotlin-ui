@@ -72,14 +72,10 @@ class ChatListViewModel {
         scope.launch(dispatchers.mainImmediate) {
             delay(25L)
 
-            val allChats = repositoryDashboard.getAllChatsFlow.distinctUntilChanged()
-
-            allChats.collect { chats ->
+            repositoryDashboard.getAllChatsFlow.distinctUntilChanged().collect { chats ->
                 collectionLock.withLock {
                     chatsCollectionInitialized = true
-                    if (chats.size > 0) {
-                        val check = 1
-                    }
+
                     val newList = ArrayList<DashboardChat>(chats.size)
                     val contactsAdded = mutableListOf<ContactId>()
 

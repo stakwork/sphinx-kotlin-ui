@@ -1,6 +1,7 @@
 package chat.sphinx.common.components
 
 
+import Roboto
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,95 +19,114 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import kotlinx.coroutines.launch
+import com.example.compose.place_holder_text
+import com.example.compose.primary_green
+import com.example.compose.primary_red
 
 @Composable
 fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
-    val scope = SphinxContainer.appModule.applicationScope
-    val dispatchers = SphinxContainer.appModule.dispatchers
-    var text by remember { mutableStateOf(TextFieldValue("")) }
-    val balance = mutableStateOf(0L)
-    // TODO Fix compilation issue
-//    LaunchedEffect(key1 = ""){
-//        scope.launch(dispatchers.main) {
-//            dashboardViewModel.getAccountBalance().collect {
-//                it?.let { nodeBalance ->
-//                    balance.value = nodeBalance.balance.value
-//                }
-//            }
-//        }
-//    }
     Box(
-        Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.background)
+        Modifier
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.background)
             .fillMaxSize()
     ) {
         Column {
             TopAppBar(
-                title = {
-                    Text(
-                        text = "${balance.value} sats",
-                        fontSize = 14.sp,
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
-                    )
-                },
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
-                elevation = 8.dp,
-                navigationIcon = {
-                    IconButton(onClick = dashboardViewModel::networkRefresh) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "Refresh Connection",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(14.dp)
+                contentColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
+                elevation = 8.dp
+            ) {
+                Row(modifier = Modifier.fillMaxHeight().width(32.dp), verticalAlignment = Alignment.CenterVertically) {
+                    CompositionLocalProvider(
+                        LocalContentAlpha provides ContentAlpha.high,
+                        content = {
+                            IconButton(onClick = dashboardViewModel::networkRefresh) {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = "Refresh Connection",
+                                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    )
+                }
+
+                Row(
+                    Modifier.fillMaxHeight().weight(1f),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ProvideTextStyle(value = MaterialTheme.typography.h6) {
+                        CompositionLocalProvider(
+                            LocalContentAlpha provides ContentAlpha.high,
+                            content = {
+                                val balance by dashboardViewModel.balanceStateFlow.collectAsState()
+                                Text(
+                                    text = "${balance?.balance?.value ?: 0} sats",
+                                    fontSize = 14.sp,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
                         )
                     }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {}
-                    ) {
-                        val networkState by dashboardViewModel.networkStateFlow.collectAsState()
-                        if (networkState is LoadResponse.Loading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(14.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(
-                                Icons.Default.FlashOn,
-                                contentDescription = "Connection Status",
-                                tint = if (networkState is Response.Success) {
-                                    Color.Green
-                                } else {
-                                    androidx.compose.material3.MaterialTheme.colorScheme.error
-                                },
-                                modifier = Modifier.size(14.dp)
-                            )
-
-                        }
-                    }
                 }
-            )
+
+                CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                    Row(
+                        Modifier.fillMaxHeight().width(32.dp),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = {
+                            IconButton(
+                                onClick = {}
+                            ) {
+                                val networkState by dashboardViewModel.networkStateFlow.collectAsState()
+                                if (networkState is LoadResponse.Loading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Icon(
+                                        Icons.Default.FlashOn,
+                                        contentDescription = "Connection Status",
+                                        tint = if (networkState is Response.Success) {
+                                            primary_green
+                                        } else {
+                                            primary_red
+                                        },
+                                        modifier = Modifier.size(16.dp)
+                                    )
+
+                                }
+                            }
+                        }
+                    )
+                }
+            }
 
             var searchText by rememberSaveable { mutableStateOf("") }
             TopAppBar(
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 title = {
-
                     CustomTextField(
                         leadingIcon = {
                             Icon(
                                 Icons.Filled.Search,
                                 null,
-                                tint = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant
+                                modifier = Modifier.width(30.dp),
+                                tint = place_holder_text
                             )
                         },
                         trailingIcon = null,
@@ -116,9 +136,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                                 RoundedCornerShape(percent = 50)
                             )
                             .padding(4.dp)
-                            .height(20.dp),
-                        fontSize = 10.sp,
-                        placeholderText = "Search", onValueChange = {}, value = ""
+                            .height(30.dp),
+                        fontSize = 14.sp,
+                        placeholderText = "Search",
+                        onValueChange = {},
+                        value = ""
                     )
                 },
                 elevation = 8.dp,
@@ -127,12 +149,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                         Icon(
                             Icons.Default.PersonAddAlt,
                             contentDescription = "Add a person",
-                            tint = Color.Gray
+                            tint = place_holder_text
                         )
                     }
                 }
             )
-
             ChatListUI()
         }
     }
@@ -156,19 +177,17 @@ fun CustomTextField(
     onValueChange: (String) -> Unit,
     fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
 ) {
-    BasicTextField(modifier = modifier
-//        .background(
-//            Color(0xFF151e27),
-////            RoundedCornerShape(percent = 50)
-//        )
-        .fillMaxWidth(),
+    BasicTextField(
+        modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colors.primary),
         textStyle = LocalTextStyle.current.copy(
-            color = MaterialTheme.colors.secondary,
-            fontSize = fontSize
+            fontFamily = Roboto,
+            fontWeight = FontWeight.Normal,
+            fontSize = 14.sp,
+            color = place_holder_text
         ),
         decorationBox = { innerTextField ->
             Row(
@@ -181,7 +200,7 @@ fun CustomTextField(
                         Text(
                             placeholderText,
                             style = LocalTextStyle.current.copy(
-                                color =       androidx.compose.material3.MaterialTheme.colorScheme.onBackground.copy(alpha = .7f),
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground.copy(alpha = .7f),
                                 fontSize = fontSize
                             )
                         )

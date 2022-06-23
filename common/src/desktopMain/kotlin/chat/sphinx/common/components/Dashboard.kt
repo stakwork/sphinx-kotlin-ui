@@ -58,10 +58,10 @@ actual fun Dashboard(
             HorizontalSplitPane(
                 splitPaneState = splitterState
             ) {
-                first(400.dp) {
+                first(600.dp) {
                     DashboardSidebarUI(dashboardViewModel)
                 }
-                second(300.dp) {
+                second(700.dp) {
                     when(val chatDetailState = ChatDetailState.screenState()) {
                         is ChatDetailData.EmptyChatDetailData -> {
                             SphinxSplash()

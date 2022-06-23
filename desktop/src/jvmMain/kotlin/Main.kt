@@ -70,14 +70,12 @@ fun main() = application {
             }
         }
         ScreenType.DashboardScreen -> {
-
-
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Sphinx",
                 state = WindowState(
                     position = WindowPosition.Aligned(Alignment.Center),
-                    size = getPreferredWindowSize(800, 500)
+                    size = getPreferredWindowSize(1200, 800)
                 ),
 
                 icon = sphinxIcon
