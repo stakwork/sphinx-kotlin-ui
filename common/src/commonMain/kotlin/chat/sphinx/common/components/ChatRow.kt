@@ -18,6 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.semantics.Role.Companion.Image
+
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,6 +33,7 @@ import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.ChatMuted
+
 
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -82,6 +88,7 @@ fun ChatRow(
                 text = dashboardChat.chatName?.take(1) ?: " "
             )
         }
+
 
       Row{
           PhotoUrlImage(
@@ -157,15 +164,108 @@ fun ChatRow(
                     if(it.value!=0L)
                     MessageCount(it.value.toString())
                 }
-
+//=======
+//        Column {
+//
+//            Row(verticalAlignment = Alignment.CenterVertically) {
+//
+//                Text(
+//                    text = dashboardChat.chatName ?: "Unknown Chat",
+//                    fontSize = 16.sp,
+//                    maxLines = 1,
+//                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+//                    overflow = TextOverflow.Ellipsis
+//                )
+//                // TODO: Muted icon...
+//                Spacer(modifier = Modifier.width(4.dp))
+//                Icon(
+//                    Icons.Filled.Lock,
+//                    contentDescription = null,
+//                    modifier = Modifier.size(14.dp),
+//                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+//                )
+//                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+//                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+//                        Icon(
+//                            Icons.Filled.NotificationsOff,
+//                            contentDescription = null,
+//                            modifier = Modifier.size(14.dp),
+//                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+//                        )
+//                        Spacer(modifier = Modifier.width(2.dp))
+//                        Text(
+//                            text = dashboardChat.getDisplayTime(today00),
+//                            fontSize = 10.sp,
+//                            maxLines = 1,
+//                            color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+//
+//                            )
+//
+//                    }
+//
 //                }
-
-
-              }
-
-
-          }
+//            }
+//            Spacer(modifier = Modifier.height(4.dp))
+//
+//            Row (modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween,){
+//                Text(
+//                    text = dashboardChat.getMessageText(),
+//                    fontSize = 14.sp,
+//                    fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
+//                    maxLines = 1,
+//                    overflow = TextOverflow.Ellipsis,
+//                    modifier = Modifier.weight(1f),
+//                    color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+//                )
+////                Spacer(modifier = Modifier.weight(1f))
+//                MessageCount("100".toString())
+//                // TODO: Unread count...
+////                dashboardChat.unseenMessageFlow?.let { unseenMessageCount ->
+//
+////                }
+//>>>>>>> Stashed changes
+//
+////                }
+//
+//
+//<<<<<<< Updated upstream
+//              }
+//
+//
+//          }
       }
+
+    }
+}
+
+@Composable
+fun MessageCount(messageCount:String){
+    Box(contentAlignment= Alignment.Center,
+        modifier = Modifier
+            .background( color=androidx.compose.material3.MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(16.dp))
+//            .layout(){ measurable, constraints ->
+//                // Measure the composable
+//                val placeable = measurable.measure(constraints)
+//
+//                //get the current max dimension to assign width=height
+//                val currentHeight = placeable.height
+//                var heightCircle = currentHeight
+//                if (placeable.width > heightCircle)
+//                    heightCircle = placeable.width
+//
+//                //assign the dimension and the center position
+//                layout(heightCircle, heightCircle) {
+//                    // Where the composable gets placed
+//                    placeable.placeRelative(0, (heightCircle-currentHeight)/2)
+//                }
+//            }
+            ) {
+
+            }
+
+
+        }
 
     }
 }
