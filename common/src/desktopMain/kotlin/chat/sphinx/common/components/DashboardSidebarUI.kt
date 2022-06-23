@@ -1,5 +1,6 @@
 package chat.sphinx.common.components
 
+
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -7,12 +8,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-
 import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAddAlt
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.*
-
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -27,7 +26,6 @@ import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Composable
@@ -36,21 +34,29 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
     val dispatchers = SphinxContainer.appModule.dispatchers
     var text by remember { mutableStateOf(TextFieldValue("")) }
     val balance = mutableStateOf(0L)
-
-    scope.launch(dispatchers.main) {
-        dashboardViewModel.getAccountBalance().collect {
-            it?.let { nodeBalance ->
-                balance.value = nodeBalance.balance.value
-            }
-        }
-    }
+    // TODO Fix compilation issue
+//    LaunchedEffect(key1 = ""){
+//        scope.launch(dispatchers.main) {
+//            dashboardViewModel.getAccountBalance().collect {
+//                it?.let { nodeBalance ->
+//                    balance.value = nodeBalance.balance.value
+//                }
+//            }
+//        }
+//    }
     Box(
         Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.background)
             .fillMaxSize()
     ) {
         Column {
             TopAppBar(
-                title = { Text(text = "${balance.value} sats", fontSize = 14.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary) },
+                title = {
+                    Text(
+                        text = "${balance.value} sats",
+                        fontSize = 14.sp,
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                    )
+                },
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 elevation = 8.dp,
                 navigationIcon = {
@@ -58,7 +64,8 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                         Icon(
                             Icons.Default.Refresh,
                             contentDescription = "Refresh Connection",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp)
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(14.dp)
                         )
                     }
                 },
@@ -80,7 +87,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                                     Color.Green
                                 } else {
                                     androidx.compose.material3.MaterialTheme.colorScheme.error
-                                } ,
+                                },
                                 modifier = Modifier.size(14.dp)
                             )
 
@@ -99,29 +106,29 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                             Icon(
                                 Icons.Filled.Search,
                                 null,
-                                tint = Color(0xFF3b4755)
+                                tint = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant
                             )
-                        },
-                        value = searchText,
-                        onValueChange = { input ->
-                            searchText = input
                         },
                         trailingIcon = null,
                         modifier = Modifier
                             .background(
-                                Color(0xFF151e27),
+                                Color(0xFf151e27),
                                 RoundedCornerShape(percent = 50)
                             )
                             .padding(4.dp)
                             .height(20.dp),
                         fontSize = 10.sp,
-                        placeholderText = "Search"
+                        placeholderText = "Search", onValueChange = {}, value = ""
                     )
                 },
                 elevation = 8.dp,
                 actions = {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Default.PersonAddAlt, contentDescription = "Add a person", tint = Color.Gray)
+                        Icon(
+                            Icons.Default.PersonAddAlt,
+                            contentDescription = "Add a person",
+                            tint = Color.Gray
+                        )
                     }
                 }
             )
@@ -150,10 +157,10 @@ fun CustomTextField(
     fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
 ) {
     BasicTextField(modifier = modifier
-        .background(
-            Color(0xFF151e27),
-            MaterialTheme.shapes.small,
-        )
+//        .background(
+//            Color(0xFF151e27),
+////            RoundedCornerShape(percent = 50)
+//        )
         .fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
@@ -174,7 +181,7 @@ fun CustomTextField(
                         Text(
                             placeholderText,
                             style = LocalTextStyle.current.copy(
-                                color = Color(0xFF3b4755),
+                                color =       androidx.compose.material3.MaterialTheme.colorScheme.onBackground.copy(alpha = .7f),
                                 fontSize = fontSize
                             )
                         )

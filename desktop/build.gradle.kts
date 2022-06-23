@@ -17,7 +17,7 @@ repositories {
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+            kotlinOptions.jvmTarget = JavaVersion.VERSION_15.toString()
         }
         withJava()
     }
@@ -42,6 +42,7 @@ kotlin {
 }
 
 compose.desktop {
+
     application {
         mainClass = "MainKt"
         nativeDistributions {

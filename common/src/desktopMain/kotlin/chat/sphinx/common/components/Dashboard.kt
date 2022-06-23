@@ -1,5 +1,6 @@
 package chat.sphinx.common.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.EmojiEmotions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -19,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -183,21 +186,26 @@ fun SphinxChatDetailBottomAppBar(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center
         ) {
             Spacer(modifier = Modifier.width(4.dp))
             IconButton(onClick = {  },
-                modifier=Modifier.clip(CircleShape).size(30.dp),
+                modifier=Modifier.clip(CircleShape).background(androidx.compose.material3.MaterialTheme.colorScheme.secondary).size(26.dp),
             ) {
-                Icon(Icons.Default.Add, contentDescription = "content description", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
+                Icon(Icons.Default.Add, contentDescription = "content description", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(18.dp))
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            IconButton(onClick = {}, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(30.dp),) {
-                Icon(Icons.Default.UploadFile, contentDescription = "Emoji", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.width(10.dp))
+            IconButton(onClick = {}, modifier=Modifier.height(17.dp).width(14.dp),) {
+                Image(
+                    painter = imageResource(Res.drawable.ic_giphy),
+                    contentDescription = "giphy",
+                    contentScale = ContentScale.FillBounds,
+
+                )
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            IconButton(onClick = {}, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(30.dp),) {
-                Icon(Icons.Default.EmojiEmotions, contentDescription = "Emoji", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+            IconButton(onClick = {}, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(26.dp).padding(top = 2.dp),) {
+                Icon(Icons.Outlined.EmojiEmotions, contentDescription = "Emoji", tint = androidx.compose.material3.MaterialTheme.colorScheme.outline, modifier = Modifier.size(26.dp))
             }
             Spacer(modifier = Modifier.width(4.dp))
             Row(
@@ -211,31 +219,32 @@ fun SphinxChatDetailBottomAppBar(
                     trailingIcon = null,
                     modifier = Modifier
                         .background(
-                            Color(0xFF151e27),
+                            androidx.compose.material3.MaterialTheme.colorScheme.surface,
                             RoundedCornerShape(percent = 50)
                         )
-                        .padding(4.dp)
+                        .padding(horizontal = 6.dp, vertical = 4.dp)
                         .height(24.dp),
                     fontSize = 10.sp,
-                    placeholderText = "Message", onValueChange = {},value=""
+                    placeholderText = "Message...", onValueChange = {},value=""
                 )
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Spacer(modifier = Modifier.width(4.dp))
+//                    Spacer(modifier = Modifier.width(4.dp))
                     PriceChip()
                     Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(onClick = chatViewModel::onSendMessage, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(30.dp),) {
-                        Icon(Icons.Default.Send, contentDescription = "Send", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
+                    IconButton(onClick = chatViewModel::onSendMessage,      modifier=Modifier.clip(CircleShape).background(androidx.compose.material3.MaterialTheme.colorScheme.secondary).size(28.dp)) {
+                        Icon(Icons.Default.Send, contentDescription = "Send", tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
                     }
                     // TODO: Record Action
+                    Spacer(modifier = Modifier.width(4.dp))
                     IconButton(onClick = {}, modifier=Modifier.clip(CircleShape).background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(30.dp),) {
-                        Icon(Icons.Default.Mic, contentDescription = "Microphone", tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.Mic, contentDescription = "Microphone", tint = androidx.compose.material3.MaterialTheme.colorScheme.outline, modifier = Modifier.size(22.dp))
                     }
                 }
             }

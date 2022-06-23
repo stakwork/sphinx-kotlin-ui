@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun PriceChip(
@@ -36,20 +37,21 @@ fun PriceChip(
     ) {
         Row(
             modifier = Modifier.padding(
-                end = 16.dp
+                end = 8.dp
             ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Price:",
-                style = MaterialTheme.typography.body2,
+                style = MaterialTheme.typography.body2.copy(fontSize = 12.sp),
                 color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(
-                    start = 16.dp,
-                    end = 8.dp,
+                    start = 8.dp,
+                    end = 2.dp,
                     top = 8.dp,
                     bottom = 8.dp
                 )
+
             )
 
             var price = text
@@ -57,7 +59,10 @@ fun PriceChip(
                 value = price ?: "",
                 singleLine = true,
                 modifier = Modifier
-                    .size(20.dp),
+                    .size(width = 40.dp, height = 20.dp).background(
+                        androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer.copy(alpha = .8f),
+                    MaterialTheme.shapes.small,
+                ).clip(RoundedCornerShape(10.dp)),
                 onValueChange = { newValue -> price = newValue },
             )
         }
