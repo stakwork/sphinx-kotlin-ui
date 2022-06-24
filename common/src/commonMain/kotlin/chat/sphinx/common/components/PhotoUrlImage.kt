@@ -11,6 +11,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,7 @@ import io.kamel.image.lazyPainterResource
 import io.ktor.client.features.*
 import io.ktor.http.*
 import views.LoadingShimmerEffect
+import views.ShimmerGridItem
 
 val TWO_HOURS_IN_SECONDS = 7_200
 
@@ -35,6 +37,7 @@ val TWO_HOURS_IN_SECONDS = 7_200
 fun PhotoUrlImage(
     photoUrl: PhotoUrl?,
     modifier: Modifier = Modifier,
+    effect:@Composable ()->Unit
 ) {
     val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
         takeFrom(KamelConfig.Default)
@@ -62,12 +65,15 @@ fun PhotoUrlImage(
                  contentDescription = "avatar",
                  animationSpec = tween(),
                  onLoading = {
-                     Image(
-                         modifier = modifier,
-                         painter = imageResource(Res.drawable.profile_avatar),
-                         contentDescription = "avatar",
-                         contentScale = ContentScale.Crop
-                     )
+
+                             effect()
+//                     Box() {
+//                         CircularProgressIndicator(
+//                             strokeWidth = 2.dp,
+//                             modifier = Modifier.size(30.dp)
+//                         )
+//                     }
+
                  },
                  onFailure = {
                      Image(

@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun LoadingShimmerEffect(){
+fun LoadingShimmerEffect(effect:@Composable (Brush)->Unit){
 
     //These colors will be used on the brush. The lightest color should be in the middle
 
@@ -47,7 +47,7 @@ fun LoadingShimmerEffect(){
         end = Offset(x = translateAnimation.value,
             y = translateAnimation.value)
     )
-    ShimmerGridItem(brush = brush)
+    effect(brush)
 }
 
 @Composable
@@ -85,5 +85,19 @@ fun ShimmerGridItem(brush: Brush) {
 //                .fillMaxWidth(fraction = 0.9f)
 //                .background(brush))
         }
+    }
+}
+
+@Composable
+fun ShimmerCircleAvatar(brush: Brush) {
+    Row(modifier = androidx.compose.ui.Modifier
+        .fillMaxSize()
+        .padding(all = 2.dp),) {
+
+        Spacer(modifier =  androidx.compose.ui.Modifier
+            .size(35.dp)
+            .clip(CircleShape)
+            .background(brush)
+        )
     }
 }

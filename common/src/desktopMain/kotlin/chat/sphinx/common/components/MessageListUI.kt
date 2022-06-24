@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,9 +41,9 @@ fun MessageListUI(
 //    selectedChatDetailData: ChatDetailData.SelectedChatDetailData
 ) {
     Box(
-        modifier = Modifier.padding(
-            bottom = 65.dp
-        ).background( color=androidx.compose.material3.MaterialTheme.colorScheme.tertiary,)
+        modifier = Modifier.background( color=MaterialTheme.colorScheme.background,).padding(
+            bottom = 15.dp
+        )
     ) {
         when(val messageListData = MessageListState.screenState()) {
             is MessageListData.EmptyMessageListData -> {
@@ -68,7 +69,7 @@ fun MessageListUI(
                 LazyColumn(
                     state = listState,
                     reverseLayout = true,
-                    contentPadding = PaddingValues(4.dp)
+                    contentPadding = PaddingValues(4.dp), modifier = Modifier.background(MaterialTheme.colorScheme.background)
                 ) {
                     items(
                         items = chatMessages.value,

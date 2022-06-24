@@ -182,7 +182,7 @@ fun SphinxChatDetailBottomAppBar(
 ) {
     Surface(
         color =  androidx.compose.material3.MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(), elevation = 8.dp
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
