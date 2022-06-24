@@ -56,7 +56,7 @@ fun NewUserScreen(
                 .fillMaxHeight()
                 .weight(1f)
                 .background(MaterialTheme.colorScheme.secondary)
-        ) {RightPortionNewUser()}
+        ) { RightPortionNewUser() }
 
         Box(
             contentAlignment = Alignment.Center,
@@ -73,33 +73,38 @@ fun NewUserScreen(
 
     }
 }
+
 @Composable
-fun RightPortionNewUser(){
-        Box(){
-            AnimatedContainer (fromTopToBottom = 20){
+fun RightPortionNewUser() {
+    Box() {
+        AnimatedContainer(fromTopToBottom = 20) {
+            Image(
+                painter = imageResource(Res.drawable.new_user_image),
+                contentDescription = "Sphinx new user graphic",
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        AnimatedContainer(fromBottomToTop = 20) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.height(230.dp))
                 Image(
-                    painter = imageResource(Res.drawable.new_user_image),
+                    painter = imageResource(Res.drawable.paste_your_invitation),
                     contentDescription = "Sphinx new user graphic",
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-
-            AnimatedContainer(fromBottomToTop = 20){
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxHeight().fillMaxWidth(), verticalArrangement = Arrangement.Center) {
-                    Spacer(modifier = Modifier.height(230.dp))
-                    Image(
-                        painter = imageResource(Res.drawable.paste_your_invitation),
-                        contentDescription = "Sphinx new user graphic",
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
         }
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun LeftPortionNewUser(newUserStore: NewUserStore){
+fun LeftPortionNewUser(newUserStore: NewUserStore) {
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -117,7 +122,11 @@ fun LeftPortionNewUser(newUserStore: NewUserStore){
             AnimatedContainer(fromTopToBottom = 20) {
                 Text(
                     text = "NEW USER",
-                    textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.tertiary, fontSize = 32.sp, fontWeight = FontWeight.W700, fontFamily = SphinxFonts.montserratFamily
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.W700,
+                    fontFamily = SphinxFonts.montserratFamily
                 )
             }
             Spacer(modifier = Modifier.height(20.dp))
@@ -127,15 +136,17 @@ fun LeftPortionNewUser(newUserStore: NewUserStore){
                         .fillMaxWidth(0.6f)
                 ) {
                     Box(
-                        modifier = Modifier.height(56.dp).fillMaxWidth(), contentAlignment = Alignment.Center){
+                        modifier = Modifier.height(56.dp).fillMaxWidth(), contentAlignment = Alignment.Center
+                    ) {
 
                         OutlinedTextField(
-                            shape= RoundedCornerShape(56.dp),
+                            shape = RoundedCornerShape(56.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
 
                                 focusedBorderColor = MaterialTheme.colorScheme.background,
-                                backgroundColor=MaterialTheme.colorScheme.tertiary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)),
+                                backgroundColor = MaterialTheme.colorScheme.tertiary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                            ),
                             value = newUserStore.state.invitationCodeText,
 
                             modifier = Modifier
@@ -162,10 +173,16 @@ fun LeftPortionNewUser(newUserStore: NewUserStore){
             Spacer(modifier = Modifier.height(16.dp))
             AnimatedContainer(fromBottomToTop = 20) {
                 Box(
-                    modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center){
-                    CommonButton(text = "Submit",newUserStore.state.invitationCodeText.isNotEmpty(),newUserStore::onSubmitInvitationCode)
+                    modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center
+                ) {
+                    CommonButton(
+                        text = "Submit",
+                        newUserStore.state.invitationCodeText.isNotEmpty(),
+                        newUserStore::onSubmitInvitationCode
+                    )
                     Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
-                        val textColor=if(newUserStore.state.invitationCodeText.isNotEmpty())androidx.compose.material3.MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
+                        val textColor =
+                            if (newUserStore.state.invitationCodeText.isNotEmpty()) androidx.compose.material3.MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
                         Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = textColor)
                     }
                 }

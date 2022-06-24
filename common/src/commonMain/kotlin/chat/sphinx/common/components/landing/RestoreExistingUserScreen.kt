@@ -54,13 +54,13 @@ fun RestoreExistingUserScreen(
                     )
                 }
             }
-           AnimatedContainer(fromBottomToTop = 20) {
-               Image(
-                   painter = imageResource(Res.drawable.copy_paste_your_keys),
-                   contentDescription = "Existing user graphic",
-                   modifier = Modifier.fillMaxSize(0.4f).absoluteOffset(0.dp,250.dp)
-               )
-           }
+            AnimatedContainer(fromBottomToTop = 20) {
+                Image(
+                    painter = imageResource(Res.drawable.copy_paste_your_keys),
+                    contentDescription = "Existing user graphic",
+                    modifier = Modifier.fillMaxSize(0.4f).absoluteOffset(0.dp, 250.dp)
+                )
+            }
         }
 
         Box(
@@ -88,25 +88,30 @@ fun RestoreExistingUserScreen(
                     AnimatedContainer(fromTopToBottom = 20) {
                         Text(
                             text = "CONNECT",
-                            textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.tertiary, fontSize = 32.sp, fontWeight = FontWeight.W700
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.W700
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
-                    AnimatedContainer(fromTopToBottom=20, delayTime = 20){
+                    AnimatedContainer(fromTopToBottom = 20, delayTime = 20) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth(0.6f)
                         ) {
                             Box(
-                                modifier = Modifier.height(48.dp).fillMaxWidth(), contentAlignment = Alignment.Center){
+                                modifier = Modifier.height(48.dp).fillMaxWidth(), contentAlignment = Alignment.Center
+                            ) {
 
                                 OutlinedTextField(
-                                    shape= RoundedCornerShape(56.dp),
+                                    shape = RoundedCornerShape(56.dp),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
 
                                         focusedBorderColor = MaterialTheme.colorScheme.background,
-                                        backgroundColor=MaterialTheme.colorScheme.tertiary,
-                                        unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)),
+                                        backgroundColor = MaterialTheme.colorScheme.tertiary,
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                                    ),
                                     value = restoreExistingUserViewModel.state.sphinxKeys,
                                     modifier = Modifier
                                         .onKeyEvent(onKeyUp(Key.Enter, restoreExistingUserViewModel::onSubmitKeys)),
@@ -125,20 +130,25 @@ fun RestoreExistingUserScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    AnimatedContainer(fromTopToBottom =20) {
+                    AnimatedContainer(fromTopToBottom = 20) {
                         Box(
-                            modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center){
-                            CommonButton(text = "Submit",restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not(),  restoreExistingUserViewModel::onSubmitKeys)
+                            modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center
+                        ) {
+                            CommonButton(
+                                text = "Submit",
+                                restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not(),
+                                restoreExistingUserViewModel::onSubmitKeys
+                            )
                             Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
-                                val textColor=if(restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not())MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
+                                val textColor = if (restoreExistingUserViewModel.state.sphinxKeys.isEmpty()
+                                        .not()
+                                ) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
                                 Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = textColor)
                             }
                         }
                     }
                 }
             }
-
-
 
         }
     }

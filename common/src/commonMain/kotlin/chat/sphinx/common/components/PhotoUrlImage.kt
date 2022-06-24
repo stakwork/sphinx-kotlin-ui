@@ -37,11 +37,11 @@ val TWO_HOURS_IN_SECONDS = 7_200
 fun PhotoUrlImage(
     photoUrl: PhotoUrl?,
     modifier: Modifier = Modifier,
-    effect:@Composable ()->Unit
+    effect: @Composable () -> Unit
 ) {
     val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
         takeFrom(KamelConfig.Default)
-
+        imageBitmapCacheSize = 1000
         httpFetcher {
             defaultRequest {
                 cacheControl(
@@ -54,38 +54,32 @@ fun PhotoUrlImage(
         }
     }
     if (photoUrl != null) {
-         CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
+        CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
 
-             val photoUrlResource = lazyPainterResource(
+            val photoUrlResource = lazyPainterResource(
                 data = photoUrl.value
-             )
+            )
 
-             KamelImage(
-                 resource = photoUrlResource,
-                 contentDescription = "avatar",
-                 animationSpec = tween(),
-                 onLoading = {
+            KamelImage(
+                resource = photoUrlResource,
+                contentDescription = "avatar",
+                animationSpec = tween(),
+                onLoading = {
 
-                             effect()
-//                     Box() {
-//                         CircularProgressIndicator(
-//                             strokeWidth = 2.dp,
-//                             modifier = Modifier.size(30.dp)
-//                         )
-//                     }
+                    effect()
 
-                 },
-                 onFailure = {
-                     Image(
-                         modifier = modifier,
-                         painter = imageResource(Res.drawable.profile_avatar),
-                         contentDescription = "avatar",
-                         contentScale = ContentScale.Crop
-                     )
-                 },
-                 contentScale = ContentScale.Crop,
-                 modifier = modifier
-             )
+                },
+                onFailure = {
+                    Image(
+                        modifier = modifier,
+                        painter = imageResource(Res.drawable.profile_avatar),
+                        contentDescription = "avatar",
+                        contentScale = ContentScale.Crop
+                    )
+                },
+                contentScale = ContentScale.Crop,
+                modifier = modifier, crossfade = true
+            )
         }
     } else {
         Image(

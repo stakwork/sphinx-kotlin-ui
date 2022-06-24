@@ -41,11 +41,11 @@ fun MessageListUI(
 //    selectedChatDetailData: ChatDetailData.SelectedChatDetailData
 ) {
     Box(
-        modifier = Modifier.background( color=MaterialTheme.colorScheme.background,).padding(
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.background).padding(
             bottom = 15.dp
         )
     ) {
-        when(val messageListData = MessageListState.screenState()) {
+        when (val messageListData = MessageListState.screenState()) {
             is MessageListData.EmptyMessageListData -> {
                 SphinxSplash()
             }
@@ -69,11 +69,12 @@ fun MessageListUI(
                 LazyColumn(
                     state = listState,
                     reverseLayout = true,
-                    contentPadding = PaddingValues(4.dp), modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                    contentPadding = PaddingValues(bottom = 45.dp, top = 8.dp, start = 8.dp, end = 8.dp),
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
                 ) {
                     items(
                         items = chatMessages.value,
-                        key = { chatMessage -> chatMessage.message.id}
+                        key = { chatMessage -> chatMessage.message.id }
                     ) { chatMessage ->
                         ChatMessageUI(
                             chatMessage,
@@ -91,7 +92,7 @@ fun MessageListUI(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background( color=androidx.compose.material3.MaterialTheme.colorScheme.tertiary,)
+                            .background(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
                             .align(Alignment.BottomCenter)
                     ) {
                         Row(

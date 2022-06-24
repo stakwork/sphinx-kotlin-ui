@@ -1,10 +1,7 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.VerticalScrollbar
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -23,6 +20,7 @@ import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
+import utils.AnimatedContainer
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
@@ -30,20 +28,16 @@ fun ChatListUI() {
     val listState = rememberLazyListState()
     val chatListViewModel = remember { ChatListViewModel() }
 
-    Box {
+    Box(modifier = Modifier.padding(bottom = 65.dp)) {
         when (val chatListData = ChatListState.screenState()) {
             is ChatListData.EmptyChatListData -> {
                 SphinxSplash()
             }
             is ChatListData.PopulatedChatListData -> {
-//                val counters = remember { chatListData.dashboardChats.toMutableStateList() }
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(4.dp)
                 ) {
-//                    itemsIndexed(chatListData.dashboardChats){index,chat->
-//                        ChatRow(counters.get(index))
-//                    }
                     items(chatListData.dashboardChats) { dashboardChat ->
                         ChatRow(dashboardChat)
                     }

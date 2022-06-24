@@ -30,7 +30,8 @@ fun LandingUI() {
     Row(
         modifier = Modifier.fillMaxSize()
     ) {
-        Box(modifier = Modifier
+        Box(
+            modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.secondary)
@@ -41,24 +42,25 @@ fun LandingUI() {
                 .weight(1f)
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.background)
-        ){ RightPortion()}
+        ) { RightPortion() }
     }
 }
 
 @Composable
 fun LeftPortion() {
     var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(key1 = "test", block ={
+    LaunchedEffect(key1 = "test", block = {
         delay(10)
-        visible=true
-    } )
+        visible = true
+    })
     val density = LocalDensity.current
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        AnimatedVisibility(visible = visible,
+        AnimatedVisibility(
+            visible = visible,
             enter = slideInVertically {
                 // Slide in from 40 dp from the top.
 
@@ -66,7 +68,8 @@ fun LeftPortion() {
             } + fadeIn(
                 // Fade in with the initial alpha of 0.3f.
                 initialAlpha = 0.3f
-            ),) {
+            ),
+        ) {
             Image(
                 painter = imageResource(Res.drawable.sphinx_logo),
                 contentDescription = "Sphinx landing page graphic",
@@ -122,7 +125,7 @@ fun LeftPortion() {
                 ),
                 exit = slideOutVertically() + shrinkVertically() + fadeOut()
             ) {
-//                Spacer(modifier = Modifier.height(20.dp))
+
                 Image(
                     painter = imageResource(Res.drawable.landing_page_image),
                     contentDescription = "Sphinx landing page graphic",
@@ -146,10 +149,10 @@ fun LeftPortion() {
 @Composable
 fun RightPortion() {
     var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(key1 = "test", block ={
+    LaunchedEffect(key1 = "test", block = {
         delay(10)
-        visible=true
-    } )
+        visible = true
+    })
     val density = LocalDensity.current
     AnimatedVisibility(visible = visible, enter = slideInVertically {
         // Slide in from 40 dp from the top.
@@ -165,7 +168,11 @@ fun RightPortion() {
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "WELCOME",
-                textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.tertiary, fontSize = 30.sp, fontWeight = FontWeight.W700, fontFamily = SphinxFonts.montserratFamily
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.tertiary,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.W700,
+                fontFamily = SphinxFonts.montserratFamily
             )
             Spacer(modifier = Modifier.height(48.dp))
             CommonButton(text = "New User") {

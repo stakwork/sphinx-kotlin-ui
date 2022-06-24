@@ -16,7 +16,7 @@ enum class LandingScreenType {
 object LandingScreenState {
     private var screen: MutableState<LandingScreenType> = mutableStateOf(LandingScreenType.LandingPage)
 
-    fun screenState() : LandingScreenType {
+    fun screenState(): LandingScreenType {
         return screen.value
     }
 
