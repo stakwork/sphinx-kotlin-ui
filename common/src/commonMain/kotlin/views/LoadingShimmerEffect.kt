@@ -36,7 +36,7 @@ fun LoadingShimmerEffect(effect:@Composable (Brush)->Unit){
         targetValue = 1000f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = 1000, // duration for the animation
+                durationMillis = 1500, // duration for the animation
                 easing = FastOutLinearInEasing
             )
         )
@@ -57,22 +57,22 @@ fun ShimmerGridItem(brush: Brush) {
         .padding(all = 2.dp),) {
 
         Spacer(modifier =  androidx.compose.ui.Modifier
-            .size(35.dp)
+            .size(40.dp)
             .clip(CircleShape)
             .background(brush)
         )
         Spacer(modifier =  androidx.compose.ui.Modifier.width(10.dp))
         Column(verticalArrangement = Arrangement.Center) {
             Spacer(modifier =  androidx.compose.ui.Modifier
-                .height(5.dp)
+                .height(10.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .fillMaxWidth(fraction = 0.5f)
                 .background(brush)
             )
 
-            Spacer(modifier =  androidx.compose.ui.Modifier.height(5.dp)) //creates an empty space between
+            Spacer(modifier =  androidx.compose.ui.Modifier.height(10.dp)) //creates an empty space between
             Spacer(modifier =  androidx.compose.ui.Modifier
-                .height(5.dp)
+                .height(8.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .fillMaxWidth(fraction = 0.7f)
                 .background(brush)

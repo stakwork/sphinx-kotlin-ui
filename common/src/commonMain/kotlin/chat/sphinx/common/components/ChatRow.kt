@@ -13,6 +13,8 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,167 +82,117 @@ fun ChatRow(
 //                text = dashboardChat.chatName?.take(2) ?: " "
 //            )
 //        }
+                Row {
+//                    val photoUrl= remember { mutableStateOf(Pair(dashboardChat.chatName,dashboardChat.photoUrl)) }
+                    PhotoUrlImage(
+                        dashboardChat.photoUrl,
+                        modifier = Modifier
+                            .size(46.dp)
+                            .clip(CircleShape), effect = {
+                            LoadingShimmerEffect {
+                                ShimmerGridItem(it)
+                            }
+                        }   // add a border (optional)
+                    )
 
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
 
-//        Spacer(modifier = Modifier.width(12.dp))
-//        Column(modifier = Modifier.fillMaxHeight()) {
-            val lastMessage = dashboardChat.getMessageText()
-//
-//            Spacer(modifier = Modifier.height(2.dp))
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                modifier = if (lastMessage.isEmpty()) Modifier.fillMaxSize() else Modifier.height(20.dp),
-//            ) {
-//                Text(
-//                    text = dashboardChat.chatName ?: "Unknown Chat",
-//                    fontSize = 15.sp,
-//                    maxLines = 1,
-//                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-//                    overflow = TextOverflow.Ellipsis
-//                )
-//                Spacer(modifier = Modifier.width(4.dp))
-//                if (dashboardChat.isEncrypted())
-//                    Icon(
-//                        Icons.Filled.Lock,
-//                        contentDescription = null,
-//                        modifier = Modifier.size(14.dp),
-//                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-//                    )
-//                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-//                    Row(
-//                        horizontalArrangement = Arrangement.Center,
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        if (dashboardChat is DashboardChat.Active) {
-//                            if (dashboardChat.chat.isMuted.value == ChatMuted.MUTED)
-//                                Icon(
-//                                    Icons.Filled.NotificationsOff,
-//                                    contentDescription = null,
-//                                    modifier = Modifier.size(14.dp),
-//                                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-//                                )
-//                        }
-//                        Spacer(modifier = Modifier.width(2.dp))
-//                        Text(
-//                            text = dashboardChat.getDisplayTime(today00),
-//                            fontSize = 10.sp,
-//                            maxLines = 1,
-//                            color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-//                        )
-//
-//                    }
-//                }
-//            }
+                        val lastMessage = dashboardChat.getMessageText()
 
-
-            Row {
-                PhotoUrlImage(
-                    dashboardChat.photoUrl,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)                       // clip to the circle shape
-                        .border(2.dp, Color.Gray, CircleShape), effect = {
-                        LoadingShimmerEffect {
-                            ShimmerGridItem(it)
-                        }
-                    }   // add a border (optional)
-                )
-
-                Spacer(modifier = Modifier.width(6.dp))
-                Column {
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-
-
-                        Text(
-                            text = dashboardChat.chatName ?: "Unknown Chat",
-                            fontSize = 15.sp,
-                            maxLines = 1,
-                            color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        // TODO: Muted icon...
-                        Spacer(modifier = Modifier.width(4.dp))
-                        if (dashboardChat.isEncrypted())
-                            Icon(
-                                Icons.Filled.Lock,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp),
-                                tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                            )
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.CenterEnd
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = if (lastMessage.isEmpty()) Modifier.fillMaxSize() else Modifier.height(
+                                20.dp
+                            ),
                         ) {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
+                            Text(
+                                text = dashboardChat.chatName ?: "Unknown Chat",
+                                fontSize = 15.sp,
+                                maxLines = 1,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            if (dashboardChat.isEncrypted())
+                                Icon(
+                                    Icons.Filled.Lock,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                )
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.CenterEnd
                             ) {
-                                if (dashboardChat is DashboardChat.Active) {
-                                    if (dashboardChat.chat.isMuted.value == ChatMuted.MUTED)
-                                        Icon(
-                                            Icons.Filled.NotificationsOff,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(14.dp),
-                                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                                        )
-                                }
-
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Text(
-                                    text = dashboardChat.getDisplayTime(today00),
-                                    fontSize = 10.sp,
-                                    maxLines = 1,
-                                    color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (dashboardChat is DashboardChat.Active) {
+                                        if (dashboardChat.chat.isMuted.value == ChatMuted.MUTED)
+                                            Icon(
+                                                Icons.Filled.NotificationsOff,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(14.dp),
+                                                tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                            )
+                                    }
+                                    Spacer(modifier = Modifier.width(2.dp))
+                                    Text(
+                                        text = dashboardChat.getDisplayTime(today00),
+                                        fontSize = 10.sp,
+                                        maxLines = 1,
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                                     )
 
+                                }
                             }
 
                         }
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            text = dashboardChat.getMessageText(),
-                            fontSize = 13.sp,
-                            fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
-                            color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = dashboardChat.getMessageText(),
+                                fontSize = 13.sp,
+                                fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f),
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                            )
 
-                        dashboardChat.unseenMessageFlow?.collectAsState(0)?.let {
-                            if (it.value != 0L)
-                                MessageCount(it.value.toString())
+                            dashboardChat.unseenMessageFlow?.collectAsState(0)?.let {
+                                if (it.value != 0L)
+                                    MessageCount(it.value.toString())
+                            }
+                            if (lastMessage.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    modifier = Modifier.height(20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
 
-                        }
-                        if (lastMessage.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                modifier = Modifier.height(20.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
+                                    Text(
+                                        text = lastMessage,
+                                        fontSize = 13.sp,
+                                        fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W700 else FontWeight.W400,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f),
+                                        color = if (dashboardChat.hasUnseenMessages())
+                                            androidx.compose.material3.MaterialTheme.colorScheme.tertiary else
+                                            androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                                    )
 
-                                Text(
-                                    text = lastMessage,
-                                    fontSize = 13.sp,
-                                    fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W700 else FontWeight.W400,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f),
-                                    color = if (dashboardChat.hasUnseenMessages())
-                                        androidx.compose.material3.MaterialTheme.colorScheme.tertiary else
-                                        androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                                )
-
-                                dashboardChat.unseenMessageFlow?.collectAsState(0)?.let {
-                                    if (it.value != 0L) MessageCount(it.value.toString())
+                                    dashboardChat.unseenMessageFlow?.collectAsState(0)?.let {
+                                        if (it.value != 0L) MessageCount(it.value.toString())
+                                    }
                                 }
                             }
                         }
@@ -248,7 +200,7 @@ fun ChatRow(
                 }
             }
         }
-    }
+
 
 
 @Composable

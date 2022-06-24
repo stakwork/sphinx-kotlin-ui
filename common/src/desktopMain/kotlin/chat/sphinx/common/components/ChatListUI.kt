@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -34,10 +36,14 @@ fun ChatListUI() {
                 SphinxSplash()
             }
             is ChatListData.PopulatedChatListData -> {
+//                val counters = remember { chatListData.dashboardChats.toMutableStateList() }
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(4.dp)
                 ) {
+//                    itemsIndexed(chatListData.dashboardChats){index,chat->
+//                        ChatRow(counters.get(index))
+//                    }
                     items(chatListData.dashboardChats) { dashboardChat ->
                         ChatRow(dashboardChat)
                     }

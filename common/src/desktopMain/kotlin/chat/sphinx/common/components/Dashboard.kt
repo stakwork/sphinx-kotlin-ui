@@ -225,7 +225,7 @@ fun SphinxChatDetailBottomAppBar(
                         .padding(horizontal = 6.dp, vertical = 4.dp)
                         .height(24.dp),
                     fontSize = 10.sp,
-                    placeholderText = "Message...", onValueChange = {},value=""
+                    placeholderText = "Message...", onValueChange = chatViewModel::onMessageTextChanged,value=chatViewModel.editMessageState.messageText
                 )
             }
 

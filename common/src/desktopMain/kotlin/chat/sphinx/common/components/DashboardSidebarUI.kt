@@ -139,8 +139,10 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                             .height(30.dp),
                         fontSize = 14.sp,
                         placeholderText = "Search",
-                        onValueChange = {},
-                        value = ""
+                        onValueChange = { input ->
+                            searchText = input
+                        },
+                        value = searchText
                     )
                 },
                 elevation = 8.dp,
