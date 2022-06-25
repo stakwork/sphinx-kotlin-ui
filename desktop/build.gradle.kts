@@ -46,6 +46,9 @@ compose.desktop {
     application {
         mainClass = "MainKt"
         nativeDistributions {
+            // Modules suggested by suggestRuntimeModules (avoids the ClassNotFoundException)
+            modules("java.instrument", "java.management", "java.prefs", "java.sql", "jdk.unsupported")
+
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
             packageVersion = "1.0.0"
