@@ -10,10 +10,7 @@ object Res {
         const val sphinx_logo = "drawable/sphinx_logo.xml"
         const val profile_avatar = "drawable/profile_avatar_circle.xml"
         const val IC_KEY = "drawable/ic_key.xml"
-        const val existing_user_image = "drawable/existinguserimage.png"
-        const val new_user_image = "drawable/newuserimage.png"
         const val enter_pin = "drawable/ic_enter_pin.xml"
-        const val landing_page_image = "drawable/landingpageimage.png"
         const val LANDING_WORD_MARK =  "drawable/ic_wordmark.xml"
         const val connection_image =  "drawable/ic_preloader.xml"
         const val ic_done =  "drawable/ic_done.xml"
@@ -21,6 +18,13 @@ object Res {
         const val ic_giphy =  "drawable/ic_giphy_logo_1.xml"
         const val ic_boost_green =  "drawable/ic_boost_green.xml"
         const val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"
+
+        const val existing_user_image = "drawable/existinguserimage.png"
+        const val new_user_image = "drawable/newuserimage.png"
+        const val splash_background = "drawable/splash_background.png"
+        const val landing_page_image = "drawable/landingpageimage.png"
+
+        const val connection_animation =  "drawable/connecting.gif"
     }
 
     object string {

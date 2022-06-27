@@ -12,11 +12,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults.textFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -27,29 +29,23 @@ fun PriceChip(
 ) {
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
-//        contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,
         shape = RoundedCornerShape(32.dp),
-//        border = BorderStroke(
-//            width = 1.dp,
-//            color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
-//        ),
-//        modifier = modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer,)
+        modifier = modifier
     ) {
         Row(
             modifier = Modifier.padding(
-                end = 8.dp
+                horizontal = 8.dp,
+                vertical = 4.dp
             ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Price:",
-                style = MaterialTheme.typography.body2.copy(fontSize = 12.sp),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.W700,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(
-                    start = 8.dp,
-                    end = 2.dp,
-                    top = 8.dp,
-                    bottom = 8.dp
+                    4.dp
                 )
 
             )
@@ -59,10 +55,16 @@ fun PriceChip(
                 value = price ?: "",
                 singleLine = true,
                 modifier = Modifier
-                    .size(width = 40.dp, height = 20.dp).background(
+                    .size(width = 40.dp, height = 32.dp)
+                    .background(
                         androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer.copy(alpha = .8f),
                     MaterialTheme.shapes.small,
-                ).clip(RoundedCornerShape(10.dp)),
+                ).clip(RoundedCornerShape(percent = 50)),
+                colors = textFieldColors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
                 onValueChange = { newValue -> price = newValue },
             )
         }

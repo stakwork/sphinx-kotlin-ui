@@ -1,5 +1,6 @@
 package chat.sphinx.common.components
 
+import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.EmojiEmotions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -37,6 +39,8 @@ import chat.sphinx.platform.imageResource
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
+import views.LoadingShimmerEffect
+import views.ShimmerCircleAvatar
 import java.awt.Cursor
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -128,32 +132,33 @@ actual fun Dashboard(
 fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat) {
     val chatName = dashboardChat.chatName ?: "Unknown Chat"
 
-    TopAppBar(title = {
-        Column {
-            Text(
-                text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = "Contributed: 1285 sats",
-                fontSize = 14.sp,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-            )
-        }
-        // TODO: Lighting Indicator...
-    },
-
+    TopAppBar(
+        modifier = Modifier.height(60.dp),
+        title = {
+            Column {
+                Text(
+                    text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Contributed: 0 sats",
+                    fontSize = 14.sp,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                )
+            }
+            // TODO: Lighting Indicator...
+        },
         backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
         contentColor = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
         elevation = 8.dp,
         navigationIcon = {
-            IconButton(onClick = {}) {
-                Icon(
-                    imageResource(Res.drawable.sphinx_logo),
-                    contentDescription = chatName,
-                    modifier = Modifier.size(40.dp)
-                )
-            }
+            Spacer(modifier = Modifier.width(14.dp))
+            PhotoUrlImage(
+                dashboardChat.photoUrl,
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+            )
         },
         actions = {
             IconButton(onClick = {}) {
@@ -180,102 +185,98 @@ fun SphinxChatDetailBottomAppBar(
 ) {
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().height(60.dp),
         elevation = 8.dp
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             IconButton(
                 onClick = { },
                 modifier = Modifier.clip(CircleShape)
-                    .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary).size(26.dp),
+                    .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                    .size(30.dp),
             ) {
                 Icon(
                     Icons.Default.Add,
                     contentDescription = "content description",
                     tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(21.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(10.dp))
-            IconButton(onClick = {}, modifier = Modifier.height(17.dp).width(14.dp)) {
+            Spacer(modifier = Modifier.width(12.dp))
+            IconButton(onClick = {}, modifier = Modifier.height(25.dp).width(18.dp)) {
                 Image(
-                    painter = imageResource(Res.drawable.ic_giphy),
-                    contentDescription = "giphy",
-                    contentScale = ContentScale.FillBounds,
-
+                        painter = imageResource(Res.drawable.ic_giphy),
+                        contentDescription = "giphy",
+                        contentScale = ContentScale.FillBounds
                     )
             }
-            Spacer(modifier = Modifier.width(4.dp))
             IconButton(
                 onClick = {},
                 modifier = Modifier.clip(CircleShape)
-                    .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background).size(26.dp)
-                    .padding(top = 2.dp),
+                    .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+                    .wrapContentSize(),
             ) {
                 Icon(
                     Icons.Outlined.EmojiEmotions,
                     contentDescription = "Emoji",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.size(26.dp)
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(30.dp),
                 )
             }
-            Spacer(modifier = Modifier.width(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically
             ) {
-
                 CustomTextField(
                     trailingIcon = null,
                     modifier = Modifier.background(
                             androidx.compose.material3.MaterialTheme.colorScheme.surface,
                             RoundedCornerShape(percent = 50)
-                        ).padding(horizontal = 6.dp, vertical = 4.dp).height(24.dp),
-                    fontSize = 10.sp,
+                        ).padding(horizontal = 6.dp, vertical = 4.dp).height(32.dp),
+                    color = Color.White,
+                    fontSize = 16.sp,
                     placeholderText = "Message...",
                     onValueChange = chatViewModel::onMessageTextChanged,
                     value = chatViewModel.editMessageState.messageText
                 )
             }
-
-            Spacer(modifier = Modifier.width(6.dp))
             CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-//                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     PriceChip()
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     IconButton(
                         onClick = chatViewModel::onSendMessage,
                         modifier = Modifier.clip(CircleShape)
-                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary).size(28.dp)
+                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                            .size(30.dp),
                     ) {
                         Icon(
-                            Icons.Default.Send,
-                            contentDescription = "Send",
+                            Icons.Default.Add,
+                            contentDescription = "content description",
                             tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(21.dp)
                         )
                     }
                     // TODO: Record Action
-                    Spacer(modifier = Modifier.width(4.dp))
                     IconButton(
                         onClick = {},
                         modifier = Modifier.clip(CircleShape)
                             .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-                            .size(30.dp),
+                            .wrapContentSize(),
                     ) {
                         Icon(
                             Icons.Default.Mic,
                             contentDescription = "Microphone",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.size(22.dp)
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(27.dp)
                         )
                     }
                 }

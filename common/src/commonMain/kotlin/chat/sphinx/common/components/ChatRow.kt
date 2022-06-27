@@ -75,15 +75,7 @@ fun ChatRow(
                 photoUrl.value.photoUrl,
                 modifier = Modifier
                     .size(46.dp)
-                    .clip(CircleShape), effect = {
-                    Box (modifier = Modifier
-                        .size(46.dp)
-                        .clip(CircleShape)){
-                        LoadingShimmerEffect {
-                            ShimmerCircleAvatar(it)
-                        }
-                    }
-                }   // add a border (optional)
+                    .clip(CircleShape)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -157,11 +149,6 @@ fun ChatRow(
                         modifier = Modifier.weight(1f),
                         color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                     )
-
-                    dashboardChat.unseenMessageFlow?.collectAsState(0)?.let {
-                        if (it.value != 0L)
-                            MessageCount(it.value.toString())
-                    }
                     if (lastMessage.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(

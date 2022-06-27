@@ -176,6 +176,7 @@ fun CustomTextField(
     trailingIcon: (@Composable () -> Unit)? = null,
     placeholderText: String = "Placeholder",
     value: String,
+    color: Color? = null,
     onValueChange: (String) -> Unit,
     fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
 ) {
@@ -189,7 +190,7 @@ fun CustomTextField(
             fontFamily = Roboto,
             fontWeight = FontWeight.Normal,
             fontSize = 14.sp,
-            color = place_holder_text
+            color = color ?: place_holder_text
         ),
         decorationBox = { innerTextField ->
             Row(
