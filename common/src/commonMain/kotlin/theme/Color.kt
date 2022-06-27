@@ -1,4 +1,5 @@
 package com.example.compose
+
 import androidx.compose.ui.graphics.Color
 
 
@@ -65,3 +66,26 @@ val error = Color(0xFFba1b1b)
 val place_holder_text = Color(0xFF556171)
 val primary_red = Color(0xFFED7474)
 val primary_green = Color(0xFF49C998)
+
+
+val randomColor1 = Color(0xFF7077FF)
+val randomColor2 = Color(0xFFDBD23C)
+val randomColor3 = Color(0xFFF57D25)
+val randomColor4 = Color(0xFF9F70FF)
+val randomColor5 = Color(0xFF9BC351)
+val randomColor6 = Color(0xFFFF3D3D)
+val randomColor7 = Color(0xFFC770FF)
+val randomColor8 = Color(0xFF62C784)
+val randomColor9 = Color(0xFFC99966)
+val randomColor10 = Color(0xFFFF70E9)
+val randomColor21 = Color(0xFF76D6CA)
+val randomColor11 = Color(0xFFABDB50)
+val randomColor12 = Color(0xFFFF708B)
+val randomColor13 = Color(0xFF5AD7F7)
+val randomColor14 = Color(0xFF5FC455)
+val randomColor15 = Color(0xFFFF9270)
+val randomColor16 = Color(0xFF3FABFF)
+val randomColor17 = Color(0xFF56D978)
+val randomColor18 = Color(0xFFFFBA70)
+val randomColor19 = Color(0xFF5078F2)
+val randomColor20 = Color(0xFF618AFF)

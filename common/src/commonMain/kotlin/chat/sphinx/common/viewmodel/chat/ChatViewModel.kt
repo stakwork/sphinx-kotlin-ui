@@ -145,7 +145,7 @@ abstract class ChatViewModel(
         return "#212121"
     }
 
-    private suspend fun getOwner(): Contact {
+    suspend fun getOwner(): Contact {
         return contactRepository.accountOwner.value.let { contact ->
             if (contact != null) {
                 contact

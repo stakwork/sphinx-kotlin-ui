@@ -34,6 +34,7 @@ import chat.sphinx.common.state.MessageListState
 import chat.sphinx.wrapper.message.media.isImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import utils.getRandomColorRes
 
 
 @Composable
@@ -69,7 +70,12 @@ fun MessageListUI(
                 LazyColumn(
                     state = listState,
                     reverseLayout = true,
-                    contentPadding = PaddingValues(bottom = 45.dp, top = 8.dp, start = 8.dp, end = 8.dp),
+                    contentPadding = PaddingValues(
+                        bottom = 45.dp,
+                        top = 8.dp,
+                        start = 8.dp,
+                        end = 8.dp
+                    ),
                     modifier = Modifier.background(MaterialTheme.colorScheme.background)
                 ) {
                     items(
@@ -79,7 +85,7 @@ fun MessageListUI(
                         ChatMessageUI(
                             chatMessage,
                             messageListData.chatViewModel.editMessageState,
-                            messageListData.chatViewModel
+                            messageListData.chatViewModel, getRandomColorRes()
                         )
                     }
                 }
@@ -151,7 +157,8 @@ fun MessageListUI(
                                 .padding(start = 1.dp, top = 25.dp, end = 1.dp, bottom = 25.dp)
                                 .clickable(
                                     onClick = {
-                                        messageListData.chatViewModel.editMessageState.replyToMessage.value = null
+                                        messageListData.chatViewModel.editMessageState.replyToMessage.value =
+                                            null
                                     }
                                 ),
                         )

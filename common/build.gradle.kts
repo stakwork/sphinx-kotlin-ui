@@ -39,6 +39,7 @@ kotlin {
                 implementation(compose.material3)
                 api(project(":sphinx-kotlin-core"))
                 implementation("com.alialbaali.kamel:kamel-image:0.3.0")
+//                implementation ("com.google.accompanist:accompanist-flowlayout:0.24.12-rc")
             }
         }
         val commonTest by getting {

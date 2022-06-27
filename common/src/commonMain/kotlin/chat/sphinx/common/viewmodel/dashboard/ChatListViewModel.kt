@@ -41,9 +41,11 @@ suspend fun ArrayList<DashboardChat>.updateDashboardChats(
 class ChatListViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
-//    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
+
+    //    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
     val sphinxNotificationManager = createSphinxNotificationManager()
-    val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+    val repositoryDashboard =
+        SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
 
     private val _contactsStateFlow: MutableStateFlow<List<Contact>> by lazy {
         MutableStateFlow(emptyList())
@@ -64,9 +66,10 @@ class ChatListViewModel {
 
     init {
         scope.launch(dispatchers.mainImmediate) {
-            repositoryDashboard.getAllNotBlockedContacts.distinctUntilChanged().collect { contacts ->
-                updateChatListContacts(contacts)
-            }
+            repositoryDashboard.getAllNotBlockedContacts.distinctUntilChanged()
+                .collect { contacts ->
+                    updateChatListContacts(contacts)
+                }
         }
 
         scope.launch(dispatchers.mainImmediate) {
@@ -126,12 +129,16 @@ class ChatListViewModel {
 
                                         contact.inviteId?.let { inviteId ->
                                             contactInvite = withContext(dispatchers.io) {
-                                                repositoryDashboard.getInviteById(inviteId).firstOrNull()
+                                                repositoryDashboard.getInviteById(inviteId)
+                                                    .firstOrNull()
                                             }
                                         }
                                         if (contactInvite != null) {
                                             newList.add(
-                                                DashboardChat.Inactive.Invite(contact, contactInvite)
+                                                DashboardChat.Inactive.Invite(
+                                                    contact,
+                                                    contactInvite
+                                                )
                                             )
                                             continue
                                         }
@@ -197,10 +204,11 @@ class ChatListViewModel {
             }
 
             withContext(dispatchers.default) {
-                val currentChats: MutableList<DashboardChat> = when (val populatedChats = ChatListState.screenState()) {
-                    is ChatListData.PopulatedChatListData -> populatedChats.dashboardChats.toMutableList()
-                    else -> mutableListOf()
-                }
+                val currentChats: MutableList<DashboardChat> =
+                    when (val populatedChats = ChatListState.screenState()) {
+                        is ChatListData.PopulatedChatListData -> populatedChats.dashboardChats.toMutableList()
+                        else -> mutableListOf()
+                    }
                 val chatContactIds = mutableListOf<ContactId>()
 
                 var updateChatViewState = false
@@ -264,7 +272,8 @@ class ChatListViewModel {
                             }
                         }
 
-                        var updatedContactChat: DashboardChat = DashboardChat.Inactive.Conversation(contact)
+                        var updatedContactChat: DashboardChat =
+                            DashboardChat.Inactive.Conversation(contact)
 
                         for (chat in currentChats.toList()) {
                             if (chat is DashboardChat.Active.Conversation) {
@@ -281,7 +290,8 @@ class ChatListViewModel {
 
                         if (updatedContactChat is DashboardChat.Inactive.Conversation) {
                             //Contact unblocked
-                            repositoryDashboard.getConversationByContactIdFlow(contact.id).firstOrNull()?.let { contactChat ->
+                            repositoryDashboard.getConversationByContactIdFlow(contact.id)
+                                .firstOrNull()?.let { contactChat ->
                                 val message: Message? = contactChat.latestMessageId?.let {
                                     repositoryDashboard.getMessageById(it).firstOrNull()
                                 }

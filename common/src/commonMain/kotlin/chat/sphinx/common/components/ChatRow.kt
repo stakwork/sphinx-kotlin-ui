@@ -1,7 +1,6 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -34,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 
 
 import views.LoadingShimmerEffect
+import views.ShimmerCircleAvatar
 import views.ShimmerGridItem
 
 
@@ -77,8 +76,12 @@ fun ChatRow(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape), effect = {
-                    LoadingShimmerEffect {
-                        ShimmerGridItem(it)
+                    Box (modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)){
+                        LoadingShimmerEffect {
+                            ShimmerCircleAvatar(it)
+                        }
                     }
                 }   // add a border (optional)
             )
