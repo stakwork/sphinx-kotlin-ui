@@ -85,6 +85,8 @@ fun main() = application {
                         Item("About", icon = sphinxIcon, onClick = { })
                         Item("Remove Account from this machine", onClick = {
                             sphinxStore.removeAccount()
+                            // TODO: Hack as logic to recreate database needs to be reworked...
+                            exitApplication()
                         })
                         Item("Exit", onClick = ::exitApplication)
                     }
