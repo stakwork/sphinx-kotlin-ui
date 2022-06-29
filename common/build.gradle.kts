@@ -39,6 +39,7 @@ kotlin {
                 implementation(compose.material3)
                 api(project(":sphinx-kotlin-core"))
                 implementation("com.alialbaali.kamel:kamel-image:0.3.0")
+                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
 //                implementation ("com.google.accompanist:accompanist-flowlayout:0.24.12-rc")
             }
         }
@@ -93,5 +94,6 @@ dependencies {
     implementation("com.google.android.material:material:1.6.1")
 //    implementation ("com.github.skydoves:landscapist-glide:1.3.6")
     implementation ("io.coil-kt:coil-compose:1.4.0")
+    implementation("androidx.compose.material:material:1.0.0-beta04")
 //    implementation("androidx.navigation:navigation-runtime-ktx:2.3.5")
 }

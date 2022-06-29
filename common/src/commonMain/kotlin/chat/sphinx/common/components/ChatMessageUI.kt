@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.chat.callview.JitsiAudioVideoCall
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -47,7 +49,7 @@ fun ChatMessageUI(
     editMessageState: EditMessageState,
     chatViewModel: ChatViewModel, color: Color
 ) {
-
+    print("rebuilding ${chatMessage.message.id}")
 
     Column(modifier = Modifier.padding(8.dp)) {
 
@@ -94,7 +96,10 @@ fun ChatMessageUI(
                                 editMessageState, color
                             ) // display icons according to different conditions
                         }
-                        ChatCard(chatMessage, color)
+                        if(chatMessage.message.isSphinxCallLink){
+                            JitsiAudioVideoCall(chatMessage)
+                        }
+                        else ChatCard(chatMessage, color)
 
                     }
 
@@ -105,7 +110,6 @@ fun ChatMessageUI(
                     val url = remember { mutableStateOf<PhotoUrl?>(null) }
                     coroutineScope.launch {
                         url.value = chatViewModel.getOwner().photoUrl
-
                     }
                     ImageProfile(url.value, color)
 //                    Box(modifier = Modifier.size(35.dp)) {
@@ -359,6 +363,7 @@ fun ChatCard(chatMessage: ChatMessage, color: Color) {
 
 @Composable
 fun BoostedFooter(chatMessage: ChatMessage) {
+
     val reaction = chatMessage.message.reactions?.get(0)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Image(
@@ -368,32 +373,39 @@ fun BoostedFooter(chatMessage: ChatMessage) {
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = "${reaction?.amount?.value} sats",
+            text = "${chatMessage.message.reactions?.sumOf { it.amount.value }} sats",
             color = MaterialTheme.colorScheme.tertiary,
             fontSize = 11.sp
         )
         Spacer(modifier = Modifier.width(4.dp))
-        Spacer(modifier = Modifier.fillMaxWidth(0.8f))
-        reaction?.senderPic?.let {
-            PhotoUrlImage(
-                photoUrl = it,
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(CircleShape)                       // clip to the circle shape
-                    .border(2.dp, Color.Gray, CircleShape),
-                effect = {
-                    Box(
-                        modifier = androidx.compose.ui.Modifier
+//        Spacer(modifier = Modifier.fillMaxWidth((0.8f- (chatMessage.message.reactions?.size?.div(2*2))?.toFloat()!!)))
+        Box(modifier = Modifier.fillMaxWidth(0.8f).padding(end = 20.dp), contentAlignment = Alignment.CenterEnd) {
+            chatMessage.message.reactions?.forEachIndexed { index, it ->
+                Box(modifier = Modifier.align(Alignment.CenterEnd).absoluteOffset((index*15).dp,0.dp)){
+                    PhotoUrlImage(
+                        photoUrl = it.senderPic,
+                        modifier = Modifier
                             .size(30.dp)
-                            .clip(CircleShape)
-                    ) {
-                        LoadingShimmerEffect {
-                            ShimmerCircleAvatar(it)
-                        }
-                    }
-                },
-            )
+                            .clip(CircleShape)                       // clip to the circle shape
+                            .border(2.dp, Color.Gray, CircleShape),
+                        effect = {
+                            Box(
+                                modifier = androidx.compose.ui.Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                            ) {
+                                LoadingShimmerEffect {
+                                    ShimmerCircleAvatar(it)
+                                }
+                            }
+                        },
+                    )
+                }
+            }
         }
+//        reaction?.senderPic?.let {
+//
+//        }
 
     }
 }

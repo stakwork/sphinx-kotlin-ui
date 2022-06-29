@@ -70,9 +70,9 @@ fun ChatRow(
         }.height(62.dp).padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp),
     ) {
         Row {
-            val photoUrl = remember { mutableStateOf(dashboardChat) }
+//            val photoUrl = remember { mutableStateOf(dashboardChat) }
             PhotoUrlImage(
-                photoUrl.value.photoUrl,
+                dashboardChat.photoUrl,
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
