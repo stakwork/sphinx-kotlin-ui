@@ -15,6 +15,7 @@ import chat.sphinx.common.state.AppState
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.state.ScreenType
 import chat.sphinx.common.viewmodel.SphinxStore
+import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.DesktopSphinxNotificationManager
 import chat.sphinx.utils.getPreferredWindowSize
@@ -70,7 +71,11 @@ fun main() = application {
                     SphinxSplash()
                     LaunchedEffect(windowState) {
                         delay(1000L)
-                        ContentState.onContentReady(ScreenType.DashboardScreen)
+                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+                            ContentState.onContentReady(ScreenType.DashboardScreen)
+                        } else {
+                            ContentState.onContentReady(ScreenType.LandingScreen)
+                        }
                     }
                 }
             }
@@ -91,7 +96,7 @@ fun main() = application {
                         Item("About", icon = sphinxIcon, onClick = { })
                         Item("Remove Account from this machine", onClick = {
                             sphinxStore.removeAccount()
-                            // TODO: Hack as logic to recreate database needs to be reworked...
+                            // TODO: Hack as logic to recreate database in the same process needs to be reworked...
                             exitApplication()
                         })
                         Item("Exit", onClick = ::exitApplication)
