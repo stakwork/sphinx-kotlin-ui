@@ -1,4 +1,5 @@
 import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -18,6 +19,7 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.DesktopSphinxNotificationManager
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
+import kotlinx.coroutines.delay
 
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -66,6 +68,10 @@ fun main() = application {
             ) {
                 AppTheme {
                     SphinxSplash()
+                    LaunchedEffect(windowState) {
+                        delay(1000L)
+                        ContentState.onContentReady(ScreenType.DashboardScreen)
+                    }
                 }
             }
         }

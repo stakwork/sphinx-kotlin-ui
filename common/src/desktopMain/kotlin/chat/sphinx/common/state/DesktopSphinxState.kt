@@ -22,8 +22,6 @@ object ContentState {
 
         isContentReady.value = false
 
-        init()
-
         return this
     }
 
@@ -36,17 +34,6 @@ object ContentState {
     private val isContentReady = mutableStateOf(false)
     fun isContentReady(): Boolean {
         return isContentReady.value
-    }
-
-    // application content initialization
-    private fun init() {
-        if (isContentReady.value)
-            return
-
-        // TODO: Check if tor starts up...
-        SphinxContainer.networkModule.torManager.addListener(
-            TorManagerListener()
-        )
     }
 
     // preview/fullscreen image managing
@@ -73,39 +60,10 @@ object ContentState {
         }
     }
 
-    private fun onContentReady(screenType: ScreenType) {
+    fun onContentReady(screenType: ScreenType) {
         AppState.screenState(screenType)
         isContentReady.value = true
         isAppReady.value = true
-    }
-
-    private class TorManagerListener: TorManagerEvent.Listener() {
-
-        override fun managerEventState(state: TorManagerEvent.State) {
-
-            when {
-                state.isOff -> {
-                    // TODO: Say we are off
-                }
-                state.isOn -> {
-                    // TODO: we are on...
-                    scope.launch(Dispatchers.IO) {
-                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-                            onContentReady(ScreenType.DashboardScreen)
-                        } else {
-                            onContentReady(ScreenType.LandingScreen)
-                        }
-                    }
-                }
-                state.isStarting -> {
-                    // TODO: Say we are starting...
-                }
-                state.isStopping -> {
-                    // TODO: Say we are stopping...
-                }
-
-            }
-        }
     }
 }
 
