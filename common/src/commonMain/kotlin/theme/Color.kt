@@ -63,6 +63,7 @@ val md_theme_dark_purple = Color(0xFFA986F9)
 
 val seed = Color(0xFF3961dc)
 val error = Color(0xFFba1b1b)
+val badge_red = Color(0xFFFF5252)
 val place_holder_text = Color(0xFF556171)
 val primary_red = Color(0xFFED7474)
 val primary_green = Color(0xFF49C998)

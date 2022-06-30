@@ -15,21 +15,32 @@ class LockedDashboardViewModel: PINHandlingViewModel() {
         setPINState {
             copy(
                 sphinxPIN = text,
-                errorMessage = null
+                errorMessage = null,
+                loading = false,
             )
         }
-        if(text.length==6){
+        if (text.length==6) {
             onSubmitPIN()
         }
     }
 
     override fun onSubmitPIN() {
-        val password = Password(pinState.sphinxPIN.toCharArray())
+        val text = pinState.sphinxPIN.toCharArray()
+        val password = Password(text)
         val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
         val userInput = authenticationCoreManager.getNewUserInput()
         pinState.sphinxPIN.forEach {
             userInput.addCharacter(it)
         }
+
+        setPINState {
+            copy(
+                errorMessage = null,
+                infoMessage = null,
+                loading = true,
+            )
+        }
+
         val request = AuthenticationRequest.LogIn(password)
 
         scope.launch(SphinxContainer.appModule.dispatchers.default) {
@@ -42,7 +53,8 @@ class LockedDashboardViewModel: PINHandlingViewModel() {
                         setPINState {
                             copy(
                                 infoMessage = "Valid PIN",
-                                errorMessage = null
+                                errorMessage = null,
+                                loading = false,
                             )
                         }
 
@@ -52,7 +64,8 @@ class LockedDashboardViewModel: PINHandlingViewModel() {
                         setPINState {
                             copy(
                                 infoMessage = "Invalid PIN",
-                                errorMessage = null
+                                errorMessage = null,
+                                loading = false,
                             )
                         }
                     }
@@ -60,7 +73,8 @@ class LockedDashboardViewModel: PINHandlingViewModel() {
                         setPINState {
                             copy(
                                 infoMessage = "Invalid PIN",
-                                errorMessage = null
+                                errorMessage = null,
+                                loading = false,
                             )
                         }
                     }
@@ -68,6 +82,5 @@ class LockedDashboardViewModel: PINHandlingViewModel() {
                 }
             }
         }
-
     }
 }
