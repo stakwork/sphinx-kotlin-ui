@@ -47,10 +47,10 @@ import views.ShimmerCircleAvatar
 fun ChatMessageUI(
     chatMessage: ChatMessage,
     editMessageState: EditMessageState,
-    chatViewModel: ChatViewModel,
-    color: Color
+    chatViewModel: ChatViewModel, color: Color
 ) {
     print("rebuilding ${chatMessage.message.id}")
+
     Column(modifier = Modifier.padding(8.dp)) {
 
         Row(
@@ -58,10 +58,15 @@ fun ChatMessageUI(
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start
         ) {
             Row(
-                verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth(0.8f),
+                verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth(  0.8f ),
             ) {
                 if (chatMessage.isReceived) {
-                    ImageProfile(chatMessage, color)
+                    if (chatMessage.message.senderPic != null && chatMessage.message.senderPic.toString() != "null")
+
+                        ImageProfile(chatMessage, color) // User Image Profile
+                    else {
+                        ImageProfile(chatMessage, color)
+                    }
                     Spacer(modifier = Modifier.width(12.dp))
                 }
                 Column(
@@ -81,7 +86,7 @@ fun ChatMessageUI(
                         }
                     } else {
                         Row(
-                            modifier = Modifier.fillMaxWidth(0.9f),
+                            modifier = Modifier.fillMaxWidth(if (chatMessage.isReceived.not()) 1.0f else 0.9f),
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -99,26 +104,29 @@ fun ChatMessageUI(
                     }
 
                 }
-                if (chatMessage.isReceived.not()) {
-                    Spacer(modifier = Modifier.width(12.dp))
-                    val coroutineScope = rememberCoroutineScope()
-                    val url = remember { mutableStateOf<PhotoUrl?>(null) }
-                    coroutineScope.launch {
-                        url.value = chatViewModel.getOwner().photoUrl
-                    }
-                    ImageProfile(url.value, color)
-//                    Box(modifier = Modifier.size(35.dp)) {
-//                        var url:PhotoUrl?=null
-//                        LaunchedEffect(key1="1"){
-//                            url = chatViewModel.getOwner().photoUrl
-//
-//                        }
-//
-//
+//                if (chatMessage.isReceived.not()) {
+//                    Spacer(modifier = Modifier.width(12.dp))
+//                    val coroutineScope = rememberCoroutineScope()
+//                    val url = remember { mutableStateOf<PhotoUrl?>(null) }
+//                    coroutineScope.launch {
+//                        url.value = chatViewModel.getOwner().photoUrl
 //                    }
-                }
+//                    ImageProfile(url.value, color)
+////                    Box(modifier = Modifier.size(35.dp)) {
+////                        var url:PhotoUrl?=null
+////                        LaunchedEffect(key1="1"){
+////                            url = chatViewModel.getOwner().photoUrl
+////
+////                        }
+////
+////
+////                    }
+//                }
+
+
             }
         }
+
     }
 }
 
@@ -247,7 +255,7 @@ fun ChatCard(chatMessage: ChatMessage, color: Color) {
                 } else {
                     chatMessage.message.retrieveTextToShow()?.let { messageText ->
                         Row(
-                            modifier = Modifier.fillMaxWidth(0.9f),
+                            modifier = Modifier.fillMaxWidth(if(chatMessage.isReceived.not()) 1.0f else 0.9f),
 //                            horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -473,12 +481,23 @@ fun SenderNameWithTime(replyMessage: Message, color: Color) {
 @Composable
 fun ImageProfile(chatMessage: ChatMessage, color: Color) {
     PhotoUrlImage(
-        chatMessage.contact?.photoUrl ?: chatMessage.message.senderPic,
+        chatMessage.message.senderPic,
         modifier = Modifier
             .size(30.dp)
-            .clip(CircleShape),
-        color = color,
-        firstNameLetter = chatMessage.message.senderAlias?.value?.split("")?.get(1)
+            .clip(CircleShape)                       // clip to the circle shape
+            .border(2.dp, Color.Gray, CircleShape), effect = {
+            Box(
+                modifier = androidx.compose.ui.Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+            ) {
+                LoadingShimmerEffect {
+                    ShimmerCircleAvatar(it)
+                }
+            }
+        },
+        color = color, firstNameLetter = chatMessage.message.senderAlias?.value?.split("")?.get(1)
+        // add a border (optional)
     )
 }
 
@@ -488,8 +507,20 @@ fun ImageProfile(profileURL: PhotoUrl?, color: Color) {
         profileURL,
         modifier = Modifier
             .size(30.dp)
-            .clip(CircleShape),
+            .clip(CircleShape)                       // clip to the circle shape
+            .border(2.dp, Color.Gray, CircleShape), effect = {
+            Box(
+                modifier = androidx.compose.ui.Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+            ) {
+                LoadingShimmerEffect {
+                    ShimmerCircleAvatar(it)
+                }
+            }
+        },
         color = color
+        // add a border (optional)
     )
 }
 
