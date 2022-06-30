@@ -23,7 +23,7 @@ kotlin {
     }
     sourceSets {
         val jvmMain by getting {
-            val kmpTorBinaryVersion = "0.4.6.10"
+            val kmpTorBinaryVersion = "0.4.7.8"
 
             dependencies {
                 implementation(project(":common"))
