@@ -80,6 +80,10 @@ abstract class ChatViewModel(
             messageRepository.getAllMessagesToShowByChatId(chat.id, 1000).distinctUntilChanged().collect { messages ->
                 processChatMessages(chat, messages)
             }
+        } ?: run {
+            MessageListState.screenState(
+                MessageListData.EmptyMessageListData
+            )
         }
     }
 

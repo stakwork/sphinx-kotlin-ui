@@ -9,7 +9,7 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import kotlinx.coroutines.flow.Flow
 
 abstract class MessageListData {
-    class EmptyMessageListData: MessageListData()
+    object EmptyMessageListData: MessageListData()
 
     class PopulatedMessageListData(
         val messages: List<ChatMessage>
@@ -17,7 +17,7 @@ abstract class MessageListData {
 }
 
 object MessageListState {
-    private val screen: MutableState<MessageListData> = mutableStateOf(MessageListData.EmptyMessageListData())
+    private val screen: MutableState<MessageListData> = mutableStateOf(MessageListData.EmptyMessageListData)
 
     fun screenState() : MessageListData {
         return screen.value

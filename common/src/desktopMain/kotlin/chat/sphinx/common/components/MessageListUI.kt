@@ -48,7 +48,7 @@ fun MessageListUI(
             is MessageListData.PopulatedMessageListData -> {
                 val listState = LazyListState()
                 val chatMessages = messageListData.messages
-                val items = rememberSaveable{ chatMessages.toMutableStateList() }
+//                val items = rememberSaveable{ chatMessages.toMutableStateList() }
 
                 if (chatMessages.isEmpty()) {
                     Box(
