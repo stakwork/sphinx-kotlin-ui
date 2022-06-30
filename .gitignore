@@ -54,3 +54,5 @@ Pipfile
 
 /desktop/dev.db
 /desktop/sphinx.db
+desktop/sphinx.db-wal
+desktop/sphinx.db-shm
