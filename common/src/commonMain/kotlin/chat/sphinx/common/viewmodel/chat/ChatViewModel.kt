@@ -1,5 +1,6 @@
 package chat.sphinx.common.viewmodel.chat
 
+import androidx.compose.ui.graphics.Color
 import androidx.paging.PagingData
 import androidx.paging.map
 import chat.sphinx.common.models.ChatMessage
@@ -9,12 +10,15 @@ import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.Response
+import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.createAttachmentFileDownload
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
+import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.contact.Contact
+import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.message.*
@@ -22,6 +26,7 @@ import chat.sphinx.wrapper.message.media.MessageMedia
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import utils.getRandomColorRes
 import java.io.InputStream
 
 suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
@@ -43,21 +48,22 @@ suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
 abstract class ChatViewModel(
     val chatId: ChatId?
 ) {
-    var _chatId: ChatId? = chatId
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
-    val sphinxNotificationManager = createSphinxNotificationManager()
-    val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
+    private val sphinxNotificationManager = createSphinxNotificationManager()
+    private val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
     val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
     val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
-    val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
-    val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
-    val attachmentFileDownloader: chat.sphinx.utils.AttachmentFileDownloader = createAttachmentFileDownload(
+    private val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
+    private val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
+    private val attachmentFileDownloader: chat.sphinx.utils.AttachmentFileDownloader = createAttachmentFileDownload(
         memeServerTokenHandler,
         memeInputStreamHandler
     )
+
+    private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
 
     init {
         scope.launch(dispatchers.mainImmediate) {
@@ -92,10 +98,18 @@ abstract class ChatViewModel(
         val contact = getContact()
 
         val chatMessages = messages.reversed().map { message ->
+
+            val colorKey = contact?.getColorKey() ?: message.getColorKey()
+            val colorInt = colorsHelper.getColorIntForKey(
+                colorKey,
+                Integer.toHexString(getRandomColorRes().hashCode())
+            )
+
             ChatMessage(
                 chat,
                 contact,
                 message,
+                Color(colorInt),
                 accountOwner = { owner },
                 boostMessage = {
                     boostMessage(chat, message.uuid)

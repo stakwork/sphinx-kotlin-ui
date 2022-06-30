@@ -1,12 +1,12 @@
 package chat.sphinx.common.components
 
+import androidx.annotation.ColorInt
+import androidx.annotation.Size
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +26,6 @@ import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.media.isImage
-import utils.getRandomColorRes
 
 
 @Composable
@@ -48,7 +46,6 @@ fun MessageListUI(
             is MessageListData.PopulatedMessageListData -> {
                 val listState = LazyListState()
                 val chatMessages = messageListData.messages
-//                val items = rememberSaveable{ chatMessages.toMutableStateList() }
 
                 if (chatMessages.isEmpty()) {
                     Box(
@@ -69,11 +66,13 @@ fun MessageListUI(
                         itemsIndexed(chatMessages, key = { index, item -> item.message.id }){ index, item ->
                             val currentItem = rememberSaveable{ item }
                             print("index is $index with value ${item.message.messageContent?.value}")
+
                             ChatMessageUI(
                                 currentItem,
                                 chatViewModel.editMessageState,
                                 chatViewModel,
-                                getRandomColorRes())
+                                currentItem.color
+                            )
                         }
                     }
                     VerticalScrollbar(

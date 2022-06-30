@@ -26,7 +26,6 @@ class ChatContactViewModel(
         chatId?.let { chatId ->
             emitAll(chatRepository.getChatByIdFlow(chatId))
         } ?: repositoryDashboard.getConversationByContactIdFlow(contactId).collect { chat ->
-            _chatId = chat?.id
             emit(chat)
         }
     }.distinctUntilChanged().shareIn(
