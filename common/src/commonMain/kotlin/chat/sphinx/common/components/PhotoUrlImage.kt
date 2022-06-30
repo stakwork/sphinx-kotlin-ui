@@ -58,7 +58,6 @@ fun PhotoUrlImage(
                     )
                 )
             }
-            // TODO: Setup a httpClient that integrates the tor proxy here...
         }
     }
     if (photoUrl != null) {
@@ -71,7 +70,6 @@ fun PhotoUrlImage(
             KamelImage(
                 resource = photoUrlResource,
                 contentDescription = "avatar",
-                animationSpec = tween(),
                 onLoading = {
 
                     if (effect != null) {
@@ -95,7 +93,8 @@ fun PhotoUrlImage(
                     )
                 },
                 contentScale = ContentScale.Crop,
-                modifier = modifier, crossfade = true
+                modifier = modifier,
+                crossfade = false
             )
         }
     } else {

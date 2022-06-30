@@ -34,6 +34,8 @@ import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
+import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
+import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
@@ -53,7 +55,7 @@ actual fun Dashboard(
     sphinxState: SphinxState
 ) {
     val splitterState = rememberSplitPaneState()
-    val hSplitterState = rememberSplitPaneState()
+    var chatViewModel: ChatViewModel? = null
 
     when (DashboardState.screenState()) {
         DashboardScreenType.Unlocked -> {
@@ -66,30 +68,40 @@ actual fun Dashboard(
                     DashboardSidebarUI(dashboardViewModel)
                 }
                 second(700.dp) {
-                    when (val chatDetailState = ChatDetailState.screenState()) {
-                        is ChatDetailData.EmptyChatDetailData -> {
-                            SphinxSplash()
+                    val chatDetailState = ChatDetailState.screenState()
+                    val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
+                    val dashboardChat = (chatDetailState as? ChatDetailData.SelectedChatDetailData)?.dashboardChat
+
+                    chatViewModel = when (chatDetailState) {
+                        is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
+                            ChatContactViewModel(null, chatDetailState.contactId!!)
                         }
-                        is ChatDetailData.SelectedChatDetailData -> {
-                            val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
-
-                            Scaffold(scaffoldState = scaffoldState, topBar = {
-                                SphinxChatDetailTopAppBar(chatDetailState.dashboardChat)
-                            }, bottomBar = {
-                                SphinxChatDetailBottomAppBar(chatDetailState.chatViewModel)
-                            }) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    MessageListUI()
-                                }
-
-                            }
+                        is ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail -> {
+                            ChatContactViewModel(chatDetailState.chatId!!, chatDetailState.contactId!!)
+                        }
+                        is ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail -> {
+                            ChatTribeViewModel(chatDetailState.chatId!!)
+                        }
+                        else -> {
+                            null
                         }
                     }
 
+                    Scaffold(scaffoldState = scaffoldState, topBar = {
+                        SphinxChatDetailTopAppBar(dashboardChat)
+                    }, bottomBar = {
+                        SphinxChatDetailBottomAppBar(chatViewModel)
+                    }) {
+                        Column(
+                            modifier = Modifier.fillMaxSize().background(color = androidx.compose.material3.MaterialTheme.colorScheme.background),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            chatViewModel?.let {
+                                MessageListUI(it)
+                            }
+                        }
+                    }
                 }
                 splitter {
                     visiblePart {
@@ -129,8 +141,28 @@ actual fun Dashboard(
 }
 
 @Composable
-fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat) {
-    val chatName = dashboardChat.chatName ?: "Unknown Chat"
+fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat?) {
+    if (dashboardChat == null) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .height(60.dp)
+                .fillMaxWidth()
+                .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+        ) {
+            Text(
+                modifier = Modifier.padding(16.dp, 0.dp),
+                text = "Open a conversation to start using Sphinx",
+                fontFamily = Roboto,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.W700,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+            )
+        }
+        return
+    }
+
+    val chatName = dashboardChat?.chatName ?: "Unknown Chat"
 
     TopAppBar(
         modifier = Modifier.height(60.dp),
@@ -181,7 +213,7 @@ fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SphinxChatDetailBottomAppBar(
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel?
 ) {
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
@@ -240,8 +272,12 @@ fun SphinxChatDetailBottomAppBar(
                     color = Color.White,
                     fontSize = 16.sp,
                     placeholderText = "Message...",
-                    onValueChange = chatViewModel::onMessageTextChanged,
-                    value = chatViewModel.editMessageState.messageText
+                    onValueChange = {
+                        if (chatViewModel != null) run {
+                            chatViewModel.onMessageTextChanged(it)
+                        }
+                    },
+                    value = chatViewModel?.editMessageState?.messageText ?: ""
                 )
             }
             CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
@@ -253,16 +289,20 @@ fun SphinxChatDetailBottomAppBar(
                     PriceChip()
                     Spacer(modifier = Modifier.width(10.dp))
                     IconButton(
-                        onClick = chatViewModel::onSendMessage,
+                        onClick = {
+                            if (chatViewModel != null) run {
+                                chatViewModel.onSendMessage()
+                            }
+                        },
                         modifier = Modifier.clip(CircleShape)
                             .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                             .size(30.dp),
                     ) {
                         Icon(
-                            Icons.Default.Add,
-                            contentDescription = "content description",
+                            Icons.Default.Send,
+                            contentDescription = "Send Message",
                             tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(21.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                     // TODO: Record Action

@@ -81,6 +81,10 @@ class ChatContactViewModel(
         }
     }
 
+    override suspend fun getContact(): Contact? {
+        return contactId?.let { contactRepository.getContactById(it).firstOrNull() }
+    }
+
     override var editMessageState: EditMessageState by mutableStateOf(initialState())
         protected set
 

@@ -46,7 +46,6 @@ abstract class ChatViewModel(
     var _chatId: ChatId? = chatId
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
-//    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
     val sphinxNotificationManager = createSphinxNotificationManager()
     val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
     val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
@@ -62,39 +61,54 @@ abstract class ChatViewModel(
 
     init {
         scope.launch(dispatchers.mainImmediate) {
-            MessageListState.screenState(
-                MessageListData.PopulatedMessageListData(
-                    getChatMessages(20),
-                    chatViewModel = this@ChatViewModel
-                ),
-            )
+            loadChatMessages()
+        }
+
+        scope.launch(dispatchers.io) {
+            readMessages()
         }
     }
 
-    suspend fun getChatMessages(limit: Long): Flow<List<ChatMessage>> {
-        val owner = getOwner()
-        return getChatOrNull()?.let{ chat ->
-            messageRepository.getAllMessagesToShowByChatId(chat.id, limit).map { messages ->
-                messages.reversed().map { message ->
-                    ChatMessage(
-                        chat,
-                        message,
-                        accountOwner = { owner },
-                        boostMessage = {
-                            boostMessage(chat, message.uuid)
-                        },
-                        flagMessage = {
-                            // TODO: Requires confirmation
-                            flagMessage(chat, message)
-                        },
-                        deleteMessage = {
-                            // TODO: Requires confirmation...
-                            deleteMessage(message)
-                        }
-                    )
-                }
+    private suspend fun loadChatMessages() {
+        getChat()?.let{ chat ->
+            messageRepository.getAllMessagesToShowByChatId(chat.id, 50).firstOrNull()?.let { messages ->
+                processChatMessages(chat, messages)
             }
-        } ?: emptyFlow()
+
+            delay(1000L)
+
+            messageRepository.getAllMessagesToShowByChatId(chat.id, 1000).distinctUntilChanged().collect { messages ->
+                processChatMessages(chat, messages)
+            }
+        }
+    }
+
+    private suspend fun processChatMessages(chat: Chat, messages: List<Message>) {
+        val owner = getOwner()
+        val contact = getContact()
+
+        val chatMessages = messages.reversed().map { message ->
+            ChatMessage(
+                chat,
+                contact,
+                message,
+                accountOwner = { owner },
+                boostMessage = {
+                    boostMessage(chat, message.uuid)
+                },
+                flagMessage = {
+                    // TODO: Requires confirmation
+                    flagMessage(chat, message)
+                },
+                deleteMessage = {
+                    // TODO: Requires confirmation...
+                    deleteMessage(message)
+                }
+            )
+        }
+        MessageListState.screenState(
+            MessageListData.PopulatedMessageListData(chatMessages)
+        )
     }
 
     private fun boostMessage(chat: Chat, messageUUID: MessageUUID?) {
@@ -134,7 +148,7 @@ abstract class ChatViewModel(
         }
     }
 
-    suspend fun readMessages() {
+    private fun readMessages() {
         chatId?.let {
             messageRepository.readMessages(chatId)
         }
@@ -169,9 +183,11 @@ abstract class ChatViewModel(
 
     protected abstract val chatSharedFlow: SharedFlow<Chat?>
 
-    suspend fun getChatOrNull(): Chat? {
+    private suspend fun getChat(): Chat? {
         return chatId?.let { chatRepository.getChatById(it) }
     }
+
+    abstract suspend fun getContact(): Contact?
 
     protected abstract suspend fun getChatInfo(): Triple<ChatName?, PhotoUrl?, String>?
 

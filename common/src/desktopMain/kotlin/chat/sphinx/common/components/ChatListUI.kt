@@ -30,9 +30,7 @@ fun ChatListUI() {
 
     Box(modifier = Modifier.padding(bottom = 65.dp)) {
         when (val chatListData = ChatListState.screenState()) {
-            is ChatListData.EmptyChatListData -> {
-                SphinxSplash()
-            }
+            is ChatListData.EmptyChatListData -> {}
             is ChatListData.PopulatedChatListData -> {
                 LazyColumn(
                     state = listState,

@@ -7,6 +7,7 @@ import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
+import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import kotlinx.coroutines.flow.*
 
@@ -24,6 +25,10 @@ class ChatTribeViewModel(
     )
 
     override suspend fun getChatInfo(): Triple<ChatName?, PhotoUrl?, String>? = null
+
+    override suspend fun getContact(): Contact? {
+        return null
+    }
 
     override var editMessageState: EditMessageState by mutableStateOf(initialState())
         set

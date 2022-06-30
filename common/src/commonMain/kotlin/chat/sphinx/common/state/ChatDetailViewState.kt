@@ -14,45 +14,37 @@ sealed class ChatDetailData {
     object EmptyChatDetailData : ChatDetailData()
 
     sealed class SelectedChatDetailData(
-        val dashboardChat: DashboardChat
+        val dashboardChat: DashboardChat,
+        val contactId: ContactId?,
+        val chatId: ChatId?
     ): ChatDetailData() {
-        abstract val chatViewModel: ChatViewModel
-
         class SelectedContactDetail(
             contactId: ContactId,
             dashboardChat: DashboardChat,
         ): SelectedChatDetailData(
-            dashboardChat
-        ) {
-            override val chatViewModel: ChatViewModel = ChatContactViewModel(
-                null,
-                contactId
-            )
-        }
+            dashboardChat,
+            contactId,
+            null
+        )
 
         class SelectedContactChatDetail(
             chatId: ChatId,
             contactId: ContactId,
             dashboardChat: DashboardChat,
         ): SelectedChatDetailData(
-            dashboardChat
-        ) {
-            override val chatViewModel: ChatViewModel = ChatContactViewModel(
-                chatId,
-                contactId
-            )
-        }
+            dashboardChat,
+            contactId,
+            chatId
+        )
 
         class SelectedTribeChatDetail(
             chatId: ChatId,
             dashboardChat: DashboardChat,
         ): SelectedChatDetailData(
-            dashboardChat
-        ) {
-            override val chatViewModel: ChatViewModel = ChatTribeViewModel(
-                chatId
-            )
-        }
+            dashboardChat,
+            null,
+            chatId,
+        )
     }
 }
 

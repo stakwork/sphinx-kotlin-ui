@@ -63,6 +63,12 @@ fun ChatRow(
                             dashboardChat
                         )
                     }
+                    is DashboardChat.Inactive.Conversation -> {
+                        ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
+                            dashboardChat.contact.id,
+                            dashboardChat
+                        )
+                    }
                     else -> ChatDetailData.EmptyChatDetailData
                 }
             )
@@ -70,7 +76,6 @@ fun ChatRow(
         }.height(62.dp).padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp),
     ) {
         Row {
-//            val photoUrl = remember { mutableStateOf(dashboardChat) }
             PhotoUrlImage(
                 dashboardChat.photoUrl,
                 modifier = Modifier

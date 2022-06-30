@@ -17,6 +17,7 @@ import java.io.InputStream
 
 class ChatMessage(
     val chat: Chat,
+    val contact: Contact?,
     val message: Message,
     accountOwner: () -> Contact,
     val boostMessage: () -> Unit,

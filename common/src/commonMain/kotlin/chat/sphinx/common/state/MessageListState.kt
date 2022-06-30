@@ -12,8 +12,7 @@ abstract class MessageListData {
     class EmptyMessageListData: MessageListData()
 
     class PopulatedMessageListData(
-        val chatMessagesFlow: Flow<List<ChatMessage>>,
-        val chatViewModel: ChatViewModel
+        val messages: List<ChatMessage>
     ): MessageListData()
 }
 
