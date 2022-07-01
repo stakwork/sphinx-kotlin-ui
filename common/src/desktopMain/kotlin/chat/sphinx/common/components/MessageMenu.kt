@@ -1,10 +1,17 @@
 package chat.sphinx.common.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -24,7 +31,9 @@ actual fun MessageMenu(
     }
     CursorDropdownMenu(
         expanded = isVisible.value,
-        onDismissRequest = dismissKebab
+        onDismissRequest = dismissKebab, modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer).clip(
+            RoundedCornerShape(16.dp)
+        )
     ) {
         chatMessage.message.retrieveTextToShow()?.let { messageText ->
             if (messageText.isNotEmpty()) {
@@ -35,7 +44,7 @@ actual fun MessageMenu(
                     )
                     dismissKebab()
                 }) {
-                    Text("copy text")
+                    Text("Copy text", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
                 }
             }
         }
@@ -44,7 +53,7 @@ actual fun MessageMenu(
             chatMessage.setAsReplyToMessage(editMessageState)
             dismissKebab()
         }) {
-            Text("reply")
+            Text("reply", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
         }
         if (chatMessage.message.isMediaAttachmentAvailable) {
             DropdownMenuItem(onClick = {
@@ -52,7 +61,7 @@ actual fun MessageMenu(
                 chatViewModel.editMessageState
                 dismissKebab()
             }) {
-                Text("save attachment")
+                Text("Save attachment", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
             }
         }
         if (chatMessage.isReceived) {
@@ -61,7 +70,7 @@ actual fun MessageMenu(
                 chatMessage.boostMessage()
                 dismissKebab()
             }) {
-                Text("boost")
+                Text("Boost", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
             }
         }
         if (chatMessage.isSent) {
@@ -71,7 +80,7 @@ actual fun MessageMenu(
                 dismissKebab()
             }) {
                 Text(
-                    "delete",
+                    "Delete",
                     color = Color.Red
                 )
             }

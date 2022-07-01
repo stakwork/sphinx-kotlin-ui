@@ -1,6 +1,6 @@
 package chat.sphinx.common.components
 
-
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -84,7 +84,7 @@ fun ChatMessageUI(
                 }
                 Column(
                     verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
 
                     if (chatMessage.message.type.isGroupAction()) {
@@ -99,7 +99,7 @@ fun ChatMessageUI(
                         }
                     } else {
                         Row(
-                            modifier = Modifier.fillMaxWidth(computeWidth(chatMessage)),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -109,11 +109,139 @@ fun ChatMessageUI(
                                 editMessageState, color
                             ) // display icons according to different conditions
                         }
-                        if (chatMessage.message.isSphinxCallLink) {
-                            JitsiAudioVideoCall(chatMessage)
-                        } else if (chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true) {
-                            Text("Valid Key")
-                        } else ChatCard(chatMessage, color, chatViewModel)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            if (chatMessage.isSent) {
+
+                                val isMessageMenuVisible = remember { mutableStateOf(false) }
+                                if (chatMessage.isSent) {
+                                    KebabMenu(
+                                        contentDescription = "Menu for message",
+                                        onClick = { isMessageMenuVisible.value = true }
+                                    )
+                                }
+                                MessageMenu(
+                                    chatMessage = chatMessage,
+                                    editMessageState = editMessageState,
+                                    isVisible = isMessageMenuVisible,
+                                    chatViewModel
+                                )
+
+                            }
+                            when {
+                                chatMessage.message.isSphinxCallLink -> {
+                                    JitsiAudioVideoCall(chatMessage)
+                                }
+                                chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true -> {
+                                    Text("Valid Key")
+                                }
+                                chatMessage.message.type == MessageType.DirectPayment -> {
+                                    val receiverCorner =
+                                        RoundedCornerShape(
+                                            topEnd = 10.dp,
+                                            topStart = 0.dp,
+                                            bottomEnd = 10.dp,
+                                            bottomStart = 10.dp
+                                        )
+                                    val senderCorner =
+                                        RoundedCornerShape(
+                                            topEnd = 0.dp,
+                                            topStart = 10.dp,
+                                            bottomEnd = 10.dp,
+                                            bottomStart = 10.dp
+                                        )
+                                    Box() {
+                                        Card(
+                                            backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                            shape = if (chatMessage.isReceived) receiverCorner else senderCorner,
+                                            modifier = Modifier.fillMaxWidth(0.3f)
+                                        ) {
+                                            Column(horizontalAlignment = if (chatMessage.isSent) Alignment.End else Alignment.Start) {
+                                                Row(
+                                                    horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
+                                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    if (chatMessage.isReceived) {
+                                                        Image(
+                                                            painter = imageResource(Res.drawable.ic_received),
+                                                            contentDescription = "Sent Icon",
+                                                            modifier = Modifier.size(20.dp),
+                                                            colorFilter = ColorFilter.tint(color = androidx.compose.material3.MaterialTheme.colorScheme.inverseSurface)
+                                                        )
+                                                        Spacer(modifier = Modifier.width(6.dp))
+                                                    }
+                                                    Text(
+                                                        chatMessage.message.amount.value.toString(),
+                                                        color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                                                    )
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    Text(
+                                                        "sats",
+                                                        color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                                        fontSize = 10.sp
+                                                    )
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    if (chatMessage.isSent)
+                                                        Image(
+                                                            painter = imageResource(Res.drawable.ic_sent),
+                                                            contentDescription = "Sent Icon",
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                }
+                                                if (chatMessage.message.messageContentDecrypted?.value?.isEmpty()
+                                                        ?.not() == true
+                                                ) {
+                                                    Box(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Text(
+                                                            chatMessage.message.messageContentDecrypted?.value ?: "",
+                                                            color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                                                        )
+                                                    }
+                                                    Spacer(modifier = Modifier.height(6.dp))
+                                                }
+                                                Row(
+                                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                                        .padding(bottom = 12.dp)
+                                                ) {
+                                                    Image(
+                                                        painter = imageResource(Res.drawable.ic_coin),
+                                                        contentDescription = "Coin Icon",
+                                                        modifier = Modifier.size(60.dp)
+                                                    )
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+
+                                }
+                                else -> ChatCard(chatMessage, color, chatViewModel, editMessageState)
+                            }
+                            if (chatMessage.isReceived)
+                                Box(modifier = Modifier.height(50.dp).width(50.dp)) {
+
+                                    val isMessageMenuVisible = remember { mutableStateOf(false) }
+                                    KebabMenu(
+                                        contentDescription = "Menu for message",
+                                        onClick = { isMessageMenuVisible.value = true }
+                                    )
+                                    MessageMenu(
+                                        chatMessage = chatMessage,
+                                        editMessageState = editMessageState,
+                                        isVisible = isMessageMenuVisible,
+                                        chatViewModel
+                                    )
+
+                                }
+                        }
 
                     }
 
@@ -134,14 +262,7 @@ fun DisplayConditionalIcons(
     chatViewModel: ChatViewModel,
     editMessageState: EditMessageState, color: Color
 ) {
-    val isMessageMenuVisible = mutableStateOf(false)
-    if (chatMessage.isSent) {
-//        TODO fix the option menu spacing issue
-//        KebabMenu(
-//            contentDescription = "Menu for message",
-//            onClick = { isMessageMenuVisible.value = true }
-//        )
-    }
+
 
     if (chatMessage.chat.isTribe()) {
         Text(
@@ -186,24 +307,24 @@ fun DisplayConditionalIcons(
             modifier = Modifier.size(18.dp).padding(4.dp)
         )
     }
-    // TODO fix the spacing issue
-//    MessageMenu(
-//        chatMessage = chatMessage,
-//        editMessageState = editMessageState,
-//        isVisible = isMessageMenuVisible,
-//        chatViewModel
-//    )
+
 }
 
 @Composable
-fun ChatCard(chatMessage: ChatMessage, color: Color, chatViewModel: ChatViewModel) {
+fun ChatCard(
+    chatMessage: ChatMessage,
+    color: Color,
+    chatViewModel: ChatViewModel,
+    editMessageState: EditMessageState,
+) {
     val uriHandler = LocalUriHandler.current
     val receiverCorner =
         RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
     val senderCorner =
         RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+
     Card(
-        backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        backgroundColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary,
         shape = if (chatMessage.isReceived) receiverCorner else senderCorner
     ) {
         Box(modifier = Modifier.padding(12.dp)) {
@@ -297,7 +418,7 @@ fun ChatCard(chatMessage: ChatMessage, color: Color, chatViewModel: ChatViewMode
                 } else {
                     chatMessage.message.retrieveTextToShow()?.let { messageText ->
                         Row(
-                            modifier = Modifier.fillMaxWidth(if (chatMessage.isReceived.not()) 1.0f else 0.9f),
+                            modifier = Modifier.wrapContentWidth(if (chatMessage.isSent) Alignment.End else Alignment.Start),
 //                            horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -401,6 +522,7 @@ fun ChatCard(chatMessage: ChatMessage, color: Color, chatViewModel: ChatViewMode
             }
         }
     }
+
 }
 
 @Composable
