@@ -46,7 +46,7 @@ fun WelcomeScreen() {
                 text = "WELCOME",
                 fontSize = 30.sp,
                 color = Color.White,
-                fontWeight = FontWeight.W700,
+                fontWeight = FontWeight.W500,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 fontFamily = SphinxFonts.montserratFamily
                 // textAlign = TextAlign.Center
@@ -68,8 +68,17 @@ fun WelcomeScreen() {
                     CommonButton(text = "Continue",true){
                         AppState.screenState(ScreenType.DashboardScreen)
                     }
-                    Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
-                        Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize().padding(16.dp, 0.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.ArrowForward,
+                            "arrow",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
                     }
                 }
             }

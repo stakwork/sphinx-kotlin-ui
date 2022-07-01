@@ -36,6 +36,7 @@ import chat.sphinx.common.viewmodel.NewUserStore
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.onKeyUp
+import com.example.compose.badge_red
 import kotlinx.coroutines.delay
 import org.intellij.lang.annotations.JdkConstants
 import utils.AnimatedContainer
@@ -117,23 +118,21 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxHeight()
         ) {
-
-
             AnimatedContainer(fromTopToBottom = 20) {
                 Text(
                     text = "NEW USER",
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.tertiary,
                     fontSize = 32.sp,
-                    fontWeight = FontWeight.W700,
+                    fontWeight = FontWeight.W500,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
                     fontFamily = SphinxFonts.montserratFamily
                 )
             }
             Spacer(modifier = Modifier.height(20.dp))
             AnimatedContainer(fromTopToBottom = 20) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth(0.6f)
+                    modifier = Modifier.fillMaxWidth(0.65f)
                 ) {
                     Box(
                         modifier = Modifier.height(56.dp).fillMaxWidth(), contentAlignment = Alignment.Center
@@ -149,7 +148,7 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                             ),
                             value = newUserStore.state.invitationCodeText,
 
-                            modifier = Modifier
+                            modifier = Modifier.fillMaxWidth()
                                 .onKeyEvent(
                                     onKeyUp(
                                         Key.Enter,
@@ -173,17 +172,26 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
             Spacer(modifier = Modifier.height(16.dp))
             AnimatedContainer(fromBottomToTop = 20) {
                 Box(
-                    modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center
+                    modifier = Modifier.height(44.dp).fillMaxWidth(0.65f), contentAlignment = Alignment.Center
                 ) {
                     CommonButton(
                         text = "Submit",
                         newUserStore.state.invitationCodeText.isNotEmpty(),
                         newUserStore::onSubmitInvitationCode
                     )
-                    Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize().padding(16.dp, 0.dp)
+                    ) {
                         val textColor =
-                            if (newUserStore.state.invitationCodeText.isNotEmpty()) androidx.compose.material3.MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
-                        Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = textColor)
+                            if (newUserStore.state.invitationCodeText.isNotEmpty()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
+                        Icon(
+                            Icons.Filled.ArrowForward,
+                            "arrow",
+                            modifier = Modifier.size(18.dp),
+                            tint = textColor
+                        )
                     }
                 }
             }

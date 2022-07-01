@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import chat.sphinx.utils.SphinxFonts
+import com.example.compose.badge_red
 
 import kotlinx.coroutines.delay
 
@@ -54,11 +55,12 @@ fun LeftPortion() {
         visible = true
     })
     val density = LocalDensity.current
+
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
+        Spacer(modifier = Modifier.height(50.dp))
         AnimatedVisibility(
             visible = visible,
             enter = slideInVertically {
@@ -73,10 +75,11 @@ fun LeftPortion() {
             Image(
                 painter = imageResource(Res.drawable.sphinx_logo),
                 contentDescription = "Sphinx landing page graphic",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier.paddingFromBaseline(top = 53.dp)
+                modifier = Modifier.height(70.dp),
+                contentScale = ContentScale.FillHeight
             )
         }
+        Spacer(modifier = Modifier.height(16.dp))
         AnimatedVisibility(visible = visible, enter = slideInVertically {
             // Slide in from 40 dp from the top.
             with(density) { 20.dp.roundToPx() }
@@ -85,10 +88,10 @@ fun LeftPortion() {
             initialAlpha = 0.3f
         )) {
             Image(
-                painter = imageResource(Res.drawable.LANDING_WORD_MARK),
+                painter = imageResource(Res.drawable.sphinx_label),
                 contentDescription = "Sphinx landing page graphic",
                 contentScale = ContentScale.FillWidth,
-                modifier = Modifier.paddingFromBaseline(top = 16.dp)
+                modifier = Modifier.width(170.dp)
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -102,18 +105,22 @@ fun LeftPortion() {
             Text(
                 text = "LIGHTNING CHAT",
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.tertiary
+                color = MaterialTheme.colorScheme.tertiary,
+                fontFamily = SphinxFonts.montserratFamily,
+                fontWeight = FontWeight.W100,
             )
         }
 
         Spacer(modifier = Modifier.fillMaxWidth())
     }
     Box(
-
-        modifier = Modifier
-            .paddingFromBaseline(bottom = 50.dp), contentAlignment = Alignment.BottomCenter
+        modifier = Modifier.fillMaxHeight(),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        Column(horizontalAlignment = Alignment.End) {
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.Bottom
+        ) {
             AnimatedVisibility(
                 visible = visible,
                 enter = slideInVertically {
@@ -125,21 +132,13 @@ fun LeftPortion() {
                 ),
                 exit = slideOutVertically() + shrinkVertically() + fadeOut()
             ) {
-
                 Image(
                     painter = imageResource(Res.drawable.landing_page_image),
                     contentDescription = "Sphinx landing page graphic",
-
                     modifier = Modifier.fillMaxWidth(),
-//                       modifier = Modifier
-//                           .,
                     contentScale = ContentScale.FillWidth,
-
-                    )
-                Spacer(modifier = Modifier.weight(1f))
+                )
             }
-
-
         }
     }
 
@@ -171,16 +170,20 @@ fun RightPortion() {
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.tertiary,
                 fontSize = 30.sp,
-                fontWeight = FontWeight.W700,
+                fontWeight = FontWeight.W500,
                 fontFamily = SphinxFonts.montserratFamily
             )
             Spacer(modifier = Modifier.height(48.dp))
-            CommonButton(text = "New User") {
-                LandingScreenState.screenState(LandingScreenType.NewUser)
+            Row(modifier = Modifier.fillMaxWidth(0.65f)) {
+                CommonButton(text = "New User") {
+                    LandingScreenState.screenState(LandingScreenType.NewUser)
+                }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            CommonButton(text = "Existing user") {
-                LandingScreenState.screenState(LandingScreenType.RestoreExistingUser)
+            Row(modifier = Modifier.fillMaxWidth(0.65f)) {
+                CommonButton(text = "Existing user") {
+                    LandingScreenState.screenState(LandingScreenType.RestoreExistingUser)
+                }
             }
             Spacer(modifier = Modifier.weight(1f))
             Spacer(modifier = Modifier.height(42.dp))

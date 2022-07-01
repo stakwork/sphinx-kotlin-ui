@@ -15,21 +15,29 @@ import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 
 @Composable
-fun CommonButton(text:String,enabled:Boolean?=true,callback:()->Unit){
+fun CommonButton(
+    text: String,
+    enabled: Boolean? = true,
+    callback:()->Unit
+) {
     val color=if(enabled == true)androidx.compose.material3.MaterialTheme.colorScheme.secondary else androidx.compose.material3.MaterialTheme.colorScheme.onBackground
     val textColor=if(enabled == true)androidx.compose.material3.MaterialTheme.colorScheme.tertiary else Color.Black
     Button(
         shape = RoundedCornerShape(23.dp),
-//        enabled=enabled?:true,
+//        enabled = enabled?:true,
         colors = ButtonDefaults.buttonColors(backgroundColor = color),
-        modifier = Modifier.fillMaxWidth(0.8f).height(48.dp),
+        modifier = Modifier.fillMaxWidth().height(48.dp),
         onClick = {
             if(enabled==true)
             callback()
         }
     ) {
         Text(
-            text = text, fontSize = 16.sp, color = textColor, fontWeight = FontWeight.W500
+            text = text,
+            fontSize = 16.sp,
+            color = textColor,
+            fontWeight = FontWeight.W400,
+            fontFamily = Roboto
         )
     }
 

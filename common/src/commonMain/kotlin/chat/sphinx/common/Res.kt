@@ -8,10 +8,10 @@ package chat.sphinx.common
 object Res {
     object drawable {
         const val sphinx_logo = "drawable/sphinx_logo.xml"
+        const val sphinx_label = "drawable/ic_sphinx_wordmark.xml"
         const val profile_avatar = "drawable/profile_avatar_circle.xml"
-        const val IC_KEY = "drawable/ic_key.xml"
+        const val ic_key = "drawable/ic_key.xml"
         const val enter_pin = "drawable/ic_enter_pin.xml"
-        const val LANDING_WORD_MARK =  "drawable/ic_wordmark.xml"
         const val connection_image =  "drawable/ic_preloader.xml"
         const val ic_done =  "drawable/ic_done.xml"
         const val paste_your_invitation =  "drawable/ic_paste_your_invitation__code_into_sphinx.xml"

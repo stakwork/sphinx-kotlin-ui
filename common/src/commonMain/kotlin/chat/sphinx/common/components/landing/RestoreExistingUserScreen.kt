@@ -23,7 +23,9 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import chat.sphinx.platform.imageResource
+import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.onKeyUp
+import com.example.compose.badge_red
 import utils.AnimatedContainer
 import views.BackButton
 
@@ -38,8 +40,8 @@ fun RestoreExistingUserScreen(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .weight(1f)
                 .fillMaxHeight()
+                .weight(1f)
                 .background(MaterialTheme.colorScheme.secondary)
         ) {
             AnimatedContainer(fromBottomToTop = 20) {
@@ -84,36 +86,34 @@ fun RestoreExistingUserScreen(
                     modifier = Modifier.fillMaxHeight()
                 ) {
 
-
                     AnimatedContainer(fromTopToBottom = 20) {
                         Text(
                             text = "CONNECT",
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.tertiary,
                             fontSize = 32.sp,
-                            fontWeight = FontWeight.W700
+                            fontWeight = FontWeight.W500,
+                            fontFamily = SphinxFonts.montserratFamily
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     AnimatedContainer(fromTopToBottom = 20, delayTime = 20) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth(0.6f)
+                            modifier = Modifier.fillMaxWidth(0.65f)
                         ) {
                             Box(
-                                modifier = Modifier.height(48.dp).fillMaxWidth(), contentAlignment = Alignment.Center
+                                modifier = Modifier.height(56.dp).fillMaxWidth(), contentAlignment = Alignment.Center
                             ) {
 
                                 OutlinedTextField(
                                     shape = RoundedCornerShape(56.dp),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
-
                                         focusedBorderColor = MaterialTheme.colorScheme.background,
                                         backgroundColor = MaterialTheme.colorScheme.tertiary,
                                         unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
                                     ),
                                     value = restoreExistingUserViewModel.state.sphinxKeys,
-                                    modifier = Modifier
+                                    modifier = Modifier.fillMaxWidth()
                                         .onKeyEvent(onKeyUp(Key.Enter, restoreExistingUserViewModel::onSubmitKeys)),
                                     onValueChange = restoreExistingUserViewModel::onKeysTextChanged,
                                     singleLine = true,
@@ -122,7 +122,6 @@ fun RestoreExistingUserScreen(
                             }
                         }
                     }
-
                     restoreExistingUserViewModel.state.errorMessage?.let { errorMessage ->
                         Text(
                             text = errorMessage,
@@ -132,18 +131,26 @@ fun RestoreExistingUserScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     AnimatedContainer(fromTopToBottom = 20) {
                         Box(
-                            modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center
+                            modifier = Modifier.height(44.dp).fillMaxWidth(0.65f), contentAlignment = Alignment.Center
                         ) {
                             CommonButton(
                                 text = "Submit",
                                 restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not(),
                                 restoreExistingUserViewModel::onSubmitKeys
                             )
-                            Row(modifier = Modifier.offset(x = 120.dp, y = 0.dp)) {
-                                val textColor = if (restoreExistingUserViewModel.state.sphinxKeys.isEmpty()
-                                        .not()
-                                ) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
-                                Icon(Icons.Filled.ArrowForward, "", modifier = Modifier.size(18.dp), tint = textColor)
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxSize().padding(16.dp, 0.dp)
+                            ) {
+                                val textColor = if (restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not())
+                                    MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
+                                Icon(
+                                    Icons.Filled.ArrowForward,
+                                    "arrow",
+                                    modifier = Modifier.size(18.dp),
+                                    tint = textColor
+                                )
                             }
                         }
                     }

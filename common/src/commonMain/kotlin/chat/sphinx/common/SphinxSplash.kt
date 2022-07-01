@@ -28,25 +28,25 @@ fun SphinxSplash() {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds
         )
-
-        Image(
-            painter = imageResource(Res.drawable.sphinx_logo),
-            contentDescription = "Sphinx Logo",
-            modifier = Modifier
-                .height(114.dp),
-            contentScale = ContentScale.FillHeight
-        )
-        //TODO Add Sphinx label on Splash
-//            Spacer(
-//                modifier = Modifier.height(150.dp)
-//            )
-//            Image(
-//                painter = imageResource(Res.drawable.sphinx_label),
-//                contentDescription = "Sphinx Label",
-//                modifier = Modifier
-//                    .height(187.dp)
-//                    .width(22.dp),
-//                contentScale = ContentScale.Crop
-//            )
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                painter = imageResource(Res.drawable.sphinx_logo),
+                contentDescription = "Sphinx Logo",
+                modifier = Modifier.height(114.dp),
+                contentScale = ContentScale.FillHeight
+            )
+            Spacer(
+                modifier = Modifier.height(150.dp)
+            )
+            Image(
+                painter = imageResource(Res.drawable.sphinx_label),
+                contentDescription = "Sphinx label",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.paddingFromBaseline(top = 16.dp).width(187.dp)
+            )
+        }
     }
 }
