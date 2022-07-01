@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.text.TextStyle
@@ -30,18 +31,33 @@ import chat.sphinx.common.components.chat.callview.JitsiAudioVideoCall
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.common.viewmodel.chat.retrieveRemoteMediaInputStream
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
+import chat.sphinx.wrapper.lightning.isValidLightningNodePubKey
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.isImage
+import io.kamel.core.config.KamelConfig
+import io.kamel.core.config.httpFetcher
+import io.kamel.core.config.takeFrom
+import io.kamel.core.utils.cacheControl
+import io.kamel.image.KamelImage
+import io.kamel.image.config.Default
+import io.kamel.image.config.LocalKamelConfig
+import io.kamel.image.lazyPainterResource
+import io.ktor.client.features.*
+import io.ktor.http.*
 import kotlinx.coroutines.launch
 import views.LoadingShimmerEffect
 import views.ShimmerCircleAvatar
-
+import androidx.compose.runtime.CompositionLocalProvider
+import chat.sphinx.common.components.chat.KebabMenu
+import java.io.File
+import java.io.InputStream
 
 @Composable
 fun ChatMessageUI(
@@ -53,6 +69,7 @@ fun ChatMessageUI(
     print("rebuilding ${chatMessage.message.id}")
 
     Column(modifier = Modifier.padding(8.dp)) {
+
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -82,7 +99,7 @@ fun ChatMessageUI(
                         }
                     } else {
                         Row(
-                            modifier = Modifier.fillMaxWidth(if (chatMessage.isReceived.not()) 1.0f else 0.9f),
+                            modifier = Modifier.fillMaxWidth(computeWidth(chatMessage)),
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -92,10 +109,11 @@ fun ChatMessageUI(
                                 editMessageState, color
                             ) // display icons according to different conditions
                         }
-                        if(chatMessage.message.isSphinxCallLink){
+                        if (chatMessage.message.isSphinxCallLink) {
                             JitsiAudioVideoCall(chatMessage)
-                        }
-                        else ChatCard(chatMessage, color)
+                        } else if (chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true) {
+                            Text("Valid Key")
+                        } else ChatCard(chatMessage, color, chatViewModel)
 
                     }
 
@@ -103,6 +121,11 @@ fun ChatMessageUI(
             }
         }
     }
+}
+
+fun computeWidth(chatMessage: ChatMessage): Float {
+    if (chatMessage.message.isSphinxCallLink) return 0.4f
+    return if (chatMessage.isReceived.not()) 1.0f else 0.9f
 }
 
 @Composable
@@ -173,7 +196,7 @@ fun DisplayConditionalIcons(
 }
 
 @Composable
-fun ChatCard(chatMessage: ChatMessage, color: Color) {
+fun ChatCard(chatMessage: ChatMessage, color: Color, chatViewModel: ChatViewModel) {
     val uriHandler = LocalUriHandler.current
     val receiverCorner =
         RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
@@ -195,13 +218,57 @@ fun ChatCard(chatMessage: ChatMessage, color: Color) {
                 chatMessage.message.messageMedia?.let { media ->
                     // TODO: Show attachment
                     if (media.mediaType.isImage) {
-                        //                        val mediaData = chatMessage.message.retrieveUrlAndMessageMedia()
-                        Icon(
-                            Icons.Default.Image,
-                            contentDescription = "Image",
-                            tint = Color.Green,
-                            modifier = Modifier.size(88.dp).padding(4.dp)
-                        )
+                        val image = remember { mutableStateOf<InputStream?>(null) }
+                        LaunchedEffect(key1 = "") {
+                            image.value =
+                                chatMessage.message.retrieveImageUrlAndMessageMedia()?.second?.retrieveRemoteMediaInputStream(
+                                    chatMessage.message.retrieveImageUrlAndMessageMedia()!!.first,
+                                    chatViewModel.memeServerTokenHandler,
+                                    chatViewModel.memeInputStreamHandler
+                                )
+
+                        }
+                        val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
+                            takeFrom(KamelConfig.Default)
+                            imageBitmapCacheSize = 1000
+                            httpFetcher {
+                                defaultRequest {
+                                    cacheControl(
+                                        CacheControl.MaxAge(
+                                            maxAgeSeconds = TWO_HOURS_IN_SECONDS
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                        CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
+                            image.value?.let {
+                                System.getProperty("user.dir")?.let { path ->
+                                    image.value?.toFile(path)
+                                        ?.let { it1 ->
+                                            val photoUrlResource = lazyPainterResource(
+                                                data = it1
+                                            )
+                                            KamelImage(
+                                                resource = photoUrlResource,
+                                                contentDescription = "avatar",
+                                                onLoading = {
+                                                },
+                                                onFailure = {
+                                                },
+                                                contentScale = ContentScale.Crop,
+                                                //                                        modifier = modifier,
+                                                crossfade = false
+                                            )
+                                        }
+                                }
+                            }
+                        }
+                        PhotoUrlImage(photoUrl = chatMessage.message.retrieveImageUrlAndMessageMedia()?.first?.let {
+                            PhotoUrl(
+                                it
+                            )
+                        }, modifier = Modifier.height(100.dp).width(100.dp))
                     } else {
                         // show
                         Icon(
@@ -230,7 +297,7 @@ fun ChatCard(chatMessage: ChatMessage, color: Color) {
                 } else {
                     chatMessage.message.retrieveTextToShow()?.let { messageText ->
                         Row(
-                            modifier = Modifier.fillMaxWidth(if(chatMessage.isReceived.not()) 1.0f else 0.9f),
+                            modifier = Modifier.fillMaxWidth(if (chatMessage.isReceived.not()) 1.0f else 0.9f),
 //                            horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -354,9 +421,15 @@ fun BoostedFooter(chatMessage: ChatMessage) {
         )
         Spacer(modifier = Modifier.width(4.dp))
 //        Spacer(modifier = Modifier.fillMaxWidth((0.8f- (chatMessage.message.reactions?.size?.div(2*2))?.toFloat()!!)))
-        Box(modifier = Modifier.fillMaxWidth(0.8f).padding(end = 20.dp), contentAlignment = Alignment.CenterEnd) {
+        Box(
+            modifier = Modifier.fillMaxWidth(0.8f).padding(end = 20.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
             chatMessage.message.reactions?.forEachIndexed { index, it ->
-                Box(modifier = Modifier.align(Alignment.CenterEnd).absoluteOffset((index*15).dp,0.dp)){
+                Box(
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                        .absoluteOffset((index * 15).dp, 0.dp)
+                ) {
                     PhotoUrlImage(
                         photoUrl = it.senderPic,
                         modifier = Modifier
@@ -488,4 +561,12 @@ fun ChatMessageUIPlaceholder() {
             modifier = Modifier.fillMaxWidth()
         )
     }
+}
+
+fun InputStream.toFile(path: String): File {
+    val file = File(path, "/Desktop")
+    use { input ->
+        file.outputStream().use { input.copyTo(it) }
+    }
+    return file
 }

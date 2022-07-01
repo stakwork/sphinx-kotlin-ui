@@ -24,8 +24,9 @@ class SphinxStore {
     fun removeAccount() {
         // TODO: logout Confirmation...
         scope.launch(SphinxContainer.appModule.dispatchers.main) {
-            // TODO: Close all pending activities...
+
             SphinxContainer.appModule.sphinxCoreDBImpl.deleteDatabase()
+
             authenticationStorage.clearAuthenticationStorage()
             authenticationManager.logOut()
             encryptionKeyHandler.clearKeysToRestore()

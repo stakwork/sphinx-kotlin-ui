@@ -56,8 +56,8 @@ abstract class ChatViewModel(
     val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
     val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
-    private val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
-    private val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
+    val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
+    val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
     private val attachmentFileDownloader: chat.sphinx.utils.AttachmentFileDownloader = createAttachmentFileDownload(
         memeServerTokenHandler,
         memeInputStreamHandler
