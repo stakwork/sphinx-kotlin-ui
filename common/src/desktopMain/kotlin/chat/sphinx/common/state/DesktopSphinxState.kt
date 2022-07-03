@@ -5,6 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.graphics.ImageBitmap
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.utils.platform.getFileSystem
+import chat.sphinx.utils.platform.getSphinxDirectory
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.dashboard.ChatId
 import io.matthewnelson.kmp.tor.manager.common.event.TorManagerEvent
@@ -20,6 +22,10 @@ object ContentState {
     fun applyContent(state: WindowState): ContentState {
         windowState = state
 
+        val sphinxDirectory = getSphinxDirectory()
+        if (!getFileSystem().exists(sphinxDirectory)) {
+            getFileSystem().createDirectories(sphinxDirectory)
+        }
         isContentReady.value = false
 
         return this
