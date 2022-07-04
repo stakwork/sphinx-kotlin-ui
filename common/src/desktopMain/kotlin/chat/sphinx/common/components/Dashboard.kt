@@ -73,31 +73,35 @@ actual fun Dashboard(
 
                     chatViewModel = when (chatDetailState) {
                         is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
-                            ChatContactViewModel(null, chatDetailState.contactId!!)
+                            remember { ChatContactViewModel(null, chatDetailState.contactId!!) }
                         }
                         is ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail -> {
-                            ChatContactViewModel(chatDetailState.chatId!!, chatDetailState.contactId!!)
+                            remember { ChatContactViewModel(chatDetailState.chatId!!, chatDetailState.contactId!!) }
                         }
                         is ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail -> {
-                            ChatTribeViewModel(chatDetailState.chatId!!)
+                            remember { ChatTribeViewModel(chatDetailState.chatId!!) }
                         }
                         else -> {
                             null
                         }
                     }
 
-                    Scaffold(scaffoldState = scaffoldState, topBar = {
-                        SphinxChatDetailTopAppBar(dashboardChat)
-                    }, bottomBar = {
-                        SphinxChatDetailBottomAppBar(chatViewModel)
-                    }) {
+                    Scaffold(
+                        scaffoldState = scaffoldState,
+                        topBar = {
+                            SphinxChatDetailTopAppBar(dashboardChat)
+                        },
+                        bottomBar = {
+                            SphinxChatDetailBottomAppBar(chatViewModel)
+                        }
+                    ) {
                         Column(
                             modifier = Modifier.fillMaxSize().background(color = androidx.compose.material3.MaterialTheme.colorScheme.background),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             chatViewModel?.let {
-                                MessageListUI(it)
+                                MessageListUI()
                             }
                         }
                     }

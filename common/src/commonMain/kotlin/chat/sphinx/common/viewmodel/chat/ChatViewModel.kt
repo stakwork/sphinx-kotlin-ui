@@ -66,17 +66,13 @@ abstract class ChatViewModel(
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
 
     init {
-        scope.launch(dispatchers.mainImmediate) {
-            loadChatMessages()
-        }
-
-        scope.launch(dispatchers.io) {
-            readMessages()
-        }
+        MessageListState.screenState(
+            MessageListData.PopulatedMessageListData(this)
+        )
     }
 
     private suspend fun loadChatMessages() {
-        getChat()?.let{ chat ->
+        getChat()?.let { chat ->
             messageRepository.getAllMessagesToShowByChatId(chat.id, 50).firstOrNull()?.let { messages ->
                 processChatMessages(chat, messages)
             }
@@ -93,7 +89,21 @@ abstract class ChatViewModel(
         }
     }
 
-    private suspend fun processChatMessages(chat: Chat, messages: List<Message>) {
+    fun getChatMessageFlow(): Flow<List<ChatMessage>> = flow {
+        getChat()?.let { chat ->
+            messageRepository.getAllMessagesToShowByChatId(chat.id, 50).firstOrNull()?.let { messages ->
+                emit(processChatMessages(chat, messages))
+            }
+
+            delay(1000L)
+
+            messageRepository.getAllMessagesToShowByChatId(chat.id, 1000).distinctUntilChanged().collect { messages ->
+                emit(processChatMessages(chat, messages))
+            }
+        }
+    }
+
+    private suspend fun processChatMessages(chat: Chat, messages: List<Message>): List<ChatMessage> {
         val owner = getOwner()
         val contact = getContact()
 
@@ -124,9 +134,7 @@ abstract class ChatViewModel(
                 }
             )
         }
-        MessageListState.screenState(
-            MessageListData.PopulatedMessageListData(chatMessages)
-        )
+        return chatMessages
     }
 
     private fun boostMessage(chat: Chat, messageUUID: MessageUUID?) {

@@ -26,17 +26,19 @@ import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.media.isImage
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 
 @Composable
 fun MessageListUI(
-    chatViewModel: ChatViewModel
+//    chatViewModel: ChatViewModel
 ) {
     Box(
         modifier = Modifier.background(color = MaterialTheme.colorScheme.background).padding(
             bottom = 15.dp
         )
     ) {
+
         when (val messageListData = MessageListState.screenState()) {
             is MessageListData.EmptyMessageListData -> {
                 Box(
@@ -44,110 +46,102 @@ fun MessageListUI(
                 )
             }
             is MessageListData.PopulatedMessageListData -> {
-                val listState = LazyListState()
-                val chatMessages = messageListData.messages
+                val listState = remember { LazyListState() }
+                val chatMessages by messageListData.chatViewModel.getChatMessageFlow().distinctUntilChanged().collectAsState(emptyList())
 
-                if (chatMessages.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
-                    )
-                } else {
-                    LazyColumn(
-                        state = listState,
-                        reverseLayout = true,
-                        contentPadding = PaddingValues(
-                            bottom = 45.dp,
-                            top = 8.dp,
-                            start = 8.dp,
-                            end = 8.dp
-                        ),
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
-                    ) {
-                        itemsIndexed(chatMessages, key = { index, item -> item.message.id }){ index, item ->
-                            val currentItem = rememberSaveable{ item }
-                            print("index is $index with value ${item.message.messageContent?.value}")
-
-                            ChatMessageUI(
-                                currentItem,
-                                chatViewModel.editMessageState,
-                                chatViewModel,
-                                currentItem.color
-                            )
-                        }
+                LazyColumn(
+                    state = listState,
+                    reverseLayout = true,
+                    contentPadding = PaddingValues(
+                        bottom = 45.dp,
+                        top = 8.dp,
+                        start = 8.dp,
+                        end = 8.dp
+                    ),
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                ) {
+                    items(chatMessages, key = { chatMessage -> chatMessage.message.id }) { chatMessage ->
+                        ChatMessageUI(
+                            chatMessage,
+                            messageListData.chatViewModel.editMessageState,
+                            messageListData.chatViewModel,
+                            chatMessage.color
+                        )
                     }
-                    VerticalScrollbar(
-                        modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                        reverseLayout = true,
-                        adapter = rememberScrollbarAdapter(scrollState = listState)
-                    )
-                    chatViewModel.editMessageState.replyToMessage.value?.let { replyToMessage ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
-                                .align(Alignment.BottomCenter)
+                }
+                VerticalScrollbar(
+                    modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                    reverseLayout = true,
+                    adapter = rememberScrollbarAdapter(scrollState = listState)
+                )
+
+                messageListData.chatViewModel.editMessageState.replyToMessage.value?.let { replyToMessage ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
+                            .align(Alignment.BottomCenter)
+                    ) {
+                        Row(
+                            modifier = Modifier.height(44.dp),
                         ) {
-                            Row(
-                                modifier = Modifier.height(44.dp),
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(4.dp)
-                                        .fillMaxHeight()
-                                        .background(Color.Green) // TODO: Reply to colour
-                                        .padding(16.dp)
-                                )
-                                // TODO: Image if available...
-                                replyToMessage.message.messageMedia?.let { media ->
-                                    if (media.mediaType.isImage) {
-                                        Icon(
-                                            Icons.Default.Image,
-                                            contentDescription = "Image",
-                                            tint = Color.Green,
-                                            modifier = Modifier.size(88.dp).padding(4.dp)
-                                        )
-                                    } else {
-                                        // show
-                                        Icon(
-                                            Icons.Default.AttachFile,
-                                            contentDescription = "Attachment",
-                                            tint = Color.Green,
-                                            modifier = Modifier.size(88.dp).padding(4.dp)
-                                        )
-                                    }
-                                }
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(
-                                            end = 40.dp
-                                        )
-                                ) {
-                                    Text(
-                                        replyToMessage.replyToMessageSenderAliasPreview,
-                                        overflow = TextOverflow.Ellipsis
+                            Box(
+                                modifier = Modifier
+                                    .width(4.dp)
+                                    .fillMaxHeight()
+                                    .background(Color.Green) // TODO: Reply to colour
+                                    .padding(16.dp)
+                            )
+                            // TODO: Image if available...
+                            replyToMessage.message.messageMedia?.let { media ->
+                                if (media.mediaType.isImage) {
+                                    Icon(
+                                        Icons.Default.Image,
+                                        contentDescription = "Image",
+                                        tint = Color.Green,
+                                        modifier = Modifier.size(88.dp).padding(4.dp)
                                     )
-                                    Text(
-                                        replyToMessage.replyToMessageTextPreview,
-                                        overflow = TextOverflow.Ellipsis
+                                } else {
+                                    // show
+                                    Icon(
+                                        Icons.Default.AttachFile,
+                                        contentDescription = "Attachment",
+                                        tint = Color.Green,
+                                        modifier = Modifier.size(88.dp).padding(4.dp)
                                     )
                                 }
                             }
-
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Close reply to message",
-                                modifier = Modifier.height(70.dp)
-                                    .align(Alignment.CenterEnd)
-                                    .width(30.dp)
-                                    .padding(start = 1.dp, top = 25.dp, end = 1.dp, bottom = 25.dp)
-                                    .clickable(
-                                        onClick = {
-                                            chatViewModel.editMessageState.replyToMessage.value = null
-                                        }
-                                    ),
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        end = 40.dp
+                                    )
+                            ) {
+                                Text(
+                                    replyToMessage.replyToMessageSenderAliasPreview,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    replyToMessage.replyToMessageTextPreview,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
+
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Close reply to message",
+                            modifier = Modifier.height(70.dp)
+                                .align(Alignment.CenterEnd)
+                                .width(30.dp)
+                                .padding(start = 1.dp, top = 25.dp, end = 1.dp, bottom = 25.dp)
+                                .clickable(
+                                    onClick = {
+                                        messageListData.chatViewModel.editMessageState.replyToMessage.value = null
+                                    }
+                                ),
+                        )
                     }
                 }
             }
