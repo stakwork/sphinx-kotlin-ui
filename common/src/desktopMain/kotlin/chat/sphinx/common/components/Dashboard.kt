@@ -1,5 +1,6 @@
 package chat.sphinx.common.components
 
+import CommonButton
 import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,10 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.EmojiEmotions
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -38,6 +36,7 @@ import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
+import chat.sphinx.wrapper.dashboard.RestoreProgress
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
@@ -115,6 +114,16 @@ actual fun Dashboard(
                                 .background(SolidColor(Color.Gray), alpha = 0.50f).width(9.dp).fillMaxHeight()
                         )
                     }
+                }
+            }
+
+            val restoreState by dashboardViewModel.restoreStateFlow.collectAsState()
+            restoreState?.let { restoreState ->
+                if (restoreState.restoring) {
+                    RestoreProgressUI(
+                        dashboardViewModel,
+                        restoreState
+                    )
                 }
             }
         }
@@ -322,6 +331,50 @@ fun SphinxChatDetailBottomAppBar(
                 }
             }
 
+        }
+    }
+}
+
+@Composable
+fun RestoreProgressUI(
+    dashboardViewModel: DashboardViewModel,
+    restoreState: RestoreProgress
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .background(SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.background), alpha = 0.5f)
+            .fillMaxSize()
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .background(SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant), RoundedCornerShape(10.dp))
+                .width(300.dp),
+        ) {
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = "Restoring: ${restoreState.progress}%",
+                fontFamily = Roboto,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.W500,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            LinearProgressIndicator(
+                progress = restoreState.progress.toFloat() / 100,
+                modifier = Modifier.fillMaxWidth(0.8f),
+                color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+                backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Row(modifier = Modifier.fillMaxWidth(0.8f)) {
+                CommonButton(text = "Continue Later") {
+                    dashboardViewModel.cancelRestore()
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
