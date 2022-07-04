@@ -338,67 +338,12 @@ fun ChatCard(
                 }
                 chatMessage.message.messageMedia?.let { media ->
                     // TODO: Show attachment
-                    if (media.mediaType.isImage) {
-                        val image = remember { mutableStateOf<InputStream?>(null) }
-                        LaunchedEffect(key1 = "") {
-                            image.value =
-                                chatMessage.message.retrieveImageUrlAndMessageMedia()?.second?.retrieveRemoteMediaInputStream(
-                                    chatMessage.message.retrieveImageUrlAndMessageMedia()!!.first,
-                                    chatViewModel.memeServerTokenHandler,
-                                    chatViewModel.memeInputStreamHandler
-                                )
-
-                        }
-                        val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
-                            takeFrom(KamelConfig.Default)
-                            imageBitmapCacheSize = 1000
-                            httpFetcher {
-                                defaultRequest {
-                                    cacheControl(
-                                        CacheControl.MaxAge(
-                                            maxAgeSeconds = TWO_HOURS_IN_SECONDS
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                        CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
-                            image.value?.let {
-                                System.getProperty("user.dir")?.let { path ->
-                                    image.value?.toFile(path)
-                                        ?.let { it1 ->
-                                            val photoUrlResource = lazyPainterResource(
-                                                data = it1
-                                            )
-                                            KamelImage(
-                                                resource = photoUrlResource,
-                                                contentDescription = "avatar",
-                                                onLoading = {
-                                                },
-                                                onFailure = {
-                                                },
-                                                contentScale = ContentScale.Crop,
-                                                //                                        modifier = modifier,
-                                                crossfade = false
-                                            )
-                                        }
-                                }
-                            }
-                        }
-                        PhotoUrlImage(photoUrl = chatMessage.message.retrieveImageUrlAndMessageMedia()?.first?.let {
-                            PhotoUrl(
-                                it
-                            )
-                        }, modifier = Modifier.height(100.dp).width(100.dp))
-                    } else {
-                        // show
-                        Icon(
-                            Icons.Default.AttachFile,
-                            contentDescription = "Attachment",
-                            tint = Color.Green,
-                            modifier = Modifier.size(88.dp).padding(4.dp)
-                        )
-                    }
+                    Icon(
+                        Icons.Default.AttachFile,
+                        contentDescription = "Attachment",
+                        tint = Color.Green,
+                        modifier = Modifier.size(88.dp).padding(4.dp)
+                    )
                 }
 
                 if (chatMessage.isDeleted) {
