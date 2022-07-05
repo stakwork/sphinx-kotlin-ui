@@ -23,6 +23,7 @@ import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MessageMedia
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -64,15 +65,20 @@ abstract class ChatViewModel(
     )
 
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
+    private var messagesLoadJob: Job? = null
 
     init {
-        scope.launch(dispatchers.mainImmediate) {
+        messagesLoadJob = scope.launch(dispatchers.mainImmediate) {
             loadChatMessages()
         }
 
         scope.launch(dispatchers.io) {
             readMessages()
         }
+    }
+
+    fun cancelMessagesJob() {
+        messagesLoadJob?.cancel()
     }
 
     private suspend fun loadChatMessages() {
@@ -125,7 +131,9 @@ abstract class ChatViewModel(
             )
         }
         MessageListState.screenState(
-            MessageListData.PopulatedMessageListData(chatMessages)
+            MessageListData.PopulatedMessageListData(
+                chatMessages
+            )
         )
     }
 

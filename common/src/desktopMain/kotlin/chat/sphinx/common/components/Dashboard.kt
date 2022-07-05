@@ -71,6 +71,7 @@ actual fun Dashboard(
                     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
                     val dashboardChat = (chatDetailState as? ChatDetailData.SelectedChatDetailData)?.dashboardChat
 
+                    chatViewModel?.cancelMessagesJob()
                     chatViewModel = when (chatDetailState) {
                         is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
                             ChatContactViewModel(null, chatDetailState.contactId!!)
