@@ -349,19 +349,6 @@ fun ChatCard(
                                 )
 
                         }
-                        val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
-                            takeFrom(KamelConfig.Default)
-                            imageBitmapCacheSize = 1000
-                            httpFetcher {
-                                defaultRequest {
-                                    cacheControl(
-                                        CacheControl.MaxAge(
-                                            maxAgeSeconds = TWO_HOURS_IN_SECONDS
-                                        )
-                                    )
-                                }
-                            }
-                        }
                         CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
                             image.value?.let {
                                 System.getProperty("user.dir")?.let { path ->
@@ -385,11 +372,12 @@ fun ChatCard(
                                 }
                             }
                         }
-                        PhotoUrlImage(photoUrl = chatMessage.message.retrieveImageUrlAndMessageMedia()?.first?.let {
-                            PhotoUrl(
-                                it
-                            )
-                        }, modifier = Modifier.height(100.dp).width(100.dp))
+                        PhotoUrlImage(
+                            photoUrl = chatMessage.message.retrieveImageUrlAndMessageMedia()?.first?.let {
+                                PhotoUrl(it)
+                            },
+                            modifier = Modifier.height(100.dp).width(100.dp)
+                        )
                     } else {
                         // show
                         Icon(
@@ -526,8 +514,9 @@ fun ChatCard(
 }
 
 @Composable
-fun BoostedFooter(chatMessage: ChatMessage) {
-
+fun BoostedFooter(
+    chatMessage: ChatMessage
+) {
     val reaction = chatMessage.message.reactions?.get(0)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Image(
@@ -556,19 +545,7 @@ fun BoostedFooter(chatMessage: ChatMessage) {
                         photoUrl = it.senderPic,
                         modifier = Modifier
                             .size(30.dp)
-                            .clip(CircleShape)                       // clip to the circle shape
-                            .border(2.dp, Color.Gray, CircleShape),
-                        effect = {
-                            Box(
-                                modifier = androidx.compose.ui.Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                            ) {
-                                LoadingShimmerEffect {
-                                    ShimmerCircleAvatar(it)
-                                }
-                            }
-                        },
+                            .clip(CircleShape),
                     )
                 }
             }
@@ -649,7 +626,10 @@ fun SenderNameWithTime(replyMessage: Message, color: Color) {
 }
 
 @Composable
-fun ImageProfile(chatMessage: ChatMessage, color: Color) {
+fun ImageProfile(
+    chatMessage: ChatMessage,
+    color: Color
+) {
     PhotoUrlImage(
         chatMessage.contact?.photoUrl ?: chatMessage.message.senderPic,
         modifier = Modifier
@@ -661,13 +641,16 @@ fun ImageProfile(chatMessage: ChatMessage, color: Color) {
 }
 
 @Composable
-fun ImageProfile(profileURL: PhotoUrl?, color: Color) {
+fun ImageProfile(
+    profileURL: PhotoUrl?,
+    color: Color,
+) {
     PhotoUrlImage(
         profileURL,
         modifier = Modifier
             .size(30.dp)
             .clip(CircleShape),
-        color = color
+        color = color,
     )
 }
 

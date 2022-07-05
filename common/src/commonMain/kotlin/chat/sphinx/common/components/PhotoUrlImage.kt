@@ -32,12 +32,21 @@ import io.kamel.image.config.Default
 import io.kamel.image.config.LocalKamelConfig
 import io.kamel.image.lazyPainterResource
 import io.ktor.client.features.*
-//import io.ktor.client.plugins.*
 import io.ktor.http.*
-import views.LoadingShimmerEffect
-import views.ShimmerGridItem
 
-val TWO_HOURS_IN_SECONDS = 7_200
+val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
+    takeFrom(KamelConfig.Default)
+    imageBitmapCacheSize = 1000
+    httpFetcher {
+        defaultRequest {
+            cacheControl(
+                CacheControl.MaxAge(
+                    maxAgeSeconds = 7_200
+                )
+            )
+        }
+    }
+}
 
 @Composable
 fun PhotoUrlImage(
@@ -47,19 +56,6 @@ fun PhotoUrlImage(
     firstNameLetter: String? = null,
     color: Color? = null
 ) {
-    val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
-        takeFrom(KamelConfig.Default)
-        imageBitmapCacheSize = 1000
-        httpFetcher {
-            defaultRequest {
-                cacheControl(
-                    CacheControl.MaxAge(
-                        maxAgeSeconds = TWO_HOURS_IN_SECONDS
-                    )
-                )
-            }
-        }
-    }
     if (photoUrl != null) {
         CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
 
@@ -112,6 +108,5 @@ fun PhotoUrlImage(
                 }
             }
         }
-
     }
 }
