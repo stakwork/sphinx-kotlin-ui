@@ -35,6 +35,7 @@ import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
@@ -92,7 +93,13 @@ actual fun Dashboard(
                             SphinxChatDetailTopAppBar(dashboardChat)
                         },
                         bottomBar = {
-                            SphinxChatDetailBottomAppBar(chatViewModel)
+                            chatViewModel?.let { cVM ->
+                                SphinxChatDetailBottomAppBar(
+                                    onTextInput = cVM::onMessageTextChanged,
+                                    inputText = cVM.editMessageState.messageText.value,
+                                    onSendMessage = cVM::onSendMessage
+                                )
+                            }
                         }
                     ) {
                         Column(
@@ -226,7 +233,9 @@ fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat?) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SphinxChatDetailBottomAppBar(
-    chatViewModel: ChatViewModel?
+    onTextInput: (String) -> Unit,
+    onSendMessage: () -> Unit,
+    inputText: String = ""
 ) {
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
@@ -285,12 +294,8 @@ fun SphinxChatDetailBottomAppBar(
                     color = Color.White,
                     fontSize = 16.sp,
                     placeholderText = "Message...",
-                    onValueChange = {
-                        if (chatViewModel != null) run {
-                            chatViewModel.onMessageTextChanged(it)
-                        }
-                    },
-                    value = chatViewModel?.editMessageState?.messageText ?: ""
+                    onValueChange = onTextInput,
+                    value = inputText
                 )
             }
             CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
@@ -302,11 +307,7 @@ fun SphinxChatDetailBottomAppBar(
                     PriceChip()
                     Spacer(modifier = Modifier.width(10.dp))
                     IconButton(
-                        onClick = {
-                            if (chatViewModel != null) run {
-                                chatViewModel.onSendMessage()
-                            }
-                        },
+                        onClick = onSendMessage,
                         modifier = Modifier.clip(CircleShape)
                             .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                             .size(30.dp),
