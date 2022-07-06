@@ -228,18 +228,14 @@ abstract class ChatViewModel(
     }
 
     fun onMessageTextChanged(text: String) {
-        setEditMessageState {
-            copy(
-                messageText = text
-            )
-        }
+        editMessageState.messageText.value = text
     }
 
     fun onSendMessage() {
         val sendMessage = SendMessage.Builder()
             .setChatId(editMessageState.chatId)
             .setContactId(editMessageState.contactId)
-            .setText(editMessageState.messageText)
+            .setText(editMessageState.messageText.value)
             .also { builder ->
                 editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
                     builder.setReplyUUID(replyUUID)

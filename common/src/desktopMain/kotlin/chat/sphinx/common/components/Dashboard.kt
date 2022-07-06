@@ -287,7 +287,7 @@ fun SphinxChatDetailBottomAppBar(
                             chatViewModel.onMessageTextChanged(it)
                         }
                     },
-                    value = chatViewModel?.editMessageState?.messageText ?: ""
+                    value = chatViewModel?.editMessageState?.messageText?.value ?: ""
                 )
             }
             CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
