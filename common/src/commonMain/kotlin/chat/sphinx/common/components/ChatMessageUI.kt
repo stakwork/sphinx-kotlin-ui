@@ -1,5 +1,6 @@
 package chat.sphinx.common.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -55,7 +56,9 @@ import kotlinx.coroutines.launch
 import views.LoadingShimmerEffect
 import views.ShimmerCircleAvatar
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.text.font.FontStyle
 import chat.sphinx.common.components.chat.KebabMenu
+import com.example.compose.place_holder_text
 import java.io.File
 import java.io.InputStream
 
@@ -166,6 +169,7 @@ fun ChatMessageUI(
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     if (chatMessage.isReceived) {
+
                                                         Image(
                                                             painter = imageResource(Res.drawable.ic_received),
                                                             contentDescription = "Sent Icon",
@@ -196,8 +200,8 @@ fun ChatMessageUI(
                                                         ?.not() == true
                                                 ) {
                                                     Box(
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        contentAlignment = Alignment.Center
+                                                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp),
+                                                        contentAlignment = Alignment.CenterStart
                                                     ) {
                                                         Text(
                                                             chatMessage.message.messageContentDecrypted?.value ?: "",
@@ -210,11 +214,26 @@ fun ChatMessageUI(
                                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                                         .padding(bottom = 12.dp)
                                                 ) {
-                                                    Image(
-                                                        painter = imageResource(Res.drawable.ic_coin),
-                                                        contentDescription = "Coin Icon",
-                                                        modifier = Modifier.size(60.dp)
+                                                    val url=chatMessage.message.retrieveImageUrlAndMessageMedia()?.second?.templateUrl?.value
+                                                    val photoUrlResource = lazyPainterResource(
+                                                        data = url?:""
                                                     )
+                                                    KamelImage(
+                                                        resource = photoUrlResource,
+                                                        contentDescription = "avatar",
+                                                        onLoading = {
+                                                        },
+                                                        onFailure = {
+                                                        },
+                                                        contentScale = ContentScale.Crop,
+                                                        //                                        modifier = modifier,
+                                                        crossfade = false
+                                                    )
+//                                                    Image(
+//                                                        painter = imageResource(Res.drawable.ic_coin),
+//                                                        contentDescription = "Coin Icon",
+//                                                        modifier = Modifier.size(60.dp)
+//                                                    )
                                                 }
                                             }
 
@@ -223,12 +242,27 @@ fun ChatMessageUI(
                                     }
 
                                 }
+                                chatMessage.isDeleted->{
+
+                                        Column {
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                text = "This message has been deleted",
+                                                fontWeight = FontWeight.W300, color = MaterialTheme.colorScheme.onBackground,
+                                                fontStyle = FontStyle.Italic, fontSize = 11.sp,
+                                                textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
+                                            )
+                                        }
+
+                                }
                                 else -> ChatCard(chatMessage, color, chatViewModel, editMessageState)
                             }
-                            if (chatMessage.isReceived)
+                            if (chatMessage.isReceived){
+                                val isMessageMenuVisible = remember { mutableStateOf(false) }
                                 Box(modifier = Modifier.height(50.dp).width(50.dp)) {
 
-                                    val isMessageMenuVisible = remember { mutableStateOf(false) }
+
                                     KebabMenu(
                                         contentDescription = "Menu for message",
                                         onClick = { isMessageMenuVisible.value = true }
@@ -240,7 +274,18 @@ fun ChatMessageUI(
                                         chatViewModel
                                     )
 
+
                                 }
+                                AnimatedVisibility(visible = isMessageMenuVisible.value){
+                                    Surface(
+                                        color = Color.Black.copy(alpha = 0.6f),
+                                        modifier = Modifier.fillMaxSize()
+                                    ){
+
+                                    }
+                                }
+                            }
+
                         }
 
                     }
@@ -284,34 +329,42 @@ fun DisplayConditionalIcons(
         Icon(
             Icons.Default.FlashOn,
             "Confirmed",
-            tint = Color.Green,
-            modifier = Modifier.size(18.dp).padding(4.dp)
+            tint = MaterialTheme.colorScheme.secondaryContainer,
+            modifier = Modifier.size(12.dp)
         )
     }
 
+    if (chatMessage.showLockIcon&&chatMessage.isSent) {
+        Icon(
+            Icons.Default.Lock,
+            "Secure chat",
+            tint = place_holder_text,
+            modifier = Modifier.size(18.dp).padding(4.dp)
+        )
+    }
 
     Text(
         text = chatMessage.message.date.chatTimeFormat(),
         fontWeight = FontWeight.W200,
-        color = Color(0xFF556171),
+        color = place_holder_text,
         fontSize = 10.sp,
         textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
     )
 
-
-    if (chatMessage.showLockIcon) {
+    if (chatMessage.showLockIcon&&chatMessage.isReceived) {
         Icon(
             Icons.Default.Lock,
             "Secure chat",
-            tint = Color(0xFF556171),
+            tint = place_holder_text,
             modifier = Modifier.size(18.dp).padding(4.dp)
         )
     }
 
+
 }
 
 @Composable
-fun ChatCard(
+ fun ChatCard(
     chatMessage: ChatMessage,
     color: Color,
     chatViewModel: ChatViewModel,
@@ -376,7 +429,7 @@ fun ChatCard(
                             photoUrl = chatMessage.message.retrieveImageUrlAndMessageMedia()?.first?.let {
                                 PhotoUrl(it)
                             },
-                            modifier = Modifier.height(100.dp).width(100.dp)
+                            modifier = Modifier.height(70.dp).width(70.dp)
                         )
                     } else {
                         // show
@@ -389,14 +442,7 @@ fun ChatCard(
                     }
                 }
 
-                if (chatMessage.isDeleted) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = "This message has been deleted",
-                        fontWeight = FontWeight.W300,
-                        textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
-                    )
-                } else if (chatMessage.isFlagged) {
+                if (chatMessage.isFlagged) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = "This message has been flagged",
@@ -533,20 +579,26 @@ fun BoostedFooter(
         Spacer(modifier = Modifier.width(4.dp))
 //        Spacer(modifier = Modifier.fillMaxWidth((0.8f- (chatMessage.message.reactions?.size?.div(2*2))?.toFloat()!!)))
         Box(
-            modifier = Modifier.fillMaxWidth(0.8f).padding(end = 20.dp),
+            modifier = Modifier.padding(end = 25.dp).fillMaxWidth(0.85f),
             contentAlignment = Alignment.CenterEnd
         ) {
+
             chatMessage.message.reactions?.forEachIndexed { index, it ->
                 Box(
                     modifier = Modifier.align(Alignment.CenterEnd)
-                        .absoluteOffset((index * 15).dp, 0.dp)
+                        .absoluteOffset((index * 10).dp, 0.dp)
                 ) {
+                    if(index<3)
                     PhotoUrlImage(
                         photoUrl = it.senderPic,
                         modifier = Modifier
-                            .size(30.dp)
+                            .size(25.dp)
                             .clip(CircleShape),
                     )
+                    else if(index==3){
+                        Text("+2", fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(start = 8.dp))
+                    }
+//                    Text((chatMessage.message.reactions?.size?:0-index).toString(), fontSize = 18.sp, color = Color.Red)
                 }
             }
         }
