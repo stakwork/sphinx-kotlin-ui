@@ -54,8 +54,7 @@ abstract class ChatViewModel(
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val sphinxNotificationManager = createSphinxNotificationManager()
-
-    private val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
+    val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
     val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository

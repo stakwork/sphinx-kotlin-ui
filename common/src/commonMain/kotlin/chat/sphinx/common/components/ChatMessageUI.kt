@@ -387,45 +387,14 @@ fun DisplayConditionalIcons(
                 chatMessage.message.messageMedia?.let { media ->
                     // TODO: Show attachment
                     if (media.mediaType.isImage) {
-                        val image = remember { mutableStateOf<InputStream?>(null) }
-                        LaunchedEffect(key1 = "") {
-                            image.value =
-                                chatMessage.message.retrieveImageUrlAndMessageMedia()?.second?.retrieveRemoteMediaInputStream(
-                                    chatMessage.message.retrieveImageUrlAndMessageMedia()!!.first,
-                                    chatViewModel.memeServerTokenHandler,
-                                    chatViewModel.memeInputStreamHandler
-                                )
-
+                        chatMessage.message.messageMedia?.let { messageMedia ->
+                            MessageMediaImage(
+                                chatMessage.message,
+                                messageMedia = messageMedia,
+                                chatViewModel = chatViewModel,
+                                modifier = Modifier.fillMaxWidth().height(200.dp)
+                            )
                         }
-                        CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
-                            image.value?.let {
-                                System.getProperty("user.dir")?.let { path ->
-                                    image.value?.toFile(path)
-                                        ?.let { it1 ->
-                                            val photoUrlResource = lazyPainterResource(
-                                                data = it1
-                                            )
-                                            KamelImage(
-                                                resource = photoUrlResource,
-                                                contentDescription = "avatar",
-                                                onLoading = {
-                                                },
-                                                onFailure = {
-                                                },
-                                                contentScale = ContentScale.Crop,
-                                                //                                        modifier = modifier,
-                                                crossfade = false
-                                            )
-                                        }
-                                }
-                            }
-                        }
-                        PhotoUrlImage(
-                            photoUrl = chatMessage.message.retrieveImageUrlAndMessageMedia()?.first?.let {
-                                PhotoUrl(it)
-                            },
-                            modifier = Modifier.height(70.dp).width(70.dp)
-                        )
                     } else {
                         // show
                         Icon(
