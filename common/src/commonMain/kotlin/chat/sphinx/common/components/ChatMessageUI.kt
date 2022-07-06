@@ -385,7 +385,6 @@ fun DisplayConditionalIcons(
                     // TODO: Might want a divider here....
                 }
                 chatMessage.message.messageMedia?.let { media ->
-                    // TODO: Show attachment
                     if (media.mediaType.isImage) {
                         chatMessage.message.messageMedia?.let { messageMedia ->
                             MessageMediaImage(
