@@ -67,6 +67,7 @@ val badge_red = Color(0xFFFF5252)
 val place_holder_text = Color(0xFF556171)
 val primary_red = Color(0xFFED7474)
 val primary_green = Color(0xFF49C998)
+val sphinx_orange = Color(0xFFFFBC58)
 
 
 val randomColor1 = Color(0xFF7077FF)

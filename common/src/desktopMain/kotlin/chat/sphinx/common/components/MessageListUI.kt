@@ -57,6 +57,7 @@ fun MessageListUI(
                     )
                 } else {
                     ChatMessagesList(items,listState,chatViewModel)
+
                     VerticalScrollbar(
                         modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                         reverseLayout = true,
@@ -173,12 +174,10 @@ fun ChatMessagesList(
         modifier = Modifier.background(MaterialTheme.colorScheme.background)
     ) {
         itemsIndexed(items, key = { index, item -> item.message.id }){ index, item ->
-            val currentItem = rememberSaveable{ item }
             print("index is $index with value ${item.message.messageContent?.value}")
 
             ChatMessageUI(
                 item,
-                chatViewModel.editMessageState,
                 chatViewModel,
                 item.color
             )

@@ -10,7 +10,6 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 @Composable
 actual fun MessageMenu(
     chatMessage: ChatMessage,
-    editMessageState: EditMessageState,
     isVisible: MutableState<Boolean>,
     chatViewModel: ChatViewModel
 ) {

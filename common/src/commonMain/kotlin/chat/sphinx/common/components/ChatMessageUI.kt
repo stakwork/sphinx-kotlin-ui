@@ -65,7 +65,6 @@ import java.io.InputStream
 @Composable
 fun ChatMessageUI(
     chatMessage: ChatMessage,
-    editMessageState: EditMessageState,
     chatViewModel: ChatViewModel,
     color: Color
 ) {
@@ -109,7 +108,7 @@ fun ChatMessageUI(
                             DisplayConditionalIcons(
                                 chatMessage,
                                 chatViewModel,
-                                editMessageState, color
+                                color
                             ) // display icons according to different conditions
                         }
                         Row(
@@ -128,7 +127,6 @@ fun ChatMessageUI(
                                 }
                                 MessageMenu(
                                     chatMessage = chatMessage,
-                                    editMessageState = editMessageState,
                                     isVisible = isMessageMenuVisible,
                                     chatViewModel
                                 )
@@ -256,7 +254,7 @@ fun ChatMessageUI(
                                         }
 
                                 }
-                                else -> ChatCard(chatMessage, color, chatViewModel, editMessageState)
+                                else -> ChatCard(chatMessage, color, chatViewModel)
                             }
                             if (chatMessage.isReceived){
                                 val isMessageMenuVisible = remember { mutableStateOf(false) }
@@ -269,7 +267,6 @@ fun ChatMessageUI(
                                     )
                                     MessageMenu(
                                         chatMessage = chatMessage,
-                                        editMessageState = editMessageState,
                                         isVisible = isMessageMenuVisible,
                                         chatViewModel
                                     )
@@ -305,11 +302,10 @@ fun computeWidth(chatMessage: ChatMessage): Float {
 fun DisplayConditionalIcons(
     chatMessage: ChatMessage,
     chatViewModel: ChatViewModel,
-    editMessageState: EditMessageState, color: Color
+    color: Color
 ) {
 
-
-    if (chatMessage.chat.isTribe()) {
+    if (chatMessage.chat.isTribe() && chatMessage.isReceived) {
         Text(
             text = chatMessage.message.senderAlias?.value ?: "",
             color = color, fontSize = 10.sp
@@ -367,8 +363,7 @@ fun DisplayConditionalIcons(
  fun ChatCard(
     chatMessage: ChatMessage,
     color: Color,
-    chatViewModel: ChatViewModel,
-    editMessageState: EditMessageState,
+    chatViewModel: ChatViewModel
 ) {
     val uriHandler = LocalUriHandler.current
     val receiverCorner =

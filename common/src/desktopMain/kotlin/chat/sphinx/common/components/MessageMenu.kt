@@ -35,7 +35,6 @@ import chat.sphinx.wrapper.message.retrieveTextToShow
 @Composable
 actual fun MessageMenu(
     chatMessage: ChatMessage,
-    editMessageState: EditMessageState,
     isVisible: MutableState<Boolean>,
     chatViewModel: ChatViewModel
 ) {
@@ -71,7 +70,7 @@ actual fun MessageMenu(
             }
         }
         DropdownMenuItem(onClick = {
-            chatMessage.setAsReplyToMessage(editMessageState)
+            chatMessage.setAsReplyToMessage(chatViewModel.editMessageState)
             dismissKebab()
         }) {
            OptionItem("Reply", imageVector = Icons.Default.Reply)
