@@ -104,7 +104,7 @@ fun MessageMediaImage(
         )
     } else {
         // TODO: Have an error view depending on the launched effect
-        Box(modifier=Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center){
+        Box(modifier=Modifier.fillMaxWidth().size(50.dp), contentAlignment = Alignment.Center){
             CircularProgressIndicator(
                 strokeWidth = 2.dp,
                 color = MaterialTheme.colorScheme.tertiary,

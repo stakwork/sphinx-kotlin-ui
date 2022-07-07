@@ -59,6 +59,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.text.font.FontStyle
 import chat.sphinx.common.components.chat.KebabMenu
 import com.example.compose.place_holder_text
+import utils.conditional
 import java.io.File
 import java.io.InputStream
 
@@ -165,14 +166,25 @@ fun ChatMessageUI(
                                         Card(
                                             backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer,
                                             shape = if (chatMessage.isReceived) receiverCorner else senderCorner,
-                                            modifier = Modifier.fillMaxWidth(0.3f)
+                                            modifier = Modifier.fillMaxWidth(0.25f).conditional(chatMessage.message.messageContentDecrypted?.value?.isEmpty()
+                                                ?.not() == true){Modifier.fillMaxWidth(0.3f)}
                                         ) {
                                             Column(horizontalAlignment = if (chatMessage.isSent) Alignment.End else Alignment.Start) {
                                                 Row(
                                                     horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
-                                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 8.dp, end = 8.dp),
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
+                                                    if(chatMessage.chat.isTribe()){
+                                                        Box(modifier = Modifier.weight(1f).padding(start = 8.dp, end = 8.dp)){
+                                                            PhotoUrlImage(
+                                                                photoUrl = chatMessage.message.recipientPic,
+                                                                modifier = Modifier
+                                                                    .size(25.dp)
+                                                                    .clip(CircleShape
+                                                                    ))
+                                                        }
+                                                    }
                                                     if (chatMessage.isReceived) {
 
                                                         Image(
@@ -200,12 +212,14 @@ fun ChatMessageUI(
                                                             contentDescription = "Sent Icon",
                                                             modifier = Modifier.size(20.dp)
                                                         )
+
+
                                                 }
                                                 if (chatMessage.message.messageContentDecrypted?.value?.isEmpty()
                                                         ?.not() == true
                                                 ) {
                                                     Box(
-                                                        modifier = Modifier.fillMaxWidth().padding(start = 16.dp),
+                                                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 12.dp, end = 12.dp),
                                                         contentAlignment = Alignment.CenterStart
                                                     ) {
                                                         Text(
@@ -213,21 +227,23 @@ fun ChatMessageUI(
                                                             color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
                                                         )
                                                     }
-                                                    Spacer(modifier = Modifier.height(6.dp))
                                                 }
-                                                Row(
-                                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                                        .padding(bottom = 12.dp)
-                                                ) {
-                                                    chatMessage.message.messageMedia?.let {
+                                                chatMessage.message.messageMedia?.let {
+                                                    Row(
+                                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                                    ) {
+
                                                         MessageMediaImage(
                                                             chatMessage.message,
                                                             messageMedia = it,
                                                             chatViewModel = chatViewModel,
-                                                            modifier = Modifier.fillMaxWidth().height(200.dp)
+                                                            modifier = Modifier.fillMaxWidth()
                                                         )
+
                                                     }
                                                 }
+                                                if( chatMessage.message.messageMedia==null)
+                                                Spacer(modifier = Modifier.height(16.dp))
                                             }
 
                                         }
