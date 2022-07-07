@@ -78,9 +78,9 @@ fun ChatMessageUI(
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start
         ) {
             Row(
-                verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth(0.8f),
+                verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth(if(chatMessage.groupActionLabelText.isNullOrEmpty().not()) 1.0f else 0.8f),
             ) {
-                if (chatMessage.isReceived) {
+                if (chatMessage.isReceived&&chatMessage.groupActionLabelText.isNullOrEmpty()&&chatMessage.isDeleted.not()) {
                     ImageProfile(chatMessage, color)
                     Spacer(modifier = Modifier.width(12.dp))
                 }
@@ -92,12 +92,19 @@ fun ChatMessageUI(
                     if (chatMessage.message.type.isGroupAction()) {
                         // If any joined tribe will show below text
                         chatMessage.groupActionLabelText?.let { groupActionLabelText ->
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                text = groupActionLabelText,
-                                fontWeight = FontWeight.W300,
-                                textAlign = TextAlign.Center,
-                            )
+                            Box (modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+                                Card(backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer, shape = RoundedCornerShape(16.dp)) {
+                                    Text(
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                        text = groupActionLabelText,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.W300,
+                                        textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.tertiary
+                                    )
+                                }
+                            }
+
+
                         }
                     } else {
                         Row(
@@ -119,7 +126,7 @@ fun ChatMessageUI(
                             if (chatMessage.isSent) {
 
                                 val isMessageMenuVisible = remember { mutableStateOf(false) }
-                                if (chatMessage.isSent) {
+                                if (chatMessage.isSent&&chatMessage.isDeleted.not()) {
                                     KebabMenu(
                                         contentDescription = "Menu for message",
                                         onClick = { isMessageMenuVisible.value = true }
@@ -212,26 +219,14 @@ fun ChatMessageUI(
                                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                                         .padding(bottom = 12.dp)
                                                 ) {
-                                                    val url=chatMessage.message.retrieveImageUrlAndMessageMedia()?.second?.templateUrl?.value
-                                                    val photoUrlResource = lazyPainterResource(
-                                                        data = url?:""
-                                                    )
-                                                    KamelImage(
-                                                        resource = photoUrlResource,
-                                                        contentDescription = "avatar",
-                                                        onLoading = {
-                                                        },
-                                                        onFailure = {
-                                                        },
-                                                        contentScale = ContentScale.Crop,
-                                                        //                                        modifier = modifier,
-                                                        crossfade = false
-                                                    )
-//                                                    Image(
-//                                                        painter = imageResource(Res.drawable.ic_coin),
-//                                                        contentDescription = "Coin Icon",
-//                                                        modifier = Modifier.size(60.dp)
-//                                                    )
+                                                    chatMessage.message.messageMedia?.let {
+                                                        MessageMediaImage(
+                                                            chatMessage.message,
+                                                            messageMedia = it,
+                                                            chatViewModel = chatViewModel,
+                                                            modifier = Modifier.fillMaxWidth().height(200.dp)
+                                                        )
+                                                    }
                                                 }
                                             }
 
@@ -256,7 +251,7 @@ fun ChatMessageUI(
                                 }
                                 else -> ChatCard(chatMessage, color, chatViewModel)
                             }
-                            if (chatMessage.isReceived){
+                            if (chatMessage.isReceived&&chatMessage.isDeleted.not()){
                                 val isMessageMenuVisible = remember { mutableStateOf(false) }
                                 Box(modifier = Modifier.height(50.dp).width(50.dp)) {
 

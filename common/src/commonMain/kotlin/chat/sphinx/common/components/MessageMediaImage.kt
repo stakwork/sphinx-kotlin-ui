@@ -1,15 +1,16 @@
 package chat.sphinx.common.components
 
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -26,8 +27,10 @@ import chat.sphinx.wrapper.meme_server.AuthenticationToken
 import chat.sphinx.wrapper.meme_server.headerKey
 import chat.sphinx.wrapper.meme_server.headerValue
 import chat.sphinx.wrapper.message.Message
+import chat.sphinx.wrapper.message.MessageType
 import chat.sphinx.wrapper.message.media.MessageMedia
 import chat.sphinx.wrapper.message.media.token.MediaUrl
+import chat.sphinx.wrapper.message.retrieveImageUrlAndMessageMedia
 import com.example.compose.place_holder_text
 import io.kamel.core.config.KamelConfig
 import io.kamel.core.config.httpFetcher
@@ -42,6 +45,10 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.launch
 import okio.Path
+import views.LoadingShimmerEffect
+import views.ShimmerCircleAvatar
+import views.ShimmerGridItem
+import views.ShimmerImage
 
 @Composable
 fun MessageMediaImage(
@@ -53,14 +60,14 @@ fun MessageMediaImage(
     val localFilepath = rememberSaveable { mutableStateOf(messageMedia.localFile) }
     val imageLoadError = rememberSaveable { mutableStateOf(false) }
     val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
-
-    LaunchedEffect(messageMedia.url) {
+    val url=if(message.type == MessageType.DirectPayment) message.retrieveImageUrlAndMessageMedia()?.second?.templateUrl?.value else messageMedia.url?.value
+    LaunchedEffect(url) {
         if (localFilepath.value == null) {
-            messageMedia.url?.value?.let { url ->
+            url?.let { mediaURL ->
                 // TODO: Try catch error...
                 try {
                     messageMedia.retrieveRemoteMediaInputStream(
-                        url,
+                        mediaURL,
                         chatViewModel.memeServerTokenHandler,
                         chatViewModel.memeInputStreamHandler
                     )?.let { imageInputStream ->
@@ -97,9 +104,12 @@ fun MessageMediaImage(
         )
     } else {
         // TODO: Have an error view depending on the launched effect
-        CircularProgressIndicator(
-            strokeWidth = 2.dp,
-            modifier = modifier
-        )
+        Box(modifier=Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center){
+            CircularProgressIndicator(
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(50.dp)
+            )
+        }
     }
 }
