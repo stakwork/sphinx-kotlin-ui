@@ -51,7 +51,7 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.1"
 
             val iconsRoot = project.file("../common/src/desktopMain/resources/images")
             macOS {
