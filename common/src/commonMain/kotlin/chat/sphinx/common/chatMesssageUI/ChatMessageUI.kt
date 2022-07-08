@@ -1,5 +1,6 @@
 package chat.sphinx.common.chatMesssageUI
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
@@ -95,10 +96,11 @@ fun ChatMessageUI(
                                         )
                                     }
                                 }
-                                else -> ChatCard(chatMessage, color, chatViewModel)
+                                else -> Box(contentAlignment = if (chatMessage.isSent) Alignment.CenterEnd else Alignment.CenterStart) {
+                                    ChatCard(chatMessage, color, chatViewModel)
+                                }
                             }
                             if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
-                                val isMessageMenuVisible = remember { mutableStateOf(false) }
                                 Box(modifier = Modifier.height(50.dp).width(50.dp)) {
                                     ChatOptionMenu(chatMessage, chatViewModel)
                                 }
