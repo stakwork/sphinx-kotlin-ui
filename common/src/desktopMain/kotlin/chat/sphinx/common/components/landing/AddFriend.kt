@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
@@ -99,15 +100,125 @@ fun AddFriend(updateState: (AddFriendScreenState) -> Unit){
 
 @Composable
 fun AddNewFriendOnSphinx() {
+
+    var nicknameText by remember { mutableStateOf("") }
+    var includeMessageText by remember { mutableStateOf("") }
+
     Box(
         modifier = Modifier.fillMaxSize()
             .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(75.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-            Text(color = Color.White, text = "Que tal")
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Text(
+                text = "NICKNAME",
+                fontSize = 10.sp,
+                fontFamily = Roboto,
+                color = Color.White,
+            )
+            Spacer(modifier = Modifier.height(18.dp))
+
+            OutlinedTextField(
+                value = nicknameText,
+                onValueChange = { nicknameText = it },
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 16.sp
+                ),
+                singleLine = true,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color.LightGray,
+                    unfocusedBorderColor = Color.LightGray
+                )
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Text(
+                text = "INCLUDE A MESSAGE",
+                fontSize = 10.sp,
+                fontFamily = Roboto,
+                color = Color.White,
+            )
+            Spacer(modifier = Modifier.height(18.dp))
+
+            OutlinedTextField(
+                value = includeMessageText,
+                onValueChange = { includeMessageText = it },
+                modifier = Modifier.fillMaxWidth().height(108.dp),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 16.sp
+                ),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color.LightGray,
+                    unfocusedBorderColor = Color.LightGray
+                ),
+                label = {
+                    Text(
+                        text = "Welcome to Sphinx!",
+                        color = Color.Gray,
+                    )
+                }
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column() {
+                    Text(
+                        text = "ESTIMATED COST",
+                        fontSize = 12.sp,
+                        fontFamily = Roboto,
+                        color = Color.Gray,
+                    )
+                    Row(modifier = Modifier.padding(top = 4.dp)) {
+                        Text(
+                            text = "2 000",
+                            fontSize = 20.sp,
+                            fontFamily = Roboto,
+                            color = Color.White,
+                        )
+                        Text(
+                            text = "sat",
+                            fontSize = 20.sp,
+                            fontFamily = Roboto,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
+                    }
+                }
+                Button(
+                    onClick = {
+                    },
+                    modifier = Modifier.clip(CircleShape)
+                        .wrapContentWidth()
+                        .height(50.dp),
+
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                    )
+                )
+                {
+                    Text(
+                        text = "Create Invitation",
+                        color = Color.White,
+                        fontFamily = Roboto
+                    )
+                }
+            }
         }
     }
 }
