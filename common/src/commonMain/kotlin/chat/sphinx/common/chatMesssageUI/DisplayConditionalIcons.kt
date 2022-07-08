@@ -1,9 +1,6 @@
 package chat.sphinx.common.chatMesssageUI
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -43,7 +40,9 @@ fun DisplayConditionalIcons(
 
     if (chatMessage.showSendingIcon) {
         CircularProgressIndicator(
-            modifier = Modifier.size(22.dp)
+            modifier = Modifier.width(20.dp).height(16.dp).padding(4.dp, 2.dp),
+            color = MaterialTheme.colorScheme.tertiary,
+            strokeWidth = 2.dp
         )
     }
 
