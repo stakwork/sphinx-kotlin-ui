@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.retrieveRemoteMediaInputStream
@@ -104,12 +106,17 @@ fun MessageMediaImage(
         )
     } else {
         // TODO: Have an error view depending on the launched effect
-        Box(modifier=Modifier.fillMaxWidth().size(50.dp), contentAlignment = Alignment.Center){
-            CircularProgressIndicator(
-                strokeWidth = 2.dp,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.size(50.dp)
-            )
+        Box(modifier=Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+            Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(40.dp)
+                )
+                Spacer(modifier=Modifier.height(2.dp))
+                Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.onBackground)
+                Spacer(modifier=Modifier.height(8.dp))
+            }
         }
     }
 }
