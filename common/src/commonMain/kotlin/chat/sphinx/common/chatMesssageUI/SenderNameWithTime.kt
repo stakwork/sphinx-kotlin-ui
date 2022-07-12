@@ -17,74 +17,80 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.wrapper.message.Message
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
 
 @Composable
-fun SenderNameWithTime(replyMessage: Message, color: Color) {
-    Row(
-        modifier = Modifier.height(44.dp).padding(top = 8.dp, start = 8.dp, end = 8.dp,),
-        horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .width(4.dp)
-                .fillMaxHeight()
-                .background(color)
-                .padding(16.dp),
-        )
-        // TODO: Image if available...
-        replyMessage.messageMedia?.let { media ->
-            if (media.mediaType.isImage) {
-                Icon(
-                    Icons.Default.Image,
-                    contentDescription = "Image",
-                    tint = Color.Green,
-                    modifier = Modifier.size(88.dp).padding(4.dp)
-                )
-            } else {
-                // show
-                Icon(
-                    Icons.Default.AttachFile,
-                    contentDescription = "Attachment",
-                    tint = Color.Green,
-                    modifier = Modifier.size(88.dp).padding(4.dp)
-                )
-            }
-        }
-        Column(
-            modifier = Modifier.padding(
-                start = 10.dp
-            ),
-            verticalArrangement = Arrangement.Center
+fun SenderNameWithTime(chatMessage: ChatMessage, color: Color) {
+    chatMessage.message.replyMessage?.let { replyMessage ->
+
+        Row(
+            modifier = Modifier.height(44.dp).padding(top = 8.dp, start = 8.dp, end = 8.dp,),
+            horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically
         ) {
-            replyMessage.senderAlias?.let { senderAlias ->
-                Text(
-                    modifier = Modifier.fillMaxWidth(0.8f),
-                    text = senderAlias.value.trim(),
-                    fontWeight = FontWeight.W300,
-                    textAlign = TextAlign.Start,
-                    maxLines = 1,
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            replyMessage.retrieveTextToShow()?.let { replyMessageText ->
-                if (replyMessageText.isNotEmpty()) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        text = replyMessageText,
-                        fontWeight = FontWeight.W300,
-                        textAlign = TextAlign.Start,
-                        maxLines = 1,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        overflow = TextOverflow.Ellipsis
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(color)
+                    .padding(16.dp),
+            )
+            // TODO: Image if available...
+            replyMessage.messageMedia?.let { media ->
+                if (media.mediaType.isImage) {
+                    Icon(
+                        Icons.Default.Image,
+                        contentDescription = "Image",
+                        tint = Color.Green,
+                        modifier = Modifier.size(88.dp).padding(4.dp)
                     )
+                } else {
+                    // show
+                    Icon(
+                        Icons.Default.AttachFile,
+                        contentDescription = "Attachment",
+                        tint = Color.Green,
+                        modifier = Modifier.size(88.dp).padding(4.dp)
+                    )
+                }
+            }
+            Column(
+                modifier = Modifier.padding(
+                    start = 10.dp
+                ),
+                verticalArrangement = Arrangement.Center
+            ) {
+                if(chatMessage.isDeleted.not())
+                    replyMessage.senderAlias?.let { senderAlias ->
+                        Text(
+                            modifier = Modifier.fillMaxWidth(0.8f),
+                            text = senderAlias.value.trim(),
+                            fontWeight = FontWeight.W300,
+                            textAlign = TextAlign.Start,
+                            maxLines = 1,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                replyMessage.retrieveTextToShow()?.let { replyMessageText ->
+                    if (replyMessageText.isNotEmpty()) {
+                        Text(
+                            modifier = Modifier.fillMaxWidth(0.8f),
+                            text = replyMessageText,
+                            fontWeight = FontWeight.W300,
+                            textAlign = TextAlign.Start,
+                            maxLines = 1,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }
     }
+
 }

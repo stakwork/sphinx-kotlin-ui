@@ -54,7 +54,7 @@ fun ChatMessageUI(
                         TribeHeaderMessage(chatMessage)
                     } else {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = if(chatMessage.isDeleted&&chatMessage.isReceived) 42.dp else 4.dp),
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -83,7 +83,7 @@ fun ChatMessageUI(
                                     DirectPaymentUI(chatMessage, chatViewModel)
                                 }
                                 chatMessage.isDeleted -> {
-                                    Column {
+                                    Column(modifier = Modifier.padding(horizontal = if(chatMessage.isDeleted&&chatMessage.isReceived) 42.dp else 4.dp)) {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             modifier = Modifier.fillMaxWidth(),
