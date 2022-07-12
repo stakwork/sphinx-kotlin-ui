@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.menu.ChatActionMenu
+import chat.sphinx.common.components.menu.ChatActionMenuEnums
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -40,7 +42,6 @@ import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
 import com.example.compose.primary_green
-import com.example.compose.primary_red
 import com.example.compose.sphinx_orange
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
@@ -292,12 +293,19 @@ fun SphinxChatDetailBottomAppBar(
                     .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                     .size(30.dp),
             ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "content description",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(21.dp)
-                )
+                var currentSelectedItem by remember { mutableStateOf<ChatActionMenuEnums?>(null) }
+                ChatActionMenu{
+                  currentSelectedItem=it
+                }
+                when(currentSelectedItem){
+                    ChatActionMenuEnums.LIBRARY -> TODO()
+                    ChatActionMenuEnums.GIF -> TODO()
+                    ChatActionMenuEnums.FILE -> TODO()
+                    ChatActionMenuEnums.PAID_MESSAGE -> TODO()
+                    ChatActionMenuEnums.REQUEST -> TODO()
+                    ChatActionMenuEnums.SEND -> SendSatsDialog {  }
+                    else ->{}
+                }
             }
             Spacer(modifier = Modifier.width(12.dp))
             IconButton(onClick = {}, modifier = Modifier.height(25.dp).width(18.dp)) {

@@ -28,6 +28,14 @@ object Res {
         const val landing_page_image = "drawable/landingpageimage.png"
 
         const val connection_animation =  "drawable/connecting.gif"
+        const val ic_camera =  "drawable/ic_camera.xml"
+        const val ic_media_library =  "drawable/ic_media_library.xml"
+        const val ic_paid_message =  "drawable/ic_paid_message.xml"
+        const val ic_request =  "drawable/ic_request.xml"
+        const val ic_send =  "drawable/ic_send.xml"
+
+        // chat action sheet
+
     }
 
     object string {
