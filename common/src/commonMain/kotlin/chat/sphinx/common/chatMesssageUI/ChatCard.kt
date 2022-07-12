@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -45,7 +46,7 @@ fun ChatCard(
         backgroundColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary,
         shape = if (chatMessage.isReceived) receiverCorner else senderCorner
     ) {
-        Box(modifier = Modifier.padding(12.dp)) {
+        Box(modifier = Modifier) {
           Row(){
               Column {
 
@@ -53,139 +54,143 @@ fun ChatCard(
                   chatMessage.message.replyMessage?.let { replyMessage ->
                       SenderNameWithTime(replyMessage, color)
                       Spacer(modifier = Modifier.height(4.dp))
+
                       // TODO: Might want a divider here....
                   }
-                  chatMessage.message.messageMedia?.let { media ->
-                      if (media.mediaType.isImage) {
-                          chatMessage.message.messageMedia?.let { messageMedia ->
-                              MessageMediaImage(
-                                  chatMessage.message,
-                                  messageMedia = messageMedia,
-                                  chatViewModel = chatViewModel,
-                                  modifier = Modifier.fillMaxWidth().height(200.dp)
-                              )
-                          }
-                      } else {
-                          // show
-                          Icon(
-                              Icons.Default.AttachFile,
-                              contentDescription = "Attachment",
-                              tint = Color.Green,
-                              modifier = Modifier.size(88.dp).padding(4.dp)
-                          )
-                      }
-                  }
+                  Divider()
+                 Column(modifier = Modifier.padding(12.dp)) {
+                     chatMessage.message.messageMedia?.let { media ->
+                         if (media.mediaType.isImage) {
+                             chatMessage.message.messageMedia?.let { messageMedia ->
+                                 MessageMediaImage(
+                                     chatMessage.message,
+                                     messageMedia = messageMedia,
+                                     chatViewModel = chatViewModel,
+                                     modifier = Modifier.fillMaxWidth().height(200.dp)
+                                 )
+                             }
+                         } else {
+                             // show
+                             Icon(
+                                 Icons.Default.AttachFile,
+                                 contentDescription = "Attachment",
+                                 tint = Color.Green,
+                                 modifier = Modifier.size(88.dp).padding(4.dp)
+                             )
+                         }
+                     }
 
-                  if (chatMessage.isFlagged) {
-                      Text(
-                          modifier = Modifier.fillMaxWidth(),
-                          text = "This message has been flagged",
-                          fontWeight = FontWeight.W300,
-                          textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
-                      )
-                  } else {
-                      chatMessage.message.retrieveTextToShow()?.let { messageText ->
-                          Row(
+                     if (chatMessage.isFlagged) {
+                         Text(
+                             modifier = Modifier.fillMaxWidth(),
+                             text = "This message has been flagged",
+                             fontWeight = FontWeight.W300,
+                             textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
+                         )
+                     } else {
+                         chatMessage.message.retrieveTextToShow()?.let { messageText ->
+                             Row(
 //                            modifier = Modifier.wrapContentWidth(if (chatMessage.isSent) Alignment.End else Alignment.Start),
 //                            horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
-                              verticalAlignment = Alignment.CenterVertically
-                          ) {
-                              val annotatedString = messageText.toAnnotatedString()
-                              ClickableText(
-                                  annotatedString,
-                                  style = TextStyle(
-                                      fontWeight = FontWeight.W400,
-                                      color = MaterialTheme.colorScheme.tertiary,
-                                      fontSize = 13.sp
-                                  ),
-                                  onClick = { offset ->
-                                      annotatedString.getStringAnnotations(
-                                          start = offset,
-                                          end = offset
-                                      ).firstOrNull()?.let { annotation ->
-                                          when (annotation.tag) {
-                                              LinkTag.WebURL.name -> {
-                                                  uriHandler.openUri(annotation.item)
-                                              }
-                                              LinkTag.BitcoinAddress.name -> {
-                                                  val bitcoinUriScheme =
-                                                      if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
-                                                  val bitcoinURI =
-                                                      "$bitcoinUriScheme${annotation.item}"
+                                 verticalAlignment = Alignment.CenterVertically
+                             ) {
+                                 val annotatedString = messageText.toAnnotatedString()
+                                 ClickableText(
+                                     annotatedString,
+                                     style = TextStyle(
+                                         fontWeight = FontWeight.W400,
+                                         color = MaterialTheme.colorScheme.tertiary,
+                                         fontSize = 13.sp
+                                     ),
+                                     onClick = { offset ->
+                                         annotatedString.getStringAnnotations(
+                                             start = offset,
+                                             end = offset
+                                         ).firstOrNull()?.let { annotation ->
+                                             when (annotation.tag) {
+                                                 LinkTag.WebURL.name -> {
+                                                     uriHandler.openUri(annotation.item)
+                                                 }
+                                                 LinkTag.BitcoinAddress.name -> {
+                                                     val bitcoinUriScheme =
+                                                         if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
+                                                     val bitcoinURI =
+                                                         "$bitcoinUriScheme${annotation.item}"
 
-                                                  uriHandler.openUri(bitcoinURI)
-                                              }
-                                          }
-                                      }
-                                  }
-                              )
+                                                     uriHandler.openUri(bitcoinURI)
+                                                 }
+                                             }
+                                         }
+                                     }
+                                 )
 
-                              // TODO: Make clickable text compatible with selectable text...
-                              //                                SelectionContainer {
-                              //
-                              //                                }
-                          }
+                                 // TODO: Make clickable text compatible with selectable text...
+                                 //                                SelectionContainer {
+                                 //
+                                 //                                }
+                             }
 
-                      }
-                      if (chatMessage.message.type == MessageType.BotRes) {
-                          chatMessage.message.messageContentDecrypted?.let {
-                              val annotatedString = it.value.toAnnotatedString()
-                              ClickableText(
-                                  annotatedString,
-                                  style = TextStyle(
-                                      fontWeight = FontWeight.W400,
-                                      color = MaterialTheme.colorScheme.tertiary,
-                                      fontSize = 13.sp
-                                  ),
-                                  onClick = { offset ->
-                                      annotatedString.getStringAnnotations(
-                                          start = offset,
-                                          end = offset
-                                      ).firstOrNull()?.let { annotation ->
-                                          when (annotation.tag) {
-                                              LinkTag.WebURL.name -> {
-                                                  uriHandler.openUri(annotation.item)
-                                              }
-                                              LinkTag.BitcoinAddress.name -> {
-                                                  val bitcoinUriScheme =
-                                                      if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
-                                                  val bitcoinURI =
-                                                      "$bitcoinUriScheme${annotation.item}"
+                         }
+                         if (chatMessage.message.type == MessageType.BotRes) {
+                             chatMessage.message.messageContentDecrypted?.let {
+                                 val annotatedString = it.value.toAnnotatedString()
+                                 ClickableText(
+                                     annotatedString,
+                                     style = TextStyle(
+                                         fontWeight = FontWeight.W400,
+                                         color = MaterialTheme.colorScheme.tertiary,
+                                         fontSize = 13.sp
+                                     ),
+                                     onClick = { offset ->
+                                         annotatedString.getStringAnnotations(
+                                             start = offset,
+                                             end = offset
+                                         ).firstOrNull()?.let { annotation ->
+                                             when (annotation.tag) {
+                                                 LinkTag.WebURL.name -> {
+                                                     uriHandler.openUri(annotation.item)
+                                                 }
+                                                 LinkTag.BitcoinAddress.name -> {
+                                                     val bitcoinUriScheme =
+                                                         if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
+                                                     val bitcoinURI =
+                                                         "$bitcoinUriScheme${annotation.item}"
 
-                                                  uriHandler.openUri(bitcoinURI)
-                                              }
-                                          }
-                                      }
-                                  }
-                              )
-                          }
-                      }
-                  }
+                                                     uriHandler.openUri(bitcoinURI)
+                                                 }
+                                             }
+                                         }
+                                     }
+                                 )
+                             }
+                         }
+                     }
 
-                  if (chatMessage.showFailedContainer) {
-                      Row(
-                          modifier = Modifier.fillMaxWidth(),
-                          horizontalArrangement = Arrangement.End,
-                          verticalAlignment = Alignment.CenterVertically
-                      ) {
-                          Icon(
-                              Icons.Default.Error,
-                              contentDescription = "Go back",
-                              tint = Color.Red,
-                              modifier = Modifier.size(22.dp).padding(4.dp)
-                          )
-                          Text(
-                              text = "Failed message",
-                              color = Color.Red,
-                              textAlign = TextAlign.Start
-                          )
-                      }
+                     if (chatMessage.showFailedContainer) {
+                         Row(
+                             modifier = Modifier.fillMaxWidth(),
+                             horizontalArrangement = Arrangement.End,
+                             verticalAlignment = Alignment.CenterVertically
+                         ) {
+                             Icon(
+                                 Icons.Default.Error,
+                                 contentDescription = "Go back",
+                                 tint = Color.Red,
+                                 modifier = Modifier.size(22.dp).padding(4.dp)
+                             )
+                             Text(
+                                 text = "Failed message",
+                                 color = Color.Red,
+                                 textAlign = TextAlign.Start
+                             )
+                         }
 
-                  }
-                  if (chatMessage.message.reactions?.isNotEmpty() == true) {
-                      Spacer(modifier = Modifier.height(4.dp))
-                      BoostedFooter(chatMessage)
-                  }
+                     }
+                     if (chatMessage.message.reactions?.isNotEmpty() == true) {
+                         Spacer(modifier = Modifier.height(4.dp))
+                         BoostedFooter(chatMessage)
+                     }
+                 }
                   // TODO: Attachment not supported... but give download functionality...
               }
           }

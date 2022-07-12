@@ -24,7 +24,7 @@ import chat.sphinx.wrapper.message.retrieveTextToShow
 @Composable
 fun SenderNameWithTime(replyMessage: Message, color: Color) {
     Row(
-        modifier = Modifier.height(44.dp),
+        modifier = Modifier.height(44.dp).padding(top = 8.dp, start = 8.dp, end = 8.dp,),
         horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -55,7 +55,7 @@ fun SenderNameWithTime(replyMessage: Message, color: Color) {
         }
         Column(
             modifier = Modifier.padding(
-                start = 8.dp
+                start = 10.dp
             ),
             verticalArrangement = Arrangement.Center
         ) {
