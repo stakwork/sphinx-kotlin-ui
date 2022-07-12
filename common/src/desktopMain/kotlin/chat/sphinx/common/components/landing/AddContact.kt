@@ -226,7 +226,7 @@ fun AddNewContactOnSphinx() {
     }
 }
 @Composable
-fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
+fun AddContactAlreadyOnSphinx() {
 
     var switchState = remember {
         mutableStateOf(false)
