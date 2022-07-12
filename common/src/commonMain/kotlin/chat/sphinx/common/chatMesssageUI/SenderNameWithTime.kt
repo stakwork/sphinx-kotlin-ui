@@ -17,13 +17,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.components.MessageMediaImage
+import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.Message
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
 
 @Composable
-fun SenderNameWithTime(chatMessage: ChatMessage, color: Color) {
+fun SenderNameWithTime(chatMessage: ChatMessage, color: Color,chatViewModel: ChatViewModel) {
     chatMessage.message.replyMessage?.let { replyMessage ->
 
         Row(
@@ -40,12 +43,9 @@ fun SenderNameWithTime(chatMessage: ChatMessage, color: Color) {
             // TODO: Image if available...
             replyMessage.messageMedia?.let { media ->
                 if (media.mediaType.isImage) {
-                    Icon(
-                        Icons.Default.Image,
-                        contentDescription = "Image",
-                        tint = Color.Green,
-                        modifier = Modifier.size(88.dp).padding(4.dp)
-                    )
+                        MessageMediaImage(chatMessage.message,
+                            media,chatViewModel, modifier = Modifier.height(30.dp).width(30.dp))
+
                 } else {
                     // show
                     Icon(

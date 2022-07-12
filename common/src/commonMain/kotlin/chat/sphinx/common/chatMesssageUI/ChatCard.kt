@@ -52,7 +52,7 @@ fun ChatCard(
 
 
                   chatMessage.message.replyMessage?.let { replyMessage ->
-                      SenderNameWithTime(chatMessage, color)
+                      SenderNameWithTime(chatMessage, color,chatViewModel)
                       Spacer(modifier = Modifier.height(4.dp))
 
                       // TODO: Might want a divider here....
