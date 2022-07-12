@@ -21,18 +21,19 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.viewmodel.AddContactViewModel
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 
 @Composable
-fun AddContactWindow() {
+fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
     var isOpen by remember { mutableStateOf(true ) }
     var screenState: AddContactScreenState by remember { mutableStateOf(AddContactScreenState.Home) }
 
-    val addContactViewModel = AddContactViewModel()
-
     if (isOpen) {
         Window(
-            onCloseRequest = {isOpen = false},
+            onCloseRequest = {
+                dashboardViewModel.toggleAddContactWindow()
+             },
             title = "Add Contact",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
@@ -45,9 +46,8 @@ fun AddContactWindow() {
                     screenState = it
                 }
                 AddContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-                AddContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx(addContactViewModel)
+                AddContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx()
             }
-
         }
     }
 }
@@ -83,7 +83,7 @@ fun AddContact(updateState: (AddContactScreenState) -> Unit){
             Divider(Modifier.padding(12.dp), color = Color.Transparent)
             Button(
                 onClick = {
-                          updateState(AddContactScreenState.AlreadyOnSphinx)
+                    updateState(AddContactScreenState.AlreadyOnSphinx)
                 },
                 modifier = Modifier.clip(CircleShape)
                     .fillMaxWidth()
@@ -226,11 +226,13 @@ fun AddNewContactOnSphinx() {
     }
 }
 @Composable
-fun AddContactAlreadyOnSphinx(viewModel: AddContactViewModel) {
+fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
 
     var switchState = remember {
         mutableStateOf(false)
     }
+
+    val viewModel = remember { AddContactViewModel() }
 
     Box(
         modifier = Modifier.fillMaxSize()

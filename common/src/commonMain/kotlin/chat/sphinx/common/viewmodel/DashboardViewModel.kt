@@ -35,6 +35,17 @@ class DashboardViewModel {
     val balanceStateFlow: StateFlow<NodeBalance?>
         get() = _balanceStateFlow.asStateFlow()
 
+    private val _addContactWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val addContactWindowStateFlow: StateFlow<Boolean>
+        get() = _addContactWindowStateFlow.asStateFlow()
+
+    fun toggleAddContactWindow() {
+        _addContactWindowStateFlow.value = !_addContactWindowStateFlow.value
+    }
+
     init {
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
             DashboardState.screenState(DashboardScreenType.Unlocked)

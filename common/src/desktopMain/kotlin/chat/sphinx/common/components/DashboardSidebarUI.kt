@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.landing.AddContactWindow
-import chat.sphinx.common.viewmodel.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -117,7 +116,6 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                     )
                 }
             }
-            var windowState by rememberSaveable { mutableStateOf(false) }
             var searchText by rememberSaveable { mutableStateOf("") }
             TopAppBar(
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
@@ -150,7 +148,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 elevation = 8.dp,
                 actions = {
                     IconButton(onClick = {
-                        windowState = true
+                        dashboardViewModel.toggleAddContactWindow()
                     }) {
                         Icon(
                             Icons.Default.PersonAddAlt,
@@ -160,8 +158,9 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                     }
                 }
             )
-            if (windowState){
-                AddContactWindow()
+            val addContactWindowState by dashboardViewModel.addContactWindowStateFlow.collectAsState()
+            if (addContactWindowState){
+                AddContactWindow(dashboardViewModel)
             }
             ChatListUI()
         }
