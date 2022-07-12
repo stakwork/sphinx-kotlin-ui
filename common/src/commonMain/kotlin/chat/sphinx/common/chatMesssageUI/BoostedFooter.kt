@@ -15,6 +15,7 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.platform.imageResource
+import chat.sphinx.wrapper.message.Message
 
 @Composable
 fun BoostedFooter(
@@ -35,16 +36,16 @@ fun BoostedFooter(
         )
         Spacer(modifier = Modifier.width(4.dp))
         Box(
-            modifier = Modifier.padding(end = 25.dp).fillMaxWidth(0.85f),
+            modifier = Modifier.fillMaxWidth().padding(end = if(chatMessage.message.reactions?.size!! >3) 0.dp else 0.dp),
             contentAlignment = Alignment.CenterEnd
         ) {
 
             chatMessage.message.reactions?.forEachIndexed { index, it ->
                 Box(
                     modifier = Modifier.align(Alignment.CenterEnd)
-                        .absoluteOffset((index * 10).dp, 0.dp)
+                        .absoluteOffset(if(index==3) 10.dp else calculatePosition(chatMessage.message.reactions!!,index), 0.dp)
                 ) {
-                    if(index<3)
+                    if(index<2)
                         PhotoUrlImage(
                             photoUrl = it.senderPic,
                             modifier = Modifier
@@ -52,7 +53,7 @@ fun BoostedFooter(
                                 .clip(CircleShape),
                         )
                     else if(index==3){
-                        Text((chatMessage.message.reactions?.size?:0-index).toString(), fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(start = 8.dp))
+                        Text((chatMessage.message.reactions?.size?:0-index).toString(), fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(start = 16.dp))
                     }
                 }
             }
@@ -60,4 +61,63 @@ fun BoostedFooter(
 
 
     }
+}
+
+fun calculatePosition(reactions: List<Message>, index: Int): androidx.compose.ui.unit.Dp {
+    when (reactions.size) {
+        1 ->  when(index){
+            0->{
+                return 0.dp
+            }
+        }
+        2 -> when(index){
+            0->{
+                return 5.dp
+            }
+            1->{
+                return 10.dp
+            }
+        }
+        3 -> when(index){
+            0->{
+                return 0.dp
+            }
+            1->{
+                return 5.dp
+            }
+            2->{
+                return 10.dp
+            }
+        }
+        4-> {
+            return 0.dp
+        }
+    }
+
+    when(index){
+        0->{
+            when (reactions.size) {
+                1 -> return 5.dp
+                2 -> 10.dp
+                3 -> 15.dp
+            }
+        }
+        1->{
+            when (reactions.size) {
+                1 -> return 5.dp
+                2 -> 10.dp
+                3 -> 15.dp
+            }
+        }
+        2->{
+            when (reactions.size) {
+                1 -> return 5.dp
+                2 -> 10.dp
+                3 -> 15.dp
+            }
+        }
+    }
+
+    return 0.dp
+
 }
