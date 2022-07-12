@@ -20,12 +20,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.viewmodel.AddContactViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 
 @Composable
-fun AddFriendWindow() {
-    var isOpen by remember { mutableStateOf(true) }
-    var screenState: AddFriendScreenState by remember { mutableStateOf(AddFriendScreenState.Home) }
+fun AddContactWindow() {
+    var isOpen by remember { mutableStateOf(true ) }
+    var screenState: AddContactScreenState by remember { mutableStateOf(AddContactScreenState.Home) }
+
+    val addContactViewModel = AddContactViewModel()
 
     if (isOpen) {
         Window(
@@ -38,11 +41,11 @@ fun AddFriendWindow() {
             )
         ) {
             when(screenState){
-                AddFriendScreenState.Home -> AddFriend(){
+                AddContactScreenState.Home -> AddContact(){
                     screenState = it
                 }
-                AddFriendScreenState.NewToSphinx -> AddNewFriendOnSphinx()
-                AddFriendScreenState.AlreadyOnSphinx -> AddFriendAlreadyOnSphinx()
+                AddContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+                AddContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx(addContactViewModel)
             }
 
         }
@@ -50,7 +53,7 @@ fun AddFriendWindow() {
 }
 
 @Composable
-fun AddFriend(updateState: (AddFriendScreenState) -> Unit){
+fun AddContact(updateState: (AddContactScreenState) -> Unit){
     Box(
         modifier = Modifier.fillMaxSize()
             .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background )
@@ -62,7 +65,7 @@ fun AddFriend(updateState: (AddFriendScreenState) -> Unit){
         ) {
             Button(
                 onClick = {
-                    updateState(AddFriendScreenState.NewToSphinx)
+                    updateState(AddContactScreenState.NewToSphinx)
 
                 },
                 modifier = Modifier.clip(CircleShape)
@@ -80,7 +83,7 @@ fun AddFriend(updateState: (AddFriendScreenState) -> Unit){
             Divider(Modifier.padding(12.dp), color = Color.Transparent)
             Button(
                 onClick = {
-                          updateState(AddFriendScreenState.AlreadyOnSphinx)
+                          updateState(AddContactScreenState.AlreadyOnSphinx)
                 },
                 modifier = Modifier.clip(CircleShape)
                     .fillMaxWidth()
@@ -99,7 +102,7 @@ fun AddFriend(updateState: (AddFriendScreenState) -> Unit){
 }
 
 @Composable
-fun AddNewFriendOnSphinx() {
+fun AddNewContactOnSphinx() {
 
     var nicknameText by remember { mutableStateOf("") }
     var includeMessageText by remember { mutableStateOf("") }
@@ -223,17 +226,8 @@ fun AddNewFriendOnSphinx() {
     }
 }
 @Composable
-fun AddFriendAlreadyOnSphinx() {
+fun AddContactAlreadyOnSphinx(viewModel: AddContactViewModel) {
 
-    var nicknameText by remember {
-        mutableStateOf("")
-    }
-    var addressText by remember {
-        mutableStateOf("")
-    }
-    var routeHintText by remember {
-        mutableStateOf("")
-    }
     var switchState = remember {
         mutableStateOf(false)
     }
@@ -258,9 +252,9 @@ fun AddFriendAlreadyOnSphinx() {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = nicknameText,
+                    value = viewModel.addContactState.contactAlias,
                     onValueChange = {
-                        nicknameText = it
+                        viewModel.onNicknameTextChanged(it)
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
@@ -280,9 +274,9 @@ fun AddFriendAlreadyOnSphinx() {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = addressText,
+                    value = viewModel.addContactState.lightningNodePubKey,
                     onValueChange = {
-                        addressText = it
+                        viewModel.onAddressTextChanged(it)
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
@@ -302,9 +296,9 @@ fun AddFriendAlreadyOnSphinx() {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = routeHintText,
+                    value = viewModel.addContactState.lightningRouteHint ?: "",
                     onValueChange = {
-                        routeHintText = it
+                        viewModel.onRouteHintTextChanged(it)
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
@@ -358,6 +352,7 @@ fun AddFriendAlreadyOnSphinx() {
             ) {
                 Button(
                     onClick = {
+                        viewModel.saveContact()
                     },
                     modifier = Modifier.clip(CircleShape)
                         .fillMaxWidth()
@@ -381,9 +376,9 @@ fun AddFriendAlreadyOnSphinx() {
 
 
 
-sealed class AddFriendScreenState {
-    object Home: AddFriendScreenState()
-    object NewToSphinx: AddFriendScreenState()
-    object AlreadyOnSphinx: AddFriendScreenState()
+sealed class AddContactScreenState {
+    object Home: AddContactScreenState()
+    object NewToSphinx: AddContactScreenState()
+    object AlreadyOnSphinx: AddContactScreenState()
 
 }
