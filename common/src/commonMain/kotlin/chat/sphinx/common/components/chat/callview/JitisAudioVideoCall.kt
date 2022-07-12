@@ -40,9 +40,9 @@ fun JitsiAudioVideoCall(chatMessage: ChatMessage) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    "Join Call by...",
+                    "JOIN CALL by...",
                     color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    fontSize = 11.sp
+                    fontSize = 12.sp
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -82,21 +82,20 @@ fun JitsiAudioVideoCall(chatMessage: ChatMessage) {
                     )
                 }
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     "COPY LINK",
                     color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    fontSize = 10.sp
+                    fontSize = 12.sp
                 )
-                IconButton(onClick = {}) {
-                    Icon(
-                        Icons.Default.FileCopy,
-                        contentDescription = "",
-                        tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(12.dp)
-                    )
-                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    Icons.Default.FileCopy,
+                    contentDescription = "",
+                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(12.dp)
+                )
             }
 
         }
