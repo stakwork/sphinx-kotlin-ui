@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -24,7 +25,7 @@ import chat.sphinx.wrapper.message.retrieveTextToShow
 fun SenderNameWithTime(replyMessage: Message, color: Color) {
     Row(
         modifier = Modifier.height(44.dp),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
