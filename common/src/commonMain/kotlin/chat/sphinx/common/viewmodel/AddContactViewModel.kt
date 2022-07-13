@@ -29,10 +29,10 @@ class AddContactViewModel() {
     val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private var saveContactJob: Job? = null
 
+
     private val _isLoading: MutableStateFlow<Boolean> by lazy {
         MutableStateFlow(false)
     }
-
     val isLoading: StateFlow<Boolean>
         get() = _isLoading.asStateFlow()
 
@@ -43,10 +43,16 @@ class AddContactViewModel() {
     val isSuccess: StateFlow<Boolean>
         get() = _isLoading.asStateFlow()
 
-    private val _isSaveButtonEnabled: MutableStateFlow<Boolean> by lazy {
+    private val _isError: MutableStateFlow<Boolean> by lazy {
         MutableStateFlow(false)
     }
 
+    val isError: StateFlow<Boolean>
+        get() = _isLoading.asStateFlow()
+
+    private val _isSaveButtonEnabled: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
     val isSaveButtonEnabled: StateFlow<Boolean>
         get() = _isSaveButtonEnabled.asStateFlow()
 
@@ -60,14 +66,14 @@ class AddContactViewModel() {
         addContactState = addContactState.update()
     }
 
-     fun checkValidInput(){
+    fun checkValidInput() {
 
         val validNickname = (addContactState.contactAlias.toContactAlias() != null)
         val validAddress = (addContactState.lightningNodePubKey.toLightningNodePubKey() != null)
         val validRouteHint = (addContactState.lightningRouteHint.isNullOrEmpty() ||
                 addContactState.lightningRouteHint?.toLightningRouteHint() != null)
 
-        if(validNickname && validAddress){
+        if (validNickname && validAddress) {
             _isSaveButtonEnabled.value = true
         }
         if (!validNickname || !validAddress || !validRouteHint) {
@@ -82,6 +88,7 @@ class AddContactViewModel() {
             )
         }
     }
+
     fun onAddressTextChanged(text: String) {
         setAddContactState {
             copy(
@@ -89,6 +96,7 @@ class AddContactViewModel() {
             )
         }
     }
+
     fun onRouteHintTextChanged(text: String) {
         setAddContactState {
             copy(
@@ -98,7 +106,7 @@ class AddContactViewModel() {
     }
 
     fun saveContact() {
-        if(saveContactJob?.isActive == true){
+        if (saveContactJob?.isActive == true) {
             return
         }
         saveContactJob = scope.launch(dispatchers.mainImmediate) {
@@ -114,11 +122,13 @@ class AddContactViewModel() {
                         _isLoading.value = true
                     }
                     is Response.Error -> {
+                        _isError.value = true
                         _isLoading.value = false
                     }
                     is Response.Success -> {
                         _isSuccess.value = true
                         _isLoading.value = false
+                        _isError.value = false
                     }
                 }
             }

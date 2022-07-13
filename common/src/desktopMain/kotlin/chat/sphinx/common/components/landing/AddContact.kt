@@ -26,14 +26,14 @@ import chat.sphinx.utils.getPreferredWindowSize
 
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
-    var isOpen by remember { mutableStateOf(true ) }
+    var isOpen by remember { mutableStateOf(true) }
     var screenState: AddContactScreenState by remember { mutableStateOf(AddContactScreenState.Home) }
 
     if (isOpen) {
         Window(
             onCloseRequest = {
                 dashboardViewModel.toggleAddContactWindow(false)
-             },
+            },
             title = "Add Contact",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
@@ -41,8 +41,8 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
 
             )
         ) {
-            when(screenState){
-                AddContactScreenState.Home -> AddContact(){
+            when (screenState) {
+                AddContactScreenState.Home -> AddContact() {
                     screenState = it
                 }
                 AddContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
@@ -53,11 +53,11 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
 }
 
 @Composable
-fun AddContact(updateState: (AddContactScreenState) -> Unit){
+fun AddContact(updateState: (AddContactScreenState) -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize()
-            .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background )
-    ){
+            .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(75.dp),
             verticalArrangement = Arrangement.Center,
@@ -72,13 +72,15 @@ fun AddContact(updateState: (AddContactScreenState) -> Unit){
                     .fillMaxWidth()
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer )
+                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                )
             )
-            { Text(
-                text = "New to Sphinx",
-                fontFamily = Roboto,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
-            )
+            {
+                Text(
+                    text = "New to Sphinx",
+                    fontFamily = Roboto,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                )
             }
             Divider(Modifier.padding(12.dp), color = Color.Transparent)
             Button(
@@ -89,13 +91,15 @@ fun AddContact(updateState: (AddContactScreenState) -> Unit){
                     .fillMaxWidth()
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary )
+                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary
+                )
             )
-            { Text(
-                text = "Already on Sphinx",
-                fontFamily = Roboto,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
-            )
+            {
+                Text(
+                    text = "Already on Sphinx",
+                    fontFamily = Roboto,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                )
             }
         }
     }
@@ -236,6 +240,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
     val viewModel = remember { AddContactViewModel() }
     val isSuccess by viewModel.isSuccess.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val isError by viewModel.isError.collectAsState()
     val isSaveButtonEnabled by viewModel.isSaveButtonEnabled.collectAsState()
     viewModel.checkValidInput()
 
@@ -357,6 +362,19 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Box(
+                    Modifier.fillMaxWidth().height(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isError) {
+                        Text(
+                            text = "There was an error",
+                            fontSize = 12.sp,
+                            fontFamily = Roboto,
+                            color = Color.Red,
+                        )
+                    }
+                }
                 Button(
                     enabled = isSaveButtonEnabled,
                     onClick = {
@@ -395,10 +413,9 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
 }
 
 
-
 sealed class AddContactScreenState {
-    object Home: AddContactScreenState()
-    object NewToSphinx: AddContactScreenState()
-    object AlreadyOnSphinx: AddContactScreenState()
+    object Home : AddContactScreenState()
+    object NewToSphinx : AddContactScreenState()
+    object AlreadyOnSphinx : AddContactScreenState()
 
 }
