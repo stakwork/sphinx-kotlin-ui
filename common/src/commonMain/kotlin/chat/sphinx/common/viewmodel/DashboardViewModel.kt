@@ -42,8 +42,8 @@ class DashboardViewModel {
     val addContactWindowStateFlow: StateFlow<Boolean>
         get() = _addContactWindowStateFlow.asStateFlow()
 
-    fun toggleAddContactWindow() {
-        _addContactWindowStateFlow.value = !_addContactWindowStateFlow.value
+    fun toggleAddContactWindow(open: Boolean) {
+        _addContactWindowStateFlow.value = open
     }
 
     init {

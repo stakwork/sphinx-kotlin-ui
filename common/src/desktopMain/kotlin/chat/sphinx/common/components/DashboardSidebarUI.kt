@@ -148,7 +148,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 elevation = 8.dp,
                 actions = {
                     IconButton(onClick = {
-                        dashboardViewModel.toggleAddContactWindow()
+                        dashboardViewModel.toggleAddContactWindow(true)
                     }) {
                         Icon(
                             Icons.Default.PersonAddAlt,

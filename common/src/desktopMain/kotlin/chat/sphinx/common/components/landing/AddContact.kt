@@ -32,7 +32,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
     if (isOpen) {
         Window(
             onCloseRequest = {
-                dashboardViewModel.toggleAddContactWindow()
+                dashboardViewModel.toggleAddContactWindow(false)
              },
             title = "Add Contact",
             state = WindowState(
@@ -46,7 +46,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
                     screenState = it
                 }
                 AddContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-                AddContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx()
+                AddContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx(dashboardViewModel)
             }
         }
     }
@@ -225,14 +225,18 @@ fun AddNewContactOnSphinx() {
         }
     }
 }
+
 @Composable
-fun AddContactAlreadyOnSphinx() {
+fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
 
     var switchState = remember {
         mutableStateOf(false)
     }
 
     val viewModel = remember { AddContactViewModel() }
+    val isSuccess by viewModel.isSuccess.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -370,9 +374,21 @@ fun AddContactAlreadyOnSphinx() {
                         color = Color.White,
                         fontFamily = Roboto
                     )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            Modifier
+                                .padding(start = 8.dp)
+                                .size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    }
                 }
             }
         }
+    }
+    if (isSuccess) {
+        dashboardViewModel.toggleAddContactWindow(false)
     }
 }
 
