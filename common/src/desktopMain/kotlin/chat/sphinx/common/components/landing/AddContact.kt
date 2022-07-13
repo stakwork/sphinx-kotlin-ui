@@ -236,7 +236,8 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
     val viewModel = remember { AddContactViewModel() }
     val isSuccess by viewModel.isSuccess.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
+    val isSaveButtonEnabled by viewModel.isSaveButtonEnabled.collectAsState()
+    viewModel.checkValidInput()
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -296,7 +297,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
 
             Column {
                 Text(
-                    text = "Route Hint*",
+                    text = "Route Hint",
                     fontSize = 12.sp,
                     fontFamily = Roboto,
                     color = Color.Gray,
@@ -357,6 +358,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
+                    enabled = isSaveButtonEnabled,
                     onClick = {
                         viewModel.saveContact()
                     },

@@ -9,8 +9,11 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.ContactAlias
+import chat.sphinx.wrapper.contact.toContactAlias
 import chat.sphinx.wrapper.lightning.LightningNodePubKey
 import chat.sphinx.wrapper.lightning.LightningRouteHint
+import chat.sphinx.wrapper.lightning.toLightningNodePubKey
+import chat.sphinx.wrapper.lightning.toLightningRouteHint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +43,13 @@ class AddContactViewModel() {
     val isSuccess: StateFlow<Boolean>
         get() = _isLoading.asStateFlow()
 
+    private val _isSaveButtonEnabled: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val isSaveButtonEnabled: StateFlow<Boolean>
+        get() = _isSaveButtonEnabled.asStateFlow()
+
 
     var addContactState: AddContactState by mutableStateOf(initialState())
         private set
@@ -48,6 +58,21 @@ class AddContactViewModel() {
 
     private inline fun setAddContactState(update: AddContactState.() -> AddContactState) {
         addContactState = addContactState.update()
+    }
+
+     fun checkValidInput(){
+
+        val validNickname = (addContactState.contactAlias.toContactAlias() != null)
+        val validAddress = (addContactState.lightningNodePubKey.toLightningNodePubKey() != null)
+        val validRouteHint = (addContactState.lightningRouteHint.isNullOrEmpty() ||
+                addContactState.lightningRouteHint?.toLightningRouteHint() != null)
+
+        if(validNickname && validAddress){
+            _isSaveButtonEnabled.value = true
+        }
+        if (!validNickname || !validAddress || !validRouteHint) {
+            _isSaveButtonEnabled.value = false
+        }
     }
 
     fun onNicknameTextChanged(text: String) {
@@ -90,7 +115,6 @@ class AddContactViewModel() {
                     }
                     is Response.Error -> {
                         _isLoading.value = false
-
                     }
                     is Response.Success -> {
                         _isSuccess.value = true
