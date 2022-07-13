@@ -12,14 +12,21 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.MessageMediaImage
 import chat.sphinx.common.models.ChatMessage
@@ -28,7 +35,10 @@ import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.message.MessageType
 import chat.sphinx.wrapper.message.media.isImage
+import chat.sphinx.wrapper.message.retrieveBotResponseHtmlString
 import chat.sphinx.wrapper.message.retrieveTextToShow
+import javafx.embed.swing.JFXPanel
+
 
 @Composable
 fun ChatCard(
@@ -99,6 +109,7 @@ fun ChatCard(
                                              verticalAlignment = Alignment.CenterVertically
                                          ) {
                                              val annotatedString = messageText.toAnnotatedString()
+                                             if(chatMessage.message.retrieveBotResponseHtmlString()==null)
                                              ClickableText(
                                                  annotatedString,
                                                  style = TextStyle(
@@ -127,6 +138,9 @@ fun ChatCard(
                                                      }
                                                  }
                                              )
+                                             else{
+                                                 Webv
+                                             }
 
                                              // TODO: Make clickable text compatible with selectable text...
                                              //                                SelectionContainer {
@@ -203,4 +217,43 @@ fun ChatCard(
         }
     }
 
+}
+
+@Composable
+fun ComposeJFXPanel(
+    composeWindow: ComposeWindow,
+    jfxPanel: JFXPanel,
+    onCreate: () -> Unit,
+    onDestroy: () -> Unit = {}
+) {
+    val jPanel = remember { JFXPanel() }
+    val density = LocalDensity.current.density
+
+    Layout(
+        content = {},
+        modifier = Modifier.onGloballyPositioned { childCoordinates ->
+            val coordinates = childCoordinates.parentCoordinates!!
+            val location = coordinates.localToWindow(Offset.Zero).round()
+            val size = coordinates.size
+            jPanel.setBounds(
+                (location.x / density).toInt(),
+                (location.y / density).toInt(),
+                (size.width / density).toInt(),
+                (size.height / density).toInt()
+            )
+            jPanel.validate()
+            jPanel.repaint()
+        },
+        measurePolicy = { _, _ -> layout(0, 0) {} })
+
+    DisposableEffect(jPanel) {
+        composeWindow.add(jPanel)
+        jPanel.layout = BorderLayout(0, 0)
+        jPanel.add(jfxPanel)
+        onCreate()
+        onDispose {
+            onDestroy()
+            composeWindow.remove(jPanel)
+        }
+    }
 }

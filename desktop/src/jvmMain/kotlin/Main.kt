@@ -20,11 +20,18 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.DesktopSphinxNotificationManager
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
+import com.sun.javafx.application.PlatformImpl
 import kotlinx.coroutines.delay
 
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
+    // Required to make sure the JavaFx event loop doesn't finish (can happen when java fx panels in app are shown/hidden)
+    val finishListener = object : PlatformImpl.FinishListener {
+        override fun idle(implicitExit: Boolean) {}
+        override fun exitCalled() {}
+    }
+    PlatformImpl.addListener(finishListener)
     val windowState = rememberWindowState()
     val content = remember {
         ContentState.applyContent(windowState)

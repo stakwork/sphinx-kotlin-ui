@@ -3,8 +3,10 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.io.FileInputStream
 import java.util.*
 
+
 plugins {
     kotlin("multiplatform")
+    id("org.openjfx.javafxplugin") version "0.0.13"
     id("org.jetbrains.compose") version "1.0.1"
 }
 
@@ -29,6 +31,7 @@ kotlin {
 
             dependencies {
                 implementation(project(":common"))
+
                 implementation(compose.desktop.currentOs)
                 api(compose.preview)
 
@@ -64,19 +67,19 @@ compose.desktop {
             val macOsSigningIdentity = sphinxProperties.getProperty("macOs.signing.identity")
 
 
-            macOS {
-                if (macOsBundleID.isNotEmpty()) {
-                    bundleID = macOsBundleID
-                }
-
-                signing {
-                    sign.set(true)
-                    if (macOsSigningIdentity.isNotEmpty()) {
-                        identity.set(macOsSigningIdentity)
-                    }
-                }
-                iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
-            }
+//            macOS {
+//                if (macOsBundleID.isNotEmpty()) {
+//                    bundleID = macOsBundleID
+//                }
+//
+//                signing {
+//                    sign.set(true)
+//                    if (macOsSigningIdentity.isNotEmpty()) {
+//                        identity.set(macOsSigningIdentity)
+//                    }
+//                }
+//                iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
+//            }
             windows {
                 iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
             }
@@ -85,4 +88,8 @@ compose.desktop {
             }
         }
     }
+}
+javafx {
+    version = "16"
+    modules = listOf("javafx.controls", "javafx.swing", "javafx.web", "javafx.graphics")
 }
