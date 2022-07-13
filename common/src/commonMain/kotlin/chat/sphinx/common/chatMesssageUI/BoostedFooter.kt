@@ -93,31 +93,6 @@ fun calculatePosition(reactions: List<Message>, index: Int): androidx.compose.ui
             return 0.dp
         }
     }
-
-    when(index){
-        0->{
-            when (reactions.size) {
-                1 -> return 5.dp
-                2 -> 10.dp
-                3 -> 15.dp
-            }
-        }
-        1->{
-            when (reactions.size) {
-                1 -> return 5.dp
-                2 -> 10.dp
-                3 -> 15.dp
-            }
-        }
-        2->{
-            when (reactions.size) {
-                1 -> return 5.dp
-                2 -> 10.dp
-                3 -> 15.dp
-            }
-        }
-    }
-
     return 0.dp
 
 }

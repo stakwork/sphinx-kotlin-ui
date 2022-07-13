@@ -96,7 +96,7 @@ fun ChatMessageUI(
                                         )
                                     }
                                 }
-                                else -> Box(contentAlignment = if (chatMessage.isSent) Alignment.CenterEnd else Alignment.CenterStart) {
+                                else -> Box(contentAlignment = if (chatMessage.isSent) Alignment.CenterEnd else Alignment.CenterStart, modifier = Modifier.fillMaxWidth(if(chatMessage.message.isMediaAttachmentAvailable)0.5f else 1.0f)) {
                                     ChatCard(chatMessage, color, chatViewModel)
                                 }
                             }

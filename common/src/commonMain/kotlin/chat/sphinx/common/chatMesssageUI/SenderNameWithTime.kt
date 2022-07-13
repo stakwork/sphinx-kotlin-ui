@@ -62,7 +62,7 @@ fun SenderNameWithTime(chatMessage: ChatMessage, color: Color,chatViewModel: Cha
                 ),
                 verticalArrangement = Arrangement.Center
             ) {
-                if(chatMessage.isDeleted.not())
+//                if(chatMessage.isDeleted.not())
                     replyMessage.senderAlias?.let { senderAlias ->
                         Text(
                             modifier = Modifier.fillMaxWidth(0.8f),

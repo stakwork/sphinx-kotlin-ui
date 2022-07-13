@@ -84,7 +84,7 @@ fun PhotoFileImage(
                     modifier = modifier
                 )
             },
-            contentScale = ContentScale.Inside,
+            contentScale = ContentScale.Crop,
             modifier = modifier,
             crossfade = false
         )

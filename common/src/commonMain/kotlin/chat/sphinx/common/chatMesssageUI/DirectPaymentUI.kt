@@ -92,7 +92,7 @@ fun DirectPaymentUI(chatMessage: ChatMessage, chatViewModel: ChatViewModel) {
                         )
                     }
 
-                    if (chatMessage.isSent)
+                    if (chatMessage.isSent||chatMessage.chat.isTribe())
                     {
                         Spacer(modifier = Modifier.width(6.dp))
                         Image(
@@ -123,14 +123,14 @@ fun DirectPaymentUI(chatMessage: ChatMessage, chatViewModel: ChatViewModel) {
                 }
                 chatMessage.message.messageMedia?.let {
                     Row(
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp)
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
                     ) {
 
                         MessageMediaImage(
                             chatMessage.message,
                             messageMedia = it,
                             chatViewModel = chatViewModel,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.height(150.dp)
                         )
 
                     }
