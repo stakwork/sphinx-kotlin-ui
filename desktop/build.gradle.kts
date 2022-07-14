@@ -65,13 +65,13 @@ compose.desktop {
 
 
             macOS {
-                if (macOsBundleID.isNotEmpty()) {
+                if (macOsBundleID?.isNotEmpty() == true) {
                     bundleID = macOsBundleID
                 }
 
                 signing {
                     sign.set(true)
-                    if (macOsSigningIdentity.isNotEmpty()) {
+                    if (macOsSigningIdentity?.isNotEmpty() == true) {
                         identity.set(macOsSigningIdentity)
                     }
                 }
