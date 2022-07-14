@@ -28,26 +28,26 @@ import chat.sphinx.wrapper.message.retrieveTextToShow
 @Composable
 fun SenderNameWithTime(chatMessage: ChatMessage, color: Color,chatViewModel: ChatViewModel) {
     chatMessage.message.replyMessage?.let { replyMessage ->
-
         Row(
-            modifier = Modifier.height(44.dp).padding(top = 8.dp, start = 8.dp, end = 8.dp,),
+            modifier = Modifier.height(44.dp).padding(top = 8.dp, start = 8.dp, end = 8.dp),
             horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .width(4.dp)
                     .fillMaxHeight()
-                    .background(color)
-                    .padding(16.dp),
+                    .background(color),
             )
             // TODO: Image if available...
             replyMessage.messageMedia?.let { media ->
                 if (media.mediaType.isImage) {
-                        MessageMediaImage(chatMessage.message,
-                            media,chatViewModel, modifier = Modifier.height(30.dp).width(30.dp))
-
+                    MessageMediaImage(
+                        chatMessage.message,
+                        media,
+                        chatViewModel,
+                        modifier = Modifier.height(30.dp).width(40.dp).padding(start = 10.dp)
+                    )
                 } else {
-                    // show
                     Icon(
                         Icons.Default.AttachFile,
                         contentDescription = "Attachment",

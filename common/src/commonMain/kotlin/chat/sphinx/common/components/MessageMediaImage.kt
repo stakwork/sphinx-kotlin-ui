@@ -95,7 +95,10 @@ fun MessageMediaImage(
     if (localFilepath.value != null) {
         PhotoFileImage(
             localFilepath.value!!,
-            modifier = modifier
+            modifier = modifier,
+            effect = {
+                ImageLoadingView()
+            }
         )
     } else if (imageLoadError.value) {
         Icon(
@@ -105,18 +108,23 @@ fun MessageMediaImage(
             modifier = Modifier.size(30.dp).padding(4.dp)
         )
     } else {
-        // TODO: Have an error view depending on the launched effect
-        Box(modifier=Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
-            Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(40.dp)
-                )
-                Spacer(modifier=Modifier.height(2.dp))
-                Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.onBackground)
-                Spacer(modifier=Modifier.height(8.dp))
-            }
+        ImageLoadingView()
+    }
+}
+
+@Composable
+fun ImageLoadingView() {
+    Box(modifier=Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier=Modifier.height(16.dp))
+            CircularProgressIndicator(
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier=Modifier.height(2.dp))
+            Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.onBackground)
+            Spacer(modifier=Modifier.height(16.dp))
         }
     }
 }

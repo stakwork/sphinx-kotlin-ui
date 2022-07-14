@@ -62,7 +62,6 @@ fun PhotoFileImage(
             resource = photoUrlResource,
             contentDescription = "avatar",
             onLoading = {
-
                 if (effect != null) {
                     effect()
                 } else {
@@ -84,7 +83,7 @@ fun PhotoFileImage(
                     modifier = modifier
                 )
             },
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.FillWidth,
             modifier = modifier,
             crossfade = false
         )

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -67,12 +68,10 @@ fun PhotoUrlImage(
                 resource = photoUrlResource,
                 contentDescription = "avatar",
                 onLoading = {
-
                     if (effect != null) {
                         effect()
                     } else {
                         Image(
-                            modifier = modifier,
                             painter = imageResource(Res.drawable.profile_avatar),
                             contentDescription = "avatar",
                             contentScale = ContentScale.Crop
