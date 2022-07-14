@@ -95,18 +95,19 @@ class DashboardViewModel {
                 Exhaustive@
                 when (response) {
                     is LoadResponse.Loading -> {
+                        _networkStateFlow.value = response
                     }
-                    is Response.Error -> {
-                    }
-                    is Response.Success -> {
-                    }
+                    is Response.Error -> {}
+                    is Response.Success -> {}
                 }
             }
 
             repositoryDashboard.networkRefreshBalance.collect { response ->
                 Exhaustive@
                 when (response) {
-                    is LoadResponse.Loading,
+                    is LoadResponse.Loading -> {
+                        _networkStateFlow.value = response
+                    }
                     is Response.Error -> {
                         _networkStateFlow.value = response
                     }
@@ -121,7 +122,9 @@ class DashboardViewModel {
             repositoryDashboard.networkRefreshLatestContacts.collect { response ->
                 Exhaustive@
                 when (response) {
-                    is LoadResponse.Loading -> {}
+                    is LoadResponse.Loading -> {
+                        _networkStateFlow.value = response
+                    }
                     is Response.Error -> {
                         _networkStateFlow.value = response
                     }

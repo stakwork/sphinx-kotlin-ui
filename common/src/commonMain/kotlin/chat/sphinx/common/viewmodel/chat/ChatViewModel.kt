@@ -9,7 +9,9 @@ import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.createAttachmentFileDownload
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
@@ -52,13 +54,16 @@ abstract class ChatViewModel(
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val sphinxNotificationManager = createSphinxNotificationManager()
-    private val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
+    val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
     val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
     val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
     val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
+
+    val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
+
     private val attachmentFileDownloader: chat.sphinx.utils.AttachmentFileDownloader = createAttachmentFileDownload(
         memeServerTokenHandler,
         memeInputStreamHandler
@@ -207,7 +212,7 @@ abstract class ChatViewModel(
         }
     }
 
-    protected abstract val chatSharedFlow: SharedFlow<Chat?>
+    abstract val chatSharedFlow: SharedFlow<Chat?>
 
     private suspend fun getChat(): Chat? {
         return chatId?.let { chatRepository.getChatById(it) }
@@ -216,6 +221,8 @@ abstract class ChatViewModel(
     abstract suspend fun getContact(): Contact?
 
     protected abstract suspend fun getChatInfo(): Triple<ChatName?, PhotoUrl?, String>?
+
+    abstract val checkRoute: Flow<LoadResponse<Boolean, ResponseError>>
 
     // Message sending logic...
     abstract var editMessageState: EditMessageState
@@ -228,18 +235,14 @@ abstract class ChatViewModel(
     }
 
     fun onMessageTextChanged(text: String) {
-        setEditMessageState {
-            copy(
-                messageText = text
-            )
-        }
+        editMessageState.messageText.value = text
     }
 
     fun onSendMessage() {
         val sendMessage = SendMessage.Builder()
             .setChatId(editMessageState.chatId)
             .setContactId(editMessageState.contactId)
-            .setText(editMessageState.messageText)
+            .setText(editMessageState.messageText.value)
             .also { builder ->
                 editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
                     builder.setReplyUUID(replyUUID)

@@ -4,7 +4,6 @@ import CommonButton
 import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
-import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -36,12 +34,17 @@ import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.Response
+import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
+import chat.sphinx.wrapper.lightning.asFormattedString
+import com.example.compose.primary_green
+import com.example.compose.primary_red
+import com.example.compose.sphinx_orange
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
-import views.LoadingShimmerEffect
-import views.ShimmerCircleAvatar
 import java.awt.Cursor
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -88,7 +91,7 @@ actual fun Dashboard(
                     }
 
                     Scaffold(scaffoldState = scaffoldState, topBar = {
-                        SphinxChatDetailTopAppBar(dashboardChat)
+                        SphinxChatDetailTopAppBar(dashboardChat, chatViewModel)
                     }, bottomBar = {
                         SphinxChatDetailBottomAppBar(chatViewModel)
                     }) {
@@ -151,7 +154,10 @@ actual fun Dashboard(
 }
 
 @Composable
-fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat?) {
+fun SphinxChatDetailTopAppBar(
+    dashboardChat: DashboardChat?,
+    chatViewModel: ChatViewModel?
+) {
     if (dashboardChat == null) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -178,15 +184,59 @@ fun SphinxChatDetailTopAppBar(dashboardChat: DashboardChat?) {
         modifier = Modifier.height(60.dp),
         title = {
             Column {
-                Text(
-                    text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Contributed: 0 sats",
-                    fontSize = 14.sp,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                )
+                Row {
+                    Text(
+                        text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700
+                    )
+
+                    Icon(
+                        if (dashboardChat?.isEncrypted()) Icons.Default.Lock else Icons.Default.LockOpen,
+                        "Lock",
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(23.dp).padding(4.dp, 0.dp, 4.dp, 2.dp)
+                    )
+
+                    chatViewModel?.let {
+                        val checkRouteResponse by chatViewModel.checkRoute.collectAsState(
+                            LoadResponse.Loading
+                        )
+                        val color = when (checkRouteResponse) {
+                            is LoadResponse.Loading -> {
+                                androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                            }
+                            is Response.Error -> {
+                                sphinx_orange
+                            }
+                            is Response.Success -> {
+                                primary_green
+                            }
+                        }
+
+                        Icon(
+                            Icons.Default.FlashOn,
+                            "Route",
+                            tint = color,
+                            modifier = Modifier.width(15.dp).height(23.dp).padding(0.dp, 0.dp, 0.dp, 2.dp)
+                        )
+                    }
+                }
+
+                chatViewModel?.let {
+                    val chat by chatViewModel.chatSharedFlow.collectAsState(
+                        (dashboardChat as? DashboardChat.Active)?.chat
+                    )
+
+                    chat?.let { nnChat ->
+                        if (nnChat.isTribe()) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Price per message: ${nnChat.pricePerMessage?.asFormattedString(' ', false) ?: 0} - Amount to stake: ${nnChat.escrowAmount?.asFormattedString(' ', false) ?: 0}",
+                                fontSize = 11.sp,
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    }
+                }
             }
             // TODO: Lighting Indicator...
         },
@@ -287,7 +337,7 @@ fun SphinxChatDetailBottomAppBar(
                             chatViewModel.onMessageTextChanged(it)
                         }
                     },
-                    value = chatViewModel?.editMessageState?.messageText ?: ""
+                    value = chatViewModel?.editMessageState?.messageText?.value ?: ""
                 )
             }
             CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {

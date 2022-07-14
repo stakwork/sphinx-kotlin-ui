@@ -1,5 +1,7 @@
 import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.io.FileInputStream
+import java.util.*
 
 plugins {
     kotlin("multiplatform")
@@ -51,10 +53,28 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.1"
 
             val iconsRoot = project.file("../common/src/desktopMain/resources/images")
+            val sphinxProperties = Properties().apply {
+                load(FileInputStream(project.file("../local.properties")))
+            }
+
+            val macOsBundleID = sphinxProperties.getProperty("macOs.bundleID")
+            val macOsSigningIdentity = sphinxProperties.getProperty("macOs.signing.identity")
+
+
             macOS {
+                if (macOsBundleID.isNotEmpty()) {
+                    bundleID = macOsBundleID
+                }
+
+                signing {
+                    sign.set(true)
+                    if (macOsSigningIdentity.isNotEmpty()) {
+                        identity.set(macOsSigningIdentity)
+                    }
+                }
                 iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
             }
             windows {

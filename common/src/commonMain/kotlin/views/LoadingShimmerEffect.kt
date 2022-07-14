@@ -101,3 +101,16 @@ fun ShimmerCircleAvatar(brush: Brush) {
         )
     }
 }
+
+@Composable
+fun ShimmerImage(brush: Brush) {
+    Row(modifier = androidx.compose.ui.Modifier
+        .fillMaxSize()
+        .padding(all = 2.dp),) {
+
+        Spacer(modifier =  androidx.compose.ui.Modifier
+            .height(100.dp).width(200.dp)
+            .background(brush)
+        )
+    }
+}

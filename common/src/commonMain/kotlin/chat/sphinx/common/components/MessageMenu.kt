@@ -9,7 +9,6 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 @Composable
 expect fun MessageMenu(
     chatMessage: ChatMessage,
-    editMessageState: EditMessageState,
     isVisible: MutableState<Boolean>,
     chatViewModel: ChatViewModel
 )

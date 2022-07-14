@@ -1,5 +1,6 @@
 package utils
 
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 
@@ -33,3 +34,10 @@ fun getRandomColorRes(): Color {
     ).shuffled()[0]
 }
 
+fun Modifier.conditional(condition : Boolean, modifier : Modifier.() -> Modifier) : Modifier {
+  return if (condition) {
+    modifier.invoke(this)
+  } else {
+    this
+  }
+}

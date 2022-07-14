@@ -5,6 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.EditMessageState
+import chat.sphinx.concepts.network.query.lightning.model.route.RouteSuccessProbabilityDto
+import chat.sphinx.concepts.network.query.lightning.model.route.isRouteAvailable
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.Response
+import chat.sphinx.response.ResponseError
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
@@ -18,7 +23,7 @@ import kotlinx.coroutines.flow.*
 
 class ChatContactViewModel(
     chatId: ChatId?,
-    val contactId: ContactId
+    private val contactId: ContactId
 ): ChatViewModel(
     chatId
 ) {
@@ -82,6 +87,59 @@ class ChatContactViewModel(
 
     override suspend fun getContact(): Contact? {
         return contactId?.let { contactRepository.getContactById(it).firstOrNull() }
+    }
+
+    override val checkRoute: Flow<LoadResponse<Boolean, ResponseError>> = flow {
+        emit(LoadResponse.Loading)
+
+        val networkFlow: Flow<LoadResponse<RouteSuccessProbabilityDto, ResponseError>>? = let {
+            emit(LoadResponse.Loading)
+
+            var contact: Contact? = contactSharedFlow.replayCache.firstOrNull()
+                ?: contactSharedFlow.firstOrNull()
+
+            if (contact == null) {
+                try {
+                    contactSharedFlow.collect {
+                        if (contact != null) {
+                            contact = it
+                            throw Exception()
+                        }
+                    }
+                } catch (e: Exception) {}
+                delay(25L)
+            }
+
+            contact?.let { nnContact ->
+                nnContact.nodePubKey?.let { pubKey ->
+
+                    nnContact.routeHint?.let { hint ->
+
+                        networkQueryLightning.checkRoute(pubKey, hint)
+
+                    } ?: networkQueryLightning.checkRoute(pubKey)
+
+                }
+            }
+        }
+
+        networkFlow?.let { flow ->
+            flow.collect { response ->
+                when (response) {
+                    LoadResponse.Loading -> {}
+                    is Response.Error -> {
+                        emit(response)
+                    }
+                    is Response.Success -> {
+                        emit(
+                            Response.Success(response.value.isRouteAvailable)
+                        )
+                    }
+                }
+            }
+        } ?: emit(Response.Error(
+            ResponseError("Contact and chatId were null, unable to check route")
+        ))
     }
 
     override var editMessageState: EditMessageState by mutableStateOf(initialState())
