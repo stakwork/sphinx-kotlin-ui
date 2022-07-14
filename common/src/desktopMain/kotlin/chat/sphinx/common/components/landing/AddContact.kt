@@ -1,5 +1,6 @@
 package chat.sphinx.common.components.landing
 
+import CommonButton
 import Roboto
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,16 +14,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.Res
 import chat.sphinx.common.viewmodel.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.Response
+import chat.sphinx.response.ResponseError
+import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
+import com.example.compose.badge_red
+import com.example.compose.light_divider
 
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
@@ -42,7 +52,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             )
         ) {
             when (screenState) {
-                AddContactScreenState.Home -> AddContact() {
+                AddContactScreenState.Home -> AddContact {
                     screenState = it
                 }
                 AddContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
@@ -63,44 +73,24 @@ fun AddContact(updateState: (AddContactScreenState) -> Unit) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(
-                onClick = {
+            CommonButton(
+                callback = {
                     updateState(AddContactScreenState.NewToSphinx)
 
                 },
-                modifier = Modifier.clip(CircleShape)
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
-                )
+                text = "New to Sphinx",
+                backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
+                enabled = true
             )
-            {
-                Text(
-                    text = "New to Sphinx",
-                    fontFamily = Roboto,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
-                )
-            }
             Divider(Modifier.padding(12.dp), color = Color.Transparent)
-            Button(
-                onClick = {
+            CommonButton(
+                callback = {
                     updateState(AddContactScreenState.AlreadyOnSphinx)
+
                 },
-                modifier = Modifier.clip(CircleShape)
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-                )
+                text = "Already on Sphinx",
+                enabled = true
             )
-            {
-                Text(
-                    text = "Already on Sphinx",
-                    fontFamily = Roboto,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
-                )
-            }
         }
     }
 }
@@ -125,11 +115,11 @@ fun AddNewContactOnSphinx() {
             Text(
                 text = "NICKNAME",
                 fontSize = 10.sp,
-                fontFamily = Roboto,
+                fontFamily = SphinxFonts.montserratFamily,
+                fontWeight = FontWeight.Bold,
                 color = Color.White,
             )
-            Spacer(modifier = Modifier.height(18.dp))
-
+            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = nicknameText,
                 onValueChange = { nicknameText = it },
@@ -137,25 +127,24 @@ fun AddNewContactOnSphinx() {
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
                     color = Color.White,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    fontFamily = Roboto
                 ),
                 singleLine = true,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color.LightGray,
-                    unfocusedBorderColor = Color.LightGray
+                    focusedBorderColor = light_divider,
+                    unfocusedBorderColor = light_divider
                 )
             )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "INCLUDE A MESSAGE",
                 fontSize = 10.sp,
-                fontFamily = Roboto,
+                fontFamily = SphinxFonts.montserratFamily,
+                fontWeight = FontWeight.Bold,
                 color = Color.White,
             )
-            Spacer(modifier = Modifier.height(18.dp))
-
+            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = includeMessageText,
                 onValueChange = { includeMessageText = it },
@@ -166,25 +155,23 @@ fun AddNewContactOnSphinx() {
                     fontSize = 16.sp
                 ),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color.LightGray,
-                    unfocusedBorderColor = Color.LightGray
+                    focusedBorderColor = light_divider,
+                    unfocusedBorderColor = light_divider
                 ),
-                label = {
+                placeholder = {
                     Text(
                         text = "Welcome to Sphinx!",
                         color = Color.Gray,
                     )
                 }
             )
-
             Spacer(modifier = Modifier.height(18.dp))
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column() {
+                Column {
                     Text(
                         text = "ESTIMATED COST",
                         fontSize = 12.sp,
@@ -233,16 +220,11 @@ fun AddNewContactOnSphinx() {
 @Composable
 fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
 
-    var switchState = remember {
-        mutableStateOf(false)
-    }
-
     val viewModel = remember { AddContactViewModel() }
-    val isSuccess by viewModel.isSuccess.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val isError by viewModel.isError.collectAsState()
-    val isSaveButtonEnabled by viewModel.isSaveButtonEnabled.collectAsState()
-    viewModel.checkValidInput()
+
+//    var switchState = remember {
+//        mutableStateOf(false)
+//    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -270,7 +252,8 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
-                    singleLine = true
+                    singleLine = true,
+                    cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
 
                 )
                 Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
@@ -292,7 +275,8 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
-                    singleLine = true
+                    singleLine = true,
+                    cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
 
                 )
                 Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
@@ -314,7 +298,8 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
-                    singleLine = true
+                    singleLine = true,
+                    cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
 
                 )
                 Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
@@ -322,41 +307,43 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Privacy Settings",
-                        fontSize = 12.sp,
-                        fontFamily = Roboto,
-                        color = Color.Gray,
-                    )
-                    Icon(
-                        Icons.Default.HelpOutline,
-                        contentDescription = "Privacy Settings",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(20.dp).padding(start = 4.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
+//            Column {
+//                Row(verticalAlignment = Alignment.CenterVertically) {
+//                    Text(
+//                        text = "Privacy Settings",
+//                        fontSize = 12.sp,
+//                        fontFamily = Roboto,
+//                        color = Color.Gray,
+//                    )
+//                    Icon(
+//                        Icons.Default.HelpOutline,
+//                        contentDescription = "Privacy Settings",
+//                        tint = Color.Gray,
+//                        modifier = Modifier.size(20.dp).padding(start = 4.dp)
+//                    )
+//                }
+//                Spacer(modifier = Modifier.height(4.dp))
+//
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    Text(
+//                        text = "Standard PIN / Privacy PIN",
+//                        fontSize = 18.sp,
+//                        fontFamily = Roboto,
+//                        color = Color.LightGray,
+//                    )
+//                    Switch(
+//                        checked = switchState.value,
+//                        onCheckedChange = { switchState.value = it },
+//                        enabled = false
+//                    )
+//                }
+//            }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Standard PIN / Privacy PIN",
-                        fontSize = 18.sp,
-                        fontFamily = Roboto,
-                        color = Color.LightGray,
-                    )
-                    Switch(
-                        checked = switchState.value,
-                        onCheckedChange = { switchState.value = it },
-                        enabled = false
-                    )
-                }
-            }
+
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
@@ -366,48 +353,35 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     Modifier.fillMaxWidth().height(40.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (isError) {
+                    if (viewModel.addContactState.status is Response.Error) {
                         Text(
-                            text = "There was an error",
+                            text = "There was an error, please try again later",
                             fontSize = 12.sp,
                             fontFamily = Roboto,
-                            color = Color.Red,
+                            color = badge_red,
                         )
                     }
-                }
-                Button(
-                    enabled = isSaveButtonEnabled,
-                    onClick = {
-                        viewModel.saveContact()
-                    },
-                    modifier = Modifier.clip(CircleShape)
-                        .fillMaxWidth()
-                        .height(50.dp),
-
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary
-                    )
-                )
-                {
-                    Text(
-                        text = "SAVE TO CONTACTS",
-                        color = Color.White,
-                        fontFamily = Roboto
-                    )
-                    if (isLoading) {
+                    if (viewModel.addContactState.status is LoadResponse.Loading) {
                         CircularProgressIndicator(
-                            Modifier
-                                .padding(start = 8.dp)
-                                .size(24.dp),
+                            Modifier.padding(start = 8.dp).size(24.dp),
                             color = Color.White,
                             strokeWidth = 2.dp
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+                CommonButton(
+                    enabled = viewModel.addContactState.saveButtonEnabled,
+                    text = "SAVE TO CONTACTS",
+                    callback = {
+                        viewModel.saveContact()
+                    }
+                )
             }
         }
     }
-    if (isSuccess) {
+
+    if (viewModel.addContactState.status is Response.Success) {
         dashboardViewModel.toggleAddContactWindow(false)
     }
 }
