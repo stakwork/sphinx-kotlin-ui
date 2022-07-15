@@ -11,6 +11,7 @@ import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.LandingScreen
 import chat.sphinx.common.components.landing.ConnectingDialog
+import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.state.AppState
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.state.ScreenType
@@ -57,30 +58,32 @@ fun main() = application {
 //    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
-            Window(
-                onCloseRequest = ::exitApplication,
-                title = "Sphinx",
-                state = WindowState(
-                    position = WindowPosition.Aligned(Alignment.Center),
-                    size = getPreferredWindowSize(800, 500)
-                ),
-                undecorated = true,
-                icon = sphinxIcon,
-            ) {
-                AppTheme {
-                    SphinxSplash()
-                    LaunchedEffect(windowState) {
-                        delay(1000L)
-                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-                            ContentState.onContentReady(ScreenType.DashboardScreen)
-                        } else {
-                            ContentState.onContentReady(ScreenType.LandingScreen)
-                        }
-                    }
-                }
-            }
+            Profile()
+//            Window(
+//                onCloseRequest = ::exitApplication,
+//                title = "Sphinx",
+//                state = WindowState(
+//                    position = WindowPosition.Aligned(Alignment.Center),
+//                    size = getPreferredWindowSize(800, 500)
+//                ),
+//                undecorated = true,
+//                icon = sphinxIcon,
+//            ) {
+//                AppTheme {
+//                    SphinxSplash()
+//                    LaunchedEffect(windowState) {
+//                        delay(1000L)
+//                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+//                            ContentState.onContentReady(ScreenType.DashboardScreen)
+//                        } else {
+//                            ContentState.onContentReady(ScreenType.LandingScreen)
+//                        }
+//                    }
+//                }
+//            }
         }
         ScreenType.DashboardScreen -> {
+
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Sphinx",

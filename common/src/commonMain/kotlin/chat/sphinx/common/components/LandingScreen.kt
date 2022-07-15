@@ -50,7 +50,8 @@ fun LandingScreen() {
 //                }
             }
             LandingScreenType.ExistingUserPIN -> {
-                    ExistingUserPINScreen(restoreExistingUserViewModel)
+
+//                    ExistingUserPINScreen(restoreExistingUserViewModel)
             }
             LandingScreenType.RestoreFromKeystore -> {
 

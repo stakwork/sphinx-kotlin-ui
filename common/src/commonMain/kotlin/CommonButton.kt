@@ -18,6 +18,7 @@ import chat.sphinx.common.state.LandingScreenType
 fun CommonButton(
     text: String,
     enabled: Boolean? = true,
+    customColor: Color?=null,
     callback:()->Unit
 ) {
     val color=if(enabled == true)androidx.compose.material3.MaterialTheme.colorScheme.secondary else androidx.compose.material3.MaterialTheme.colorScheme.onBackground
@@ -25,7 +26,7 @@ fun CommonButton(
     Button(
         shape = RoundedCornerShape(23.dp),
 //        enabled = enabled?:true,
-        colors = ButtonDefaults.buttonColors(backgroundColor = color),
+        colors = ButtonDefaults.buttonColors(backgroundColor = customColor ?: color),
         modifier = Modifier.fillMaxWidth().height(48.dp),
         onClick = {
             if(enabled==true)

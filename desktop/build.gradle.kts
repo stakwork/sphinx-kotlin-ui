@@ -64,19 +64,19 @@ compose.desktop {
             val macOsSigningIdentity = sphinxProperties.getProperty("macOs.signing.identity")
 
 
-            macOS {
-                if (macOsBundleID.isNotEmpty()) {
-                    bundleID = macOsBundleID
-                }
-
-                signing {
-                    sign.set(true)
-                    if (macOsSigningIdentity.isNotEmpty()) {
-                        identity.set(macOsSigningIdentity)
-                    }
-                }
-                iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
-            }
+//            macOS {
+//                if (macOsBundleID.isNotEmpty()) {
+//                    bundleID = macOsBundleID
+//                }
+//
+//                signing {
+//                    sign.set(true)
+//                    if (macOsSigningIdentity.isNotEmpty()) {
+//                        identity.set(macOsSigningIdentity)
+//                    }
+//                }
+//                iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
+//            }
             windows {
                 iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
             }
