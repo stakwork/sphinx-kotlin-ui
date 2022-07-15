@@ -3,7 +3,7 @@ package chat.sphinx.common.state
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
 
-data class AddContactState(
+data class ContactState(
     val contactAlias: String = "",
     val lightningNodePubKey: String = "",
     val lightningRouteHint: String? = null,

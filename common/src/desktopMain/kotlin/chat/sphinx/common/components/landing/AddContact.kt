@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,12 +21,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import chat.sphinx.common.Res
-import chat.sphinx.common.viewmodel.AddContactViewModel
+import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.badge_red
@@ -246,7 +242,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = viewModel.addContactState.contactAlias,
+                    value = viewModel.contactState.contactAlias,
                     onValueChange = {
                         viewModel.onNicknameTextChanged(it)
                     },
@@ -269,7 +265,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = viewModel.addContactState.lightningNodePubKey,
+                    value = viewModel.contactState.lightningNodePubKey,
                     onValueChange = {
                         viewModel.onAddressTextChanged(it)
                     },
@@ -292,7 +288,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = viewModel.addContactState.lightningRouteHint ?: "",
+                    value = viewModel.contactState.lightningRouteHint ?: "",
                     onValueChange = {
                         viewModel.onRouteHintTextChanged(it)
                     },
@@ -353,7 +349,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     Modifier.fillMaxWidth().height(40.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (viewModel.addContactState.status is Response.Error) {
+                    if (viewModel.contactState.status is Response.Error) {
                         Text(
                             text = "There was an error, please try again later",
                             fontSize = 12.sp,
@@ -361,7 +357,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                             color = badge_red,
                         )
                     }
-                    if (viewModel.addContactState.status is LoadResponse.Loading) {
+                    if (viewModel.contactState.status is LoadResponse.Loading) {
                         CircularProgressIndicator(
                             Modifier.padding(start = 8.dp).size(24.dp),
                             color = Color.White,
@@ -371,7 +367,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 CommonButton(
-                    enabled = viewModel.addContactState.saveButtonEnabled,
+                    enabled = viewModel.contactState.saveButtonEnabled,
                     text = "SAVE TO CONTACTS",
                     callback = {
                         viewModel.saveContact()
@@ -381,7 +377,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
         }
     }
 
-    if (viewModel.addContactState.status is Response.Success) {
+    if (viewModel.contactState.status is Response.Success) {
         dashboardViewModel.toggleAddContactWindow(false)
     }
 }
