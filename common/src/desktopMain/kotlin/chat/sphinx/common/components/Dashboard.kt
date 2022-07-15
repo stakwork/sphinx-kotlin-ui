@@ -4,6 +4,7 @@ import CommonButton
 import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,9 +42,8 @@ import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
 import com.example.compose.primary_green
+import com.example.compose.primary_red
 import com.example.compose.sphinx_orange
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
@@ -120,6 +120,49 @@ actual fun Dashboard(
                                 .background(SolidColor(Color.Gray), alpha = 0.50f).width(9.dp).fillMaxHeight()
                         )
                     }
+                }
+            }
+
+            fullScreenImageState.value?.let { imagePath ->
+                val backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                val fullscreenBackgroundColor = Color(
+                    red = backgroundColor.red,
+                    green = backgroundColor.green,
+                    blue = backgroundColor.blue,
+                    alpha = 0.45f
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(fullscreenBackgroundColor)
+                        .clickable(enabled = false, onClick = {  })
+                ) {
+                    PhotoFileImage(
+                        imagePath,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit // TODO: Figure out which fill works best depending on image size
+                    )
+                    // Close Fullscreen button
+                    Box(
+                        modifier = Modifier.padding(40.dp).align(Alignment.TopEnd)
+                    ) {
+                        IconButton(
+                            onClick = {
+                                fullScreenImageState.value = null
+                            },
+                            modifier = Modifier.clip(CircleShape)
+                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                                .size(40.dp),
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Close fullscreen image view",
+                                tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                    }
+
                 }
             }
 
@@ -309,7 +352,6 @@ fun SphinxChatDetailBottomAppBar(
                         contentScale = ContentScale.FillBounds
                     )
             }
-            val scope = rememberCoroutineScope()
             IconButton(
                 onClick = {},
                 modifier = Modifier.clip(CircleShape)

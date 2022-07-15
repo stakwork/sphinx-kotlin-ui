@@ -1,6 +1,7 @@
 package chat.sphinx.common.components
 
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -18,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.state.fullScreenImageState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.retrieveRemoteMediaInputStream
 import chat.sphinx.concepts.network.client.crypto.CryptoHeader
@@ -95,7 +97,9 @@ fun MessageMediaImage(
     if (localFilepath.value != null) {
         PhotoFileImage(
             localFilepath.value!!,
-            modifier = modifier,
+            modifier = modifier.clickable {
+                fullScreenImageState.value = localFilepath.value
+            },
             effect = {
                 ImageLoadingView()
             }
