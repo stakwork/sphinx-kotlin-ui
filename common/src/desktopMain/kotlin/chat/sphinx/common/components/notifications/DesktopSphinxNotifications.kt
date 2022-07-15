@@ -71,8 +71,7 @@ fun DesktopSphinxNotifications(
                         // Remove notifications when cursor moves...
                         removeNotificationsJob = scope.launch {
                             delay(1500)
-                            notifications.removeFirstOrNull()
-                            removeNotificationsJob = null
+                            notifications.clear()
                         }
 //                        if (removeNotificationsJob?.isActive != true) {
 //                            removeNotificationsJob = scope.launch {
