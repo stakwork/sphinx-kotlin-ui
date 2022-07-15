@@ -36,12 +36,14 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.common.components.notifications.DesktopSphinxNotificationManager.notifications
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
 import com.example.compose.primary_green
-import com.example.compose.primary_red
 import com.example.compose.sphinx_orange
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
@@ -307,6 +309,7 @@ fun SphinxChatDetailBottomAppBar(
                         contentScale = ContentScale.FillBounds
                     )
             }
+            val scope = rememberCoroutineScope()
             IconButton(
                 onClick = {},
                 modifier = Modifier.clip(CircleShape)
