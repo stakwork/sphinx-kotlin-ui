@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.wrapper.thumbnailUrl
 
 @Composable
 fun ImageProfile(
@@ -16,7 +17,7 @@ fun ImageProfile(
     color: Color
 ) {
     PhotoUrlImage(
-        chatMessage.contact?.photoUrl ?: chatMessage.message.senderPic,
+        chatMessage.contact?.photoUrl?.thumbnailUrl ?: chatMessage.message.senderPic?.thumbnailUrl,
         modifier = Modifier
             .size(30.dp)
             .clip(CircleShape),
