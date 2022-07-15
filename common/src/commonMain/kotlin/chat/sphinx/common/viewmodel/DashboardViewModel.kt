@@ -1,5 +1,6 @@
 package chat.sphinx.common.viewmodel
 
+import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardState
 import chat.sphinx.concepts.socket_io.SocketIOManager
@@ -11,14 +12,12 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
-import chat.sphinx.wrapper.lightning.Sat
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
 class DashboardViewModel {
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -35,15 +34,15 @@ class DashboardViewModel {
     val balanceStateFlow: StateFlow<NodeBalance?>
         get() = _balanceStateFlow.asStateFlow()
 
-    private val _addContactWindowStateFlow: MutableStateFlow<Boolean> by lazy {
-        MutableStateFlow(false)
+    private val _contactWindowStateFlow: MutableStateFlow<Pair<Boolean, ContactScreenState?>> by lazy {
+        MutableStateFlow(Pair(false, null))
     }
 
-    val addContactWindowStateFlow: StateFlow<Boolean>
-        get() = _addContactWindowStateFlow.asStateFlow()
+    val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
+        get() = _contactWindowStateFlow.asStateFlow()
 
-    fun toggleAddContactWindow(open: Boolean) {
-        _addContactWindowStateFlow.value = open
+    fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
+        _contactWindowStateFlow.value = Pair(open, screen)
     }
 
     init {

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.landing.AddContactWindow
+import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -148,7 +149,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 elevation = 8.dp,
                 actions = {
                     IconButton(onClick = {
-                        dashboardViewModel.toggleAddContactWindow(true)
+                        dashboardViewModel.toggleContactWindow(true, ContactScreenState.Choose)
                     }) {
                         Icon(
                             Icons.Default.PersonAddAlt,
@@ -158,8 +159,8 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                     }
                 }
             )
-            val addContactWindowState by dashboardViewModel.addContactWindowStateFlow.collectAsState()
-            if (addContactWindowState){
+            val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
+            if (addContactWindowState.first){
                 AddContactWindow(dashboardViewModel)
             }
             ChatListUI()

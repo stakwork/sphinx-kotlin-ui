@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.response.LoadResponse
@@ -33,12 +34,12 @@ import com.example.compose.light_divider
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
     var isOpen by remember { mutableStateOf(true) }
-    var screenState: AddContactScreenState by remember { mutableStateOf(AddContactScreenState.Home) }
+    var screenState: ContactScreenState? = dashboardViewModel.contactWindowStateFlow.value.second
 
     if (isOpen) {
         Window(
             onCloseRequest = {
-                dashboardViewModel.toggleAddContactWindow(false)
+                dashboardViewModel.toggleContactWindow(false, null)
             },
             title = "Add Contact",
             state = WindowState(
@@ -48,18 +49,16 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             )
         ) {
             when (screenState) {
-                AddContactScreenState.Home -> AddContact {
-                    screenState = it
-                }
-                AddContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-                AddContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx(dashboardViewModel)
+                ContactScreenState.Choose -> AddContact(dashboardViewModel)
+                ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+                ContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx(dashboardViewModel)
             }
         }
     }
 }
 
 @Composable
-fun AddContact(updateState: (AddContactScreenState) -> Unit) {
+fun AddContact(dashboardViewModel: DashboardViewModel) {
     Box(
         modifier = Modifier.fillMaxSize()
             .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
@@ -71,8 +70,7 @@ fun AddContact(updateState: (AddContactScreenState) -> Unit) {
         ) {
             CommonButton(
                 callback = {
-                    updateState(AddContactScreenState.NewToSphinx)
-
+                    dashboardViewModel.toggleContactWindow(true, ContactScreenState.NewToSphinx)
                 },
                 text = "New to Sphinx",
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
@@ -81,8 +79,7 @@ fun AddContact(updateState: (AddContactScreenState) -> Unit) {
             Divider(Modifier.padding(12.dp), color = Color.Transparent)
             CommonButton(
                 callback = {
-                    updateState(AddContactScreenState.AlreadyOnSphinx)
-
+                    dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx)
                 },
                 text = "Already on Sphinx",
                 enabled = true
@@ -378,14 +375,6 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
     }
 
     if (viewModel.contactState.status is Response.Success) {
-        dashboardViewModel.toggleAddContactWindow(false)
+        dashboardViewModel.toggleContactWindow(false, null)
     }
-}
-
-
-sealed class AddContactScreenState {
-    object Home : AddContactScreenState()
-    object NewToSphinx : AddContactScreenState()
-    object AlreadyOnSphinx : AddContactScreenState()
-
 }
