@@ -30,6 +30,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.awt.event.MouseMotionListener
+import javax.swing.event.MouseInputAdapter
 
 /**
  * This is a hack to have notifications on all platforms... Could possibly only use it for linux as the mac/windows notifications should work will.
@@ -40,7 +42,7 @@ fun DesktopSphinxNotifications(
     icon: Painter?
 ) {
     if (notifications.isNotEmpty()) {
-
+        DesktopSphinxMouseMoveListener()
         Window(
             onCloseRequest = {
                 notifications.clear()
@@ -48,39 +50,17 @@ fun DesktopSphinxNotifications(
             title = "Sphinx Notifications",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.TopEnd),
-                size = getFullscreenWindowSize()
+                size = getPreferredWindowSize(500, 800)
             ),
-            alwaysOnTop = true,
+//            alwaysOnTop = true,
             transparent = true,
             undecorated = true,
             focusable = false,
+
             icon = icon
         ) {
-            val scope = rememberCoroutineScope()
-
-            var removeNotificationsJob: Job? = null
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .onPointerEvent(PointerEventType.Move) {
-
-                        println("Point event: ${this.currentEvent}")
-                        if (removeNotificationsJob?.isActive == true) {
-                            return@onPointerEvent
-                        }
-                        // Remove notifications when cursor moves...
-                        removeNotificationsJob = scope.launch {
-                            delay(1500)
-                            notifications.clear()
-                        }
-//                        if (removeNotificationsJob?.isActive != true) {
-//                            removeNotificationsJob = scope.launch {
-//                                delay(1500)
-//                                notifications.removeFirstOrNull()
-//                            }
-//                        }
-                    }
-
             ) {
                 Column(
                     modifier = Modifier.align(Alignment.TopEnd)
@@ -101,7 +81,7 @@ fun DesktopSphinxNotifications(
                             ) {
                                 IconButton(
                                     onClick = {
-                                        notifications.remove(notification)
+                                        notifications.clear()
                                     },
                                     modifier = Modifier.clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.secondary)
@@ -143,4 +123,45 @@ fun DesktopSphinxNotifications(
             }
         }
     }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun DesktopSphinxMouseMoveListener() {
+    val scope = rememberCoroutineScope()
+    var removeNotificationsJob: Job? = null
+
+    Window(
+        onCloseRequest = {
+            notifications.clear()
+        },
+        state = WindowState(
+            position = WindowPosition.Aligned(Alignment.TopEnd),
+            size = getFullscreenWindowSize()
+        ),
+//        visible = false,
+        alwaysOnTop = false,
+        transparent = true,
+        undecorated = true,
+        focusable = false,
+    ) {
+
+        Box(
+            Modifier
+                .fillMaxSize()
+                .onPointerEvent(PointerEventType.Move) {
+                    if (removeNotificationsJob?.isActive == true) {
+                        return@onPointerEvent
+                    }
+                    // Remove notifications when cursor moves...
+                    removeNotificationsJob = scope.launch {
+                        delay(1500)
+                        notifications.clear()
+                    }
+                }
+        )
+
+    }
+
+
 }

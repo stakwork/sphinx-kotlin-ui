@@ -9,6 +9,7 @@ import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.LandingScreen
+import chat.sphinx.common.components.notifications.DesktopSphinxMouseMoveListener
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.state.AppState
 import chat.sphinx.common.state.ContentState
@@ -30,7 +31,6 @@ fun main() = application {
 
     val sphinxStore = remember { SphinxStore() }
     val sphinxState = sphinxStore.state
-
 
 //    val rememberSphinxTray = remember {
 //        DesktopSphinxNotificationManager.sphinxTrayState

@@ -13,12 +13,12 @@ object DesktopSphinxNotificationManager: SphinxNotificationManager {
         title: String,
         message: String
     ) {
-        notifications.add(
-            Pair(
-                title,
-                message
-            )
-        )
+//        notifications.add(
+//            Pair(
+//                title,
+//                message
+//            )
+//        )
 //        sphinxTrayState.sendNotification(
 //            Notification(
 //                title = title,
