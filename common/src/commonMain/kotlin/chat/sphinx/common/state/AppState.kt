@@ -2,6 +2,7 @@ package chat.sphinx.common.state
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import okio.Path
 
 enum class ScreenType {
     SplashScreen,
@@ -20,3 +21,5 @@ object AppState {
         screen.value = state
     }
 }
+
+val fullScreenImageState = mutableStateOf<Path?>(null)
