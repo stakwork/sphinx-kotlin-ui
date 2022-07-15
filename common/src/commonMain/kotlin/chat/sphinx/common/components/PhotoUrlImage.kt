@@ -72,6 +72,7 @@ fun PhotoUrlImage(
                         effect()
                     } else {
                         Image(
+                            modifier = modifier,
                             painter = imageResource(Res.drawable.profile_avatar),
                             contentDescription = "avatar",
                             contentScale = ContentScale.Crop
