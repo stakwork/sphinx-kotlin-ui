@@ -4,6 +4,7 @@ import CommonButton
 import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.landing.AddContactWindow
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -91,7 +93,7 @@ actual fun Dashboard(
                     }
 
                     Scaffold(scaffoldState = scaffoldState, topBar = {
-                        SphinxChatDetailTopAppBar(dashboardChat, chatViewModel)
+                        SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel)
                     }, bottomBar = {
                         SphinxChatDetailBottomAppBar(chatViewModel)
                     }) {
@@ -156,7 +158,8 @@ actual fun Dashboard(
 @Composable
 fun SphinxChatDetailTopAppBar(
     dashboardChat: DashboardChat?,
-    chatViewModel: ChatViewModel?
+    chatViewModel: ChatViewModel?,
+    dashboardViewModel: DashboardViewModel?
 ) {
     if (dashboardChat == null) {
         Row(
@@ -186,7 +189,10 @@ fun SphinxChatDetailTopAppBar(
             Column {
                 Row {
                     Text(
-                        text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700
+                        text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
+                        modifier = Modifier.clickable {
+                            dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact)
+                        }
                     )
 
                     Icon(
@@ -267,7 +273,12 @@ fun SphinxChatDetailTopAppBar(
                     tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                 )
             }
-        })
+        }
+    )
+    val addContactWindowState = dashboardViewModel?.contactWindowStateFlow?.value?.first
+    if (addContactWindowState == true){
+        AddContactWindow(dashboardViewModel)
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

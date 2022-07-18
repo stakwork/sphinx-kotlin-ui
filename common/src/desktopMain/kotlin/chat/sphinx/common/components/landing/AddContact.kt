@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -51,7 +54,8 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             when (screenState) {
                 ContactScreenState.Choose -> AddContact(dashboardViewModel)
                 ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-                ContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx(dashboardViewModel)
+                ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, false)
+                ContactScreenState.EditContact -> ContactForm(dashboardViewModel, true)
             }
         }
     }
@@ -211,7 +215,7 @@ fun AddNewContactOnSphinx() {
 }
 
 @Composable
-fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
+fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean) {
 
     val viewModel = remember { AddContactViewModel() }
 
@@ -227,8 +231,18 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
             modifier = Modifier.fillMaxSize().padding(32.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
-        )
-        {
+        ) {
+            if (editMode) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().height(112.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    PhotoUrlImage(
+                        photoUrl = null, modifier = Modifier.size(96.dp).clip(CircleShape)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(18.dp))
 
             Column {
@@ -261,18 +275,34 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     fontFamily = Roboto,
                     color = Color.Gray,
                 )
-                BasicTextField(
-                    value = viewModel.contactState.lightningNodePubKey,
-                    onValueChange = {
-                        viewModel.onAddressTextChanged(it)
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
-                    singleLine = true,
-                    cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BasicTextField(
+                        value = viewModel.contactState.lightningNodePubKey,
+                        onValueChange = {
+                            viewModel.onAddressTextChanged(it)
+                        },
+                        modifier = Modifier.weight(1f).padding(top = 12.dp),
+                        textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+                        singleLine = true,
+                        cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                    )
+                    if(editMode) {
+                        IconButton(onClick = {}
+                        ) {
+                            Icon(
+                                Icons.Default.QrCodeScanner,
+                                contentDescription = "QR Code",
+                                tint = Color.White,
+                                modifier = Modifier.size(30.dp),
+                            )
+                        }
+                    }
+                }
+                Divider(modifier = Modifier.padding(top = 4.dp), color = Color.Gray)
 
-                )
-                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
             }
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -336,7 +366,6 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
 //                }
 //            }
 
-
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
@@ -365,7 +394,9 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
                 CommonButton(
                     enabled = viewModel.contactState.saveButtonEnabled,
-                    text = "SAVE TO CONTACTS",
+                    text = if (editMode) {
+                        "SAVE"}
+                    else {"SAVE TO CONTACTS"},
                     callback = {
                         viewModel.saveContact()
                     }
@@ -378,3 +409,4 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
         dashboardViewModel.toggleContactWindow(false, null)
     }
 }
+
