@@ -395,13 +395,15 @@ fun SphinxChatDetailBottomAppBar(
                                     overflow = TextOverflow.Ellipsis,
                                     color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
                                     fontFamily = Roboto,
-                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.W600,
+                                    fontSize = 13.sp,
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     replyToMessage.replyToMessageTextPreview,
                                     overflow = TextOverflow.Ellipsis,
                                     color = place_holder_text,
+                                    fontWeight = FontWeight.W400,
                                     fontFamily = Roboto,
                                     fontSize = 11.sp
                                 )

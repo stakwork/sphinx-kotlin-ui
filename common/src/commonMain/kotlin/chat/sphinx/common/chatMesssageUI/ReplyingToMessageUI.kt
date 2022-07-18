@@ -1,5 +1,6 @@
 package chat.sphinx.common.chatMesssageUI
 
+import Roboto
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -23,7 +24,7 @@ import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
 
 @Composable
-fun SenderNameWithTime(
+fun ReplyingToMessageUI(
     chatMessage: ChatMessage,
     chatViewModel: ChatViewModel
 ) {
@@ -68,27 +69,30 @@ fun SenderNameWithTime(
                 verticalArrangement = Arrangement.Center
             ) {
 //                if(chatMessage.isDeleted.not())
-                    replyMessage.senderAlias?.let { senderAlias ->
-                        Text(
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            text = senderAlias.value.trim(),
-                            fontWeight = FontWeight.W300,
-                            textAlign = TextAlign.Start,
-                            maxLines = 1,
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.tertiary,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                replyMessage.senderAlias?.let { senderAlias ->
+                    Text(
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        text = senderAlias.value.trim(),
+                        fontFamily = Roboto,
+                        fontWeight = FontWeight.W600,
+                        textAlign = TextAlign.Start,
+                        maxLines = 1,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 replyMessage.retrieveTextToShow()?.let { replyMessageText ->
                     if (replyMessageText.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             modifier = Modifier.fillMaxWidth(0.8f),
                             text = replyMessageText,
-                            fontWeight = FontWeight.W300,
+                            fontFamily = Roboto,
+                            fontWeight = FontWeight.W400,
                             textAlign = TextAlign.Start,
                             maxLines = 1,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onBackground,
                             overflow = TextOverflow.Ellipsis
                         )

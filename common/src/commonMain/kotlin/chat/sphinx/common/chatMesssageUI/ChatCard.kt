@@ -48,7 +48,7 @@ fun ChatCard(
         Box(modifier = Modifier) {
             Column {
                 chatMessage.message.replyMessage?.let { _ ->
-                    SenderNameWithTime(
+                    ReplyingToMessageUI(
                         chatMessage,
                         chatViewModel
                     )
