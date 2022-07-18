@@ -177,8 +177,9 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                     CommonButton(
                         text = "Submit",
                         newUserStore.state.invitationCodeText.isNotEmpty(), customColor = null,
-                        newUserStore::onSubmitInvitationCode
-                    )
+                    ){
+                        newUserStore.onSubmitInvitationCode()
+                    }
                     Column(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.Center,

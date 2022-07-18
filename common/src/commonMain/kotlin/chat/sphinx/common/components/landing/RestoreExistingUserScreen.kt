@@ -136,8 +136,10 @@ fun RestoreExistingUserScreen(
                             CommonButton(
                                 text = "Submit",
                                 restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not(), customColor = null,
-                                restoreExistingUserViewModel::onSubmitKeys
-                            )
+
+                            ){
+                                restoreExistingUserViewModel.onSubmitKeys()
+                            }
                             Column(
                                 horizontalAlignment = Alignment.End,
                                 verticalArrangement = Arrangement.Center,

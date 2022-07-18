@@ -2,11 +2,14 @@ package chat.sphinx.common.components.profile
 
 import CommonButton
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
@@ -55,106 +59,188 @@ actual fun Profile() {
                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
             ) {
 
-                    Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-                      Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(24.dp)) {
-                          PhotoUrlImage(
-                              PhotoUrl("https://randomuser.me/api/portraits/men/22.jpg"),
-                              modifier = Modifier
-                                  .size(60.dp)
-                                  .clip(CircleShape)
-                          )
-                          Spacer(modifier = Modifier.width(16.dp))
-                          Column(verticalArrangement = Arrangement.Center) {
-                              Text("THOMAS", color = MaterialTheme.colorScheme.tertiary,    fontWeight = FontWeight.Bold)
-                              Row (verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
-                                  Text("1250",color =MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
-                                  Spacer(modifier = Modifier.width(6.dp))
-                                  Text("sat",color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp)
-                              }
+                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(24.dp)
+                    ) {
+                        PhotoUrlImage(
+                            PhotoUrl("https://randomuser.me/api/portraits/men/22.jpg"),
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(verticalArrangement = Arrangement.Center) {
+                            Text(
+                                "THOMAS",
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    "1250",
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    fontSize = 11.sp
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    "sat",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 11.sp
+                                )
+                            }
 
-                          }
-                      }
-                        tabs()
+                        }
                     }
+                    tabs()
+                }
 
             }
         }
     }
 }
-fun onTapClose(){
+
+fun onTapClose() {
 
 }
+
 @Composable
 fun tabs() {
     var tabIndex by remember { mutableStateOf(0) } // 1.
-    val tabTitles = listOf("Basic", "Advanced", )
-    Column { // 2.
+    val tabTitles = listOf("Basic", "Advanced")
+    Column() { // 2.
         TabRow(
-            selectedTabIndex = tabIndex, modifier = Modifier.height(30.dp),) { // 3.
+            selectedTabIndex = tabIndex,
+            modifier = Modifier.height(30.dp)
+                .border(0.5.dp, color = MaterialTheme.colorScheme.onSecondaryContainer),
+            backgroundColor =MaterialTheme.colorScheme.secondary, contentColor = MaterialTheme.colorScheme.secondary,
+            indicator = {
+                it.forEach {
+                    TabRowDefaults.Indicator(
+                        Modifier.tabIndicatorOffset(it), color = Color.Transparent
+                    )
+                }
+            }) { // 3.
             tabTitles.forEachIndexed { index, title ->
                 Tab(selected = tabIndex == index, // 4.
                     onClick = {
                         tabIndex = index
-                              },
-                    text = { Text(text = title, fontSize = 12.sp) }) // 5.
+                    },
+                    text = {
+                        Text(
+                            text = title,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }, modifier = Modifier.background(if(tabIndex==index) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.background )
+                ) // 5.
             }
         }
         when (tabIndex) { // 6.
-            0 -> Column(modifier = Modifier.padding(24.dp)) {
-                CommonTextField("User Name")
+            0 -> Column(modifier = Modifier) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    CommonTextField("User Name")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    CommonTextField("Address")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    CommonTextField("Route Hint")
+                    Row(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            "Share my profile photos with my contacts",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.fillMaxWidth(0.6f)
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Switch(true, onCheckedChange = {})
+                    }                }
                 Spacer(modifier = Modifier.height(4.dp))
-                CommonTextField("Address")
-                Spacer(modifier = Modifier.height(4.dp))
-                CommonTextField("Route Hint")
-                Row (modifier = Modifier.padding(12.dp)){
-                    Text("Share my profile photos with my contacts", color = MaterialTheme.colorScheme.tertiary,fontSize = 12.sp, modifier = Modifier.fillMaxWidth(0.6f))
-                    Spacer(modifier=Modifier.weight(1f))
-                    Switch(true, onCheckedChange = {},)
+                Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
+                Box(modifier = Modifier.padding(12.dp), contentAlignment = Alignment.Center) {
+                    CommonTextField("Meeting Server")
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
-                Spacer(modifier = Modifier.height(4.dp))
-                CommonTextField("Meeting Server")
-                Spacer(modifier = Modifier.height(4.dp))
-                Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
-                Text("Sync more devices", color = MaterialTheme.colorScheme.tertiary,fontSize = 12.sp, modifier = Modifier.align(
-                    Alignment.CenterHorizontally))
-                Spacer(modifier = Modifier.height(24.dp))
-                CommonButton("Back up your keys"){
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        "Sync more devices",
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontSize = 12.sp,
+                        modifier = Modifier.align(
+                            Alignment.CenterHorizontally
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    CommonButton("Backup your keys", textButtonSize = 12.sp) {
 
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-                CommonButton("Save Changes", customColor = MaterialTheme.colorScheme.secondaryContainer){
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                    CommonButton(
+                        "Save Changes",
+                        customColor = MaterialTheme.colorScheme.secondaryContainer,textButtonSize = 12.sp
+                    ) {
 
+                    }
                 }
 
 //                CommonTextField("User Name")
 //                Spacer(modifier = Modifier.height(4.dp))
             }
-            1 -> Column(modifier = Modifier.padding(24.dp)) {
-                CommonTextField("Server URL")
-                Spacer(modifier = Modifier.height(4.dp))
+            1 -> Column() {
+                Column() {
+                    CommonTextField("Server URL")
+                    Spacer(modifier = Modifier.height(4.dp))
 //                Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
-                Row (horizontalArrangement = Arrangement.SpaceAround){
-                    Text("Pin Timeout", color = MaterialTheme.colorScheme.onSecondaryContainer, fontSize = 12.sp)
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text("12 Hours", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                    Row(horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.padding(horizontal = 20.dp)) {
+                        Text(
+                            "Pin Timeout",
+                            color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
+                            fontSize = 12.sp
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text("12 Hours", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                    }
+                    var sliderState by remember { mutableStateOf(0f) }
+                    Slider(
+                        value = sliderState,
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        steps = 0,
+                        valueRange = 0f..100f,
+                        colors = SliderDefaults.colors(activeTrackColor = MaterialTheme.colorScheme.secondary, thumbColor = MaterialTheme.colorScheme.secondary),
+                        onValueChange = { newValue ->
+                            sliderState = newValue
+                        },
+                    )
                 }
-                var sliderState by remember { mutableStateOf(0f) }
-                Slider(
-                    value = sliderState,
-                    steps = 0,
-                    valueRange = 0f..100f,
-                    onValueChange = { newValue ->
-                        sliderState = newValue
-                    },
+                Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
+                Text(
+                    "Chane Pin",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)
+                        .padding(24.dp), fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary
                 )
-                                Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
-                Text("Chane Pin", modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally).padding(24.dp))
-                Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
-                Text("Chane Privacy Pin", modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally).padding(24.dp))
-                CommonButton("Save Changes", customColor = MaterialTheme.colorScheme.secondaryContainer){
+                Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
+                Text(
+                    "Chane Privacy Pin",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)
+                        .padding(24.dp),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(modifier = Modifier.height(150.dp))
+                Box(modifier = Modifier.padding(12.dp)){
+                    CommonButton(
+                        "Save Changes",
+                        customColor = MaterialTheme.colorScheme.secondaryContainer, textButtonSize = 12.sp
+                    ) {
 
+                    }
                 }
 
             }
