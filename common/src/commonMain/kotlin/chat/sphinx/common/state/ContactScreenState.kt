@@ -6,5 +6,4 @@ sealed class ContactScreenState {
     object AlreadyOnSphinx : ContactScreenState()
     object EditContact : ContactScreenState()
 
-
 }

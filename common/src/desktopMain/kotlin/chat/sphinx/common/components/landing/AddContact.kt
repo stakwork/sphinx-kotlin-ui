@@ -27,6 +27,8 @@ import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.contact.ContactViewModel
+import chat.sphinx.common.viewmodel.contact.EditContactViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
@@ -217,7 +219,14 @@ fun AddNewContactOnSphinx() {
 @Composable
 fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean) {
 
-    val viewModel = remember { AddContactViewModel() }
+    val viewModel = if(editMode){
+        remember { EditContactViewModel() }
+    } else {
+        remember { AddContactViewModel() }
+    }
+
+    var qrDetailWindow by remember { mutableStateOf(false) }
+
 
 //    var switchState = remember {
 //        mutableStateOf(false)
@@ -290,7 +299,9 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean) {
                         cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                     )
                     if(editMode) {
-                        IconButton(onClick = {}
+                        IconButton(onClick = {
+                            dashboardViewModel.toggleQRWindow(true)
+                        }
                         ) {
                             Icon(
                                 Icons.Default.QrCodeScanner,
@@ -407,6 +418,28 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean) {
 
     if (viewModel.contactState.status is Response.Success) {
         dashboardViewModel.toggleContactWindow(false, null)
+    }
+    if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
+        QRDetail(dashboardViewModel,viewModel)
+    }
+}
+
+@Composable
+fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: ContactViewModel){
+    var isOpen by remember { mutableStateOf(true) }
+    if (isOpen) {
+        Window(
+            onCloseRequest = {
+                dashboardViewModel.toggleQRWindow(false)
+            },
+            title = "Scan QR",
+            state = WindowState(
+                position = WindowPosition.Aligned(Alignment.Center),
+                size = getPreferredWindowSize(357, 493)
+            )
+        ) {
+
+        }
     }
 }
 

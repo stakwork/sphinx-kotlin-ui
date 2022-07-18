@@ -45,6 +45,17 @@ class DashboardViewModel {
         _contactWindowStateFlow.value = Pair(open, screen)
     }
 
+    private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val qrWindowStateFlow: StateFlow<Boolean>
+        get() = _qrWindowStateFlow.asStateFlow()
+
+    fun toggleQRWindow(open: Boolean) {
+        _qrWindowStateFlow.value = open
+    }
+
     init {
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
             DashboardState.screenState(DashboardScreenType.Unlocked)

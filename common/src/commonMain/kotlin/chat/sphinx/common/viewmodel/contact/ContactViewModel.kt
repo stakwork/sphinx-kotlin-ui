@@ -9,6 +9,9 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 abstract class ContactViewModel {
 
@@ -17,11 +20,10 @@ abstract class ContactViewModel {
 
     abstract var contactState: ContactState
 
+    abstract fun saveContact()
+
     abstract fun onNicknameTextChanged(text: String)
     abstract fun onAddressTextChanged(text: String)
     abstract fun onRouteHintTextChanged(text: String)
-
-    abstract fun saveContact()
-
 
 }
