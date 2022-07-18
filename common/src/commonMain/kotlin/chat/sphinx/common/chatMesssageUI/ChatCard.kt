@@ -33,7 +33,6 @@ import chat.sphinx.wrapper.message.retrieveTextToShow
 @Composable
 fun ChatCard(
     chatMessage: ChatMessage,
-    color: Color,
     chatViewModel: ChatViewModel
 ) {
     val uriHandler = LocalUriHandler.current
@@ -49,7 +48,13 @@ fun ChatCard(
         Box(modifier = Modifier) {
             Column {
                 chatMessage.message.replyMessage?.let { _ ->
-                    SenderNameWithTime(chatMessage, color,chatViewModel)
+                    val color = chatMessage.colors[chatMessage.message.id.value]
+
+                    SenderNameWithTime(
+                        chatMessage,
+                        if (color != null) Color(color) else Color.Unspecified,
+                        chatViewModel
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     Divider()
                 }

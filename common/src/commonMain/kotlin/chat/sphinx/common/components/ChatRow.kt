@@ -29,6 +29,7 @@ import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.ChatMuted
 
 import androidx.compose.ui.text.font.FontWeight
+import chat.sphinx.wrapper.util.getInitials
 
 
 import views.LoadingShimmerEffect
@@ -80,7 +81,10 @@ fun ChatRow(
                 dashboardChat.photoUrl,
                 modifier = Modifier
                     .size(46.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+                firstNameLetter = (dashboardChat.chatName ?: "Unknown Chat").getInitials(),
+                color = if (dashboardChat.color != null) Color(dashboardChat.color!!) else null,
+                fontSize = 16
             )
 
             Spacer(modifier = Modifier.width(12.dp))

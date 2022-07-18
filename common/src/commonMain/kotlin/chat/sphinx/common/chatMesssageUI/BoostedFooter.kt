@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +21,7 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.message.Message
 import chat.sphinx.wrapper.thumbnailUrl
+import chat.sphinx.wrapper.util.getInitials
 import com.example.compose.badge_red
 import com.example.compose.primary_green
 
@@ -54,13 +56,19 @@ fun BoostedFooter(
                             calculatePosition(chatMessage.message.reactions?.size ?: 0,index), 0.dp
                         )
                 ) {
-                    if (index < 3)
+                    if (index < 3) {
+                        val color = chatMessage.colors[it.id.value]
+
                         PhotoUrlImage(
                             photoUrl = it.senderPic?.thumbnailUrl,
                             modifier = Modifier
                                 .size(25.dp)
                                 .clip(CircleShape),
+                            color = if (color != null) Color(color) else Color.Gray,
+                            firstNameLetter = (chatMessage.contact?.alias?.value ?: it.senderAlias?.value)?.getInitials(),
+                            fontSize = 9
                         )
+                    }
                 }
             }
         }

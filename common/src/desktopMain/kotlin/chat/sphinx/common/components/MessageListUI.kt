@@ -179,7 +179,7 @@ fun ChatMessagesList(
             ChatMessageUI(
                 item,
                 chatViewModel,
-                item.color
+                item.colors
             )
         }
     }

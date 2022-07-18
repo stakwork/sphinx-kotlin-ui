@@ -27,6 +27,7 @@ sealed class DashboardChat {
     abstract val chatName: String?
     abstract val photoUrl: PhotoUrl?
     abstract val sortBy: Long
+    abstract val color: Int?
 
     abstract val unseenMessageFlow: Flow<Long?>?
 
@@ -38,12 +39,6 @@ sealed class DashboardChat {
     abstract fun hasUnseenMessages(): Boolean
 
     abstract fun isEncrypted(): Boolean
-
-    abstract fun getColorKey(): String?
-
-    fun getColorKeyFor(contact: Contact?, chat: Chat?): String? {
-        return contact?.getColorKey() ?: chat?.getColorKey()
-    }
 
     sealed class Active: DashboardChat() {
 
@@ -85,10 +80,6 @@ sealed class DashboardChat {
 
         override fun isEncrypted(): Boolean {
             return true
-        }
-
-        override fun getColorKey(): String? {
-            return getColorKeyFor(null, chat)
         }
 
         @ExperimentalStdlibApi
@@ -240,6 +231,7 @@ sealed class DashboardChat {
             override val chat: Chat,
             override val message: Message?,
             val contact: Contact,
+            override val color: Int?,
             override val unseenMessageFlow: Flow<Long?>,
         ): Active() {
 
@@ -267,16 +259,13 @@ sealed class DashboardChat {
                     alias.value + if (withColon) ": " else ""
                 } ?: ""
             }
-
-            override fun getColorKey(): String? {
-                return getColorKeyFor(contact, chat)
-            }
         }
 
         class GroupOrTribe(
             override val chat: Chat,
             override val message: Message?,
             override val owner: Contact?,
+            override val color: Int?,
             override val unseenMessageFlow: Flow<Long?>,
         ): Active() {
 
@@ -295,11 +284,6 @@ sealed class DashboardChat {
                     alias.value + if (withColon) ": " else ""
                 } ?: ""
             }
-
-            override fun getColorKey(): String? {
-                return getColorKeyFor(null, chat)
-            }
-
         }
     }
 
@@ -314,7 +298,8 @@ sealed class DashboardChat {
         }
 
         class Conversation(
-            val contact: Contact
+            val contact: Contact,
+            override val color: Int?,
         ): Inactive() {
 
             override val chatName: String?
@@ -341,16 +326,12 @@ sealed class DashboardChat {
             override fun isEncrypted(): Boolean {
                 return !(contact.rsaPublicKey?.value?.isEmpty() ?: true)
             }
-
-            override fun getColorKey(): String? {
-                return getColorKeyFor(contact, null)
-            }
-
         }
 
         class Invite(
             val contact: Contact,
-            val invite: InviteWrapper?
+            val invite: InviteWrapper?,
+            override val color: Int?,
         ): Inactive() {
 
             override val chatName: String?
@@ -445,10 +426,6 @@ sealed class DashboardChat {
 
             override fun isEncrypted(): Boolean {
                 return false
-            }
-
-            override fun getColorKey(): String? {
-                return getColorKeyFor(contact, null)
             }
         }
     }

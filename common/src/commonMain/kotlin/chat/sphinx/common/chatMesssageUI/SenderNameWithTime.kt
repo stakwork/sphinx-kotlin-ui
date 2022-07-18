@@ -6,7 +6,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,15 +17,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.MessageMediaImage
-import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.wrapper.message.Message
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
 
 @Composable
-fun SenderNameWithTime(chatMessage: ChatMessage, color: Color,chatViewModel: ChatViewModel) {
+fun SenderNameWithTime(
+    chatMessage: ChatMessage,
+    color: Color,
+    chatViewModel: ChatViewModel
+) {
     chatMessage.message.replyMessage?.let { replyMessage ->
         Row(
             modifier = Modifier.height(44.dp).padding(top = 8.dp, start = 8.dp, end = 8.dp),

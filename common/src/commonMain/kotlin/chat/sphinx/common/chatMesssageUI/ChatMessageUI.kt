@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontStyle
 fun ChatMessageUI(
     chatMessage: ChatMessage,
     chatViewModel: ChatViewModel,
-    color: Color
+    colors: Map<Long, Int>,
 ) {
     print("rebuilding ${chatMessage.message.id}")
 
@@ -43,7 +43,7 @@ fun ChatMessageUI(
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
                 if (chatMessage.isReceived && chatMessage.groupActionLabelText.isNullOrEmpty() && chatMessage.isDeleted.not()) {
-                    ImageProfile(chatMessage, color)
+                    ImageProfile(chatMessage)
                     Spacer(modifier = Modifier.width(12.dp))
                 }
                 Column(
@@ -58,11 +58,7 @@ fun ChatMessageUI(
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            DisplayConditionalIcons(
-                                chatMessage,
-                                chatViewModel,
-                                color
-                            ) // display icons according to different conditions
+                            DisplayConditionalIcons(chatMessage, chatViewModel) // display icons according to different conditions
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -102,10 +98,16 @@ fun ChatMessageUI(
                                             contentAlignment = if (chatMessage.isSent) Alignment.CenterEnd else Alignment.CenterStart,
                                             modifier = Modifier.fillMaxWidth(0.5f)
                                         ) {
-                                            ChatCard(chatMessage, color, chatViewModel)
+                                            ChatCard(
+                                                chatMessage,
+                                                chatViewModel
+                                            )
                                         }
                                     } else {
-                                        ChatCard(chatMessage, color, chatViewModel)
+                                        ChatCard(
+                                            chatMessage,
+                                            chatViewModel
+                                        )
                                     }
                                 }
                             }

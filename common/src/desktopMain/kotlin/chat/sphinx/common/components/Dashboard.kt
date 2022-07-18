@@ -41,6 +41,7 @@ import chat.sphinx.common.components.notifications.DesktopSphinxNotificationMana
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
+import chat.sphinx.wrapper.util.getInitials
 import com.example.compose.primary_green
 import com.example.compose.primary_red
 import com.example.compose.sphinx_orange
@@ -294,7 +295,10 @@ fun SphinxChatDetailTopAppBar(
                 dashboardChat.photoUrl,
                 modifier = Modifier
                     .size(46.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+                firstNameLetter = (dashboardChat.chatName ?: "Unknown Chat").getInitials(),
+                color = if (dashboardChat.color != null) Color(dashboardChat.color!!) else null,
+                fontSize = 16
             )
         },
         actions = {

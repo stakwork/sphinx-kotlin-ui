@@ -24,14 +24,15 @@ import com.example.compose.place_holder_text
 @Composable
 fun DisplayConditionalIcons(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel,
-    color: Color
+    chatViewModel: ChatViewModel
 ) {
+    val color = chatMessage.colors[chatMessage.message.id.value]
 
     if (chatMessage.chat.isTribe() && chatMessage.isReceived) {
         Text(
             text = chatMessage.message.senderAlias?.value ?: "",
-            color = color, fontSize = 10.sp
+            color = if (color != null) Color(color) else Color.Unspecified,
+            fontSize = 10.sp
         )
         Spacer(
             modifier = Modifier.width(4.dp)
