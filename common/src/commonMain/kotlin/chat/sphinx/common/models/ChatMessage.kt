@@ -42,6 +42,10 @@ class ChatMessage(
         message.retrieveTextToShow() ?: messageMediaText
     }
 
+    val replyToMessageColor: Int? by lazy {
+        colors[message.id.value]
+    }
+
     val messageUISpacerWidth: Int by lazy {
         message.retrieveTextToShow()?.let { messageText ->
             when {

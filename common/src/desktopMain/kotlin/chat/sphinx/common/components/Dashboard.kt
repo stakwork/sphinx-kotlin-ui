@@ -23,6 +23,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
@@ -41,13 +42,16 @@ import chat.sphinx.common.components.notifications.DesktopSphinxNotificationMana
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
+import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.util.getInitials
+import com.example.compose.place_holder_text
 import com.example.compose.primary_green
 import com.example.compose.primary_red
 import com.example.compose.sphinx_orange
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
+import utils.AnimatedContainer
 import java.awt.Cursor
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -326,111 +330,206 @@ fun SphinxChatDetailBottomAppBar(
 ) {
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxWidth().height(60.dp),
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
         elevation = 8.dp
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Spacer(modifier = Modifier.width(16.dp))
-            IconButton(
-                onClick = { },
-                modifier = Modifier.clip(CircleShape)
-                    .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                    .size(30.dp),
-            ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "content description",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(21.dp)
-                )
+        Column {
+            chatViewModel?.editMessageState?.replyToMessage?.value?.let { replyToMessage ->
+                AnimatedContainer(
+                    fromTopToBottom = 20,
+                    modifier = Modifier
+                        .height(44.dp)
+                        .fillMaxWidth()
+                        .background(color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
+                ) {
+                    Box {
+                        Row(
+                            modifier = Modifier
+                                .height(44.dp)
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(4.dp)
+                                    .fillMaxHeight()
+                                    .background(
+                                        if (replyToMessage.replyToMessageColor != null) {
+                                            Color(replyToMessage.replyToMessageColor!!)
+                                        } else {
+                                            Color.Gray
+                                        }
+                                    )
+                                    .padding(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            // TODO: Image if available...
+                            replyToMessage.message.messageMedia?.let { media ->
+                                if (media.mediaType.isImage) {
+                                    Icon(
+                                        Icons.Default.Image,
+                                        contentDescription = "Image",
+                                        tint = Color.Green,
+                                        modifier = Modifier.size(88.dp).padding(4.dp)
+                                    )
+                                } else {
+                                    // show
+                                    Icon(
+                                        Icons.Default.AttachFile,
+                                        contentDescription = "Attachment",
+                                        tint = Color.Green,
+                                        modifier = Modifier.size(88.dp).padding(4.dp)
+                                    )
+                                }
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .padding(
+                                        end = 40.dp
+                                    )
+                            ) {
+                                Text(
+                                    replyToMessage.replyToMessageSenderAliasPreview,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                    fontFamily = Roboto,
+                                    fontSize = 12.sp,
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    replyToMessage.replyToMessageTextPreview,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = place_holder_text,
+                                    fontFamily = Roboto,
+                                    fontSize = 11.sp
+                                )
+                            }
+                            Box(
+                                contentAlignment = Alignment.CenterEnd,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                    contentDescription = "Close reply to message",
+                                    modifier = Modifier.size(20.dp)
+                                        .align(Alignment.CenterEnd)
+                                        .clickable(
+                                            onClick = {
+                                                chatViewModel?.editMessageState?.replyToMessage?.value = null
+                                            }
+                                        ),
+                                )
+                            }
+                        }
+                    }
+                }
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            IconButton(onClick = {}, modifier = Modifier.height(25.dp).width(18.dp)) {
-                Image(
+            Row(
+                modifier = Modifier.fillMaxWidth().height(60.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.width(16.dp))
+                IconButton(
+                    onClick = { },
+                    modifier = Modifier.clip(CircleShape)
+                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                        .size(30.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "content description",
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(21.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                IconButton(onClick = {}, modifier = Modifier.height(25.dp).width(18.dp)) {
+                    Image(
                         painter = imageResource(Res.drawable.ic_giphy),
                         contentDescription = "giphy",
                         contentScale = ContentScale.FillBounds
                     )
-            }
-            IconButton(
-                onClick = {},
-                modifier = Modifier.clip(CircleShape)
-                    .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-                    .wrapContentSize(),
-            ) {
-                Icon(
-                    Icons.Outlined.EmojiEmotions,
-                    contentDescription = "Emoji",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(30.dp),
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically
-            ) {
-                CustomTextField(
-                    trailingIcon = null,
-                    modifier = Modifier.background(
+                }
+                IconButton(
+                    onClick = {},
+                    modifier = Modifier.clip(CircleShape)
+                        .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+                        .wrapContentSize(),
+                ) {
+                    Icon(
+                        Icons.Outlined.EmojiEmotions,
+                        contentDescription = "Emoji",
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(30.dp),
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CustomTextField(
+                        trailingIcon = null,
+                        modifier = Modifier.background(
                             androidx.compose.material3.MaterialTheme.colorScheme.surface,
                             RoundedCornerShape(percent = 50)
                         ).padding(horizontal = 6.dp, vertical = 4.dp).height(32.dp),
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    placeholderText = "Message...",
-                    onValueChange = {
-                        if (chatViewModel != null) run {
-                            chatViewModel.onMessageTextChanged(it)
-                        }
-                    },
-                    value = chatViewModel?.editMessageState?.messageText?.value ?: ""
-                )
-            }
-            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Spacer(modifier = Modifier.width(10.dp))
-                    PriceChip()
-                    Spacer(modifier = Modifier.width(10.dp))
-                    IconButton(
-                        onClick = {
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        placeholderText = "Message...",
+                        onValueChange = {
                             if (chatViewModel != null) run {
-                                chatViewModel.onSendMessage()
+                                chatViewModel.onMessageTextChanged(it)
                             }
                         },
-                        modifier = Modifier.clip(CircleShape)
-                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                            .size(30.dp),
+                        value = chatViewModel?.editMessageState?.messageText?.value ?: ""
+                    )
+                }
+                CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            Icons.Default.Send,
-                            contentDescription = "Send Message",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    // TODO: Record Action
-                    IconButton(
-                        onClick = {},
-                        modifier = Modifier.clip(CircleShape)
-                            .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-                            .wrapContentSize(),
-                    ) {
-                        Icon(
-                            Icons.Default.Mic,
-                            contentDescription = "Microphone",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(27.dp)
-                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        PriceChip()
+                        Spacer(modifier = Modifier.width(10.dp))
+                        IconButton(
+                            onClick = {
+                                if (chatViewModel != null) run {
+                                    chatViewModel.onSendMessage()
+                                }
+                            },
+                            modifier = Modifier.clip(CircleShape)
+                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                                .size(30.dp),
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Send Message",
+                                tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        // TODO: Record Action
+                        IconButton(
+                            onClick = {},
+                            modifier = Modifier.clip(CircleShape)
+                                .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+                                .wrapContentSize(),
+                        ) {
+                            Icon(
+                                Icons.Default.Mic,
+                                contentDescription = "Microphone",
+                                tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.size(27.dp)
+                            )
+                        }
                     }
                 }
-            }
 
+            }
         }
     }
 }

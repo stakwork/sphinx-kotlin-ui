@@ -25,10 +25,15 @@ import chat.sphinx.wrapper.message.retrieveTextToShow
 @Composable
 fun SenderNameWithTime(
     chatMessage: ChatMessage,
-    color: Color,
     chatViewModel: ChatViewModel
 ) {
     chatMessage.message.replyMessage?.let { replyMessage ->
+        val color = if (chatMessage.colors[replyMessage.id.value] != null) {
+            Color(chatMessage.colors[replyMessage.id.value]!!)
+        } else {
+            Color.Gray
+        }
+
         Row(
             modifier = Modifier.height(44.dp).padding(top = 8.dp, start = 8.dp, end = 8.dp),
             horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically
@@ -39,7 +44,6 @@ fun SenderNameWithTime(
                     .fillMaxHeight()
                     .background(color),
             )
-            // TODO: Image if available...
             replyMessage.messageMedia?.let { media ->
                 if (media.mediaType.isImage) {
                     MessageMediaImage(

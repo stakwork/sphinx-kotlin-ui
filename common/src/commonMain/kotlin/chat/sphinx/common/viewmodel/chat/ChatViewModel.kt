@@ -310,6 +310,10 @@ abstract class ChatViewModel(
         editMessageState.messageText.value = text
     }
 
+    fun isReplying(): Boolean {
+        return editMessageState.replyToMessage.value != null
+    }
+
     fun onSendMessage() {
         val sendMessage = SendMessage.Builder()
             .setChatId(editMessageState.chatId)

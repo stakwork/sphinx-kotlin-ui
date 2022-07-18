@@ -48,11 +48,8 @@ fun ChatCard(
         Box(modifier = Modifier) {
             Column {
                 chatMessage.message.replyMessage?.let { _ ->
-                    val color = chatMessage.colors[chatMessage.message.id.value]
-
                     SenderNameWithTime(
                         chatMessage,
-                        if (color != null) Color(color) else Color.Unspecified,
                         chatViewModel
                     )
                     Spacer(modifier = Modifier.height(4.dp))
