@@ -27,6 +27,7 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.message.MessageType
+import chat.sphinx.wrapper.message.isBotRes
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
 
@@ -34,7 +35,8 @@ import chat.sphinx.wrapper.message.retrieveTextToShow
 fun ChatCard(
     chatMessage: ChatMessage,
     color: Color,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    modifier: Modifier? = null,
 ) {
     val uriHandler = LocalUriHandler.current
     val receiverCorner =
@@ -44,7 +46,8 @@ fun ChatCard(
 
     Card(
         backgroundColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary,
-        shape = if (chatMessage.isReceived) receiverCorner else senderCorner
+        shape = if (chatMessage.isReceived) receiverCorner else senderCorner,
+        modifier = modifier ?: Modifier
     ) {
         Box(modifier = Modifier) {
             Column {
@@ -75,7 +78,11 @@ fun ChatCard(
                     }
                 }
                 with(chatMessage.message){
-                    if(this.retrieveTextToShow().isNullOrEmpty().not()||this.reactions?.isNotEmpty()==true)
+                    if (
+                        this.retrieveTextToShow().isNullOrEmpty().not() ||
+                        this.type.isBotRes() ||
+                        this.reactions?.isNotEmpty()==true
+                    )
                         Column(modifier = Modifier.padding(12.dp)) {
                             if (chatMessage.isFlagged) {
                                 Text(
