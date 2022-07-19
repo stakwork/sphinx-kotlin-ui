@@ -49,6 +49,7 @@ import com.example.compose.place_holder_text
 import com.example.compose.primary_green
 import com.example.compose.sphinx_orange
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
@@ -68,7 +69,7 @@ actual fun Dashboard(
     val splitterState = rememberSplitPaneState()
     var chatViewModel: ChatViewModel? = null
 
-    when (DashboardState.screenState()) {
+    when (DashboardScreenState.screenState()) {
         DashboardScreenType.Unlocked -> {
 
             dashboardViewModel.screenInit()
@@ -349,6 +350,7 @@ fun SphinxChatDetailTopAppBar(
 fun SphinxChatDetailBottomAppBar(
     chatViewModel: ChatViewModel?
 ) {
+    val scope = rememberCoroutineScope()
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
@@ -364,7 +366,15 @@ fun SphinxChatDetailBottomAppBar(
             ) {
                 Spacer(modifier = Modifier.width(16.dp))
                 IconButton(
-                    onClick = { },
+                    onClick = { 
+                        scope.launch {
+                            ContentState.filePickerDialog.awaitResult()?.let { path ->
+                                if (chatViewModel != null) run {
+                                    chatViewModel.onMessageFileChanged(path)
+                                }
+                            }
+                        }
+                    },
                     modifier = Modifier.clip(CircleShape)
                         .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                         .size(30.dp),

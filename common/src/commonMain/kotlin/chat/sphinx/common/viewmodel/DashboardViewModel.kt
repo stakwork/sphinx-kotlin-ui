@@ -2,7 +2,7 @@ package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenType
-import chat.sphinx.common.state.DashboardState
+import chat.sphinx.common.state.DashboardScreenState
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.concepts.socket_io.SocketIOState
 import chat.sphinx.di.container.SphinxContainer
@@ -67,7 +67,8 @@ class DashboardViewModel: WindowFocusListener {
         }
 
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
-            DashboardState.screenState(DashboardScreenType.Unlocked)
+            DashboardScreenState.screenState(DashboardScreenType.Unlocked)
+            networkRefresh()
         }
 
         networkRefresh()

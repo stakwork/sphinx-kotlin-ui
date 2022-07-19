@@ -68,6 +68,110 @@ fun MessageListUI(
                         reverseLayout = true,
                         adapter = rememberScrollbarAdapter(scrollState = listState)
                     )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 45.dp)
+                    ) {
+                        chatViewModel.editMessageState.attachmentInfo.value?.let { attachmentInfo ->
+                            Text(
+                                attachmentInfo.filePath.name,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp)
+                            )
+                        }
+                        chatViewModel.editMessageState.replyToMessage.value?.let { replyToMessage ->
+                            AnimatedContainer(
+                                fromTopToBottom = 20, modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            ) {
+                                Box(
+
+                                ) {
+                                    Row(
+                                        modifier = Modifier.height(44.dp)
+                                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(4.dp)
+                                                .fillMaxHeight()
+                                                .background(Color.Green) // TODO: Reply to colour
+                                                .padding(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        // TODO: Image if available...
+                                        replyToMessage.message.messageMedia?.let { media ->
+                                            if (media.mediaType.isImage) {
+                                                Icon(
+                                                    Icons.Default.Image,
+                                                    contentDescription = "Image",
+                                                    tint = Color.Green,
+                                                    modifier = Modifier.size(88.dp).padding(4.dp)
+                                                )
+                                            } else {
+                                                // show
+                                                Icon(
+                                                    Icons.Default.AttachFile,
+                                                    contentDescription = "Attachment",
+                                                    tint = Color.Green,
+                                                    modifier = Modifier.size(88.dp).padding(4.dp)
+                                                )
+                                            }
+                                        }
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth(0.9f)
+                                                .padding(
+                                                    end = 40.dp
+                                                )
+                                        ) {
+                                            Text(
+                                                replyToMessage.replyToMessageSenderAliasPreview,
+                                                overflow = TextOverflow.Ellipsis,
+                                                color = MaterialTheme.colorScheme.tertiary
+                                            )
+                                            Text(
+                                                replyToMessage.replyToMessageTextPreview,
+                                                overflow = TextOverflow.Ellipsis,
+                                                color = place_holder_text, fontSize = 11.sp
+                                            )
+                                        }
+                                        Box(
+                                            modifier = Modifier.fillMaxSize().align(
+                                                Alignment.Bottom
+                                            )
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Close,
+                                                tint = MaterialTheme.colorScheme.tertiary,
+                                                contentDescription = "Close reply to message",
+                                                modifier = Modifier.size(20.dp)
+                                                    .align(Alignment.BottomCenter)
+//                                        .width(30.dp)
+                                                    .clickable(
+                                                        onClick = {
+                                                            chatViewModel.editMessageState.replyToMessage.value =
+                                                                null
+                                                        }
+                                                    ),
+                                            )
+                                        }
+                                    }
+
+
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
