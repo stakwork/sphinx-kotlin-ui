@@ -334,101 +334,8 @@ fun SphinxChatDetailBottomAppBar(
         elevation = 8.dp
     ) {
         Column {
-            chatViewModel?.editMessageState?.replyToMessage?.value?.let { replyToMessage ->
-                AnimatedContainer(
-                    fromTopToBottom = 20,
-                    modifier = Modifier
-                        .height(44.dp)
-                        .fillMaxWidth()
-                        .background(color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
-                ) {
-                    Box {
-                        Row(
-                            modifier = Modifier
-                                .height(44.dp)
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .width(4.dp)
-                                    .fillMaxHeight()
-                                    .background(
-                                        if (replyToMessage.replyToMessageColor != null) {
-                                            Color(replyToMessage.replyToMessageColor!!)
-                                        } else {
-                                            Color.Gray
-                                        }
-                                    )
-                                    .padding(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            // TODO: Image if available...
-                            replyToMessage.message.messageMedia?.let { media ->
-                                if (media.mediaType.isImage) {
-                                    Icon(
-                                        Icons.Default.Image,
-                                        contentDescription = "Image",
-                                        tint = Color.Green,
-                                        modifier = Modifier.size(88.dp).padding(4.dp)
-                                    )
-                                } else {
-                                    // show
-                                    Icon(
-                                        Icons.Default.AttachFile,
-                                        contentDescription = "Attachment",
-                                        tint = Color.Green,
-                                        modifier = Modifier.size(88.dp).padding(4.dp)
-                                    )
-                                }
-                            }
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth(0.9f)
-                                    .padding(
-                                        end = 40.dp
-                                    )
-                            ) {
-                                Text(
-                                    replyToMessage.replyToMessageSenderAliasPreview,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                                    fontFamily = Roboto,
-                                    fontWeight = FontWeight.W600,
-                                    fontSize = 13.sp,
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    replyToMessage.replyToMessageTextPreview,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = place_holder_text,
-                                    fontWeight = FontWeight.W400,
-                                    fontFamily = Roboto,
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Box(
-                                contentAlignment = Alignment.CenterEnd,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    Icons.Default.Close,
-                                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                                    contentDescription = "Close reply to message",
-                                    modifier = Modifier.size(20.dp)
-                                        .align(Alignment.CenterEnd)
-                                        .clickable(
-                                            onClick = {
-                                                chatViewModel?.editMessageState?.replyToMessage?.value = null
-                                            }
-                                        ),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+            ReplyingToMessageUI(chatViewModel)
+
             Row(
                 modifier = Modifier.fillMaxWidth().height(60.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -531,6 +438,107 @@ fun SphinxChatDetailBottomAppBar(
                     }
                 }
 
+            }
+        }
+    }
+}
+
+@Composable
+fun ReplyingToMessageUI(
+    chatViewModel: ChatViewModel?
+) {
+    chatViewModel?.editMessageState?.replyToMessage?.value?.let { replyToMessage ->
+        AnimatedContainer(
+            fromTopToBottom = 20,
+            modifier = Modifier
+                .height(44.dp)
+                .fillMaxWidth()
+                .background(color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
+        ) {
+            Box {
+                Row(
+                    modifier = Modifier
+                        .height(44.dp)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(4.dp)
+                            .fillMaxHeight()
+                            .background(
+                                if (replyToMessage.replyToMessageColor != null) {
+                                    Color(replyToMessage.replyToMessageColor!!)
+                                } else {
+                                    Color.Gray
+                                }
+                            )
+                            .padding(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    // TODO: Image if available...
+                    replyToMessage.message.messageMedia?.let { media ->
+                        if (media.mediaType.isImage) {
+                            Icon(
+                                Icons.Default.Image,
+                                contentDescription = "Image",
+                                tint = Color.Green,
+                                modifier = Modifier.size(88.dp).padding(4.dp)
+                            )
+                        } else {
+                            // show
+                            Icon(
+                                Icons.Default.AttachFile,
+                                contentDescription = "Attachment",
+                                tint = Color.Green,
+                                modifier = Modifier.size(88.dp).padding(4.dp)
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .padding(
+                                end = 40.dp
+                            )
+                    ) {
+                        Text(
+                            replyToMessage.replyToMessageSenderAliasPreview,
+                            overflow = TextOverflow.Ellipsis,
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                            fontFamily = Roboto,
+                            fontWeight = FontWeight.W600,
+                            fontSize = 13.sp,
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            replyToMessage.replyToMessageTextPreview,
+                            overflow = TextOverflow.Ellipsis,
+                            color = place_holder_text,
+                            fontWeight = FontWeight.W400,
+                            fontFamily = Roboto,
+                            fontSize = 11.sp
+                        )
+                    }
+                    Box(
+                        contentAlignment = Alignment.CenterEnd,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                            contentDescription = "Close reply to message",
+                            modifier = Modifier.size(20.dp)
+                                .align(Alignment.CenterEnd)
+                                .clickable(
+                                    onClick = {
+                                        chatViewModel?.editMessageState?.replyToMessage?.value = null
+                                    }
+                                ),
+                        )
+                    }
+                }
             }
         }
     }
