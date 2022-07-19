@@ -77,12 +77,35 @@ fun MessageListUI(
                             .padding(bottom = 45.dp)
                     ) {
                         chatViewModel.editMessageState.attachmentInfo.value?.let { attachmentInfo ->
-                            Text(
-                                attachmentInfo.filePath.name,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp)
-                            )
+                            Row {
+
+                                Box(
+                                    modifier = Modifier.weight(1f).padding(20.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        tint = MaterialTheme.colorScheme.tertiary,
+                                        contentDescription = "Remove attachment",
+                                        modifier = Modifier.size(20.dp)
+                                            .align(Alignment.Center)
+//                                        .width(30.dp)
+                                            .clickable(
+                                                onClick = {
+                                                    chatViewModel.editMessageState.attachmentInfo.value =
+                                                        null
+                                                }
+                                            ),
+                                    )
+                                }
+
+                                Text(
+                                    attachmentInfo.filePath.name,
+                                    modifier = Modifier
+                                        .weight(5f)
+                                        .padding(20.dp)
+                                )
+                            }
+
                         }
                         chatViewModel.editMessageState.replyToMessage.value?.let { replyToMessage ->
                             AnimatedContainer(

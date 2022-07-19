@@ -28,9 +28,9 @@ fun Path.deduceMediaType(): MediaType {
       contentType.lowercase().startsWith("image") -> MediaType.Image(contentType)
       contentType.lowercase().startsWith("audio") -> MediaType.Audio(contentType)
       contentType.lowercase().startsWith("video") -> MediaType.Video(contentType)
-      else -> MediaType.Unknown("text/unknow")
+      else -> MediaType.Unknown("text/unknown")
     }
-  } catch (e: IOException) {
+  } catch (e: Exception) {
     MediaType.Unknown("text/unknown")
   }
 }
