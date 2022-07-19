@@ -82,7 +82,6 @@ fun ChatCard(
                 with(chatMessage.message){
                     if (
                         this.retrieveTextToShow().isNullOrEmpty().not() ||
-                        this.type.isBotRes() ||
                         this.reactions?.isNotEmpty()==true
                     )
                         Column(modifier = Modifier.padding(12.dp)) {
@@ -135,39 +134,6 @@ fun ChatCard(
                                         //                                }
                                     }
 
-                                }
-                                if (chatMessage.message.type == MessageType.BotRes) {
-                                    chatMessage.message.messageContentDecrypted?.let {
-                                        val annotatedString = it.value.toAnnotatedString()
-                                        ClickableText(
-                                            annotatedString,
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.W400,
-                                                color = MaterialTheme.colorScheme.tertiary,
-                                                fontSize = 13.sp
-                                            ),
-                                            onClick = { offset ->
-                                                annotatedString.getStringAnnotations(
-                                                    start = offset,
-                                                    end = offset
-                                                ).firstOrNull()?.let { annotation ->
-                                                    when (annotation.tag) {
-                                                        LinkTag.WebURL.name -> {
-                                                            uriHandler.openUri(annotation.item)
-                                                        }
-                                                        LinkTag.BitcoinAddress.name -> {
-                                                            val bitcoinUriScheme =
-                                                                if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
-                                                            val bitcoinURI =
-                                                                "$bitcoinUriScheme${annotation.item}"
-
-                                                            uriHandler.openUri(bitcoinURI)
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        )
-                                    }
                                 }
                             }
                             if (chatMessage.showFailedContainer) {
