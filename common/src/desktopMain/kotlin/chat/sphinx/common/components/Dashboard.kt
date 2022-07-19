@@ -334,7 +334,7 @@ fun SphinxChatDetailBottomAppBar(
         elevation = 8.dp
     ) {
         Column {
-            ReplyingToMessageUI(chatViewModel)
+            MessageReplyingBar(chatViewModel)
 
             Row(
                 modifier = Modifier.fillMaxWidth().height(60.dp),
@@ -444,7 +444,7 @@ fun SphinxChatDetailBottomAppBar(
 }
 
 @Composable
-fun ReplyingToMessageUI(
+fun MessageReplyingBar(
     chatViewModel: ChatViewModel?
 ) {
     chatViewModel?.editMessageState?.replyToMessage?.value?.let { replyToMessage ->
@@ -474,34 +474,29 @@ fun ReplyingToMessageUI(
                                     Color.Gray
                                 }
                             )
-                            .padding(16.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    // TODO: Image if available...
                     replyToMessage.message.messageMedia?.let { media ->
                         if (media.mediaType.isImage) {
                             Icon(
                                 Icons.Default.Image,
                                 contentDescription = "Image",
-                                tint = Color.Green,
-                                modifier = Modifier.size(88.dp).padding(4.dp)
+                                tint = Color.Gray,
+                                modifier = Modifier.height(88.dp).padding(start = 10.dp)
                             )
                         } else {
                             // show
                             Icon(
                                 Icons.Default.AttachFile,
                                 contentDescription = "Attachment",
-                                tint = Color.Green,
-                                modifier = Modifier.size(88.dp).padding(4.dp)
+                                tint = Color.Gray,
+                                modifier = Modifier.height(88.dp).padding(start = 10.dp)
                             )
                         }
                     }
                     Column(
                         modifier = Modifier
                             .fillMaxWidth(0.9f)
-                            .padding(
-                                end = 40.dp
-                            )
+                            .padding(start = 10.dp, end = 40.dp)
                     ) {
                         Text(
                             replyToMessage.replyToMessageSenderAliasPreview,
@@ -510,6 +505,7 @@ fun ReplyingToMessageUI(
                             fontFamily = Roboto,
                             fontWeight = FontWeight.W600,
                             fontSize = 13.sp,
+                            maxLines = 1,
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
@@ -518,7 +514,8 @@ fun ReplyingToMessageUI(
                             color = place_holder_text,
                             fontWeight = FontWeight.W400,
                             fontFamily = Roboto,
-                            fontSize = 11.sp
+                            fontSize = 11.sp,
+                            maxLines = 1,
                         )
                     }
                     Box(

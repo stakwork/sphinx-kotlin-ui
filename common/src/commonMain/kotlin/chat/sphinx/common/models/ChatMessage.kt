@@ -34,6 +34,9 @@ class ChatMessage(
             message.sender == chat.contactIds.firstOrNull() -> {
                 accountOwner().alias?.value ?: ""
             }
+            contact != null -> {
+                contact.alias?.value ?: ""
+            }
             else -> {
                 message.senderAlias?.value ?: ""
             }

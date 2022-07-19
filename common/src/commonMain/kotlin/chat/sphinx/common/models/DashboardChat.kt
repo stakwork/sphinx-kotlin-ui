@@ -89,7 +89,6 @@ sealed class DashboardChat {
                 message == null -> {
                     ""
                 }
-
                 message.status.isDeleted() -> {
                     "Message deleted"
                 }
@@ -220,6 +219,9 @@ sealed class DashboardChat {
                             "${getMessageSender(message,false)} $sentString $element"
                         }
                     } ?: ""
+                }
+                message.type.isBotRes() -> {
+                    "Bot response received"
                 }
                 else -> {
                     ""
