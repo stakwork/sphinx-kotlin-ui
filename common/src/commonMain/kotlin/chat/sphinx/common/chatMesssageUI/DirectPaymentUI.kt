@@ -78,7 +78,6 @@ fun DirectPaymentUI(
                         }
                     }
                     if (chatMessage.isReceived && chatMessage.chat.isTribe().not()) {
-
                         Image(
                             painter = imageResource(Res.drawable.ic_received),
                             contentDescription = "Sent Icon",
@@ -139,7 +138,7 @@ fun DirectPaymentUI(
                             chatMessage.message,
                             messageMedia = it,
                             chatViewModel = chatViewModel,
-                            modifier = Modifier.height(150.dp)
+                            modifier = Modifier.wrapContentHeight().fillMaxWidth()
                         )
 
                     }
