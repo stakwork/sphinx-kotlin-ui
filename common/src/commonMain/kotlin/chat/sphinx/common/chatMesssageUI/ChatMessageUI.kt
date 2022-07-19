@@ -65,15 +65,6 @@ fun ChatMessageUI(
                                 ChatOptionMenu(chatMessage, chatViewModel)
                             }
                             when {
-                                chatMessage.message.isSphinxCallLink -> {
-                                    JitsiAudioVideoCall(chatMessage)
-                                }
-                                chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true -> {
-                                    Text("Valid Key")
-                                }
-                                chatMessage.message.type == MessageType.DirectPayment -> {
-                                    DirectPaymentUI(chatMessage, chatViewModel)
-                                }
                                 chatMessage.isDeleted -> {
                                     Column(modifier = Modifier.padding(horizontal = if(chatMessage.isDeleted&&chatMessage.isReceived) 42.dp else 4.dp)) {
                                         Spacer(modifier = Modifier.height(4.dp))
@@ -88,35 +79,32 @@ fun ChatMessageUI(
                                         )
                                     }
                                 }
+                                chatMessage.message.isSphinxCallLink -> {
+                                    JitsiAudioVideoCall(chatMessage)
+                                }
+                                chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true -> {
+                                    Text("Valid Key")
+                                }
+                                chatMessage.message.type == MessageType.DirectPayment -> {
+                                    DirectPaymentUI(chatMessage, chatViewModel)
+                                }
                                 else -> {
-                                    if (chatMessage.message.isMediaAttachmentAvailable) {
-                                        Box(
-                                            contentAlignment = if (chatMessage.isSent) Alignment.CenterEnd else Alignment.CenterStart,
-                                            modifier = Modifier.fillMaxWidth(0.5f)
-                                        ) {
-                                            ChatCard(
-                                                chatMessage,
-                                                chatViewModel
-                                            )
+                                    ChatCard(
+                                        chatMessage,
+                                        chatViewModel,
+                                        modifier = if (chatMessage.message.isMediaAttachmentAvailable) {
+                                            Modifier.fillMaxWidth(0.5f)
+                                        } else {
+                                            Modifier.weight(1f, fill = false)
                                         }
-                                    } else {
-                                        ChatCard(
-                                            chatMessage,
-                                            chatViewModel
-                                        )
-                                    }
+                                    )
                                 }
                             }
                             if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
-                                Box(modifier = Modifier.height(50.dp).width(50.dp)) {
-                                    ChatOptionMenu(chatMessage, chatViewModel)
-                                }
+                                ChatOptionMenu(chatMessage, chatViewModel)
                             }
-
                         }
-
                     }
-
                 }
             }
         }
