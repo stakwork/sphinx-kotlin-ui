@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -438,7 +439,66 @@ fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: ContactViewModel
                 size = getPreferredWindowSize(357, 493)
             )
         ) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(38.dp),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "PUBLIC KEY",
+                        fontFamily = SphinxFonts.montserratFamily,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
 
+                    Spacer(Modifier.height(24.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(end = 24.dp)
+                    ) {
+                        IconButton(onClick = {})
+                        {
+                            Icon(
+                                Icons.Default.TouchApp,
+                                contentDescription = "QR Code",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                        Text(
+                            text = "CLICK TO COPY",
+                            fontFamily = SphinxFonts.montserratFamily,
+                            color = Color.Gray,
+                            fontSize = 10.sp
+                        )
+                    }
+
+                    Spacer(Modifier.height(18.dp))
+
+                    PhotoUrlImage(
+                        photoUrl = null,
+                        modifier = Modifier.height(220.dp).width(220.dp)
+                    )
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Text(
+                        text = "025030fa04074591766d5e74376dad0fec6be69cd5a44f97d5373aae22df2dc18d",
+                        maxLines = 1,
+                        fontFamily = SphinxFonts.montserratFamily,
+                        color = Color.Gray,
+                        fontSize = 11.sp
+                    )
+                }
+            }
         }
     }
 }
