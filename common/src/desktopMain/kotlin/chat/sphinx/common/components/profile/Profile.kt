@@ -1,8 +1,7 @@
 package chat.sphinx.common.components.profile
 
 import CommonButton
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,9 +28,13 @@ import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.CommonTextField
 import chat.sphinx.common.components.PhotoUrlImage
+import chat.sphinx.common.components.pin.ChangePin
+import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.components.pin.PINScreenType
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.state.ContentState.windowState
 import chat.sphinx.common.state.ScreenType
+import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
@@ -50,7 +53,7 @@ actual fun Profile() {
             position = WindowPosition.Aligned(Alignment.Center),
             size = getPreferredWindowSize(300, 800)
         ),
-        undecorated = true,
+//        undecorated = true,
         icon = sphinxIcon,
     ) {
         AppTheme {
@@ -59,7 +62,8 @@ actual fun Profile() {
                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
             ) {
 
-                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background).verticalScroll(
+                    rememberScrollState())) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
@@ -157,7 +161,7 @@ fun tabs() {
                             modifier = Modifier.fillMaxWidth(0.6f)
                         )
                         Spacer(modifier = Modifier.weight(1f))
-                        Switch(true, onCheckedChange = {})
+                        Switch(true, onCheckedChange = {},colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.secondary, checkedThumbColor = MaterialTheme.colorScheme.secondary),)
                     }                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
@@ -176,8 +180,24 @@ fun tabs() {
                         )
                     )
                     Spacer(modifier = Modifier.height(24.dp))
+                    val lockedDashboardViewModel = remember { LockedDashboardViewModel() }
+                    val onTapBackUpKeys= remember { mutableStateOf(false) }
                     CommonButton("Backup your keys", textButtonSize = 12.sp) {
 
+                        onTapBackUpKeys.value=true
+                    }
+                    if(onTapBackUpKeys.value)
+                    Window(
+                        onCloseRequest = ::onTapClose,
+                        title = "Sphinx",
+                        state = WindowState(
+                            position = WindowPosition.Aligned(Alignment.Center),
+                            size = getPreferredWindowSize(400, 500)
+                        ),
+//        undecorated = true,
+//                        icon = sphinxIcon,
+                    ){
+                        PINScreen(lockedDashboardViewModel, pinScreenType = PINScreenType.ENTER_PIN_TO_BACK_UP_YOUR_KEYS)
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                     CommonButton(
@@ -218,12 +238,18 @@ fun tabs() {
                     )
                 }
                 Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
+                val openChangePinScreen= remember { mutableStateOf(false) }
                 Text(
                     "Chane Pin",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)
-                        .padding(24.dp), fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary
+                        .padding(24.dp).clickable {
+                            openChangePinScreen.value=true
+                        }, fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary
                 )
+                if(openChangePinScreen.value){
+                    ChangePin()
+                }
                 Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
                 Text(
                     "Chane Privacy Pin",
