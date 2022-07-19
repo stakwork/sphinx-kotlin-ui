@@ -3,15 +3,13 @@ package chat.sphinx.common.chatMesssageUI
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.Card
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +25,10 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.message.MessageType
+import chat.sphinx.wrapper.message.media.isAudio
 import chat.sphinx.wrapper.message.media.isImage
+import chat.sphinx.wrapper.message.media.isPdf
+import chat.sphinx.wrapper.message.media.isUnknown
 import chat.sphinx.wrapper.message.retrieveTextToShow
 
 @Composable
@@ -49,12 +50,12 @@ fun ChatCard(
         Box(modifier = Modifier) {
             Column {
                 chatMessage.message.replyMessage?.let { _ ->
-                    SenderNameWithTime(chatMessage, color,chatViewModel)
+                    SenderNameWithTime(chatMessage, color, chatViewModel)
                     Spacer(modifier = Modifier.height(4.dp))
                     Divider()
                 }
                 chatMessage.message.messageMedia?.let { media ->
-                    Column(modifier = Modifier.padding( if(media.mediaType.isImage) 0.dp else 12.dp)) {
+                    Column(modifier = Modifier.padding(if (media.mediaType.isImage) 0.dp else 12.dp)) {
                         if (media.mediaType.isImage) {
                             chatMessage.message.messageMedia?.let { messageMedia ->
                                 MessageMediaImage(
@@ -63,6 +64,62 @@ fun ChatCard(
                                     chatViewModel = chatViewModel,
                                     modifier = Modifier.wrapContentHeight().fillMaxWidth()
                                 )
+                            }
+                        } else if (media.mediaType.isUnknown || media.mediaType.isPdf) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    if (media.mediaType.isPdf) Icons.Default.PictureAsPdf else Icons.Default.FileCopy,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column() {
+                                    Text(
+                                        "File Name.pdf",
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                        fontSize = 12.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        "1 Pages",
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    Icons.Default.Download,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                        } else if (media.mediaType.isAudio) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.PlayArrow,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                                Box(modifier = Modifier.fillMaxWidth(0.8f)) {
+                                    val slideValue= remember { mutableStateOf(0.1f) }
+                                    Slider(
+                                        value = slideValue.value,
+                                        onValueChange = {
+                                                        slideValue.value=it
+                                        },
+                                        colors = SliderDefaults.colors(
+                                            activeTrackColor = MaterialTheme.colorScheme.onBackground,
+                                            thumbColor = MaterialTheme.colorScheme.secondary
+                                        )
+                                    )
+                                }
+                                Text("0:06", color = MaterialTheme.colorScheme.tertiary)
                             }
                         } else {
                             Icon(
@@ -74,8 +131,10 @@ fun ChatCard(
                         }
                     }
                 }
-                with(chatMessage.message){
-                    if(this.retrieveTextToShow().isNullOrEmpty().not()||this.reactions?.isNotEmpty()==true)
+                with(chatMessage.message) {
+                    if (this.retrieveTextToShow().isNullOrEmpty()
+                            .not() || this.reactions?.isNotEmpty() == true
+                    )
                         Column(modifier = Modifier.padding(12.dp)) {
                             if (chatMessage.isFlagged) {
                                 Text(
