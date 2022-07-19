@@ -10,6 +10,7 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
 import kotlinx.coroutines.Job
@@ -43,6 +44,10 @@ class DashboardViewModel {
 
     fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
         _contactWindowStateFlow.value = Pair(open, screen)
+    }
+
+    fun editContact(contactId: ContactId){
+        toggleContactWindow(true, ContactScreenState.EditContact(contactId))
     }
 
     private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {

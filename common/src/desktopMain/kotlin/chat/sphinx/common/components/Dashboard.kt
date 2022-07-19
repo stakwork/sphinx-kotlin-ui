@@ -182,6 +182,7 @@ fun SphinxChatDetailTopAppBar(
     }
 
     val chatName = dashboardChat?.chatName ?: "Unknown Chat"
+    val contactId = chatViewModel?.editMessageState?.contactId
 
     TopAppBar(
         modifier = Modifier.height(60.dp),
