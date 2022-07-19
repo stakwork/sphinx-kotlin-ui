@@ -74,9 +74,9 @@ fun ChatRow(
                 }
             )
 
-        }.height(62.dp).padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp),
+        }.height(62.dp).background(androidx.compose.material3.MaterialTheme.colorScheme.background)
     ) {
-        Row {
+        Row(modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp)) {
             PhotoUrlImage(
                 dashboardChat.photoUrl,
                 modifier = Modifier

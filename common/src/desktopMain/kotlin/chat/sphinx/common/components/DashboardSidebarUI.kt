@@ -36,7 +36,7 @@ import com.example.compose.primary_red
 fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
     Box(
         Modifier
-            .background(androidx.compose.material3.MaterialTheme.colorScheme.background)
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
             .fillMaxSize()
     ) {
         Column {
@@ -132,7 +132,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                         trailingIcon = null,
                         modifier = Modifier
                             .background(
-                                Color(0xFf151e27),
+                                androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
                                 RoundedCornerShape(percent = 50)
                             )
                             .padding(4.dp)

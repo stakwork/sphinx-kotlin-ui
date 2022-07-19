@@ -103,7 +103,7 @@ actual fun Dashboard(
                         SphinxChatDetailBottomAppBar(chatViewModel)
                     }) {
                         Column(
-                            modifier = Modifier.fillMaxSize().background(color = androidx.compose.material3.MaterialTheme.colorScheme.background),
+                            modifier = Modifier.fillMaxSize().background(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
