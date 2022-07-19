@@ -183,9 +183,9 @@ fun ChatCard(
                                 }
 
                             }
-                            if (chatMessage.message.reactions?.isNotEmpty() == true) {
+                            chatMessage.boostsLayoutState?.let {
                                 Spacer(modifier = Modifier.height(8.dp))
-                                BoostedFooter(chatMessage)
+                                BoostedFooter(it)
                             }
                         }
                 }
