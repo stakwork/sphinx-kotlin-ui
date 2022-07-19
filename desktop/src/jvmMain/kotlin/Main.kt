@@ -59,8 +59,8 @@ fun main() = application {
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
             Profile()
-            Window(
-                onCloseRequest = ::exitApplication,
+//            Window(
+//                onCloseRequest = ::exitApplication,
 //                title = "Sphinx",
 //                state = WindowState(
 //                    position = WindowPosition.Aligned(Alignment.Center),

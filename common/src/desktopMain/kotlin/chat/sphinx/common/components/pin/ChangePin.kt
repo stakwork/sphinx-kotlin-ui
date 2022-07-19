@@ -32,7 +32,7 @@ import chat.sphinx.utils.onKeyUp
 @Composable
 actual fun ChangePin() {
     Window(
-        onCloseRequest = ::::exitApplication,
+        onCloseRequest = ::onTapClose,
         title = "Sphinx",
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
