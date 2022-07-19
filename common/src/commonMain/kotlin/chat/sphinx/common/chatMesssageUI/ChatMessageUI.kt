@@ -82,9 +82,6 @@ fun ChatMessageUI(
                                 chatMessage.message.isSphinxCallLink -> {
                                     JitsiAudioVideoCall(chatMessage)
                                 }
-                                chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true -> {
-                                    Text("Valid Key")
-                                }
                                 chatMessage.message.type == MessageType.DirectPayment -> {
                                     DirectPaymentUI(chatMessage, chatViewModel)
                                 }
