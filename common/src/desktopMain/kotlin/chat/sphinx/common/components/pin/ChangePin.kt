@@ -38,8 +38,6 @@ actual fun ChangePin() {
             position = WindowPosition.Aligned(Alignment.Center),
             size = getPreferredWindowSize(400, 500)
         ),
-//        undecorated = true,
-//        icon = sphinxIcon,
     ) {
         Column(
             modifier = Modifier.background(color = MaterialTheme.colorScheme.background)
@@ -114,20 +112,7 @@ private fun TextField(value: String) {
             )
         ),
         value = "",
-//        modifier = Modifier
-//            .weight(weight = 1F)
-//            .onKeyEvent(onKeyUp(Key.Enter, pinHandlingViewModel::onSubmitPIN))
-//            .onKeyEvent(
-//                onKeyUp(
-//                    Key.NumPadEnter,
-//                    pinHandlingViewModel::onSubmitPIN
-//                )
-//            ),
-//        visualTransformation = PasswordVisualTransformation(),
         onValueChange = {
-//            if (!pinHandlingViewModel.pinState.loading) {
-//                pinHandlingViewModel.onPINTextChanged(it)
-//            }
         },
         singleLine = true
     )
