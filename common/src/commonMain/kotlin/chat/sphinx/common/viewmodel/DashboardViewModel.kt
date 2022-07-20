@@ -62,13 +62,7 @@ class DashboardViewModel: WindowFocusListener {
             networkRefresh()
         }
 
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            socketIOManager.socketIOStateFlow.collect { state ->
-                if (state is SocketIOState.Uninitialized) {
-                    socketIOManager.connect()
-                }
-            }
-        }
+        connectSocket()
 
         viewModelScope.launch(dispatchers.mainImmediate) {
             repositoryDashboard.getAccountBalanceStateFlow().collect {
@@ -77,8 +71,22 @@ class DashboardViewModel: WindowFocusListener {
         }
     }
 
+    private fun connectSocket() {
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            socketIOManager.socketIOStateFlow.collect { state ->
+                if (state is SocketIOState.Uninitialized ||
+                    state is SocketIOState.Initialized.Disconnected ||
+                    state is SocketIOState.Initialized.Closed) {
+
+                    socketIOManager.connect()
+                }
+            }
+        }
+    }
+
     override fun windowGainedFocus(p0: WindowEvent?) {
         if (DashboardState.screenState() == DashboardScreenType.Unlocked) {
+            connectSocket()
             networkRefresh()
         }
     }
