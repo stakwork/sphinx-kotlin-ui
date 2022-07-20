@@ -3,6 +3,7 @@ package chat.sphinx.common.viewmodel.contact
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
 import chat.sphinx.common.state.ContactState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse

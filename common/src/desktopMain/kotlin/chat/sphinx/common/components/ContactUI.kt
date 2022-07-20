@@ -28,8 +28,8 @@ import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.common.viewmodel.contact.ContactViewModel
 import chat.sphinx.common.viewmodel.contact.EditContactViewModel
+import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
@@ -48,7 +48,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             onCloseRequest = {
                 dashboardViewModel.toggleContactWindow(false, null)
             },
-            title = "Add Contact",
+            title = "",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(420, 580)
@@ -307,7 +307,7 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean, conta
                         ) {
                             Icon(
                                 Icons.Default.QrCodeScanner,
-                                contentDescription = "QR Code",
+                                contentDescription = "",
                                 tint = Color.White,
                                 modifier = Modifier.size(30.dp),
                             )
@@ -423,19 +423,19 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean, conta
         dashboardViewModel.toggleContactWindow(false, null)
     }
     if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
-        QRDetail(dashboardViewModel,viewModel)
+        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.contactState.lightningNodePubKey))
     }
 }
 
 @Composable
-fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: ContactViewModel){
+fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: QRCodeViewModel){
     var isOpen by remember { mutableStateOf(true) }
     if (isOpen) {
         Window(
             onCloseRequest = {
                 dashboardViewModel.toggleQRWindow(false)
             },
-            title = "Scan QR",
+            title = "",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(357, 493)
@@ -493,7 +493,7 @@ fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: ContactViewModel
                     Spacer(Modifier.height(24.dp))
 
                     Text(
-                        text = "025030fa04074591766d5e74376dad0fec6be69cd5a44f97d5373aae22df2dc18d",
+                        text = viewModel.contactQRCodeState.pubKey,
                         maxLines = 1,
                         fontFamily = SphinxFonts.montserratFamily,
                         color = Color.Gray,
