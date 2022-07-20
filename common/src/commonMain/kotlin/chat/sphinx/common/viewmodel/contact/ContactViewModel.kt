@@ -18,6 +18,7 @@ abstract class ContactViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
+    protected var saveContactJob: Job? = null
     abstract var contactState: ContactState
 
     abstract fun saveContact()

@@ -34,6 +34,7 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
+import chat.sphinx.wrapper.dashboard.ContactId
 import com.example.compose.badge_red
 import com.example.compose.light_divider
 
@@ -55,10 +56,10 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             )
         ) {
             when (screenState) {
-                ContactScreenState.Choose -> AddContact(dashboardViewModel)
-                ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-                ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, false)
-                ContactScreenState.EditContact -> ContactForm(dashboardViewModel, true)
+                is ContactScreenState.Choose -> AddContact(dashboardViewModel)
+                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+                is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, false, null)
+                is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, true, screenState.contactId)
             }
         }
     }
@@ -218,15 +219,13 @@ fun AddNewContactOnSphinx() {
 }
 
 @Composable
-fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean) {
+fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean, contactId: ContactId?) {
 
     val viewModel = if(editMode){
-        remember { EditContactViewModel() }
+        remember { EditContactViewModel(contactId) }
     } else {
         remember { AddContactViewModel() }
     }
-
-    var qrDetailWindow by remember { mutableStateOf(false) }
 
 
 //    var switchState = remember {
@@ -249,7 +248,8 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     PhotoUrlImage(
-                        photoUrl = null, modifier = Modifier.size(96.dp).clip(CircleShape)
+                        photoUrl = viewModel.contactState.photoUrl,
+                        modifier = Modifier.size(96.dp).clip(CircleShape)
                     )
                 }
             }
@@ -294,6 +294,7 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean) {
                         onValueChange = {
                             viewModel.onAddressTextChanged(it)
                         },
+                        enabled = !editMode,
                         modifier = Modifier.weight(1f).padding(top = 12.dp),
                         textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                         singleLine = true,
@@ -331,6 +332,7 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean) {
                     onValueChange = {
                         viewModel.onRouteHintTextChanged(it)
                     },
+                    enabled = !editMode,
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,

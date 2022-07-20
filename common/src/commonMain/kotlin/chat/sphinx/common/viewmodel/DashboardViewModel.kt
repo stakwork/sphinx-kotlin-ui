@@ -46,10 +46,6 @@ class DashboardViewModel {
         _contactWindowStateFlow.value = Pair(open, screen)
     }
 
-    fun editContact(contactId: ContactId){
-        toggleContactWindow(true, ContactScreenState.EditContact(contactId))
-    }
-
     private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {
         MutableStateFlow(false)
     }

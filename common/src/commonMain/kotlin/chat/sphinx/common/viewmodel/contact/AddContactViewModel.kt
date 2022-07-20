@@ -21,8 +21,6 @@ class AddContactViewModel() : ContactViewModel() {
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-    private var saveContactJob: Job? = null
-
 
     override var contactState: ContactState by mutableStateOf(initialState())
 

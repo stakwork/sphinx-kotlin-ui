@@ -192,7 +192,7 @@ fun SphinxChatDetailTopAppBar(
                     Text(
                         text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
                         modifier = Modifier.clickable {
-                            dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact)
+                            dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact(contactId))
                         }
                     )
 
