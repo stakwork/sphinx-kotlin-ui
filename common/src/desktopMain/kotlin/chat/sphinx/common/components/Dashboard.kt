@@ -19,10 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,7 +41,6 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import chat.sphinx.common.components.notifications.DesktopSphinxNotificationManager.notifications
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
@@ -46,7 +48,6 @@ import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.util.getInitials
 import com.example.compose.place_holder_text
 import com.example.compose.primary_green
-import com.example.compose.primary_red
 import com.example.compose.sphinx_orange
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
@@ -61,14 +62,16 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
 actual fun Dashboard(
-    sphinxState: SphinxState
+    sphinxState: SphinxState,
+    dashboardViewModel: DashboardViewModel
 ) {
     val splitterState = rememberSplitPaneState()
     var chatViewModel: ChatViewModel? = null
 
     when (DashboardState.screenState()) {
         DashboardScreenType.Unlocked -> {
-            val dashboardViewModel = remember { DashboardViewModel() }
+
+            dashboardViewModel.screenInit()
 
             HorizontalSplitPane(
                 splitPaneState = splitterState
@@ -331,7 +334,7 @@ fun SphinxChatDetailBottomAppBar(
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-        elevation = 8.dp
+        elevation = 8.dp,
     ) {
         Column {
             MessageReplyingBar(chatViewModel)
