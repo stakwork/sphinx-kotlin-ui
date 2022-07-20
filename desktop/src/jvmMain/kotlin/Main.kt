@@ -1,4 +1,3 @@
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -10,18 +9,17 @@ import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.LandingScreen
-import chat.sphinx.common.components.landing.ConnectingDialog
+import chat.sphinx.common.components.notifications.DesktopSphinxMouseMoveListener
+import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.state.AppState
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.state.ScreenType
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
-import chat.sphinx.utils.DesktopSphinxNotificationManager
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
-
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -34,9 +32,9 @@ fun main() = application {
     val sphinxStore = remember { SphinxStore() }
     val sphinxState = sphinxStore.state
 
-    val rememberSphinxTray = remember {
-        DesktopSphinxNotificationManager.sphinxTrayState
-    }
+//    val rememberSphinxTray = remember {
+//        DesktopSphinxNotificationManager.sphinxTrayState
+//    }
 //    Tray(
 //        state = rememberSphinxTray,
 //        icon = sphinxIcon,
@@ -81,6 +79,7 @@ fun main() = application {
             }
         }
         ScreenType.DashboardScreen -> {
+
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Sphinx",
@@ -88,7 +87,6 @@ fun main() = application {
                     position = WindowPosition.Aligned(Alignment.Center),
                     size = getPreferredWindowSize(1200, 800)
                 ),
-
                 icon = sphinxIcon
             ) {
                 MenuBar {
@@ -103,6 +101,9 @@ fun main() = application {
                     }
                 }
                 AppTheme(useDarkTheme = true) {
+                    DesktopSphinxNotifications(
+                        icon = sphinxIcon
+                    )
                     Dashboard(sphinxState)
                 }
             }

@@ -17,7 +17,9 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.platform.imageResource
+import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.message.Message
+import chat.sphinx.wrapper.thumbnailUrl
 import com.example.compose.badge_red
 import com.example.compose.primary_green
 
@@ -54,7 +56,7 @@ fun BoostedFooter(
                 ) {
                     if (index < 3)
                         PhotoUrlImage(
-                            photoUrl = it.senderPic,
+                            photoUrl = it.senderPic?.thumbnailUrl,
                             modifier = Modifier
                                 .size(25.dp)
                                 .clip(CircleShape),
