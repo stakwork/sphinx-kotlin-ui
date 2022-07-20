@@ -286,24 +286,24 @@ fun SphinxChatDetailBottomAppBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
+            val clickState= remember { mutableStateOf(false) }
             Spacer(modifier = Modifier.width(16.dp))
             IconButton(
-                onClick = { },
+                onClick = {
+                          clickState.value=true
+                },
                 modifier = Modifier.clip(CircleShape)
                     .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                     .size(30.dp),
             ) {
                 var currentSelectedItem by remember { mutableStateOf<ChatActionMenuEnums?>(null) }
-                ChatActionMenu{
+                if(clickState.value)
+                ChatActionMenu(clickState.value){
                   currentSelectedItem=it
                 }
                 when(currentSelectedItem){
-                    ChatActionMenuEnums.LIBRARY -> TODO()
-                    ChatActionMenuEnums.GIF -> TODO()
-                    ChatActionMenuEnums.FILE -> TODO()
-                    ChatActionMenuEnums.PAID_MESSAGE -> TODO()
-                    ChatActionMenuEnums.REQUEST -> TODO()
-                    ChatActionMenuEnums.SEND -> SendSatsDialog {  }
+                    ChatActionMenuEnums.REQUEST -> SendReceiveSatsDialog(sendRequest = false) {  }
+                    ChatActionMenuEnums.SEND -> SendReceiveSatsDialog {  }
                     else ->{}
                 }
             }

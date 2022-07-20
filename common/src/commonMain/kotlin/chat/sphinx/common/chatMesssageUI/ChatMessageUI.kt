@@ -1,6 +1,7 @@
 package chat.sphinx.common.chatMesssageUI
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +19,7 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.lightning.isValidLightningNodePubKey
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
+import chat.sphinx.common.components.SendSatsPopUp
 
 @Composable
 fun ChatMessageUI(
@@ -28,6 +30,9 @@ fun ChatMessageUI(
     print("rebuilding ${chatMessage.message.id}")
 
     Column(modifier = Modifier.padding(8.dp)) {
+        val openSatsDialog= remember { mutableStateOf(true) }
+        if(openSatsDialog.value)
+            SendSatsPopUp()
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start
@@ -43,7 +48,13 @@ fun ChatMessageUI(
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
                 if (chatMessage.isReceived && chatMessage.groupActionLabelText.isNullOrEmpty() && chatMessage.isDeleted.not()) {
-                    ImageProfile(chatMessage, color)
+
+                    Box(modifier = Modifier.clickable {
+                        openSatsDialog.value=true
+                    }){
+
+                        ImageProfile(chatMessage, color)
+                    }
                     Spacer(modifier = Modifier.width(12.dp))
                 }
                 Column(

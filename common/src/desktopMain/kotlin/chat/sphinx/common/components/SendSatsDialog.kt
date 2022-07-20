@@ -30,19 +30,21 @@ import chat.sphinx.wrapper.PhotoUrl
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-actual fun SendSatsDialog(onConfirm: () -> Unit) {
+actual fun SendReceiveSatsDialog(sendRequest:Boolean, onConfirm: () -> Unit) {
     val text = remember { mutableStateOf("") }
     val sats = remember { mutableStateOf("") }
     val hasConfirmed = remember { mutableStateOf(false) }
-    Dialog(
-        onCloseRequest = {},
-        undecorated = true, transparent = true, resizable = true, focusable = true, enabled = true
-    ) {
-        Card(
-            elevation = 8.dp,
-            backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.fillMaxSize()
-        ) {
+    AlertDialog(
+        onDismissRequest = {
+//            openDialog.value = false
+        },
+        dialogProvider =UndecoratedWindowAlertDialogProvider ,
+
+        modifier = Modifier.padding(0.dp).height(500.dp).width(400.dp),
+        contentColor = MaterialTheme.colorScheme.surface,
+
+        backgroundColor = MaterialTheme.colorScheme.surface,
+        text = {
             Column(
                 modifier = Modifier
                     .padding(8.dp).fillMaxSize().verticalScroll(rememberScrollState()).width(800.dp)
@@ -60,7 +62,7 @@ actual fun SendSatsDialog(onConfirm: () -> Unit) {
                             )
                         }
                         Spacer(modifier = Modifier.weight(1f))
-                        Text("SEND PAYMENT", color = MaterialTheme.colorScheme.tertiary)
+                        Text(if(sendRequest)"SEND PAYMENT" else "REQUEST PAYMENT", color = MaterialTheme.colorScheme.tertiary)
                         Spacer(modifier = Modifier.weight(1f))
                     }
                     PhotoUrlImage(PhotoUrl("https://picsum.photos/200/300"),modifier = Modifier
@@ -134,8 +136,8 @@ actual fun SendSatsDialog(onConfirm: () -> Unit) {
 
                 }
             }
-        }
-    }
+        }, title = {}, confirmButton = {}
+    )
 //        if (!hasConfirmed.value) {
 //            Dialog(
 //                visible = true,

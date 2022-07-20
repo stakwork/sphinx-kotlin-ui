@@ -16,71 +16,72 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogState
 import chat.sphinx.common.Res
 import chat.sphinx.platform.imageResource
 import com.example.compose.sphinx_action_menu
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-actual fun ChatActionMenu(callBack: (ChatActionMenuEnums) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    Icon(
-        Icons.Default.Add,
-        contentDescription = "content description",
-        tint = MaterialTheme.colorScheme.tertiary,
-        modifier = Modifier.size(21.dp).clickable {
-            expanded=true
+actual fun ChatActionMenu(showDialog:Boolean,callBack: (ChatActionMenuEnums) -> Unit) {
+    if(showDialog)
+    AlertDialog(
+        onDismissRequest = {
+//            openDialog.value = false
+        },
+        dialogProvider =UndecoratedWindowAlertDialogProvider ,
+
+        modifier = Modifier.padding(0.dp).height(160.dp).width(250.dp),
+        contentColor = MaterialTheme.colorScheme.surface,
+
+        backgroundColor = MaterialTheme.colorScheme.surface,
+        text = {
+            Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+//                Spacer(modifier = Modifier.height(24.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 12.dp, end = 12.dp).clickable {
+                    callBack(ChatActionMenuEnums.REQUEST)
+                }) {
+                    Image(
+                        painter = imageResource(Res.drawable.ic_request),
+                        contentDescription = "receive",
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text("Receive", color = MaterialTheme.colorScheme.tertiary)
+                }
+                Divider()
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(12.dp).clickable {
+                    callBack(ChatActionMenuEnums.SEND)
+                }) {
+                    Image(
+                        painter = imageResource(Res.drawable.ic_send),
+                        contentDescription = "Sphinx Logo",
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text("Send", color = MaterialTheme.colorScheme.tertiary)
+                }
+                Divider()
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+
+                    Text("Cancel", color = MaterialTheme.colorScheme.error)
+
+                }
+
+            }
+        },
+        title = {
+
+        },
+        buttons = {
         }
     )
-
-    if(expanded){
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer).clip(
-                RoundedCornerShape(16.dp)).width(200.dp).fillMaxWidth()
-        ) {
-            ActionMenuItem("Library", {
-                Image(
-                    painter = imageResource(Res.drawable.ic_media_library),
-                    contentDescription = "Sphinx Logo",
-                    modifier = Modifier.size(15.dp),
-                )
-            }
-            ){}
-            ActionMenuItem("GIF",{
-                Icon(Icons.Default.Gif,contentDescription = null, tint = sphinx_action_menu,modifier = Modifier.height(15.dp).width(20.dp).scale(1.5f))
-            }){}
-            ActionMenuItem("File",{
-                Icon(Icons.Default.AttachFile,contentDescription = null,tint = sphinx_action_menu, modifier = Modifier.size(15.dp))
-            }){}
-            ActionMenuItem("Paid Message",{
-                Image(
-                    painter = imageResource(Res.drawable.ic_paid_message),
-                    contentDescription = "Sphinx Logo",
-                    modifier = Modifier.size(15.dp)
-                )
-            }){}
-            ActionMenuItem("Request",{
-                Image(
-                    painter = imageResource(Res.drawable.ic_request),
-                    contentDescription = "Sphinx Logo",
-                    modifier = Modifier.size(10.dp)
-                )
-            }){}
-            ActionMenuItem("Send",{
-                Image(
-                    painter = imageResource(Res.drawable.ic_send),
-                    contentDescription = "Sphinx Logo",
-                    modifier = Modifier.size(10.dp)
-                )
-            }){
-                expanded = false
-                callBack(ChatActionMenuEnums.SEND)
-            }
-        }
-    }
 }
 
 @Composable
@@ -93,4 +94,13 @@ fun ActionMenuItem(text:String,icon:@Composable ()->Unit,callback:()->Unit,) {
             Text(text, color = MaterialTheme.colorScheme.tertiary, fontSize = 10.sp)
         }
     }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun CustomDialogWithResultExample(
+    onDismiss: () -> Unit,
+) {
+
+
 }

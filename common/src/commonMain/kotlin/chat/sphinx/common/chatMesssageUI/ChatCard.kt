@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +37,7 @@ fun ChatCard(
     chatViewModel: ChatViewModel
 ) {
     val uriHandler = LocalUriHandler.current
+  
     val receiverCorner =
         RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
     val senderCorner =
@@ -186,7 +188,6 @@ fun ChatCard(
                       Spacer(modifier = Modifier.height(4.dp))
                       BoostedFooter(chatMessage)
                   }
-                  // TODO: Attachment not supported... but give download functionality...
               }
           }
         }
