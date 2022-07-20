@@ -388,9 +388,15 @@ fun SphinxChatDetailBottomAppBar(
                         color = Color.White,
                         fontSize = 16.sp,
                         placeholderText = "Message...",
+                        singleLine = false,
+                        maxLines = 4,
                         onValueChange = {
                             if (chatViewModel != null) run {
-                                chatViewModel.onMessageTextChanged(it)
+                                if (it.isNotEmpty() && it.last() == '\n') {
+                                    chatViewModel.onSendMessage()
+                                } else {
+                                    chatViewModel.onMessageTextChanged(it)
+                                }
                             }
                         },
                         value = chatViewModel?.editMessageState?.messageText?.value ?: ""

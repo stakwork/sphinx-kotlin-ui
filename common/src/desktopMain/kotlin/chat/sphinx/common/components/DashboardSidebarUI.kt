@@ -4,6 +4,7 @@ package chat.sphinx.common.components
 import Roboto
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -17,9 +18,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -184,20 +190,25 @@ fun CustomTextField(
     value: String,
     color: Color? = null,
     onValueChange: (String) -> Unit,
-    fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
+    fontSize: TextUnit = MaterialTheme.typography.body2.fontSize,
+    maxLines: Int = 1,
+    singleLine: Boolean = true,
+    enabled: Boolean = true
 ) {
     BasicTextField(
-        modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
-        singleLine = true,
-        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+        modifier = modifier.fillMaxWidth(),
+        enabled = enabled,
         textStyle = LocalTextStyle.current.copy(
             fontFamily = Roboto,
             fontWeight = FontWeight.Normal,
             fontSize = 14.sp,
             color = color ?: place_holder_text
         ),
+        singleLine = singleLine,
+        maxLines = maxLines,
+        cursorBrush = SolidColor(MaterialTheme.colors.primary),
         decorationBox = { innerTextField ->
             Row(
                 modifier,
@@ -217,6 +228,6 @@ fun CustomTextField(
                 }
                 if (trailingIcon != null) trailingIcon()
             }
-        }
+        },
     )
 }
