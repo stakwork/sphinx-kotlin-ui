@@ -39,7 +39,10 @@ fun ChatListUI() {
                     contentPadding = PaddingValues(top = 1.dp)
                 ) {
                     items(chatListData.dashboardChats) { dashboardChat ->
-                        ChatRow(dashboardChat)
+                        ChatRow(
+                            dashboardChat,
+                            chatListViewModel
+                        )
                     }
                 }
 

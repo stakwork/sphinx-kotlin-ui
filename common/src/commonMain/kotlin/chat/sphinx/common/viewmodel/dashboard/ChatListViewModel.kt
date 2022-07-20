@@ -337,6 +337,35 @@ class ChatListViewModel {
         }
     }
 
+    fun payForInvite(invite: Invite) {
+//        getAccountBalance().firstOrNull()?.let { balance ->
+//            if (balance.balance.value < (invite.price?.value ?: 0)) {
+//                submitSideEffect(
+//                    ChatListSideEffect.Notify(app.getString(R.string.pay_invite_balance_too_low))
+//                )
+//                return
+//            }
+//        }
+
+//        submitSideEffect(
+//            ChatListSideEffect.AlertConfirmPayInvite(invite.price?.value ?: 0) {
+                scope.launch(dispatchers.mainImmediate) {
+                    repositoryDashboard.payForInvite(invite)
+                }
+//            }
+//        )
+    }
+
+    fun deleteInvite(invite: Invite) {
+//        submitSideEffect(
+//            ChatListSideEffect.AlertConfirmDeleteInvite() {
+                scope.launch(dispatchers.mainImmediate) {
+                    repositoryDashboard.deleteInvite(invite)
+                }
+//            }
+//        )
+    }
+
     @ColorInt
     suspend fun getColorFor(
         contact: Contact?,
