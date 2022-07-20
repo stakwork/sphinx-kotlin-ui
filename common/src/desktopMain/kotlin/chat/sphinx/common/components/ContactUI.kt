@@ -2,6 +2,7 @@ package chat.sphinx.common.components.landing
 
 import CommonButton
 import Roboto
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -14,8 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +41,7 @@ import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.dashboard.ContactId
 import com.example.compose.badge_red
 import com.example.compose.light_divider
+import io.ktor.utils.io.*
 
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
@@ -428,7 +433,12 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean, conta
 }
 
 @Composable
-fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: QRCodeViewModel){
+fun QRDetail(
+    dashboardViewModel: DashboardViewModel,
+    viewModel: QRCodeViewModel
+){
+    val density = LocalDensity.current
+
     var isOpen by remember { mutableStateOf(true) }
     if (isOpen) {
         Window(
@@ -438,8 +448,9 @@ fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: QRCodeViewModel)
             title = "",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
-                size = getPreferredWindowSize(357, 493)
-            )
+                size = getPreferredWindowSize(357, 550)
+            ),
+            resizable = false
         ) {
             Box(
                 modifier = Modifier.fillMaxSize()
@@ -448,7 +459,7 @@ fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: QRCodeViewModel)
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(38.dp),
+                        .padding(top = 38.dp),
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -485,19 +496,38 @@ fun QRDetail(dashboardViewModel: DashboardViewModel ,viewModel: QRCodeViewModel)
 
                     Spacer(Modifier.height(18.dp))
 
-                    PhotoUrlImage(
-                        photoUrl = null,
-                        modifier = Modifier.height(220.dp).width(220.dp)
-                    )
+                    viewModel.contactQRCodeState.bitMatrix?.let { bitMatrix ->
+                        val width = bitMatrix.width
+                        val height = bitMatrix.height
+
+                        val widthDp = with(density) { width.toDp() }
+                        val heightDp = with(density) { height.toDp() }
+
+                        Box(modifier = Modifier.height(heightDp).width(widthDp)) {
+                            Canvas(modifier = Modifier.height(heightDp).width(widthDp)) {
+                                for (x in 0 until width) {
+                                    for (y in 0 until height) {
+                                        drawRect(
+                                            brush = SolidColor(if (bitMatrix.get(x, y)) Color.Black else Color.White),
+                                            topLeft = Offset(x.toFloat(), y.toFloat()),
+                                            size = Size(1f, 1f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     Spacer(Modifier.height(24.dp))
 
                     Text(
+                        modifier = Modifier.fillMaxWidth().padding(20.dp),
                         text = viewModel.contactQRCodeState.pubKey,
-                        maxLines = 1,
+                        maxLines = 2,
                         fontFamily = SphinxFonts.montserratFamily,
                         color = Color.Gray,
-                        fontSize = 11.sp
+                        fontSize = 11.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
