@@ -77,7 +77,7 @@ fun ChatMessageUI(
                                     JitsiAudioVideoCall(chatMessage)
                                 }
                                 chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true -> {
-                                    Text("Valid Key")
+                                    NewContactPreview(chatMessage)
                                 }
                                 chatMessage.message.type == MessageType.DirectPayment -> {
                                     DirectPaymentUI(chatMessage, chatViewModel)
