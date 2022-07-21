@@ -14,7 +14,7 @@ class ChatMessage(
     val contact: Contact?,
     val message: Message,
     val color: Color,
-    accountOwner: () -> Contact,
+    val accountOwner: () -> Contact,
     val boostMessage: () -> Unit,
     val flagMessage: () -> Unit,
     val deleteMessage: () -> Unit,
