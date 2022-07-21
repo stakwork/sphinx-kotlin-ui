@@ -47,23 +47,26 @@ import com.example.compose.light_divider
 
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
-    Window(
-        onCloseRequest = {
-            dashboardViewModel.toggleContactWindow(false, null)
-        },
-        title = "",
-        state = WindowState(
-            position = WindowPosition.Aligned(Alignment.Center),
-            size = getPreferredWindowSize(420, 620)
-        )
-    ) {
-        var screenState: ContactScreenState? = dashboardViewModel.contactWindowStateFlow.value.second
+    var isOpen by remember { mutableStateOf(true) }
+    if (isOpen) {
+        Window(
+            onCloseRequest = {
+                dashboardViewModel.toggleContactWindow(false, null)
+            },
+            title = "",
+            state = WindowState(
+                position = WindowPosition.Aligned(Alignment.Center),
+                size = getPreferredWindowSize(420, 620)
+            )
+        ) {
+            var screenState: ContactScreenState? = dashboardViewModel.contactWindowStateFlow.value.second
 
-        when (screenState) {
-            is ContactScreenState.Choose -> AddContact(dashboardViewModel)
-            is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-            is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null)
-            is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
+            when (screenState) {
+                is ContactScreenState.Choose -> AddContact(dashboardViewModel)
+                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+                is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null)
+                is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
+            }
         }
     }
 }
@@ -227,12 +230,15 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
     val editMode = (contactId != null)
 
     val viewModel = if (editMode) {
-        remember { EditContactViewModel(contactId) }
+        remember { EditContactViewModel() }
     } else {
         remember { AddContactViewModel() }
     }
 
-    (viewModel as? EditContactViewModel)?.loadContact(contactId)
+    if ((viewModel as? EditContactViewModel)?.contactId != contactId) {
+        (viewModel as? EditContactViewModel)?.loadContact(contactId)
+        dashboardViewModel.toggleQRWindow(false)
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -288,6 +294,7 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
                     color = Color.Gray,
                 )
                 Row(
+                    modifier = Modifier.height(32.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -297,7 +304,7 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
                             viewModel.onAddressTextChanged(it)
                         },
                         enabled = !editMode,
-                        modifier = Modifier.weight(1f).padding(top = 12.dp),
+                        modifier = Modifier.weight(1f).padding(top = 8.dp),
                         textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                         singleLine = true,
                         cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
@@ -436,7 +443,6 @@ fun QRDetail(
 ){
     val density = LocalDensity.current
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
-
 
     var isOpen by remember { mutableStateOf(true) }
     if (isOpen) {

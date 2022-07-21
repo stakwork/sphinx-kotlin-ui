@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-class EditContactViewModel(private var contactId: ContactId?) : ContactViewModel() {
+class EditContactViewModel() : ContactViewModel() {
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
@@ -32,12 +32,22 @@ class EditContactViewModel(private var contactId: ContactId?) : ContactViewModel
         contactState = contactState.update()
     }
 
+    var contactId: ContactId? = null
+
+    init {
+        loadContact()
+    }
+
     fun loadContact(contactId: ContactId?) {
         this.contactId = contactId
 
+        loadContact()
+    }
+
+    private fun loadContact() {
         scope.launch(dispatchers.mainImmediate) {
-            if (contactId != null) {
-                contactRepository.getContactById(contactId).firstOrNull()?.let { contact ->
+            contactId?.let {
+                contactRepository.getContactById(it).firstOrNull()?.let { contact ->
 //                    contact.nodePubKey?.let { lightningNodePubKey ->
 
 //                        val subscription = subscriptionRepository.getActiveSubscriptionByContactId(
