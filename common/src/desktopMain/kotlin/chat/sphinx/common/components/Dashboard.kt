@@ -41,6 +41,8 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.wrapper.chat.ChatMuted
+import chat.sphinx.wrapper.chat.isMuted
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
@@ -84,6 +86,7 @@ actual fun Dashboard(
                     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
                     val dashboardChat = (chatDetailState as? ChatDetailData.SelectedChatDetailData)?.dashboardChat
 
+                    chatViewModel?.readMessages()
                     chatViewModel?.cancelMessagesJob()
                     chatViewModel = when (chatDetailState) {
                         is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
@@ -309,14 +312,23 @@ fun SphinxChatDetailTopAppBar(
             )
         },
         actions = {
-            IconButton(onClick = {}) {
-                Icon(
-                    Icons.Default.Notifications,
-                    contentDescription = "Mute/Unmute",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                )
+            IconButton(onClick = {
+                chatViewModel?.toggleChatMuted()
+            }) {
+                chatViewModel?.let {
+                    val chat by chatViewModel.chatSharedFlow.collectAsState(
+                        (dashboardChat as? DashboardChat.Active)?.chat
+                    )
+                    Icon(
+                        if (chat?.isMuted() == true) Icons.Default.NotificationsOff else Icons.Default.Notifications,
+                        contentDescription = "Mute/Unmute",
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                    )
+                }
             }
-            IconButton(onClick = {}) {
+            IconButton(onClick = {
+                chatViewModel?.sendCallInvite(false)
+            }) {
                 Icon(
                     Icons.Default.Phone,
                     contentDescription = "Call",
@@ -405,7 +417,7 @@ fun SphinxChatDetailBottomAppBar(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Spacer(modifier = Modifier.width(10.dp))
-                        PriceChip()
+                        PriceChip(chatViewModel)
                         Spacer(modifier = Modifier.width(10.dp))
                         IconButton(
                             onClick = {
@@ -440,7 +452,6 @@ fun SphinxChatDetailBottomAppBar(
                         }
                     }
                 }
-
             }
         }
     }

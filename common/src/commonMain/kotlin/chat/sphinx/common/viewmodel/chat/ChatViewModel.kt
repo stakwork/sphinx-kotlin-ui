@@ -1,12 +1,11 @@
 package chat.sphinx.common.viewmodel.chat
 
-import androidx.compose.ui.graphics.Color
-import androidx.paging.PagingData
-import androidx.paging.map
+import androidx.compose.ui.platform.LocalUriHandler
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
+import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -18,19 +17,22 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
-import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.lightning.Sat
+import chat.sphinx.wrapper.lightning.toSat
 import chat.sphinx.wrapper.message.*
+import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.MessageMedia
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import utils.getRandomColorRes
+import java.io.IOException
 import java.io.InputStream
+import okio.Path
 
 suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
     url: String,
@@ -61,6 +63,7 @@ abstract class ChatViewModel(
     val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
     val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
+    private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
 
     val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
 
@@ -234,13 +237,13 @@ abstract class ChatViewModel(
         }
     }
 
-    fun flagMessage(chat: Chat, message: Message) {
+    private fun flagMessage(chat: Chat, message: Message) {
         scope.launch(dispatchers.mainImmediate) {
             messageRepository.flagMessage(message, chat)
         }
     }
 
-    fun deleteMessage(message: Message) {
+    private fun deleteMessage(message: Message) {
         scope.launch(dispatchers.mainImmediate) {
             when (messageRepository.deleteMessage(message)) {
                 is Response.Error -> {
@@ -251,7 +254,7 @@ abstract class ChatViewModel(
         }
     }
 
-    private fun readMessages() {
+    fun readMessages() {
         chatId?.let {
             messageRepository.readMessages(chatId)
         }
@@ -262,7 +265,7 @@ abstract class ChatViewModel(
         return "#212121"
     }
 
-    suspend fun getOwner(): Contact {
+    private suspend fun getOwner(): Contact {
         return contactRepository.accountOwner.value.let { contact ->
             if (contact != null) {
                 contact
@@ -310,31 +313,92 @@ abstract class ChatViewModel(
         editMessageState.messageText.value = text
     }
 
+    fun onPriceTextChanged(text: String) {
+        try {
+            editMessageState.price.value = text.toLong()
+        } catch (e: NumberFormatException) {
+            editMessageState.price.value = null
+        }
+    }
+
     fun isReplying(): Boolean {
         return editMessageState.replyToMessage.value != null
     }
 
     fun onSendMessage() {
-        val sendMessage = SendMessage.Builder()
-            .setChatId(editMessageState.chatId)
-            .setContactId(editMessageState.contactId)
-            .setText(editMessageState.messageText.value)
-            .also { builder ->
-                editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
-                    builder.setReplyUUID(replyUUID)
+        scope.launch(dispatchers.mainImmediate) {
+            val sendMessageBuilder = SendMessage.Builder()
+                .setChatId(editMessageState.chatId)
+                .setContactId(editMessageState.contactId)
+                .setText(editMessageState.messageText.value)
+                .setMessagePrice(editMessageState.price.value?.toSat())
+                .also { builder ->
+                    editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
+                        builder.setReplyUUID(replyUUID)
+                    }
                 }
-            }
-            .build()
 
-        if (sendMessage.second != null) {
-            // TODO: update user on error...
-        } else if (sendMessage.first != null) {
-            sendMessage.first?.let { message ->
-                messageRepository.sendMessage(message)
-                setEditMessageState {
-                    initialState()
+            if (
+                editMessageState.price?.value ?: 0 > 0 &&
+                editMessageState.messageText.value.isNotEmpty()
+            ) {
+                //Paid text message
+                createPaidMessageFile(editMessageState.messageText.value)?.let { path ->
+                    sendMessageBuilder.setAttachmentInfo(
+                        AttachmentInfo(
+                            filePath = path,
+                            mediaType = MediaType.Text,
+                            isLocalFile = true,
+                        )
+                    )
                 }
             }
+
+            val sendMessage = sendMessageBuilder.build()
+
+            if (sendMessage.second != null) {
+                // TODO: update user on error...
+            } else if (sendMessage.first != null) {
+                sendMessage.first?.let { message ->
+                    messageRepository.sendMessage(message)
+                    setEditMessageState {
+                        initialState()
+                    }
+                }
+            }
+        }
+    }
+
+    fun sendCallInvite(audioOnly: Boolean) {
+        SphinxCallLink.newCallInvite(null, audioOnly)?.value?.let { newCallLink ->
+            editMessageState.messageText.value = newCallLink
+            editMessageState.price.value = null
+
+            onSendMessage()
+        }
+    }
+
+    private var toggleChatMutedJob: Job? = null
+    fun toggleChatMuted() {
+        if (toggleChatMutedJob?.isActive == true) {
+            return
+        }
+        chatSharedFlow.replayCache.firstOrNull()?.let { chat ->
+            toggleChatMutedJob = scope.launch(dispatchers.mainImmediate) {
+                chatRepository.toggleChatMuted(chat)
+            }
+        }
+    }
+
+    private suspend fun createPaidMessageFile(text: String?): Path? {
+        if (text.isNullOrEmpty()) {
+            return null
+        }
+        return try {
+            val output = mediaCacheHandler.createPaidTextFile("txt")
+            mediaCacheHandler.copyTo(text.byteInputStream(), output)
+        } catch (e: IOException) {
+            null
         }
     }
 

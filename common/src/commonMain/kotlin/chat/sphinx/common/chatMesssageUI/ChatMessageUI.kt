@@ -99,7 +99,7 @@ fun ChatMessageUI(
                                     }
                                 }
                                 chatMessage.message.isSphinxCallLink -> {
-                                    JitsiAudioVideoCall(chatMessage)
+                                    JitsiAudioVideoCall(chatMessage, chatViewModel)
                                 }
                                 chatMessage.message.type == MessageType.DirectPayment -> {
                                     DirectPaymentUI(chatMessage, chatViewModel)
