@@ -1,11 +1,16 @@
 package chat.sphinx.common.components.profile
 
 import CommonButton
+import Roboto
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -13,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,7 +47,7 @@ actual fun Profile() {
         title = "Sphinx",
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
-            size = getPreferredWindowSize(300, 800)
+            size = getPreferredWindowSize(420, 800)
         ),
 
         icon = sphinxIcon,
@@ -223,19 +230,101 @@ fun AdvanceTab() {
 
 @Composable
 fun BasicTab() {
-    Column(modifier = Modifier) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            CommonTextField("User Name")
-            Spacer(modifier = Modifier.height(4.dp))
-            CommonTextField("Address")
-            Spacer(modifier = Modifier.height(4.dp))
-            CommonTextField("Route Hint")
-            Row(modifier = Modifier.padding(12.dp)) {
+    var text by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
+            Column {
                 Text(
-                    "Share my profile photos with my contacts",
-                    color = MaterialTheme.colorScheme.tertiary,
+                    text = "User Name",
                     fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth(0.6f)
+                    fontFamily = Roboto,
+                    color = Color.Gray,
+                )
+                BasicTextField(
+                    value = "Thomas",
+                    onValueChange = {
+                        text = it
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
+                )
+                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Column {
+                Text(
+                    text = "Address",
+                    fontSize = 12.sp,
+                    fontFamily = Roboto,
+                    color = Color.Gray,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.height(28.dp)
+                ) {
+                    BasicTextField(
+                        value = "027dbce35947a3dafc826de411d97990e9b16e78512d1a9e70e87dcc788c2631db",
+                        onValueChange = {
+                            text = it
+                        },
+                        modifier = Modifier.weight(1f).padding(top = 8.dp),
+                        textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+                        singleLine = true,
+                        cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                    )
+                    IconButton(onClick = {}
+                    ) {
+                        Icon(
+                            Icons.Default.QrCodeScanner,
+                            contentDescription = "",
+                            tint = Color.White,
+                            modifier = Modifier.size(30.dp),
+                        )
+                    }
+                }
+                Divider(modifier = Modifier.padding(top = 4.dp), color = Color.Gray)
+
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Column {
+                Text(
+                    text = "Route Hint",
+                    fontSize = 12.sp,
+                    fontFamily = Roboto,
+                    color = Color.Gray,
+                )
+                BasicTextField(
+                    value = "027dbce35947a3dafc826de411d97990e9b16e78512d1a9e70e87dcc788c2631db",
+                    onValueChange = {
+                        text = it
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
+                )
+                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Share my profile photo \nwith contacts",
+                    fontSize = 16.sp,
+                    fontFamily = Roboto,
+                    color = Color.LightGray,
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
@@ -247,15 +336,37 @@ fun BasicTab() {
                     ),
                 )
             }
+            Spacer(modifier = Modifier.height(28.dp))
         }
-        Spacer(modifier = Modifier.height(4.dp))
+
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
-        Box(modifier = Modifier.padding(12.dp), contentAlignment = Alignment.Center) {
-            CommonTextField("Meeting Server")
+
+        Column(modifier = Modifier.padding(top = 28.dp, start = 32.dp, end = 32.dp)) {
+            Column {
+                Text(
+                    text = "Meeting Server",
+                    fontSize = 12.sp,
+                    fontFamily = Roboto,
+                    color = Color.Gray,
+                )
+                BasicTextField(
+                    value = "https://jitsi.sphinx.chat",
+                    onValueChange = {
+                        text = it
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
+                )
+                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
+            }
         }
-        Spacer(modifier = Modifier.height(4.dp))
+
+        Spacer(modifier = Modifier.height(28.dp))
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
-        Column(modifier = Modifier.padding(12.dp)) {
+
+        Column(modifier = Modifier.padding(top = 12.dp, start = 40.dp, end = 40.dp, bottom = 24.dp)) {
             Text(
                 "Sync more devices",
                 color = MaterialTheme.colorScheme.tertiary,
@@ -264,10 +375,10 @@ fun BasicTab() {
                     Alignment.CenterHorizontally
                 )
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             val lockedDashboardViewModel = remember { LockedDashboardViewModel() }
             val onTapBackUpKeys = remember { mutableStateOf(false) }
-            CommonButton("Backup your keys", textButtonSize = 12.sp) {
+            CommonButton("Backup your key", endIcon = Icons.Default.VpnKey) {
 
                 onTapBackUpKeys.value = true
             }
@@ -289,7 +400,6 @@ fun BasicTab() {
             CommonButton(
                 "Save Changes",
                 customColor = MaterialTheme.colorScheme.secondaryContainer,
-                textButtonSize = 12.sp
             ) {
 
             }
