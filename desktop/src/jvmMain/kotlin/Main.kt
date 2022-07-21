@@ -12,7 +12,7 @@ import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.components.LandingScreen
 import chat.sphinx.common.components.chat.FilePickerDialog
-import chat.sphinx.common.components.notifications.DesktopSphinxMouseMoveListener
+import chat.sphinx.common.components.chat.FilePickerMode
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.state.AppState
 import chat.sphinx.common.state.ContentState
@@ -115,14 +115,25 @@ fun main() = application {
                         window,
                         icon = sphinxIcon
                     )
-                    if (ContentState.filePickerDialog.isAwaiting) {
+                    if (ContentState.sendFilePickerDialog.isAwaiting) {
                         FilePickerDialog(
                             window,
                             "Sphinx File Picker",
-                            isLoad = true,
+                            FilePickerMode.LOAD_FILE,
                             onResult = {
-                                ContentState.filePickerDialog.onResult(it)
+                                ContentState.sendFilePickerDialog.onResult(it)
                             }
+                        )
+                    }
+                    if (ContentState.saveFilePickerDialog.isAwaiting) {
+                        FilePickerDialog(
+                            window,
+                            "Sphinx Save File",
+                            FilePickerMode.SAVE_FILE,
+                            onResult = {
+                                ContentState.saveFilePickerDialog.onResult(it)
+                            },
+                            desiredFileName = ContentState.saveFilePickerDialog.desiredFileName
                         )
                     }
                     Dashboard(sphinxState, dashboardViewModel)

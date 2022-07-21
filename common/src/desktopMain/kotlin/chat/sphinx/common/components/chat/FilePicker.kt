@@ -1,26 +1,34 @@
 package chat.sphinx.common.components.chat
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.window.AwtWindow
-import kotlinx.coroutines.CompletableDeferred
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import java.awt.FileDialog
 import java.io.File
 
+enum class FilePickerMode{
+    LOAD_FILE,
+    SAVE_FILE
+}
 @Composable
 fun FilePickerDialog(
     window: ComposeWindow,
     title: String,
-    isLoad: Boolean,
-    onResult: (result: Path?) -> Unit
+    filePickerMode: FilePickerMode,
+    onResult: (result: Path?) -> Unit,
+    desiredFileName: String? = null,
 ) = AwtWindow(
     create = {
-        object : FileDialog(window, "Choose a file", if (isLoad) LOAD else SAVE) {
+        object : FileDialog(
+            window,
+            "Choose a file",
+            when(filePickerMode) {
+                FilePickerMode.LOAD_FILE -> LOAD
+                FilePickerMode.SAVE_FILE -> SAVE
+            }
+        ) {
             override fun setVisible(value: Boolean) {
                 super.setVisible(value)
                 if (value) {
@@ -33,6 +41,9 @@ fun FilePickerDialog(
             }
         }.apply {
             this.title = title
+            if (desiredFileName != null) {
+                this.file = desiredFileName
+            }
         }
     },
     dispose = FileDialog::dispose

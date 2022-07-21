@@ -9,11 +9,14 @@ class FilePickerDialogState<T> {
     private var onResult: CompletableDeferred<T>? by mutableStateOf(null)
 
     val isAwaiting get() = onResult != null
+    var desiredFileName: String? = null
 
-    suspend fun awaitResult(): T {
+    suspend fun awaitResult(desiredFilename: String? = null): T {
+        this.desiredFileName = desiredFilename
         onResult = CompletableDeferred()
         val result = onResult!!.await()
         onResult = null
+        this.desiredFileName = null
         return result
     }
 

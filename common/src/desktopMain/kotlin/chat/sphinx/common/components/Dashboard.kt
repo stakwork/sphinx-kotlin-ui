@@ -368,7 +368,7 @@ fun SphinxChatDetailBottomAppBar(
                 IconButton(
                     onClick = { 
                         scope.launch {
-                            ContentState.filePickerDialog.awaitResult()?.let { path ->
+                            ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
                                 if (chatViewModel != null) run {
                                     chatViewModel.onMessageFileChanged(path)
                                 }

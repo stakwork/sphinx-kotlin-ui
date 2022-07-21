@@ -1,19 +1,10 @@
 package chat.sphinx.common.state
 
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.window.DialogState
-import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.platform.getFileSystem
 import chat.sphinx.utils.platform.getSphinxDirectory
-import chat.sphinx.wrapper.chat.Chat
-import chat.sphinx.wrapper.dashboard.ChatId
-import io.matthewnelson.kmp.tor.manager.common.event.TorManagerEvent
-import java.awt.image.BufferedImage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import okio.Path
 
@@ -21,7 +12,9 @@ object ContentState {
     lateinit var windowState: WindowState
     val scope = CoroutineScope(Dispatchers.IO)
 
-    val filePickerDialog = FilePickerDialogState<Path?>()
+    val sendFilePickerDialog = FilePickerDialogState<Path?>()
+    val saveFilePickerDialog = FilePickerDialogState<Path?>()
+
 
     fun applyContent(state: WindowState): ContentState {
         windowState = state

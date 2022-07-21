@@ -39,7 +39,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Files
 import java.util.*
-import javax.print.attribute.standard.Media
 
 suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
     url: String,
