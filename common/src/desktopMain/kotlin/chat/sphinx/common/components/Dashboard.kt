@@ -317,10 +317,6 @@ fun SphinxChatDetailTopAppBar(
             }
         }
     )
-    val addContactWindowState = dashboardViewModel?.contactWindowStateFlow?.value?.first
-    if (addContactWindowState == true){
-        AddContactWindow(dashboardViewModel)
-    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

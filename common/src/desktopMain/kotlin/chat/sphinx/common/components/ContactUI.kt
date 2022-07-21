@@ -47,27 +47,23 @@ import com.example.compose.light_divider
 
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
-    var isOpen by remember { mutableStateOf(true) }
-    var screenState: ContactScreenState? = dashboardViewModel.contactWindowStateFlow.value.second
+    Window(
+        onCloseRequest = {
+            dashboardViewModel.toggleContactWindow(false, null)
+        },
+        title = "",
+        state = WindowState(
+            position = WindowPosition.Aligned(Alignment.Center),
+            size = getPreferredWindowSize(420, 620)
+        )
+    ) {
+        var screenState: ContactScreenState? = dashboardViewModel.contactWindowStateFlow.value.second
 
-    if (isOpen) {
-        Window(
-            onCloseRequest = {
-                dashboardViewModel.toggleContactWindow(false, null)
-            },
-            title = "",
-            state = WindowState(
-                position = WindowPosition.Aligned(Alignment.Center),
-                size = getPreferredWindowSize(420, 580)
-
-            )
-        ) {
-            when (screenState) {
-                is ContactScreenState.Choose -> AddContact(dashboardViewModel)
-                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-                is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, false, null)
-                is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, true, screenState.contactId)
-            }
+        when (screenState) {
+            is ContactScreenState.Choose -> AddContact(dashboardViewModel)
+            is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+            is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null)
+            is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
         }
     }
 }
@@ -226,18 +222,17 @@ fun AddNewContactOnSphinx() {
 }
 
 @Composable
-fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean, contactId: ContactId?) {
+fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
 
-    val viewModel = if(editMode){
+    val editMode = (contactId != null)
+
+    val viewModel = if (editMode) {
         remember { EditContactViewModel(contactId) }
     } else {
         remember { AddContactViewModel() }
     }
 
-
-//    var switchState = remember {
-//        mutableStateOf(false)
-//    }
+    (viewModel as? EditContactViewModel)?.loadContact(contactId)
 
     Box(
         modifier = Modifier.fillMaxSize()

@@ -18,12 +18,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-class EditContactViewModel(private val contactId: ContactId?) : ContactViewModel() {
+class EditContactViewModel(private var contactId: ContactId?) : ContactViewModel() {
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-    private val subscriptionRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).subscriptionRepository
-
+//    private val subscriptionRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).subscriptionRepository
 
     override var contactState: ContactState by mutableStateOf(initialState())
 
@@ -32,19 +31,18 @@ class EditContactViewModel(private val contactId: ContactId?) : ContactViewModel
     private inline fun setContactState(update: ContactState.() -> ContactState) {
         contactState = contactState.update()
     }
-    init {
-        initContactDetails()
-    }
-    private fun initContactDetails() {
+
+    fun loadContact(contactId: ContactId?) {
+        this.contactId = contactId
 
         scope.launch(dispatchers.mainImmediate) {
             if (contactId != null) {
                 contactRepository.getContactById(contactId).firstOrNull()?.let { contact ->
-                    contact.nodePubKey?.let { lightningNodePubKey ->
+//                    contact.nodePubKey?.let { lightningNodePubKey ->
 
-                        val subscription = subscriptionRepository.getActiveSubscriptionByContactId(
-                            contactId
-                        ).firstOrNull()
+//                        val subscription = subscriptionRepository.getActiveSubscriptionByContactId(
+//                            contactId
+//                        ).firstOrNull()
 
                         setContactState {
                             copy(
@@ -54,7 +52,7 @@ class EditContactViewModel(private val contactId: ContactId?) : ContactViewModel
                                 photoUrl = contact.photoUrl,
                             )
                         }
-                    }
+//                    }
                 }
             }
         }
@@ -91,10 +89,9 @@ class EditContactViewModel(private val contactId: ContactId?) : ContactViewModel
             return
         }
         saveContactJob = scope.launch(dispatchers.mainImmediate) {
-
-            if (contactId != null) {
+            contactId?.let { nnContactId ->
                 contactRepository.updateContact(
-                    contactId,
+                    nnContactId,
                     ContactAlias(contactState.contactAlias),
                     contactState.lightningRouteHint?.toLightningRouteHint()
                 ).let { loadResponse ->

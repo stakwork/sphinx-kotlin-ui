@@ -162,6 +162,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             if (addContactWindowState.first){
                 AddContactWindow(dashboardViewModel)
             }
+
             ChatListUI()
         }
     }
