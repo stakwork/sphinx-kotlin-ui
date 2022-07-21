@@ -246,6 +246,11 @@ fun ChatCard(
                             }
                         }
                 }
+                /**
+                 * Enable the below to show the preview of url
+                 * We also need to pass the data object which will contains URL preview's elements
+                 */
+//                URLPreview()
                 // TODO: Attachment not supported... but give download functionality...
             }
         }
