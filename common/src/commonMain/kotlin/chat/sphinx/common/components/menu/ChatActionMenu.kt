@@ -7,6 +7,6 @@ import androidx.compose.runtime.*
 expect fun ChatActionMenu(showDialog:Boolean,callBack: (ChatActionMenuEnums) -> Unit)
 
 enum class ChatActionMenuEnums {
-     REQUEST, SEND
+     REQUEST, SEND,CANCEL
 }
 

@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -62,7 +63,7 @@ actual fun SendReceiveSatsDialog(sendRequest:Boolean, onConfirm: () -> Unit) {
                             )
                         }
                         Spacer(modifier = Modifier.weight(1f))
-                        Text(if(sendRequest)"SEND PAYMENT" else "REQUEST PAYMENT", color = MaterialTheme.colorScheme.tertiary)
+                        Text(if(sendRequest)"SEND PAYMENT" else "REQUEST PAYMENT", color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.weight(1f))
                     }
                     PhotoUrlImage(PhotoUrl("https://picsum.photos/200/300"),modifier = Modifier
@@ -138,40 +139,4 @@ actual fun SendReceiveSatsDialog(sendRequest:Boolean, onConfirm: () -> Unit) {
             }
         }, title = {}, confirmButton = {}
     )
-//        if (!hasConfirmed.value) {
-//            Dialog(
-//                visible = true,
-////                backgroundColor = MaterialTheme.colorScheme.background,
-////
-////                title = { Row (modifier = Modifier.fillMaxWidth(),){
-//////                    Spacer(modifier = Modifier.weight(1f))
-////                    IconButton(onClick = {}){
-////                        Icon(Icons.Default.Close,contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
-////                    }
-////                    Text("Send Payment", color = MaterialTheme.colorScheme.tertiary)
-////
-////                } },
-////                text = {
-////
-////                },
-////                onDismissRequest = {
-////                },
-////                confirmButton = {
-////                    Box(modifier = Modifier.fillMaxWidth(0.8f), contentAlignment = Alignment.Center){
-////                        CommonButton("Send"){
-////                            hasConfirmed.value = true
-////                        }
-////                    }
-//////                    Button(onClick = {
-//////                        hasConfirmed.value = true
-//////                    },
-//////                    ) {
-//////                        Text("Confirm")
-//////                    }
-////                }
-//            )
-//        } else {
-//            Text("Confirmed")
-//        }
-
 }

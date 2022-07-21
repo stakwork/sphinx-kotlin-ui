@@ -296,6 +296,7 @@ fun SphinxChatDetailBottomAppBar(
                     .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                     .size(30.dp),
             ) {
+                Icon(Icons.Default.Add,contentDescription = null)
                 var currentSelectedItem by remember { mutableStateOf<ChatActionMenuEnums?>(null) }
                 if(clickState.value)
                 ChatActionMenu(clickState.value){
@@ -304,6 +305,7 @@ fun SphinxChatDetailBottomAppBar(
                 when(currentSelectedItem){
                     ChatActionMenuEnums.REQUEST -> SendReceiveSatsDialog(sendRequest = false) {  }
                     ChatActionMenuEnums.SEND -> SendReceiveSatsDialog {  }
+                    ChatActionMenuEnums.CANCEL -> {}
                     else ->{}
                 }
             }

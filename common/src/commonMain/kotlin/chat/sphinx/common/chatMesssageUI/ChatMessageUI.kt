@@ -1,6 +1,6 @@
 package chat.sphinx.common.chatMesssageUI
 
-import androidx.compose.foundation.background
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -30,9 +30,9 @@ fun ChatMessageUI(
     print("rebuilding ${chatMessage.message.id}")
 
     Column(modifier = Modifier.padding(8.dp)) {
-        val openSatsDialog= remember { mutableStateOf(true) }
+        val openSatsDialog= remember { mutableStateOf(false) }
         if(openSatsDialog.value)
-            SendSatsPopUp()
+            SendSatsPopUp {}
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start

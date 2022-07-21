@@ -35,12 +35,13 @@ actual fun ChatActionMenu(showDialog:Boolean,callBack: (ChatActionMenuEnums) -> 
         },
         dialogProvider =UndecoratedWindowAlertDialogProvider ,
 
-        modifier = Modifier.padding(0.dp).height(160.dp).width(250.dp),
-        contentColor = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.padding(0.dp).height(160.dp).width(250.dp).clip(RoundedCornerShape(5)),
+//        contentColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(5),
 
         backgroundColor = MaterialTheme.colorScheme.surface,
         text = {
-            Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(modifier = Modifier.fillMaxWidth().fillMaxHeight().clip(RoundedCornerShape(5)), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
 //                Spacer(modifier = Modifier.height(24.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 12.dp, end = 12.dp).clickable {
                     callBack(ChatActionMenuEnums.REQUEST)
@@ -53,8 +54,9 @@ actual fun ChatActionMenu(showDialog:Boolean,callBack: (ChatActionMenuEnums) -> 
                     Spacer(modifier = Modifier.width(16.dp))
                     Text("Receive", color = MaterialTheme.colorScheme.tertiary)
                 }
-                Divider()
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+                Divider(color = MaterialTheme.colorScheme.onBackground)
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(12.dp).clickable {
                     callBack(ChatActionMenuEnums.SEND)
                 }) {
@@ -66,11 +68,14 @@ actual fun ChatActionMenu(showDialog:Boolean,callBack: (ChatActionMenuEnums) -> 
                     Spacer(modifier = Modifier.width(16.dp))
                     Text("Send", color = MaterialTheme.colorScheme.tertiary)
                 }
-                Divider()
-                Spacer(modifier = Modifier.height(8.dp))
+//                Spacer(modifier = Modifier.height(8.dp))
+                Divider(color = MaterialTheme.colorScheme.onBackground)
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
 
-                    Text("Cancel", color = MaterialTheme.colorScheme.error)
+                    Text("Cancel", color = MaterialTheme.colorScheme.error, modifier = Modifier.clickable {
+                        callBack(ChatActionMenuEnums.CANCEL)
+                    })
 
                 }
 
