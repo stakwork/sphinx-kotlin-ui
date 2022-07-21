@@ -1,4 +1,4 @@
-package chat.sphinx.common.components.landing
+package chat.sphinx.common.components
 
 import CommonButton
 import Roboto
@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -45,7 +44,6 @@ import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.dashboard.ContactId
 import com.example.compose.badge_red
 import com.example.compose.light_divider
-import io.ktor.utils.io.*
 
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {

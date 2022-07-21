@@ -3,7 +3,6 @@ package chat.sphinx.common.viewmodel.contact
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.ImageBitmap
 import chat.sphinx.common.state.ContactState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -11,8 +10,6 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.ContactAlias
 import chat.sphinx.wrapper.dashboard.ContactId
-import chat.sphinx.wrapper.lightning.LightningNodePubKey
-import chat.sphinx.wrapper.lightning.LightningRouteHint
 import chat.sphinx.wrapper.lightning.toLightningRouteHint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

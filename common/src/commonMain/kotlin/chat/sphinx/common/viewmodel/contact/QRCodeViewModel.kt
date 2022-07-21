@@ -3,20 +3,13 @@ package chat.sphinx.common.viewmodel.contact
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.ImageBitmapConfig
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.graphics.toPixelMap
 import chat.sphinx.common.state.ContactQRCodeState
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.response.LoadResponse
-import chat.sphinx.response.ResponseError
 import chat.sphinx.wrapper.util.isValidBech32
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.launch
-import java.awt.Color
 
 class QRCodeViewModel(private var qrText: String, title: String?) {
 
