@@ -4,6 +4,7 @@ import CommonButton
 import Roboto
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
@@ -19,7 +20,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -428,7 +432,7 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, editMode: Boolean, conta
         dashboardViewModel.toggleContactWindow(false, null)
     }
     if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
-        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.contactState.lightningNodePubKey))
+        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.contactState.lightningNodePubKey, null))
     }
 }
 
@@ -438,6 +442,8 @@ fun QRDetail(
     viewModel: QRCodeViewModel
 ){
     val density = LocalDensity.current
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
+
 
     var isOpen by remember { mutableStateOf(true) }
     if (isOpen) {
@@ -455,6 +461,9 @@ fun QRDetail(
             Box(
                 modifier = Modifier.fillMaxSize()
                     .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+                    .clickable {
+                        clipboardManager.setText(AnnotatedString(viewModel.contactQRCodeState.pubKey))
+                    }
             ) {
                 Column(
                     modifier = Modifier
@@ -477,15 +486,13 @@ fun QRDetail(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.padding(end = 24.dp)
                     ) {
-                        IconButton(onClick = {})
-                        {
-                            Icon(
-                                Icons.Default.TouchApp,
-                                contentDescription = "QR Code",
-                                tint = Color.Gray,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
+                        Icon(
+                            Icons.Default.TouchApp,
+                            contentDescription = "QR Code",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(30.dp)
+                        )
+
                         Text(
                             text = "CLICK TO COPY",
                             fontFamily = SphinxFonts.montserratFamily,
