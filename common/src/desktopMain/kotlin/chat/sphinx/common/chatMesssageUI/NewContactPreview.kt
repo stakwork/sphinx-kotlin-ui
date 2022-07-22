@@ -64,7 +64,7 @@ actual fun NewContactPreview(chatMessage: ChatMessage) {
                 shape = if (chatMessage.isReceived) receiverCorner else senderCorner,
                 modifier = Modifier.width(350.dp)
             ) {
-                Text(chatMessage.message.retrieveTextToShow().toString(), modifier = Modifier.padding(12.dp), fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiary)
+                Text(chatMessage.message.retrieveTextToShow().toString(), modifier = Modifier.padding(12.dp), fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiary,)
             }
             Box(modifier = Modifier.size(350.dp, 150.dp)) {
                 Canvas(modifier = Modifier.fillMaxSize()) {

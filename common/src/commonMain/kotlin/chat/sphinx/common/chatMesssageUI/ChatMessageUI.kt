@@ -18,6 +18,9 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.lightning.isValidLightningNodePubKey
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
+import chat.sphinx.common.components.landing.ExistingUserPINScreen
+import chat.sphinx.wrapper.isValidPeopleConnectLink
+import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
 
 @Composable
 fun ChatMessageUI(
@@ -76,8 +79,13 @@ fun ChatMessageUI(
                                 chatMessage.message.isSphinxCallLink -> {
                                     JitsiAudioVideoCall(chatMessage)
                                 }
-                                chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true -> {
-                                    NewContactPreview(chatMessage)
+                                chatMessage.message.messageContentDecrypted?.value?.isValidPeopleConnectLink == true -> {
+//                                    NewContactPreview(chatMessage)
+                                    ExistingContactPreview(chatMessage)
+                                }
+                                chatMessage.message.messageContentDecrypted?.value?.isValidTribeJoinLink==true->{
+//                                    ExistingTribePreview(chatMessage)
+                                    NewTribePreview(chatMessage)
                                 }
                                 chatMessage.message.type == MessageType.DirectPayment -> {
                                     DirectPaymentUI(chatMessage, chatViewModel)
