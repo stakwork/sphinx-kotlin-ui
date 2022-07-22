@@ -110,6 +110,7 @@ fun main() = application {
 
                 AppTheme(useDarkTheme = true) {
                     DesktopSphinxNotifications(
+                        window,
                         icon = sphinxIcon
                     )
                     Dashboard(sphinxState, dashboardViewModel)
