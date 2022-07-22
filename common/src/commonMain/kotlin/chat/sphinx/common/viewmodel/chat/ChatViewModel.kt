@@ -367,7 +367,7 @@ abstract class ChatViewModel(
                 }
 
                 editMessageState.attachmentInfo.value?.let { attachmentInfo ->
-                    builder.setAttachmentInfo(attachmentInfo)
+                    sendMessageBuilder.setAttachmentInfo(attachmentInfo)
                 }
             }
 

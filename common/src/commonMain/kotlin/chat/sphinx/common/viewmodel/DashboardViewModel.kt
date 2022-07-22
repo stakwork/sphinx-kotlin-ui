@@ -95,7 +95,7 @@ class DashboardViewModel: WindowFocusListener {
     }
 
     override fun windowGainedFocus(p0: WindowEvent?) {
-        if (DashboardState.screenState() == DashboardScreenType.Unlocked) {
+        if (DashboardScreenState.screenState() == DashboardScreenType.Unlocked) {
             connectSocket()
             networkRefresh()
         }
