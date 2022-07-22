@@ -17,7 +17,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
@@ -29,6 +31,7 @@ import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.message.isMediaAttachmentAvailable
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import com.example.compose.badge_red
+import chat.sphinx.wrapper.message.*
 
 @Composable
 actual fun MessageMenu(
@@ -39,70 +42,74 @@ actual fun MessageMenu(
     val dismissKebab = {
         isVisible.value = false
     }
-    DropdownMenu(
+
+    val clipboardManager = LocalClipboardManager.current
+
+    CursorDropdownMenu(
         expanded = isVisible.value,
-        onDismissRequest = dismissKebab,
-        modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
+        onDismissRequest = dismissKebab, modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer).clip(
+            RoundedCornerShape(16.dp)
+        )
     ) {
-        if (chatMessage.isReceived) {
-            DropdownMenuItem(
-                modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
-                onClick = {
-                    // TODO: Boost is broken...
-                    chatMessage.boostMessage()
-                    dismissKebab()
-                }
-            ) {
-                OptionItem("Boost", Res.drawable.ic_boost_green)
-            }
-        }
-        chatMessage.message.retrieveTextToShow()?.let { messageText ->
-            if (messageText.isNotEmpty()) {
-                val clipboardManager = LocalClipboardManager.current
-                DropdownMenuItem(
-                    modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
-                    onClick = {
-                        clipboardManager.setText(
-                            messageText.toAnnotatedString()
-                        )
-                        dismissKebab()
-                    }
-                ) {
-                    OptionItem("Copy text", imageVector = Icons.Default.ContentCopy)
-                }
-            }
-        }
-        DropdownMenuItem(
-            modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
-            onClick = {
-                chatMessage.setAsReplyToMessage(chatViewModel.editMessageState)
+        val messageText = chatMessage.message.messageContentDecrypted?.value ?: ""
+
+        if (chatMessage.message.isBoostAllowed) {
+            DropdownMenuItem(onClick = {
+                chatMessage.boostMessage()
                 dismissKebab()
+            }) {
+                OptionItem("Boost",Res.drawable.ic_boost_green)
             }
-        ) {
-            OptionItem("Reply", imageVector = Icons.Default.Reply)
         }
-        if (chatMessage.message.isMediaAttachmentAvailable) {
-            DropdownMenuItem(
-                modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
-                onClick = {
-                    // TODO: Save attachment...
-                    chatViewModel.editMessageState
-                    dismissKebab()
-                }
-            ) {
-                OptionItem("Save", imageVector = Icons.Default.Save)
+        if (chatMessage.message.isCopyAllowed) {
+            DropdownMenuItem(onClick = {
+                clipboardManager.setText(
+                    messageText.toAnnotatedString()
+                )
+                dismissKebab()
+            }) {
+                OptionItem("Copy text", imageVector = Icons.Default.ContentCopy)
             }
         }
 
-        if (chatMessage.isSent) {
-            DropdownMenuItem(
-                modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
-                onClick = {
-                    // TODO: Confirm action...
-                    chatMessage.deleteMessage()
-                    dismissKebab()
-                }
-            ) {
+        if (chatMessage.message.isCopyLinkAllowed) {
+            DropdownMenuItem(onClick = {
+                clipboardManager.setText(
+                    messageText.toAnnotatedString()
+                )
+                dismissKebab()
+            }) {
+                OptionItem("Copy Call Link", imageVector = Icons.Default.Link)
+            }
+        }
+
+        if (chatMessage.message.isReplyAllowed) {
+            DropdownMenuItem(onClick = {
+                chatMessage.setAsReplyToMessage(chatViewModel.editMessageState)
+                dismissKebab()
+            }) {
+                OptionItem("Reply", imageVector = Icons.Default.Reply)
+            }
+        }
+        if (chatMessage.message.isSaveAllowed) {
+            DropdownMenuItem(onClick = {
+                // TODO: Save attachment...
+                chatViewModel.editMessageState
+                dismissKebab()
+            }) {
+                OptionItem("Save attachment", imageVector = Icons.Default.Save)
+            }
+        }
+
+        if (chatMessage.message.isDeleteAllowed(
+            chatMessage.chat,
+            chatMessage.accountOwner().nodePubKey
+        )) {
+            DropdownMenuItem(onClick = {
+                // TODO: Confirm action...
+                chatMessage.deleteMessage()
+                dismissKebab()
+            }) {
                 OptionItem("Delete", imageVector = Icons.Default.Delete, color = badge_red)
             }
         }
