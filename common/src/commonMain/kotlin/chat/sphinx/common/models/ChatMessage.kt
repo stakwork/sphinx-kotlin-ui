@@ -19,7 +19,7 @@ class ChatMessage(
     val contact: Contact?,
     val message: Message,
     val colors: Map<Long, Int>,
-    accountOwner: () -> Contact,
+    val accountOwner: () -> Contact,
     val boostMessage: () -> Unit,
     val flagMessage: () -> Unit,
     val deleteMessage: () -> Unit,

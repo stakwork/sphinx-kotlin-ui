@@ -8,7 +8,7 @@ object DesktopSphinxNotificationManager: SphinxNotificationManager {
     val notifications = mutableStateListOf<Pair<String, String>>()
 
     override fun notify(
-        notificationId: Int,
+        notificationId: Long,
         groupId: String?,
         title: String,
         message: String

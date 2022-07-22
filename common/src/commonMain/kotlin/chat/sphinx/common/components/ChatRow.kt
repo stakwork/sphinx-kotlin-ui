@@ -178,17 +178,19 @@ fun ChatRow(
                                 )
                             }
                             (dashboardChat as? DashboardChat.Inactive.Invite)?.getInvitePrice()?.let {
-                                Text(
-                                    modifier = Modifier
-                                        .background(color = primary_green, shape = RoundedCornerShape(5.dp))
-                                        .padding(4.dp, 2.dp),
-                                    text = "${it.asFormattedString(' ')}",
-                                    fontSize = 12.sp,
-                                    fontFamily = Roboto,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    color = Color.White
-                                )
+                                if (it.value > 0) {
+                                    Text(
+                                        modifier = Modifier
+                                            .background(color = primary_green, shape = RoundedCornerShape(5.dp))
+                                            .padding(4.dp, 2.dp),
+                                        text = "${it.asFormattedString(' ')}",
+                                        fontSize = 12.sp,
+                                        fontFamily = Roboto,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        color = Color.White
+                                    )
+                                }
                             }
                         }
                     }
