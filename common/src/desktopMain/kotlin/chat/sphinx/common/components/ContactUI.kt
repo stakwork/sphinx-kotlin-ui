@@ -1,4 +1,4 @@
-package chat.sphinx.common.components.landing
+package chat.sphinx.common.components
 
 import CommonButton
 import Roboto
@@ -8,7 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,47 +23,47 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import chat.sphinx.common.Res
-import chat.sphinx.common.viewmodel.AddContactViewModel
+import chat.sphinx.common.state.ContactScreenState
+import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.contact.EditContactViewModel
+import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
+import chat.sphinx.wrapper.dashboard.ContactId
 import com.example.compose.badge_red
 import com.example.compose.light_divider
 
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
     var isOpen by remember { mutableStateOf(true) }
-    var screenState: AddContactScreenState by remember { mutableStateOf(AddContactScreenState.Home) }
-
     if (isOpen) {
         Window(
             onCloseRequest = {
-                dashboardViewModel.toggleAddContactWindow(false)
+                dashboardViewModel.toggleContactWindow(false, null)
             },
-            title = "Add Contact",
+            title = "",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
-                size = getPreferredWindowSize(420, 580)
-
+                size = getPreferredWindowSize(420, 620)
             )
         ) {
+            var screenState: ContactScreenState? = dashboardViewModel.contactWindowStateFlow.value.second
+
             when (screenState) {
-                AddContactScreenState.Home -> AddContact {
-                    screenState = it
-                }
-                AddContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-                AddContactScreenState.AlreadyOnSphinx -> AddContactAlreadyOnSphinx(dashboardViewModel)
+                is ContactScreenState.Choose -> AddContact(dashboardViewModel)
+                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+                is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null)
+                is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
             }
         }
     }
 }
 
 @Composable
-fun AddContact(updateState: (AddContactScreenState) -> Unit) {
+fun AddContact(dashboardViewModel: DashboardViewModel) {
     Box(
         modifier = Modifier.fillMaxSize()
             .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
@@ -75,8 +75,7 @@ fun AddContact(updateState: (AddContactScreenState) -> Unit) {
         ) {
             CommonButton(
                 callback = {
-                    updateState(AddContactScreenState.NewToSphinx)
-
+                    dashboardViewModel.toggleContactWindow(true, ContactScreenState.NewToSphinx)
                 },
                 text = "New to Sphinx",
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
@@ -85,8 +84,7 @@ fun AddContact(updateState: (AddContactScreenState) -> Unit) {
             Divider(Modifier.padding(12.dp), color = Color.Transparent)
             CommonButton(
                 callback = {
-                    updateState(AddContactScreenState.AlreadyOnSphinx)
-
+                    dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx)
                 },
                 text = "Already on Sphinx",
                 enabled = true
@@ -218,13 +216,20 @@ fun AddNewContactOnSphinx() {
 }
 
 @Composable
-fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
+fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
 
-    val viewModel = remember { AddContactViewModel() }
+    val editMode = (contactId != null)
 
-//    var switchState = remember {
-//        mutableStateOf(false)
-//    }
+    val viewModel = if (editMode) {
+        remember { EditContactViewModel() }
+    } else {
+        remember { AddContactViewModel() }
+    }
+
+    if ((viewModel as? EditContactViewModel)?.contactId != contactId) {
+        (viewModel as? EditContactViewModel)?.loadContact(contactId)
+        dashboardViewModel.toggleQRWindow(false)
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -234,8 +239,19 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
             modifier = Modifier.fillMaxSize().padding(32.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
-        )
-        {
+        ) {
+            if (editMode) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().height(112.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    PhotoUrlImage(
+                        photoUrl = viewModel.contactState.photoUrl,
+                        modifier = Modifier.size(96.dp).clip(CircleShape)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(18.dp))
 
             Column {
@@ -246,7 +262,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = viewModel.addContactState.contactAlias,
+                    value = viewModel.contactState.contactAlias,
                     onValueChange = {
                         viewModel.onNicknameTextChanged(it)
                     },
@@ -268,18 +284,38 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     fontFamily = Roboto,
                     color = Color.Gray,
                 )
-                BasicTextField(
-                    value = viewModel.addContactState.lightningNodePubKey,
-                    onValueChange = {
-                        viewModel.onAddressTextChanged(it)
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
-                    singleLine = true,
-                    cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                Row(
+                    modifier = Modifier.height(32.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BasicTextField(
+                        value = viewModel.contactState.lightningNodePubKey,
+                        onValueChange = {
+                            viewModel.onAddressTextChanged(it)
+                        },
+                        enabled = !editMode,
+                        modifier = Modifier.weight(1f).padding(top = 8.dp),
+                        textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+                        singleLine = true,
+                        cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                    )
+                    if(editMode) {
+                        IconButton(onClick = {
+                            dashboardViewModel.toggleQRWindow(true)
+                        }
+                        ) {
+                            Icon(
+                                Icons.Default.QrCodeScanner,
+                                contentDescription = "",
+                                tint = Color.White,
+                                modifier = Modifier.size(30.dp),
+                            )
+                        }
+                    }
+                }
+                Divider(modifier = Modifier.padding(top = 4.dp), color = Color.Gray)
 
-                )
-                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
             }
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -292,10 +328,11 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = viewModel.addContactState.lightningRouteHint ?: "",
+                    value = viewModel.contactState.lightningRouteHint ?: "",
                     onValueChange = {
                         viewModel.onRouteHintTextChanged(it)
                     },
+                    enabled = !editMode,
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
@@ -343,7 +380,6 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
 //                }
 //            }
 
-
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
@@ -353,7 +389,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                     Modifier.fillMaxWidth().height(40.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (viewModel.addContactState.status is Response.Error) {
+                    if (viewModel.contactState.status is Response.Error) {
                         Text(
                             text = "There was an error, please try again later",
                             fontSize = 12.sp,
@@ -361,7 +397,7 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                             color = badge_red,
                         )
                     }
-                    if (viewModel.addContactState.status is LoadResponse.Loading) {
+                    if (viewModel.contactState.status is LoadResponse.Loading) {
                         CircularProgressIndicator(
                             Modifier.padding(start = 8.dp).size(24.dp),
                             color = Color.White,
@@ -371,8 +407,10 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 CommonButton(
-                    enabled = viewModel.addContactState.saveButtonEnabled,
-                    text = "SAVE TO CONTACTS",
+                    enabled = viewModel.contactState.saveButtonEnabled,
+                    text = if (editMode) {
+                        "SAVE"}
+                    else {"SAVE TO CONTACTS"},
                     callback = {
                         viewModel.saveContact()
                     }
@@ -381,15 +419,11 @@ fun AddContactAlreadyOnSphinx(dashboardViewModel: DashboardViewModel) {
         }
     }
 
-    if (viewModel.addContactState.status is Response.Success) {
-        dashboardViewModel.toggleAddContactWindow(false)
+    if (viewModel.contactState.status is Response.Success) {
+        dashboardViewModel.toggleContactWindow(false, null)
+    }
+    if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
+        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.contactState.lightningNodePubKey, null))
     }
 }
 
-
-sealed class AddContactScreenState {
-    object Home : AddContactScreenState()
-    object NewToSphinx : AddContactScreenState()
-    object AlreadyOnSphinx : AddContactScreenState()
-
-}

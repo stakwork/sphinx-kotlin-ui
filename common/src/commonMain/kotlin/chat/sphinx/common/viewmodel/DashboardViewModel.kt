@@ -1,24 +1,21 @@
 package chat.sphinx.common.viewmodel
 
+import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardState
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.concepts.socket_io.SocketIOState
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.features.authentication.view.ui.InputLockState
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
-import chat.sphinx.wrapper.lightning.Sat
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
@@ -38,15 +35,26 @@ class DashboardViewModel: WindowFocusListener {
     val balanceStateFlow: StateFlow<NodeBalance?>
         get() = _balanceStateFlow.asStateFlow()
 
-    private val _addContactWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+    private val _contactWindowStateFlow: MutableStateFlow<Pair<Boolean, ContactScreenState?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
+    val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
+        get() = _contactWindowStateFlow.asStateFlow()
+
+    fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
+        _contactWindowStateFlow.value = Pair(open, screen)
+    }
+
+    private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {
         MutableStateFlow(false)
     }
 
-    val addContactWindowStateFlow: StateFlow<Boolean>
-        get() = _addContactWindowStateFlow.asStateFlow()
+    val qrWindowStateFlow: StateFlow<Boolean>
+        get() = _qrWindowStateFlow.asStateFlow()
 
-    fun toggleAddContactWindow(open: Boolean) {
-        _addContactWindowStateFlow.value = open
+    fun toggleQRWindow(open: Boolean) {
+        _qrWindowStateFlow.value = open
     }
 
     private var screenInit: Boolean = false

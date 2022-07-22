@@ -1,14 +1,15 @@
 package chat.sphinx.common.state
 
+import androidx.compose.ui.graphics.ImageBitmap
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
+import chat.sphinx.wrapper.PhotoUrl
 
-data class AddContactState(
+data class ContactState(
     val contactAlias: String = "",
     val lightningNodePubKey: String = "",
     val lightningRouteHint: String? = null,
-
+    val photoUrl: PhotoUrl? = null,
     val status: LoadResponse<Any, ResponseError>? = null,
-
     val saveButtonEnabled: Boolean = false,
 )

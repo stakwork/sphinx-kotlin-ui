@@ -23,9 +23,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,7 +39,6 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import chat.sphinx.wrapper.chat.ChatMuted
 import chat.sphinx.wrapper.chat.isMuted
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
@@ -104,7 +101,7 @@ actual fun Dashboard(
                     }
 
                     Scaffold(scaffoldState = scaffoldState, topBar = {
-                        SphinxChatDetailTopAppBar(dashboardChat, chatViewModel)
+                        SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel)
                     }, bottomBar = {
                         SphinxChatDetailBottomAppBar(chatViewModel)
                     }) {
@@ -212,7 +209,8 @@ actual fun Dashboard(
 @Composable
 fun SphinxChatDetailTopAppBar(
     dashboardChat: DashboardChat?,
-    chatViewModel: ChatViewModel?
+    chatViewModel: ChatViewModel?,
+    dashboardViewModel: DashboardViewModel?
 ) {
     if (dashboardChat == null) {
         Row(
@@ -235,6 +233,7 @@ fun SphinxChatDetailTopAppBar(
     }
 
     val chatName = dashboardChat?.chatName ?: "Unknown Chat"
+    val contactId = chatViewModel?.editMessageState?.contactId
 
     TopAppBar(
         modifier = Modifier.height(60.dp),
@@ -242,7 +241,10 @@ fun SphinxChatDetailTopAppBar(
             Column {
                 Row {
                     Text(
-                        text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700
+                        text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
+                        modifier = Modifier.clickable {
+                            dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact(contactId))
+                        }
                     )
 
                     Icon(
@@ -335,7 +337,8 @@ fun SphinxChatDetailTopAppBar(
                     tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                 )
             }
-        })
+        }
+    )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

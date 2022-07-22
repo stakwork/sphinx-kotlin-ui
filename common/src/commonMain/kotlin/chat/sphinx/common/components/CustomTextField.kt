@@ -23,13 +23,16 @@ fun CustomTextField(
     value: String,
     color: Color? = null,
     onValueChange: (String) -> Unit,
-    fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
+    fontSize: TextUnit = MaterialTheme.typography.body2.fontSize,
+    singleLine: Boolean = true,
+    maxLines: Int = 4,
 ) {
     BasicTextField(
         modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
-        singleLine = true,
+        singleLine = singleLine,
+        maxLines = maxLines,
         cursorBrush = SolidColor(MaterialTheme.colors.primary),
         textStyle = LocalTextStyle.current.copy(
             fontFamily = Roboto,
