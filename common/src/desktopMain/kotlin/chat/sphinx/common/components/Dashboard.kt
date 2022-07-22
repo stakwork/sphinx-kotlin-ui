@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -182,6 +183,10 @@ actual fun Dashboard(
                         restoreState
                     )
                 }
+            }
+            val profileWindowState by dashboardViewModel.profileStateFlow.collectAsState()
+            if (profileWindowState){
+                Profile(dashboardViewModel)
             }
         }
         DashboardScreenType.Locked -> {

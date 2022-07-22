@@ -33,6 +33,7 @@ import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.pin.ChangePin
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.components.pin.PINScreenType
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
@@ -40,69 +41,74 @@ import chat.sphinx.wrapper.PhotoUrl
 import com.example.compose.AppTheme
 
 @Composable
-actual fun Profile() {
+fun Profile(dashboardViewModel: DashboardViewModel) {
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
-    Window(
-        onCloseRequest = ::onTapClose,
-        title = "Sphinx",
-        state = WindowState(
-            position = WindowPosition.Aligned(Alignment.Center),
-            size = getPreferredWindowSize(420, 800)
-        ),
+    var isOpen by remember { mutableStateOf(true) }
+    if (isOpen) {
+        Window(
+            onCloseRequest = {
+                dashboardViewModel.toggleProfileWindow(false)
+            },
+            title = "Sphinx",
+            state = WindowState(
+                position = WindowPosition.Aligned(Alignment.Center),
+                size = getPreferredWindowSize(420, 800)
+            ),
 
-        icon = sphinxIcon,
-    ) {
-        AppTheme {
-            Box(
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-            ) {
-
-                Column(
-                    modifier = Modifier.background(MaterialTheme.colorScheme.background)
-                        .verticalScroll(
-                            rememberScrollState()
-                        )
+            icon = sphinxIcon,
+        ) {
+            AppTheme {
+                Box(
+                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(24.dp)
-                    ) {
-                        PhotoUrlImage(
-                            PhotoUrl("https://randomuser.me/api/portraits/men/22.jpg"),
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(verticalArrangement = Arrangement.Center) {
-                            Text(
-                                "THOMAS",
-                                color = MaterialTheme.colorScheme.tertiary,
-                                fontWeight = FontWeight.Bold
+
+                    Column(
+                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+                            .verticalScroll(
+                                rememberScrollState()
                             )
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(24.dp)
+                        ) {
+                            PhotoUrlImage(
+                                PhotoUrl("https://randomuser.me/api/portraits/men/22.jpg"),
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column(verticalArrangement = Arrangement.Center) {
                                 Text(
-                                    "1250",
+                                    "THOMAS",
                                     color = MaterialTheme.colorScheme.tertiary,
-                                    fontSize = 11.sp
+                                    fontWeight = FontWeight.Bold
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    "sat",
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    fontSize = 11.sp
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        "1250",
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                        fontSize = 11.sp
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        "sat",
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        fontSize = 11.sp
+                                    )
+                                }
+
                             }
-
                         }
+                        Tabs()
                     }
-                    Tabs()
-                }
 
+                }
             }
         }
     }

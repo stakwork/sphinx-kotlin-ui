@@ -58,6 +58,17 @@ class DashboardViewModel: WindowFocusListener {
         _qrWindowStateFlow.value = open
     }
 
+    private val _profileStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val profileStateFlow: StateFlow<Boolean>
+        get() = _profileStateFlow.asStateFlow()
+
+    fun toggleProfileWindow(open: Boolean) {
+        _profileStateFlow.value = open
+    }
+
     private var screenInit: Boolean = false
     fun screenInit() {
         if (screenInit) {

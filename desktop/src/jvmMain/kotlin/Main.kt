@@ -14,9 +14,7 @@ import chat.sphinx.common.components.LandingScreen
 import chat.sphinx.common.components.landing.ConnectingDialog
 import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
-import chat.sphinx.common.state.AppState
-import chat.sphinx.common.state.ContentState
-import chat.sphinx.common.state.ScreenType
+import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.di.container.SphinxContainer
@@ -62,29 +60,28 @@ fun main() = application {
 //    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
-            Profile()
-//            Window(
-//                onCloseRequest = ::exitApplication,
-//                title = "Sphinx",
-//                state = WindowState(
-//                    position = WindowPosition.Aligned(Alignment.Center),
-//                    size = getPreferredWindowSize(800, 500)
-//                ),
-//                undecorated = true,
-//                icon = sphinxIcon,
-//            ) {
-//                AppTheme {
-//                    SphinxSplash()
-//                    LaunchedEffect(windowState) {
-//                        delay(1000L)
-//                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-//                            ContentState.onContentReady(ScreenType.DashboardScreen)
-//                        } else {
-//                            ContentState.onContentReady(ScreenType.LandingScreen)
-//                        }
-//                    }
-//                }
-//            }
+            Window(
+                onCloseRequest = ::exitApplication,
+                title = "Sphinx",
+                state = WindowState(
+                    position = WindowPosition.Aligned(Alignment.Center),
+                    size = getPreferredWindowSize(800, 500)
+                ),
+                undecorated = true,
+                icon = sphinxIcon,
+            ) {
+                AppTheme {
+                    SphinxSplash()
+                    LaunchedEffect(windowState) {
+                        delay(1000L)
+                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+                            ContentState.onContentReady(ScreenType.DashboardScreen)
+                        } else {
+                            ContentState.onContentReady(ScreenType.LandingScreen)
+                        }
+                    }
+                }
+            }
         }
         ScreenType.DashboardScreen -> {
 
@@ -97,9 +94,18 @@ fun main() = application {
                 ),
                 icon = sphinxIcon
             ) {
+                val dashboardViewModel = remember { DashboardViewModel() }
+                this.window.addWindowFocusListener(dashboardViewModel)
+
                 MenuBar {
                     Menu("Sphinx") {
                         Item("About", icon = sphinxIcon, onClick = { })
+                        when (DashboardState.screenState()) {
+                            DashboardScreenType.Unlocked ->{
+                                Item("Profile", onClick = {dashboardViewModel.toggleProfileWindow(true)})
+                            }
+                            else -> {}
+                        }
                         Item("Remove Account from this machine", onClick = {
                             sphinxStore.removeAccount()
                             // TODO: Hack as logic to recreate database in the same process needs to be reworked...
@@ -108,9 +114,6 @@ fun main() = application {
                         Item("Exit", onClick = ::exitApplication)
                     }
                 }
-
-                val dashboardViewModel = remember { DashboardViewModel() }
-                this.window.addWindowFocusListener(dashboardViewModel)
 
                 AppTheme(useDarkTheme = true) {
                     DesktopSphinxNotifications(
