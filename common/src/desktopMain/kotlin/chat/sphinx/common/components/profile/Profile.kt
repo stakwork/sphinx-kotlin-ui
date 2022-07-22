@@ -156,75 +156,93 @@ fun Tabs() {
 
 @Composable
 fun AdvanceTab() {
-    Column() {
-        Column() {
-            CommonTextField("Server URL")
-            Spacer(modifier = Modifier.height(4.dp))
-//                Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
-            Row(
-                horizontalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            ) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
+            Column {
                 Text(
-                    "Pin Timeout",
-                    color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
-                    fontSize = 12.sp
+                    text = "Server URL",
+                    fontSize = 12.sp,
+                    fontFamily = Roboto,
+                    color = Color.Gray,
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    "12 Hours",
-                    color = MaterialTheme.colorScheme.tertiary,
-                    fontSize = 12.sp
+                BasicTextField(
+                    value = "htttp://stakwork.sphinx.chat",
+                    onValueChange = {
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
                 )
+                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
             }
-            var sliderState by remember { mutableStateOf(0f) }
-            Slider(
-                value = sliderState,
-                modifier = Modifier.padding(horizontal = 12.dp),
-                steps = 0,
-                valueRange = 0f..100f,
-                colors = SliderDefaults.colors(
-                    activeTrackColor = MaterialTheme.colorScheme.secondary,
-                    thumbColor = MaterialTheme.colorScheme.secondary
-                ),
-                onValueChange = { newValue ->
-                    sliderState = newValue
-                },
+            Spacer(modifier = Modifier.height(28.dp))
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.padding(horizontal = 20.dp)
+        ) {
+            Text(
+                "Pin Timeout",
+                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
+                fontSize = 12.sp
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                "12 Hours",
+                color = MaterialTheme.colorScheme.tertiary,
+                fontSize = 12.sp
+            )
+        }
+        var sliderState by remember { mutableStateOf(0f) }
+        Slider(
+            value = sliderState,
+            modifier = Modifier.padding(horizontal = 12.dp),
+            steps = 0,
+            valueRange = 0f..100f,
+            colors = SliderDefaults.colors(
+                activeTrackColor = MaterialTheme.colorScheme.secondary,
+                thumbColor = MaterialTheme.colorScheme.secondary
+            ),
+            onValueChange = { newValue ->
+                sliderState = newValue
+            },
+        )
+        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
+        val openChangePinScreen = remember { mutableStateOf(false) }
+        Box(modifier = Modifier.clickable { openChangePinScreen.value = true }) {
+            Text(
+                "Change Pin",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            if (openChangePinScreen.value) {
+                ChangePin()
+            }
+        }
+        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
+        Box(modifier = Modifier.clickable {  }) {
+            Text(
+                "Change Privacy Pin",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
-        val openChangePinScreen = remember { mutableStateOf(false) }
-        Text(
-            "Chane Pin",
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)
-                .padding(24.dp).clickable {
-                    openChangePinScreen.value = true
-                }, fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary
-        )
-        if (openChangePinScreen.value) {
-            ChangePin()
-        }
-        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
-        Text(
-            "Chane Privacy Pin",
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)
-                .padding(24.dp),
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.secondary
-        )
-        Spacer(modifier = Modifier.height(150.dp))
-        Box(modifier = Modifier.padding(12.dp)) {
-            CommonButton(
-                "Save Changes",
-                customColor = MaterialTheme.colorScheme.secondaryContainer,
-                textButtonSize = 12.sp
-            ) {
+    }
+    Column(
+        modifier = Modifier.padding(top = 180.dp,start = 40.dp, end = 40.dp, bottom = 24.dp)){
+        CommonButton(
+            "Save Changes",
+            customColor = MaterialTheme.colorScheme.secondaryContainer,
+        ) {
 
-            }
         }
-
     }
 }
 

@@ -41,7 +41,7 @@ actual fun ChangePin() {
     ) {
         Column(
             modifier = Modifier.background(color = MaterialTheme.colorScheme.background)
-                .fillMaxSize().padding(12.dp),
+                .fillMaxSize().padding(18.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -53,9 +53,9 @@ actual fun ChangePin() {
             )
             Spacer(modifier = Modifier.height(40.dp))
             TextField("Old Pin")
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(34.dp))
             TextField("New Pin")
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(34.dp))
             TextField("Confirm New Pin")
             Spacer(modifier = Modifier.height(40.dp))
             Box(modifier = Modifier.fillMaxWidth(.75f)) {
