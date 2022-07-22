@@ -8,6 +8,11 @@ import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.*
 import androidx.compose.ui.graphics.Color
+import chat.sphinx.wrapper.PhotoUrl
+import chat.sphinx.wrapper.chat.isConversation
+import chat.sphinx.wrapper.contact.ContactAlias
+import chat.sphinx.wrapper.contact.toContactAlias
+import chat.sphinx.wrapper.lightning.Sat
 
 class ChatMessage(
     val chat: Chat,
@@ -44,6 +49,63 @@ class ChatMessage(
 
     val replyToMessageColor: Int? by lazy {
         colors[message.id.value]
+    }
+
+    val boostsLayoutState: BoostLayoutState? by lazy {
+        if (message == null) {
+            null
+        } else {
+            message.reactions?.let { nnReactions ->
+                if (nnReactions.isEmpty()) {
+                    null
+                } else {
+                    val set: MutableSet<BoostSenderHolder> = LinkedHashSet(0)
+                    var total: Long = 0
+                    var boostedByOwner = false
+                    val owner = accountOwner()
+
+                    for (reaction in nnReactions) {
+                        if (reaction.sender == owner.id) {
+                            boostedByOwner = true
+
+                            set.add(
+                                BoostSenderHolder(
+                                    chat.myPhotoUrl ?: owner.photoUrl,
+                                    chat.myAlias?.value?.toContactAlias() ?: owner.alias,
+                                    colors[reaction.id.value]
+                                )
+                            )
+                        } else {
+                            if (chat.type.isConversation()) {
+                                set.add(
+                                    BoostSenderHolder(
+                                        contact?.photoUrl,
+                                        contact?.alias,
+                                        colors[reaction.id.value]
+                                    )
+                                )
+                            } else {
+                                set.add(
+                                    BoostSenderHolder(
+                                        reaction.senderPic,
+                                        reaction.senderAlias?.value?.toContactAlias(),
+                                        colors[reaction.id.value]
+                                    )
+                                )
+                            }
+                        }
+                        total += reaction.amount.value
+                    }
+
+                    BoostLayoutState(
+                        showSent = this.isSent,
+                        boostedByOwner = boostedByOwner,
+                        senders = set,
+                        totalAmount = Sat(total),
+                    )
+                }
+            }
+        }
     }
 
     val messageUISpacerWidth: Int by lazy {
@@ -155,5 +217,16 @@ class ChatMessage(
         }
     }
 
+    data class BoostLayoutState(
+        val showSent: Boolean,
+        val boostedByOwner: Boolean,
+        val senders: Set<BoostSenderHolder>,
+        val totalAmount: Sat,
+    )
 
+    data class BoostSenderHolder(
+        val photoUrl: PhotoUrl?,
+        val alias: ContactAlias?,
+        val color: Int?,
+    )
 }

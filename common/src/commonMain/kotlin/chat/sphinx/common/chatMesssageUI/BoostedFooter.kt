@@ -18,28 +18,30 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.platform.imageResource
-import chat.sphinx.wrapper.PhotoUrl
-import chat.sphinx.wrapper.message.Message
+import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.thumbnailUrl
 import chat.sphinx.wrapper.util.getInitials
-import com.example.compose.badge_red
-import com.example.compose.primary_green
 
 @Composable
 fun BoostedFooter(
-    chatMessage: ChatMessage
+    boostReactionsState: ChatMessage.BoostLayoutState
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
     ) {
+
+        val activeIcon = boostReactionsState.boostedByOwner || boostReactionsState.showSent
+
         Image(
-            painter = imageResource(Res.drawable.ic_boost_green),
+            painter = imageResource(
+                if (activeIcon) Res.drawable.ic_boost_green else Res.drawable.ic_boost_gray
+            ),
             contentDescription = "Boosted Icon",
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = "${chatMessage.message.reactions?.sumOf { it.amount.value }} sats",
+            text = "${boostReactionsState.totalAmount.asFormattedString(' ')}",
             color = MaterialTheme.colorScheme.tertiary,
             fontSize = 11.sp
         )
@@ -48,33 +50,31 @@ fun BoostedFooter(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.CenterEnd
         ) {
-            chatMessage.message.reactions?.forEachIndexed { index, it ->
+            boostReactionsState.senders.forEachIndexed { index, it ->
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .absoluteOffset(
-                            calculatePosition(chatMessage.message.reactions?.size ?: 0,index), 0.dp
+                            calculatePosition(boostReactionsState.senders.size, index), 0.dp
                         )
                 ) {
                     if (index < 3) {
-                        val color = chatMessage.colors[it.id.value]
-
                         PhotoUrlImage(
-                            photoUrl = it.senderPic?.thumbnailUrl,
+                            photoUrl = it.photoUrl?.thumbnailUrl,
                             modifier = Modifier
                                 .size(25.dp)
                                 .clip(CircleShape),
-                            color = if (color != null) Color(color) else Color.Gray,
-                            firstNameLetter = (chatMessage.contact?.alias?.value ?: it.senderAlias?.value)?.getInitials(),
+                            color = if (it.color != null) Color(it.color) else Color.Gray,
+                            firstNameLetter = (it.alias?.value)?.getInitials(),
                             fontSize = 9
                         )
                     }
                 }
             }
         }
-        if (chatMessage.message.reactions?.size ?: 0 > 3) {
+        if (boostReactionsState.senders.size > 3) {
             Text(
-                text = "+${(chatMessage.message.reactions?.size ?: 0) - 3}",
+                text = "+${(boostReactionsState.senders.size) - 3}",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(start = 4.dp)
