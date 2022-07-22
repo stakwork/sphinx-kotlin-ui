@@ -68,9 +68,9 @@ class DashboardViewModel: WindowFocusListener {
 
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
             DashboardState.screenState(DashboardScreenType.Unlocked)
-            networkRefresh()
         }
 
+        networkRefresh()
         connectSocket()
 
         viewModelScope.launch(dispatchers.mainImmediate) {
