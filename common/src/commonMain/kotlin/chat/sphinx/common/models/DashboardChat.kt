@@ -6,10 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import chat.sphinx.wrapper.*
-import chat.sphinx.wrapper.chat.Chat
-import chat.sphinx.wrapper.chat.getColorKey
-import chat.sphinx.wrapper.chat.isConversation
-import chat.sphinx.wrapper.chat.isTribeOwnedByAccount
+import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ContactId
@@ -48,6 +45,8 @@ sealed class DashboardChat {
     abstract fun hasUnseenMessages(): Boolean
 
     abstract fun isEncrypted(): Boolean
+
+    abstract fun isTribe(): Boolean
 
     sealed class Active: DashboardChat() {
 
@@ -89,6 +88,10 @@ sealed class DashboardChat {
 
         override fun isEncrypted(): Boolean {
             return true
+        }
+
+        override fun isTribe(): Boolean {
+            return chat.isTribe()
         }
 
         @ExperimentalStdlibApi
@@ -270,6 +273,10 @@ sealed class DashboardChat {
                     alias.value + if (withColon) ": " else ""
                 } ?: ""
             }
+
+            override fun isTribe(): Boolean {
+                return chat.isTribe()
+            }
         }
 
         class GroupOrTribe(
@@ -294,6 +301,10 @@ sealed class DashboardChat {
                 return message.senderAlias?.let { alias ->
                     alias.value + if (withColon) ": " else ""
                 } ?: ""
+            }
+
+            override fun isTribe(): Boolean {
+                return chat.isTribe()
             }
         }
     }
@@ -336,6 +347,10 @@ sealed class DashboardChat {
 
             override fun isEncrypted(): Boolean {
                 return !(contact.rsaPublicKey?.value?.isEmpty() ?: true)
+            }
+
+            override fun isTribe(): Boolean {
+                return false
             }
         }
 
@@ -437,6 +452,10 @@ sealed class DashboardChat {
             }
 
             override fun isEncrypted(): Boolean {
+                return false
+            }
+
+            override fun isTribe(): Boolean {
                 return false
             }
         }

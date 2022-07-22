@@ -48,6 +48,7 @@ import chat.sphinx.wrapper.util.getInitials
 import com.example.compose.place_holder_text
 import com.example.compose.primary_green
 import com.example.compose.sphinx_orange
+import kotlinx.coroutines.flow.firstOrNull
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
@@ -243,7 +244,9 @@ fun SphinxChatDetailTopAppBar(
                     Text(
                         text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
                         modifier = Modifier.clickable {
-                            dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact(contactId))
+                            if (dashboardChat.isTribe().not()) {
+                                dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact(contactId))
+                            }
                         }
                     )
 
