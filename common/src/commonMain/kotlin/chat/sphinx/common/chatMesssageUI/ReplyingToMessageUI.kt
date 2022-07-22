@@ -8,21 +8,27 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.components.CustomDivider
 import chat.sphinx.common.components.MessageMediaImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
+import com.example.compose.badge_red
+import androidx.compose.ui.platform.LocalDensity
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ReplyingToMessageUI(
     chatMessage: ChatMessage,
@@ -57,8 +63,8 @@ fun ReplyingToMessageUI(
                     Icon(
                         Icons.Default.AttachFile,
                         contentDescription = "Attachment",
-                        tint = Color.Green,
-                        modifier = Modifier.size(88.dp).padding(4.dp)
+                        tint = Color.Gray,
+                        modifier = Modifier.height(88.dp).padding(start = 10.dp)
                     )
                 }
             }
@@ -68,10 +74,9 @@ fun ReplyingToMessageUI(
                 ),
                 verticalArrangement = Arrangement.Center
             ) {
-//                if(chatMessage.isDeleted.not())
                 replyMessage.senderAlias?.let { senderAlias ->
                     Text(
-                        modifier = Modifier.fillMaxWidth(0.8f),
+                        modifier = Modifier.wrapContentWidth(),
                         text = senderAlias.value.trim(),
                         fontFamily = Roboto,
                         fontWeight = FontWeight.W600,
@@ -86,7 +91,7 @@ fun ReplyingToMessageUI(
                     if (replyMessageText.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            modifier = Modifier.fillMaxWidth(0.8f),
+                            modifier = Modifier.wrapContentWidth(),
                             text = replyMessageText,
                             fontFamily = Roboto,
                             fontWeight = FontWeight.W400,
@@ -101,5 +106,4 @@ fun ReplyingToMessageUI(
             }
         }
     }
-
 }

@@ -1,18 +1,20 @@
 package chat.sphinx.common.chatMesssageUI
 
+import Roboto
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.wrapper.lightning.isValidLightningNodePubKey
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
 
@@ -38,9 +40,19 @@ fun ChatMessageUI(
                  * Show [ImageProfile] at the starting of chat message if
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
-                if (chatMessage.isReceived && chatMessage.groupActionLabelText.isNullOrEmpty() && chatMessage.isDeleted.not()) {
-                    ImageProfile(chatMessage)
-                    Spacer(modifier = Modifier.width(12.dp))
+
+                val showProfilePic = (
+                    chatMessage.groupActionLabelText.isNullOrEmpty() &&
+                    chatMessage.isReceived &&
+                    chatMessage.isDeleted.not() &&
+                    chatMessage.isFlagged.not()
+                )
+
+                Box(modifier = Modifier.width(42.dp)) {
+                    if (showProfilePic) {
+                        ImageProfile(chatMessage)
+                        Spacer(modifier = Modifier.width(12.dp).background(color = Color.Red))
+                    }
                 }
                 Column(
                     verticalArrangement = Arrangement.Top,
@@ -50,11 +62,11 @@ fun ChatMessageUI(
                         TribeHeaderMessage(chatMessage)
                     } else {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = if(chatMessage.isDeleted&&chatMessage.isReceived) 42.dp else 4.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            DisplayConditionalIcons(chatMessage, chatViewModel) // display icons according to different conditions
+                            DisplayConditionalIcons(chatMessage) // display icons according to different conditions
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -65,22 +77,20 @@ fun ChatMessageUI(
                                 ChatOptionMenu(chatMessage, chatViewModel)
                             }
                             when {
-                                chatMessage.message.isSphinxCallLink -> {
-                                    JitsiAudioVideoCall(chatMessage)
-                                }
-                                chatMessage.message.messageContentDecrypted?.value?.isValidLightningNodePubKey == true -> {
-                                    Text("Valid Key")
-                                }
-                                chatMessage.message.type == MessageType.DirectPayment -> {
-                                    DirectPaymentUI(chatMessage, chatViewModel)
-                                }
-                                chatMessage.isDeleted -> {
-                                    Column(modifier = Modifier.padding(horizontal = if(chatMessage.isDeleted&&chatMessage.isReceived) 42.dp else 4.dp)) {
+                                (chatMessage.isDeleted || chatMessage.isFlagged) -> {
+                                    val text = if (chatMessage.isDeleted) {
+                                        "This message has been deleted"
+                                    } else {
+                                        "This message has been flagged"
+                                    }
+
+                                    Column {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             modifier = Modifier.fillMaxWidth(),
-                                            text = "This message has been deleted",
+                                            text = text,
                                             fontWeight = FontWeight.W300,
+                                            fontFamily = Roboto,
                                             color = MaterialTheme.colorScheme.onBackground,
                                             fontStyle = FontStyle.Italic,
                                             fontSize = 11.sp,
@@ -88,35 +98,29 @@ fun ChatMessageUI(
                                         )
                                     }
                                 }
+                                chatMessage.message.isSphinxCallLink -> {
+                                    JitsiAudioVideoCall(chatMessage)
+                                }
+                                chatMessage.message.type == MessageType.DirectPayment -> {
+                                    DirectPaymentUI(chatMessage, chatViewModel)
+                                }
                                 else -> {
-                                    if (chatMessage.message.isMediaAttachmentAvailable) {
-                                        Box(
-                                            contentAlignment = if (chatMessage.isSent) Alignment.CenterEnd else Alignment.CenterStart,
-                                            modifier = Modifier.fillMaxWidth(0.5f)
-                                        ) {
-                                            ChatCard(
-                                                chatMessage,
-                                                chatViewModel
-                                            )
+                                    ChatCard(
+                                        chatMessage,
+                                        chatViewModel,
+                                        modifier = if (chatMessage.message.isMediaAttachmentAvailable) {
+                                            Modifier.fillMaxWidth(0.5f)
+                                        } else {
+                                            Modifier.weight(1f, fill = false)
                                         }
-                                    } else {
-                                        ChatCard(
-                                            chatMessage,
-                                            chatViewModel
-                                        )
-                                    }
+                                    )
                                 }
                             }
                             if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
-                                Box(modifier = Modifier.height(50.dp).width(50.dp)) {
-                                    ChatOptionMenu(chatMessage, chatViewModel)
-                                }
+                                ChatOptionMenu(chatMessage, chatViewModel)
                             }
-
                         }
-
                     }
-
                 }
             }
         }

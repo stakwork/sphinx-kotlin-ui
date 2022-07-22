@@ -36,14 +36,14 @@ fun MessageListUI(
     chatViewModel: ChatViewModel
 ) {
     Box(
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.background).padding(
+        modifier = Modifier.padding(
             bottom = 15.dp
         )
     ) {
         when (val messageListData = MessageListState.screenState()) {
             is MessageListData.EmptyMessageListData -> {
                 Box(
-                    modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             is MessageListData.PopulatedMessageListData -> {
@@ -54,7 +54,7 @@ fun MessageListUI(
 
                 if (chatMessages.isEmpty()) {
                     Box(
-                        modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
                     ChatMessagesList(
@@ -84,12 +84,11 @@ fun ChatMessagesList(
         state = listState,
         reverseLayout = true,
         contentPadding = PaddingValues(
-            bottom = if (chatViewModel?.isReplying()) 84.dp else 40.dp,
+            bottom = if (chatViewModel?.isReplying()) 94.dp else 50.dp,
             top = 8.dp,
             start = 8.dp,
             end = 8.dp
-        ),
-        modifier = Modifier.background(MaterialTheme.colorScheme.background)
+        )
     ) {
         itemsIndexed(items, key = { index, item -> item.message.id }){ index, item ->
             print("index is $index with value ${item.message.messageContent?.value}")

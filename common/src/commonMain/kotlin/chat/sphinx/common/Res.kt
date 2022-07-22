@@ -21,6 +21,7 @@ object Res {
         const val ic_sent =  "drawable/ic_sent.xml"
         const val ic_received =  "drawable/ic_received.xml"
         const val ic_coin =  "drawable/ic_coin.xml"
+        const val ic_qr_code =  "drawable/ic_qr_code.xml"
         const val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"
 
         const val existing_user_image = "drawable/existinguserimage.png"

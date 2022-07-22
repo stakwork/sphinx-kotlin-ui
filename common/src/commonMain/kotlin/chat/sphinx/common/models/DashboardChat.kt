@@ -1,5 +1,10 @@
 package chat.sphinx.common.models
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import chat.sphinx.wrapper.*
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.getColorKey
@@ -13,6 +18,10 @@ import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
+import com.example.compose.badge_red
+import com.example.compose.primary_blue
+import com.example.compose.primary_green
+import com.example.compose.sphinx_orange
 import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
 import chat.sphinx.wrapper.invite.Invite as InviteWrapper
@@ -89,7 +98,6 @@ sealed class DashboardChat {
                 message == null -> {
                     ""
                 }
-
                 message.status.isDeleted() -> {
                     "Message deleted"
                 }
@@ -220,6 +228,9 @@ sealed class DashboardChat {
                             "${getMessageSender(message,false)} $sentString $element"
                         }
                     } ?: ""
+                }
+                message.type.isBotRes() -> {
+                    "Bot response received"
                 }
                 else -> {
                     ""
@@ -385,29 +396,30 @@ sealed class DashboardChat {
                 }
             }
 
-            fun getInviteIconAndColor(): Pair<String, String>? {
+            @Composable
+            fun getInviteIconAndColor(): Pair<ImageVector, Color>? {
 
                 return when (invite?.status) {
                     is InviteStatus.Pending -> {
-                        Pair("pending", "orange")
+                        Pair(Icons.Filled.Pending, sphinx_orange)
                     }
                     is InviteStatus.Ready, InviteStatus.Delivered -> {
-                        Pair("ready", "green")
+                        Pair(Icons.Filled.Done, primary_green)
                     }
                     is InviteStatus.InProgress -> {
-                        Pair("in progress", "blue")
+                        Pair(Icons.Filled.Sync, primary_blue)
                     }
                     is InviteStatus.PaymentPending -> {
-                        Pair("payment pending", "white")
+                        Pair(Icons.Filled.Payment, androidx.compose.material3.MaterialTheme.colorScheme.onBackground)
                     }
                     is InviteStatus.ProcessingPayment -> {
-                        Pair("payment sent", "white")
+                        Pair(Icons.Filled.Sync, androidx.compose.material3.MaterialTheme.colorScheme.onBackground)
                     }
                     is InviteStatus.Complete -> {
-                        Pair("complete", "green")
+                        Pair(Icons.Filled.Done, primary_green)
                     }
                     is InviteStatus.Expired -> {
-                        Pair("expired", "red")
+                        Pair(Icons.Filled.Error, badge_red)
                     }
                     null,
                     is InviteStatus.Unknown -> {
@@ -421,7 +433,7 @@ sealed class DashboardChat {
             }
 
             override fun hasUnseenMessages(): Boolean {
-                return false
+                return true
             }
 
             override fun isEncrypted(): Boolean {

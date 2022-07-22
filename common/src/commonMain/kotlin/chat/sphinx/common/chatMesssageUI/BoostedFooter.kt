@@ -24,10 +24,12 @@ import chat.sphinx.wrapper.util.getInitials
 
 @Composable
 fun BoostedFooter(
-    boostReactionsState: ChatMessage.BoostLayoutState
+    boostReactionsState: ChatMessage.BoostLayoutState,
+    modifier: Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
     ) {
 
         val activeIcon = boostReactionsState.boostedByOwner || boostReactionsState.showSent

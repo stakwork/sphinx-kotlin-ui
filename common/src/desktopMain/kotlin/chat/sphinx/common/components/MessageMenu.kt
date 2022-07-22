@@ -6,10 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.CopyAll
-import androidx.compose.material.icons.filled.FileCopy
-import androidx.compose.material.icons.filled.Reply
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -31,6 +28,7 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.message.isMediaAttachmentAvailable
 import chat.sphinx.wrapper.message.retrieveTextToShow
+import com.example.compose.badge_red
 
 @Composable
 actual fun MessageMenu(
@@ -41,66 +39,82 @@ actual fun MessageMenu(
     val dismissKebab = {
         isVisible.value = false
     }
-    CursorDropdownMenu(
+    DropdownMenu(
         expanded = isVisible.value,
-        onDismissRequest = dismissKebab, modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer).clip(
-            RoundedCornerShape(16.dp)
-        )
+        onDismissRequest = dismissKebab,
+        modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
     ) {
         if (chatMessage.isReceived) {
-            DropdownMenuItem(onClick = {
-                // TODO: Boost is broken...
-                chatMessage.boostMessage()
-                dismissKebab()
-            }) {
-                OptionItem("Boost",Res.drawable.ic_boost_green)
+            DropdownMenuItem(
+                modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
+                onClick = {
+                    // TODO: Boost is broken...
+                    chatMessage.boostMessage()
+                    dismissKebab()
+                }
+            ) {
+                OptionItem("Boost", Res.drawable.ic_boost_green)
             }
         }
         chatMessage.message.retrieveTextToShow()?.let { messageText ->
             if (messageText.isNotEmpty()) {
                 val clipboardManager = LocalClipboardManager.current
-                DropdownMenuItem(onClick = {
-                    clipboardManager.setText(
-                        messageText.toAnnotatedString()
-                    )
-                    dismissKebab()
-                }) {
+                DropdownMenuItem(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
+                    onClick = {
+                        clipboardManager.setText(
+                            messageText.toAnnotatedString()
+                        )
+                        dismissKebab()
+                    }
+                ) {
                     OptionItem("Copy text", imageVector = Icons.Default.ContentCopy)
                 }
             }
         }
-        DropdownMenuItem(onClick = {
-            chatMessage.setAsReplyToMessage(chatViewModel.editMessageState)
-            dismissKebab()
-        }) {
-           OptionItem("Reply", imageVector = Icons.Default.Reply)
+        DropdownMenuItem(
+            modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
+            onClick = {
+                chatMessage.setAsReplyToMessage(chatViewModel.editMessageState)
+                dismissKebab()
+            }
+        ) {
+            OptionItem("Reply", imageVector = Icons.Default.Reply)
         }
         if (chatMessage.message.isMediaAttachmentAvailable) {
-            DropdownMenuItem(onClick = {
-                // TODO: Save attachment...
-                chatViewModel.editMessageState
-                dismissKebab()
-            }) {
-                Text("Save attachment", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
+            DropdownMenuItem(
+                modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
+                onClick = {
+                    // TODO: Save attachment...
+                    chatViewModel.editMessageState
+                    dismissKebab()
+                }
+            ) {
+                OptionItem("Save", imageVector = Icons.Default.Save)
             }
         }
 
         if (chatMessage.isSent) {
-            DropdownMenuItem(onClick = {
-                // TODO: Confirm action...
-                chatMessage.deleteMessage()
-                dismissKebab()
-            }) {
-                Text(
-                    "Delete",
-                    color = Color.Red
-                )
+            DropdownMenuItem(
+                modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer),
+                onClick = {
+                    // TODO: Confirm action...
+                    chatMessage.deleteMessage()
+                    dismissKebab()
+                }
+            ) {
+                OptionItem("Delete", imageVector = Icons.Default.Delete, color = badge_red)
             }
         }
     }
 }
 @Composable
-fun OptionItem(optionText:String,iconPath:String?=null,imageVector: ImageVector?=null){
+fun OptionItem(
+    optionText: String,
+    iconPath: String? = null,
+    imageVector: ImageVector? = null,
+    color: Color = MaterialTheme.colorScheme.tertiary
+){
     Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         iconPath?.let {
             Image(
@@ -111,9 +125,9 @@ fun OptionItem(optionText:String,iconPath:String?=null,imageVector: ImageVector?
             )
         }
         imageVector?.let {
-            Icon(it,contentDescription = null,modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+            Icon(it, contentDescription = null, modifier = Modifier.size(18.dp), tint = color)
         }
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(optionText, color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(optionText, color = color, fontSize = 11.sp)
     }
 }
