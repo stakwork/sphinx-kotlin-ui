@@ -53,7 +53,7 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
-            packageVersion = "1.0.1"
+            packageVersion = "1.0.2"
 
             val iconsRoot = project.file("../common/src/desktopMain/resources/images")
             val sphinxProperties = Properties().apply {
@@ -63,20 +63,19 @@ compose.desktop {
             val macOsBundleID = sphinxProperties.getProperty("macOs.bundleID")
             val macOsSigningIdentity = sphinxProperties.getProperty("macOs.signing.identity")
 
+            macOS {
+                if (macOsBundleID?.isNotEmpty() == true) {
+                    bundleID = macOsBundleID
+                }
 
-//            macOS {
-//                if (macOsBundleID.isNotEmpty()) {
-//                    bundleID = macOsBundleID
-//                }
-//
-//                signing {
-//                    sign.set(true)
-//                    if (macOsSigningIdentity.isNotEmpty()) {
-//                        identity.set(macOsSigningIdentity)
-//                    }
-//                }
-//                iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
-//            }
+                signing {
+                    sign.set(true)
+                    if (macOsSigningIdentity?.isNotEmpty() == true) {
+                        identity.set(macOsSigningIdentity)
+                    }
+                }
+                iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
+            }
             windows {
                 iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
             }

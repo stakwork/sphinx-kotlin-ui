@@ -13,3 +13,9 @@ fun getPreferredWindowSize(desiredWidth: Int, desiredHeight: Int): DpSize {
     val height: Int = if (desiredHeight < preferredHeight) desiredHeight else preferredHeight
     return DpSize(width.dp, height.dp)
 }
+
+fun getFullscreenWindowSize(): DpSize {
+    val screenSize: Dimension = Toolkit.getDefaultToolkit().screenSize
+
+    return DpSize(screenSize.width.dp, screenSize.height.dp)
+}

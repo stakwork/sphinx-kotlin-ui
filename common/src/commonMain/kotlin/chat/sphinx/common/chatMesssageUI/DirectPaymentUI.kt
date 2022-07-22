@@ -22,10 +22,14 @@ import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.chat.isTribe
+import chat.sphinx.wrapper.util.getInitials
 import utils.conditional
 
 @Composable
-fun DirectPaymentUI(chatMessage: ChatMessage, chatViewModel: ChatViewModel) {
+fun DirectPaymentUI(
+    chatMessage: ChatMessage,
+    chatViewModel: ChatViewModel
+) {
     val receiverCorner =
         RoundedCornerShape(
             topEnd = 10.dp,
@@ -57,6 +61,8 @@ fun DirectPaymentUI(chatMessage: ChatMessage, chatViewModel: ChatViewModel) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (chatMessage.chat.isTribe()) {
+                        val recipientColor = chatMessage.colors[-chatMessage.message.id.value]
+
                         Box(modifier = Modifier.weight(1f).padding(start = 8.dp, end = 8.dp)) {
                             PhotoUrlImage(
                                 photoUrl = chatMessage.message.recipientPic,
@@ -64,12 +70,14 @@ fun DirectPaymentUI(chatMessage: ChatMessage, chatViewModel: ChatViewModel) {
                                     .size(25.dp)
                                     .clip(
                                         CircleShape
-                                    )
+                                    ),
+                                color = if (recipientColor != null) Color(recipientColor) else null,
+                                firstNameLetter = chatMessage.message.recipientAlias?.value?.getInitials(),
+                                fontSize = 9
                             )
                         }
                     }
                     if (chatMessage.isReceived && chatMessage.chat.isTribe().not()) {
-
                         Image(
                             painter = imageResource(Res.drawable.ic_received),
                             contentDescription = "Sent Icon",
@@ -130,7 +138,7 @@ fun DirectPaymentUI(chatMessage: ChatMessage, chatViewModel: ChatViewModel) {
                             chatMessage.message,
                             messageMedia = it,
                             chatViewModel = chatViewModel,
-                            modifier = Modifier.height(150.dp)
+                            modifier = Modifier.wrapContentHeight().fillMaxWidth()
                         )
 
                     }

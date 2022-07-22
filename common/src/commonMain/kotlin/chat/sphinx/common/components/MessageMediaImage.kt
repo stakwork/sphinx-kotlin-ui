@@ -1,6 +1,7 @@
 package chat.sphinx.common.components
 
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -18,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.state.fullScreenImageState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.retrieveRemoteMediaInputStream
 import chat.sphinx.concepts.network.client.crypto.CryptoHeader
@@ -95,7 +97,12 @@ fun MessageMediaImage(
     if (localFilepath.value != null) {
         PhotoFileImage(
             localFilepath.value!!,
-            modifier = modifier
+            modifier = modifier.clickable {
+                fullScreenImageState.value = localFilepath.value
+            },
+            effect = {
+                ImageLoadingView()
+            }
         )
     } else if (imageLoadError.value) {
         Icon(
@@ -105,18 +112,23 @@ fun MessageMediaImage(
             modifier = Modifier.size(30.dp).padding(4.dp)
         )
     } else {
-        // TODO: Have an error view depending on the launched effect
-        Box(modifier=Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
-            Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(40.dp)
-                )
-                Spacer(modifier=Modifier.height(2.dp))
-                Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.onBackground)
-                Spacer(modifier=Modifier.height(8.dp))
-            }
+        ImageLoadingView()
+    }
+}
+
+@Composable
+fun ImageLoadingView() {
+    Box(modifier=Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier=Modifier.height(16.dp))
+            CircularProgressIndicator(
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier=Modifier.height(2.dp))
+            Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.onBackground)
+            Spacer(modifier=Modifier.height(16.dp))
         }
     }
 }

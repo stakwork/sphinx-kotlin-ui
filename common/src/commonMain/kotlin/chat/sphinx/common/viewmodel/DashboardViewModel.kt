@@ -1,5 +1,6 @@
 package chat.sphinx.common.viewmodel
 
+import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardState
 import chat.sphinx.concepts.socket_io.SocketIOManager
@@ -11,16 +12,16 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
-import chat.sphinx.wrapper.lightning.Sat
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.awt.event.WindowEvent
+import java.awt.event.WindowFocusListener
+import kotlinx.coroutines.flow.collect
 
-class DashboardViewModel {
+class DashboardViewModel: WindowFocusListener {
     val dispatchers = SphinxContainer.appModule.dispatchers
     val viewModelScope = SphinxContainer.appModule.applicationScope
     val sphinxNotificationManager = createSphinxNotificationManager()
@@ -35,19 +36,42 @@ class DashboardViewModel {
     val balanceStateFlow: StateFlow<NodeBalance?>
         get() = _balanceStateFlow.asStateFlow()
 
-    init {
+    private val _contactWindowStateFlow: MutableStateFlow<Pair<Boolean, ContactScreenState?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
+    val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
+        get() = _contactWindowStateFlow.asStateFlow()
+
+    fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
+        _contactWindowStateFlow.value = Pair(open, screen)
+    }
+
+    private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val qrWindowStateFlow: StateFlow<Boolean>
+        get() = _qrWindowStateFlow.asStateFlow()
+
+    fun toggleQRWindow(open: Boolean) {
+        _qrWindowStateFlow.value = open
+    }
+
+    private var screenInit: Boolean = false
+    fun screenInit() {
+        if (screenInit) {
+            return
+        } else {
+            screenInit = true
+        }
+
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
             DashboardState.screenState(DashboardScreenType.Unlocked)
             networkRefresh()
         }
 
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            socketIOManager.socketIOStateFlow.collect { state ->
-                if (state is SocketIOState.Uninitialized) {
-                    socketIOManager.connect()
-                }
-            }
-        }
+        connectSocket()
 
         viewModelScope.launch(dispatchers.mainImmediate) {
             repositoryDashboard.getAccountBalanceStateFlow().collect {
@@ -55,6 +79,28 @@ class DashboardViewModel {
             }
         }
     }
+
+    private fun connectSocket() {
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            socketIOManager.socketIOStateFlow.collect { state ->
+                if (state is SocketIOState.Uninitialized ||
+                    state is SocketIOState.Initialized.Disconnected ||
+                    state is SocketIOState.Initialized.Closed) {
+
+                    socketIOManager.connect()
+                }
+            }
+        }
+    }
+
+    override fun windowGainedFocus(p0: WindowEvent?) {
+        if (DashboardState.screenState() == DashboardScreenType.Unlocked) {
+            connectSocket()
+            networkRefresh()
+        }
+    }
+
+    override fun windowLostFocus(p0: WindowEvent?) { }
 
     private val _networkStateFlow: MutableStateFlow<LoadResponse<Boolean, ResponseError>> by lazy {
         MutableStateFlow(LoadResponse.Loading)
@@ -84,18 +130,19 @@ class DashboardViewModel {
                 Exhaustive@
                 when (response) {
                     is LoadResponse.Loading -> {
+                        _networkStateFlow.value = response
                     }
-                    is Response.Error -> {
-                    }
-                    is Response.Success -> {
-                    }
+                    is Response.Error -> {}
+                    is Response.Success -> {}
                 }
             }
 
             repositoryDashboard.networkRefreshBalance.collect { response ->
                 Exhaustive@
                 when (response) {
-                    is LoadResponse.Loading,
+                    is LoadResponse.Loading -> {
+                        _networkStateFlow.value = response
+                    }
                     is Response.Error -> {
                         _networkStateFlow.value = response
                     }
@@ -110,7 +157,9 @@ class DashboardViewModel {
             repositoryDashboard.networkRefreshLatestContacts.collect { response ->
                 Exhaustive@
                 when (response) {
-                    is LoadResponse.Loading -> {}
+                    is LoadResponse.Loading -> {
+                        _networkStateFlow.value = response
+                    }
                     is Response.Error -> {
                         _networkStateFlow.value = response
                     }

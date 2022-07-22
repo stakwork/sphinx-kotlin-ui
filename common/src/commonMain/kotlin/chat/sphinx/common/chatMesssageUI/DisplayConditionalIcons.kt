@@ -1,5 +1,6 @@
 package chat.sphinx.common.chatMesssageUI
 
+import Roboto
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -23,15 +24,20 @@ import com.example.compose.place_holder_text
 
 @Composable
 fun DisplayConditionalIcons(
-    chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel,
-    color: Color
+    chatMessage: ChatMessage
 ) {
+    val color = chatMessage.colors[chatMessage.message.id.value]
 
-    if (chatMessage.chat.isTribe() && chatMessage.isReceived) {
+    if (
+        chatMessage.chat.isTribe() &&
+        chatMessage.isReceived &&
+        (chatMessage.isDeleted.not() && chatMessage.isFlagged.not())
+    ) {
         Text(
             text = chatMessage.message.senderAlias?.value ?: "",
-            color = color, fontSize = 10.sp
+            color = if (color != null) Color(color) else Color.Unspecified,
+            fontSize = 10.sp,
+            fontFamily = Roboto,
         )
         Spacer(
             modifier = Modifier.width(4.dp)
@@ -55,7 +61,7 @@ fun DisplayConditionalIcons(
         )
     }
 
-    if (chatMessage.showLockIcon&&chatMessage.isSent) {
+    if (chatMessage.showLockIcon && chatMessage.isSent) {
         Icon(
             Icons.Default.Lock,
             "Secure chat",
@@ -66,13 +72,14 @@ fun DisplayConditionalIcons(
 
     Text(
         text = chatMessage.message.date.chatTimeFormat(),
-        fontWeight = FontWeight.W200,
+        fontWeight = FontWeight.W300,
+        fontFamily = Roboto,
         color = place_holder_text,
         fontSize = 10.sp,
         textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
     )
 
-    if (chatMessage.showLockIcon&&chatMessage.isReceived) {
+    if (chatMessage.showLockIcon && chatMessage.isReceived) {
         Icon(
             Icons.Default.Lock,
             "Secure chat",
@@ -80,6 +87,4 @@ fun DisplayConditionalIcons(
             modifier = Modifier.size(18.dp).padding(4.dp)
         )
     }
-
-
 }

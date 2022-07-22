@@ -1,12 +1,14 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -28,16 +30,19 @@ fun ChatListUI() {
     val listState = rememberLazyListState()
     val chatListViewModel = remember { ChatListViewModel() }
 
-    Box(modifier = Modifier.padding(bottom = 65.dp)) {
+    Box {
         when (val chatListData = ChatListState.screenState()) {
             is ChatListData.EmptyChatListData -> {}
             is ChatListData.PopulatedChatListData -> {
                 LazyColumn(
                     state = listState,
-                    contentPadding = PaddingValues(4.dp)
+                    contentPadding = PaddingValues(top = 1.dp)
                 ) {
                     items(chatListData.dashboardChats) { dashboardChat ->
-                            ChatRow(dashboardChat)
+                        ChatRow(
+                            dashboardChat,
+                            chatListViewModel
+                        )
                     }
                 }
 

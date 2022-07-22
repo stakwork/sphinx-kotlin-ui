@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -35,7 +36,7 @@ import com.example.compose.primary_red
 fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
     Box(
         Modifier
-            .background(androidx.compose.material3.MaterialTheme.colorScheme.background)
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
             .fillMaxSize()
     ) {
         Column {
@@ -115,7 +116,6 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                     )
                 }
             }
-
             var searchText by rememberSaveable { mutableStateOf("") }
             TopAppBar(
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
@@ -132,7 +132,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                         trailingIcon = null,
                         modifier = Modifier
                             .background(
-                                Color(0xFf151e27),
+                                androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
                                 RoundedCornerShape(percent = 50)
                             )
                             .padding(4.dp)
@@ -147,7 +147,9 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 },
                 elevation = 8.dp,
                 actions = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {
+                        dashboardViewModel.toggleContactWindow(true, ContactScreenState.Choose)
+                    }) {
                         Icon(
                             Icons.Default.PersonAddAlt,
                             contentDescription = "Add a person",
@@ -156,6 +158,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                     }
                 }
             )
+            val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
+            if (addContactWindowState.first){
+                AddContactWindow(dashboardViewModel)
+            }
+
             ChatListUI()
         }
     }
@@ -167,50 +174,4 @@ fun DashboardSidebarPreview() {
     MaterialTheme {
         DashboardSidebarUI(DashboardViewModel())
     }
-}
-
-@Composable
-fun CustomTextField(
-    modifier: Modifier = Modifier,
-    leadingIcon: (@Composable () -> Unit)? = null,
-    trailingIcon: (@Composable () -> Unit)? = null,
-    placeholderText: String = "Placeholder",
-    value: String,
-    color: Color? = null,
-    onValueChange: (String) -> Unit,
-    fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
-) {
-    BasicTextField(
-        modifier = modifier.fillMaxWidth(),
-        value = value,
-        onValueChange = onValueChange,
-        singleLine = true,
-        cursorBrush = SolidColor(MaterialTheme.colors.primary),
-        textStyle = LocalTextStyle.current.copy(
-            fontFamily = Roboto,
-            fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
-            color = color ?: place_holder_text
-        ),
-        decorationBox = { innerTextField ->
-            Row(
-                modifier,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (leadingIcon != null) leadingIcon()
-                Box(Modifier.weight(1f)) {
-                    if (value.isEmpty())
-                        Text(
-                            placeholderText,
-                            style = LocalTextStyle.current.copy(
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground.copy(alpha = .7f),
-                                fontSize = fontSize
-                            )
-                        )
-                    innerTextField()
-                }
-                if (trailingIcon != null) trailingIcon()
-            }
-        }
-    )
 }

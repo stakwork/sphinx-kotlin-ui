@@ -48,6 +48,7 @@ expect fun kamelFileConfig(): KamelConfig
 fun PhotoFileImage(
     photoFilepath: Path,
     modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Inside,
     effect: @Composable() (() -> Unit?)? = null
 ) {
     val kamelConfig = kamelFileConfig()
@@ -60,7 +61,7 @@ fun PhotoFileImage(
 
         KamelImage(
             resource = photoUrlResource,
-            contentDescription = "avatar",
+            contentDescription = "image file",
             onLoading = {
 
                 if (effect != null) {
@@ -84,7 +85,7 @@ fun PhotoFileImage(
                     modifier = modifier
                 )
             },
-            contentScale = ContentScale.Crop,
+            contentScale = contentScale,
             modifier = modifier,
             crossfade = false
         )
