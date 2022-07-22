@@ -5,6 +5,7 @@ import chat.sphinx.common.state.DashboardState
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.concepts.socket_io.SocketIOState
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.features.authentication.view.ui.InputLockState
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
@@ -19,8 +20,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.awt.event.WindowEvent
+import java.awt.event.WindowFocusListener
 
-class DashboardViewModel {
+class DashboardViewModel: WindowFocusListener {
     val dispatchers = SphinxContainer.appModule.dispatchers
     val viewModelScope = SphinxContainer.appModule.applicationScope
     val sphinxNotificationManager = createSphinxNotificationManager()
@@ -46,19 +49,20 @@ class DashboardViewModel {
         _addContactWindowStateFlow.value = open
     }
 
-    init {
+    private var screenInit: Boolean = false
+    fun screenInit() {
+        if (screenInit) {
+            return
+        } else {
+            screenInit = true
+        }
+
         if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
             DashboardState.screenState(DashboardScreenType.Unlocked)
             networkRefresh()
         }
 
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            socketIOManager.socketIOStateFlow.collect { state ->
-                if (state is SocketIOState.Uninitialized) {
-                    socketIOManager.connect()
-                }
-            }
-        }
+        connectSocket()
 
         viewModelScope.launch(dispatchers.mainImmediate) {
             repositoryDashboard.getAccountBalanceStateFlow().collect {
@@ -66,6 +70,28 @@ class DashboardViewModel {
             }
         }
     }
+
+    private fun connectSocket() {
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            socketIOManager.socketIOStateFlow.collect { state ->
+                if (state is SocketIOState.Uninitialized ||
+                    state is SocketIOState.Initialized.Disconnected ||
+                    state is SocketIOState.Initialized.Closed) {
+
+                    socketIOManager.connect()
+                }
+            }
+        }
+    }
+
+    override fun windowGainedFocus(p0: WindowEvent?) {
+        if (DashboardState.screenState() == DashboardScreenType.Unlocked) {
+            connectSocket()
+            networkRefresh()
+        }
+    }
+
+    override fun windowLostFocus(p0: WindowEvent?) { }
 
     private val _networkStateFlow: MutableStateFlow<LoadResponse<Boolean, ResponseError>> by lazy {
         MutableStateFlow(LoadResponse.Loading)
