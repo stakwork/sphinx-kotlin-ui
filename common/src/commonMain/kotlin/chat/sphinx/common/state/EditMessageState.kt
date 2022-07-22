@@ -8,6 +8,7 @@ import chat.sphinx.wrapper.dashboard.ContactId
 
 data class EditMessageState(
     val messageText: MutableState<String> = mutableStateOf(""),
+    val price: MutableState<Long?> = mutableStateOf(null),
     val chatId: ChatId?,
     val contactId: ContactId? = null,
     val replyToMessage: MutableState<ChatMessage?> = mutableStateOf(null)
