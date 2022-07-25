@@ -419,6 +419,10 @@ abstract class ChatViewModel(
         }
     }
 
+    fun downloadFileMedia(message: Message, sent: Boolean) {
+        repositoryMedia.downloadMediaIfApplicable(message, sent)
+    }
+
     fun saveFile(message: Message) {
         attachmentFileDownloader.saveFile(message)
     }
