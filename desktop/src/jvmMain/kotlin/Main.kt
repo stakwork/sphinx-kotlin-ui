@@ -128,7 +128,7 @@ fun main() = application {
                     if (ContentState.saveFilePickerDialog.isAwaiting) {
                         FilePickerDialog(
                             window,
-                            "Sphinx Save File",
+                            "Save File",
                             FilePickerMode.SAVE_FILE,
                             onResult = {
                                 ContentState.saveFilePickerDialog.onResult(it)

@@ -24,6 +24,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.CustomDivider
+import chat.sphinx.common.components.MessageAudio
+import chat.sphinx.common.components.MessageFile
 import chat.sphinx.common.components.MessageMediaImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -69,7 +71,7 @@ fun ChatCard(
                 CustomDivider(color = light_divider, modifier = Modifier.width(rowWidth))
             }
             chatMessage.message.messageMedia?.let { media ->
-                Column(modifier = Modifier.padding(if (media.mediaType.isImage) 0.dp else 12.dp)) {
+                Column(modifier = Modifier.padding( if (media.mediaType.isImage) 0.dp else 12.dp) ) {
                     if (media.mediaType.isImage) {
                         chatMessage.message.messageMedia?.let { messageMedia ->
                             MessageMediaImage(
@@ -80,61 +82,15 @@ fun ChatCard(
                             )
                         }
                     } else if (media.mediaType.isUnknown || media.mediaType.isPdf) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                if (media.mediaType.isPdf) Icons.Default.PictureAsPdf else Icons.Default.FileCopy,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column() {
-                                Text(
-                                    "File Name.pdf",
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                    fontSize = 12.sp
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    "1 Pages",
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                    fontSize = 11.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                Icons.Default.Download,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary
-                            )
-                        }
-                    } else if (media.mediaType.isAudio) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.Default.PlayArrow,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary
-                            )
-                            Box(modifier = Modifier.fillMaxWidth(0.8f)) {
-                                val slideValue = remember { mutableStateOf(0.1f) }
-                                Slider(
-                                    value = slideValue.value,
-                                    onValueChange = {
-                                        slideValue.value = it
-                                    },
-                                    colors = SliderDefaults.colors(
-                                        activeTrackColor = MaterialTheme.colorScheme.onBackground,
-                                        thumbColor = MaterialTheme.colorScheme.secondary
-                                    )
-                                )
-                            }
-                            Text("0:06", color = MaterialTheme.colorScheme.tertiary)
-                        }
+                        MessageFile(
+                            chatMessage = chatMessage,
+                            chatViewModel = chatViewModel,
+                        )
+//                    } else if (media.mediaType.isAudio) {
+//                        MessageAudio(
+//                            chatMessage = chatMessage,
+//                            chatViewModel = chatViewModel,
+//                        )
                     } else {
                         Icon(
                             Icons.Default.AttachFile,

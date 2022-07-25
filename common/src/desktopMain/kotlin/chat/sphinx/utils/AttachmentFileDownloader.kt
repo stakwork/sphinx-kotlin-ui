@@ -3,7 +3,7 @@ package chat.sphinx.utils
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.wrapper.message.Message
-import chat.sphinx.wrapper.message.isMediaAttachmentAvailable
+import chat.sphinx.wrapper.message.isAttachmentAvailable
 import chat.sphinx.wrapper.message.retrieveImageUrlAndMessageMedia
 import chat.sphinx.wrapper.message.retrieveVideoUrlAndMessageMedia
 
@@ -12,7 +12,7 @@ actual class AttachmentFileDownloader(
     memeInputStreamHandler: MemeInputStreamHandler
 ) {
     actual fun saveFile(message: Message) {
-        if (message.isMediaAttachmentAvailable) {
+        if (message.isAttachmentAvailable) {
             // TODO: Save file...
             val originalMessageMessageMedia = message.messageMedia
 

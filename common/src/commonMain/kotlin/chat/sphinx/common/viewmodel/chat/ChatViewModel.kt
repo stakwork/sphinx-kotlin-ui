@@ -51,7 +51,7 @@ suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
                 url,
                 authenticationToken,
                 mediaKeyDecrypted
-            )
+            )?.first
         }
     }
 }

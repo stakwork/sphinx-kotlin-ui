@@ -64,21 +64,24 @@ fun MessageMediaImage(
     val localFilepath = rememberSaveable { mutableStateOf(messageMedia.localFile) }
     val imageLoadError = rememberSaveable { mutableStateOf(false) }
     val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
-    val url=if(message.type == MessageType.DirectPayment) message.retrieveImageUrlAndMessageMedia()?.second?.templateUrl?.value else messageMedia.url?.value
+
+    val url= if (message.type == MessageType.DirectPayment)
+        message.retrieveImageUrlAndMessageMedia()?.second?.templateUrl?.value
+    else messageMedia.url?.value
+
     LaunchedEffect(url) {
         if (localFilepath.value == null) {
             url?.let { mediaURL ->
-                // TODO: Try catch error...
                 try {
                     messageMedia.retrieveRemoteMediaInputStream(
                         mediaURL,
                         chatViewModel.memeServerTokenHandler,
                         chatViewModel.memeInputStreamHandler
                     )?.let { imageInputStream ->
-                        mediaCacheHandler.createImageFile("jpg").let { imageFilepath -> // TODO: Set extension using filename
+                        mediaCacheHandler.createImageFile("jpg").let { imageFilepath ->
                             imageFilepath.toFile().outputStream().use { fileOutputStream ->
                                 imageInputStream.copyTo(fileOutputStream)
-                                // Update local file...
+
                                 chatViewModel.messageRepository.messageMediaUpdateLocalFile(
                                     message,
                                     imageFilepath
