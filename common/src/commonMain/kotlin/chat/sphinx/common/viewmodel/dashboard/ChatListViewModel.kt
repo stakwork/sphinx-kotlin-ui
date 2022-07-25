@@ -1,11 +1,16 @@
 package chat.sphinx.common.viewmodel.dashboard
 
+import androidx.annotation.ColorInt
+import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.SphinxDispatchers
+import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.chat.Chat
+import chat.sphinx.wrapper.chat.getColorKey
 import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.contact.*
 import chat.sphinx.wrapper.dashboard.ContactId
@@ -17,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import utils.getRandomColorRes
 
 /**
  * Sorts and filters the provided list.
@@ -43,9 +49,10 @@ class ChatListViewModel {
     val dispatchers = SphinxContainer.appModule.dispatchers
 
     //    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
-    val sphinxNotificationManager = createSphinxNotificationManager()
-    val repositoryDashboard =
-        SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+    private val sphinxNotificationManager = createSphinxNotificationManager()
+    private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+
+    private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
 
     private val _contactsStateFlow: MutableStateFlow<List<Contact>> by lazy {
         MutableStateFlow(emptyList())
@@ -102,6 +109,7 @@ class ChatListViewModel {
                                             chat,
                                             message,
                                             contact,
+                                            getColorFor(contact, chat),
                                             repositoryDashboard.getUnseenMessagesByChatId(chat.id),
                                         )
                                     )
@@ -112,6 +120,7 @@ class ChatListViewModel {
                                         chat,
                                         message,
                                         accountOwnerStateFlow.value,
+                                        getColorFor(null, chat),
                                         repositoryDashboard.getUnseenMessagesByChatId(chat.id)
                                     )
                                 )
@@ -137,14 +146,15 @@ class ChatListViewModel {
                                             newList.add(
                                                 DashboardChat.Inactive.Invite(
                                                     contact,
-                                                    contactInvite
+                                                    contactInvite,
+                                                    getColorFor(contact, null)
                                                 )
                                             )
                                             continue
                                         }
                                     }
                                     newList.add(
-                                        DashboardChat.Inactive.Conversation(contact)
+                                        DashboardChat.Inactive.Conversation(contact, getColorFor(contact, null))
                                     )
                                 }
 
@@ -266,14 +276,14 @@ class ChatListViewModel {
                             }
                             if (contactInvite != null) {
                                 currentChats.add(
-                                    DashboardChat.Inactive.Invite(contact, contactInvite)
+                                    DashboardChat.Inactive.Invite(contact, contactInvite, getColorFor(contact, null))
                                 )
                                 continue
                             }
                         }
 
                         var updatedContactChat: DashboardChat =
-                            DashboardChat.Inactive.Conversation(contact)
+                            DashboardChat.Inactive.Conversation(contact, getColorFor(contact, null))
 
                         for (chat in currentChats.toList()) {
                             if (chat is DashboardChat.Active.Conversation) {
@@ -282,6 +292,7 @@ class ChatListViewModel {
                                         chat.chat,
                                         chat.message,
                                         contact,
+                                        getColorFor(contact, chat.chat),
                                         chat.unseenMessageFlow
                                     )
                                 }
@@ -300,6 +311,7 @@ class ChatListViewModel {
                                     contactChat,
                                     message,
                                     contact,
+                                    getColorFor(contact, contactChat),
                                     repositoryDashboard.getUnseenMessagesByChatId(contactChat.id)
                                 )
                             }
@@ -323,5 +335,48 @@ class ChatListViewModel {
                 }
             }
         }
+    }
+
+    fun payForInvite(invite: Invite) {
+//        getAccountBalance().firstOrNull()?.let { balance ->
+//            if (balance.balance.value < (invite.price?.value ?: 0)) {
+//                submitSideEffect(
+//                    ChatListSideEffect.Notify(app.getString(R.string.pay_invite_balance_too_low))
+//                )
+//                return
+//            }
+//        }
+
+//        submitSideEffect(
+//            ChatListSideEffect.AlertConfirmPayInvite(invite.price?.value ?: 0) {
+                scope.launch(dispatchers.mainImmediate) {
+                    repositoryDashboard.payForInvite(invite)
+                }
+//            }
+//        )
+    }
+
+    fun deleteInvite(invite: Invite) {
+//        submitSideEffect(
+//            ChatListSideEffect.AlertConfirmDeleteInvite() {
+                scope.launch(dispatchers.mainImmediate) {
+                    repositoryDashboard.deleteInvite(invite)
+                }
+//            }
+//        )
+    }
+
+    @ColorInt
+    suspend fun getColorFor(
+        contact: Contact?,
+        chat: Chat?
+    ): Int? {
+        (contact?.getColorKey() ?: chat?.getColorKey())?.let { colorKey ->
+            return colorsHelper.getColorIntForKey(
+                colorKey,
+                Integer.toHexString(getRandomColorRes().hashCode())
+            )
+        }
+        return null
     }
 }

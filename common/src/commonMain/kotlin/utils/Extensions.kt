@@ -2,12 +2,43 @@ package utils
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-
+import chat.sphinx.utils.platform.getFileSystem
+import chat.sphinx.wrapper.message.media.MediaType
 
 
 import com.example.compose.*
+import okio.Path
+import java.io.IOException
+import java.nio.file.Files
+
+fun Path.deduceMediaType(): MediaType {
+  val fileMetadata = getFileSystem().metadata(this)
+
+  return fileMetadata.extra(ContentTypeExtra::class)?.let { contentTypeExtra ->
+    when {
+      contentTypeExtra.contentType.lowercase().startsWith("image") -> MediaType.Image(contentTypeExtra.contentType)
+      contentTypeExtra.contentType.lowercase().startsWith("audio") -> MediaType.Audio(contentTypeExtra.contentType)
+      contentTypeExtra.contentType.lowercase().startsWith("video") -> MediaType.Video(contentTypeExtra.contentType)
+      else -> MediaType.Unknown("text/unknow")
+    }
+  } ?: try {
+    val contentType = Files.probeContentType(this.toNioPath())
+
+    when {
+      contentType.lowercase().startsWith("image") -> MediaType.Image(contentType)
+      contentType.lowercase().startsWith("audio") -> MediaType.Audio(contentType)
+      contentType.lowercase().startsWith("video") -> MediaType.Video(contentType)
+      else -> MediaType.Unknown("text/unknown")
+    }
+  } catch (e: Exception) {
+    MediaType.Unknown("text/unknown")
+  }
+}
 
 
+internal data class ContentTypeExtra(
+  val contentType: String
+)
 
 fun getRandomColorRes(): Color {
     return listOf<Color>(

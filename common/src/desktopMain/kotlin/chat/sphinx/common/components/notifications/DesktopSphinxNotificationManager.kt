@@ -1,24 +1,24 @@
 package chat.sphinx.common.components.notifications
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import chat.sphinx.concepts.notification.SphinxNotificationManager
 
 object DesktopSphinxNotificationManager: SphinxNotificationManager {
-//    val sphinxTrayState = TrayState()
-    val notifications = mutableStateListOf<Pair<String, String>>()
+//    val sphinxTrayState = TrayState
+    val notifications = mutableStateMapOf<Long, Pair<String, String>>()
 
     override fun notify(
-        notificationId: Int,
+        notificationId: Long,
         groupId: String?,
         title: String,
         message: String
     ) {
-//        notifications.add(
-//            Pair(
-//                title,
-//                message
-//            )
-//        )
+        notifications[notificationId] = Pair(
+            title,
+            message
+        )
+
 //        sphinxTrayState.sendNotification(
 //            Notification(
 //                title = title,

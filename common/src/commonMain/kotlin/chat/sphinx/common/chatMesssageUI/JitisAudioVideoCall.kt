@@ -1,6 +1,5 @@
-package chat.sphinx.common.components.chat.callview
+package chat.sphinx.common.chatMesssageUI
 
-import CommonButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -14,11 +13,17 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.utils.SphinxFonts
 import com.example.compose.primary_green
 
 @Composable
-fun JitsiAudioVideoCall(chatMessage: ChatMessage) {
+fun JitsiAudioVideoCall(
+    chatMessage: ChatMessage,
+    chatViewModel: ChatViewModel
+) {
     val uriHandler = LocalUriHandler.current
+
     val receiverCorner =
         RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
     val senderCorner =
@@ -35,70 +40,83 @@ fun JitsiAudioVideoCall(chatMessage: ChatMessage) {
                 Icon(
                     Icons.Default.Call,
                     contentDescription = "Call",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(12.dp)
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(17.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    "JOIN CALL by...",
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                    "JOIN CALL BY...",
+                    color = MaterialTheme.colorScheme.tertiary,
                     fontSize = 12.sp
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = {},
+                onClick = {
+                    chatMessage.message.messageContentDecrypted?.value?.let { link ->
+                        uriHandler.openUri("$link#config.startAudioOnly=true")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary)
             ) {
                 Spacer(modifier = Modifier.weight(1.0f))
-                Text("Audio", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, fontSize = 10.sp)
+                Text(
+                    "AUDIO",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontFamily = SphinxFonts.montserratFamily,
+                    fontSize = 12.sp
+                )
                 Spacer(modifier = Modifier.weight(1.0f))
                 Icon(
                     Icons.Default.Mic,
                     contentDescription = "Mic",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(14.dp)
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(17.dp)
                 )
             }
             Button(
-                onClick = {},
+                onClick = {
+                    chatMessage.message.messageContentDecrypted?.value?.let { link ->
+                        uriHandler.openUri(link)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(backgroundColor = primary_green)
             ) {
                 Row {
                     Spacer(modifier = Modifier.weight(1.0f))
                     Text(
-                        "Video",
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                        fontSize = 10.sp
+                        "VIDEO",
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontFamily = SphinxFonts.montserratFamily,
+                        fontSize = 12.sp
                     )
                     Spacer(modifier = Modifier.weight(1.0f))
                     Icon(
                         Icons.Default.Videocam,
                         contentDescription = "Video Call",
-                        tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(14.dp)
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(17.dp)
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)) {
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     "COPY LINK",
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                    color = MaterialTheme.colorScheme.tertiary,
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     Icons.Default.FileCopy,
                     contentDescription = "",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                    tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(12.dp)
                 )
             }
-
         }
     }
-
 }

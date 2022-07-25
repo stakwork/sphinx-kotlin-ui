@@ -79,7 +79,7 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
                             SphinxContainer.appModule.dispatchers
                         )
 
-                        DashboardState.screenState(DashboardScreenType.Unlocked)
+                        DashboardScreenState.screenState(DashboardScreenType.Unlocked)
 //                        setState {
 //                            copy(
 //                                errorMessage = "Keys decrypted..."
