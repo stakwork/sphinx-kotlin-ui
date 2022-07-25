@@ -30,12 +30,14 @@ import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.components.CommonTextField
 import chat.sphinx.common.components.PhotoUrlImage
+import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.pin.ChangePin
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.components.pin.PINScreenType
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
+import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
@@ -110,7 +112,7 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
 
                             }
                         }
-                        Tabs(viewModel)
+                        Tabs(viewModel, dashboardViewModel)
                     }
 
                 }
@@ -124,7 +126,7 @@ fun onTapClose() {
 }
 
 @Composable
-fun Tabs(viewModel: ProfileViewModel) {
+fun Tabs(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel) {
     var tabIndex by remember { mutableStateOf(0) } // 1.
     val tabTitles = listOf("Basic", "Advanced")
     Column() { // 2.
@@ -159,7 +161,7 @@ fun Tabs(viewModel: ProfileViewModel) {
             }
         }
         when (tabIndex) { // 6.
-            0 -> BasicTab(viewModel)
+            0 -> BasicTab(viewModel, dashboardViewModel)
             1 -> AdvanceTab(viewModel)
         }
     }
@@ -258,7 +260,7 @@ fun AdvanceTab(viewModel: ProfileViewModel) {
 }
 
 @Composable
-fun BasicTab(viewModel: ProfileViewModel) {
+fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel) {
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
@@ -304,7 +306,9 @@ fun BasicTab(viewModel: ProfileViewModel) {
                         singleLine = true,
                         cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                     )
-                    IconButton(onClick = {}
+                    IconButton(onClick = {
+                        dashboardViewModel.toggleQRWindow(true)
+                    }
                     ) {
                         Icon(
                             Icons.Default.QrCodeScanner,
@@ -428,5 +432,8 @@ fun BasicTab(viewModel: ProfileViewModel) {
 
             }
         }
+    }
+    if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
+        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.profileState.nodePubKey, null))
     }
 }
