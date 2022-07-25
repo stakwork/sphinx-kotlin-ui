@@ -184,10 +184,6 @@ actual fun Dashboard(
                     )
                 }
             }
-            val profileWindowState by dashboardViewModel.profileStateFlow.collectAsState()
-            if (profileWindowState){
-                Profile(dashboardViewModel)
-            }
         }
         DashboardScreenType.Locked -> {
             val lockedDashboardViewModel = remember { LockedDashboardViewModel() }

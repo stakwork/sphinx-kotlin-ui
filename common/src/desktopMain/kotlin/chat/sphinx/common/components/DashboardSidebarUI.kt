@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.response.LoadResponse
@@ -161,6 +162,10 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
             if (addContactWindowState.first){
                 AddContactWindow(dashboardViewModel)
+            }
+            val profileWindowState by dashboardViewModel.profileStateFlow.collectAsState()
+            if (profileWindowState){
+                Profile(dashboardViewModel)
             }
 
             ChatListUI()
