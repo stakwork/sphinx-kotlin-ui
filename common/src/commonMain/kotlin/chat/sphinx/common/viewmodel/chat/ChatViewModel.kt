@@ -1,7 +1,5 @@
 package chat.sphinx.common.viewmodel.chat
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.toLowerCase
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
@@ -15,7 +13,6 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.createAttachmentFileDownload
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
-import chat.sphinx.utils.platform.getFileSystem
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
@@ -27,18 +24,16 @@ import chat.sphinx.wrapper.lightning.toSat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.MessageMedia
+import chat.sphinx.wrapper.message.media.toFileName
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import okio.FileSystem
 import okio.Path
 import utils.deduceMediaType
 import utils.getRandomColorRes
 import java.io.IOException
 import java.io.InputStream
-import java.nio.file.Files
-import java.util.*
 
 suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
     url: String,
@@ -156,6 +151,7 @@ abstract class ChatViewModel(
                 }
             )
         }
+
         MessageListState.screenState(
             MessageListData.PopulatedMessageListData(
                 chatMessages
@@ -333,9 +329,11 @@ abstract class ChatViewModel(
     fun onMessageFileChanged(filepath: Path) {
         editMessageState.attachmentInfo.value = AttachmentInfo(
             filePath = filepath,
-            mediaType = filepath.deduceMediaType(), // Get file media type...
+            mediaType = filepath.deduceMediaType(),
+            fileName = filepath.name.toFileName(),
             isLocalFile = true
         )
+        onSendMessage()
     }
 
     fun onSendMessage() {
@@ -361,14 +359,15 @@ abstract class ChatViewModel(
                         AttachmentInfo(
                             filePath = path,
                             mediaType = MediaType.Text,
+                            path.name.toFileName(),
                             isLocalFile = true,
                         )
                     )
                 }
+            }
 
-                editMessageState.attachmentInfo.value?.let { attachmentInfo ->
-                    sendMessageBuilder.setAttachmentInfo(attachmentInfo)
-                }
+            editMessageState.attachmentInfo.value?.let { attachmentInfo ->
+                sendMessageBuilder.setAttachmentInfo(attachmentInfo)
             }
 
             val sendMessage = sendMessageBuilder.build()

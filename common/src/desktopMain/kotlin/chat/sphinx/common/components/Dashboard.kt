@@ -87,6 +87,7 @@ actual fun Dashboard(
 
                     chatViewModel?.readMessages()
                     chatViewModel?.cancelMessagesJob()
+
                     chatViewModel = when (chatDetailState) {
                         is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
                             ChatContactViewModel(null, chatDetailState.contactId!!)
