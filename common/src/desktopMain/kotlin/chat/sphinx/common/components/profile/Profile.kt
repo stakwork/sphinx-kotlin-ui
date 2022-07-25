@@ -35,6 +35,7 @@ import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.components.pin.PINScreenType
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
+import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
@@ -42,6 +43,8 @@ import com.example.compose.AppTheme
 
 @Composable
 fun Profile(dashboardViewModel: DashboardViewModel) {
+
+    val viewModel = remember { ProfileViewModel(dashboardViewModel) }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
     var isOpen by remember { mutableStateOf(true) }
     if (isOpen) {
@@ -74,7 +77,7 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                             modifier = Modifier.padding(24.dp)
                         ) {
                             PhotoUrlImage(
-                                PhotoUrl("https://randomuser.me/api/portraits/men/22.jpg"),
+                                photoUrl = viewModel.profileState.photoUrl,
                                 modifier = Modifier
                                     .size(60.dp)
                                     .clip(CircleShape)
@@ -82,16 +85,18 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(verticalArrangement = Arrangement.Center) {
                                 Text(
-                                    "THOMAS",
+                                    text = viewModel.profileState.alias,
                                     color = MaterialTheme.colorScheme.tertiary,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier.padding(top = 4.dp)
                                 ) {
+                                    val balance by dashboardViewModel.balanceStateFlow.collectAsState()
                                     Text(
-                                        "1250",
+                                        text = "${balance?.balance?.value ?: 0}",
                                         color = MaterialTheme.colorScheme.tertiary,
                                         fontSize = 11.sp
                                     )
@@ -105,7 +110,7 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
 
                             }
                         }
-                        Tabs()
+                        Tabs(viewModel)
                     }
 
                 }
@@ -119,7 +124,7 @@ fun onTapClose() {
 }
 
 @Composable
-fun Tabs() {
+fun Tabs(viewModel: ProfileViewModel) {
     var tabIndex by remember { mutableStateOf(0) } // 1.
     val tabTitles = listOf("Basic", "Advanced")
     Column() { // 2.
@@ -154,14 +159,14 @@ fun Tabs() {
             }
         }
         when (tabIndex) { // 6.
-            0 -> BasicTab()
-            1 -> AdvanceTab()
+            0 -> BasicTab(viewModel)
+            1 -> AdvanceTab(viewModel)
         }
     }
 }
 
 @Composable
-fun AdvanceTab() {
+fun AdvanceTab(viewModel: ProfileViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
             Column {
@@ -253,8 +258,7 @@ fun AdvanceTab() {
 }
 
 @Composable
-fun BasicTab() {
-    var text by remember { mutableStateOf("") }
+fun BasicTab(viewModel: ProfileViewModel) {
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
@@ -266,9 +270,8 @@ fun BasicTab() {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = "Thomas",
+                    value = viewModel.profileState.alias,
                     onValueChange = {
-                        text = it
                     },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
@@ -293,10 +296,9 @@ fun BasicTab() {
                     modifier = Modifier.height(28.dp)
                 ) {
                     BasicTextField(
-                        value = "027dbce35947a3dafc826de411d97990e9b16e78512d1a9e70e87dcc788c2631db",
-                        onValueChange = {
-                            text = it
-                        },
+                        value = viewModel.profileState.nodePubKey,
+                        enabled = false,
+                        onValueChange = {},
                         modifier = Modifier.weight(1f).padding(top = 8.dp),
                         textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                         singleLine = true,
@@ -326,10 +328,9 @@ fun BasicTab() {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = "027dbce35947a3dafc826de411d97990e9b16e78512d1a9e70e87dcc788c2631db",
-                    onValueChange = {
-                        text = it
-                    },
+                    value = viewModel.profileState.routeHint,
+                    onValueChange = {},
+                    enabled = false,
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
@@ -352,8 +353,9 @@ fun BasicTab() {
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
-                    true,
-                    onCheckedChange = {},
+                    checked = viewModel.profileState.privatePhoto ?: true,
+                    enabled = viewModel.profileState.privatePhoto != null,
+                    onCheckedChange = {viewModel.onPrivatePhotoSwitchChange(it)},
                     colors = SwitchDefaults.colors(
                         checkedTrackColor = MaterialTheme.colorScheme.secondary,
                         checkedThumbColor = MaterialTheme.colorScheme.secondary
@@ -374,10 +376,8 @@ fun BasicTab() {
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = "https://jitsi.sphinx.chat",
-                    onValueChange = {
-                        text = it
-                    },
+                    value = viewModel.profileState.defaultCallServer,
+                    onValueChange = {viewModel.onDefaultCallServerChange(it) },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
