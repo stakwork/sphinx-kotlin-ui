@@ -32,7 +32,9 @@ fun ChatMessageUI(
     Column(modifier = Modifier.padding(8.dp)) {
         val openSatsDialog= remember { mutableStateOf(false) }
         if(openSatsDialog.value)
-            SendSatsPopUp {}
+            SendSatsPopUp {
+                openSatsDialog.value=false
+            }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start

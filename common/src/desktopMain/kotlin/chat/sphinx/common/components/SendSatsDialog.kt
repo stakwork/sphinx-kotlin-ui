@@ -1,15 +1,12 @@
 package chat.sphinx.common.components
 
 import CommonButton
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -31,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogState
 import androidx.compose.ui.window.WindowPosition
+import chat.sphinx.common.paymentDetail.PaymentDetailTemplate
 import chat.sphinx.utils.CustomAlertDialogProvider
 import chat.sphinx.wrapper.PhotoUrl
 
@@ -39,8 +37,10 @@ import chat.sphinx.wrapper.PhotoUrl
 @Composable
 actual fun SendReceiveSatsDialog(sendRequest: Boolean, onConfirm: () -> Unit) {
     val text = remember { mutableStateOf("") }
-    val sats = remember { mutableStateOf("") }
+    val sats = remember { mutableStateOf("0") }
     val hasConfirmed = remember { mutableStateOf(false) }
+    val showDialog = mutableStateOf(false)
+
     AlertDialog(
         onDismissRequest = {
 //            openDialog.value = false
@@ -48,39 +48,40 @@ actual fun SendReceiveSatsDialog(sendRequest: Boolean, onConfirm: () -> Unit) {
         dialogProvider =CustomAlertDialogProvider ,
 
 //        modifier = Modifier.customDialogModifier(CustomDialogPosition.BOTTOM),
-        contentColor = MaterialTheme.colorScheme.error,
+        contentColor = MaterialTheme.colorScheme.background,
 
-        backgroundColor = MaterialTheme.colorScheme.error,
+        backgroundColor = MaterialTheme.colorScheme.background,
         text = {
             Column(
                 modifier = Modifier
-                    .padding(8.dp).height(400.dp).verticalScroll(rememberScrollState()).width(300.dp)
+                    .height(350.dp).verticalScroll(rememberScrollState()).width(300.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = {}) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onBackground
-                            )
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.clickable {
+                                onConfirm()
+                            }.size(14.dp)
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 0.dp), horizontalArrangement = Arrangement.Center) {
+                            Text(if(sendRequest)"SEND PAYMENT" else "REQUEST PAYMENT", color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                         }
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(if(sendRequest)"SEND PAYMENT" else "REQUEST PAYMENT", color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.weight(1f))
                     }
+
                     Spacer(modifier = Modifier.height(40.dp).width(250.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                         TextField(
 //                       shape = RoundedCornerShape(68.dp),
                             modifier=Modifier.width(100.dp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                focusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer, textColor = MaterialTheme.colorScheme.tertiary
+                                focusedBorderColor = MaterialTheme.colorScheme.background,
+                                backgroundColor = MaterialTheme.colorScheme.background,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.background, textColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
                             ),
                             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 40.sp),
                             value = sats.value,
@@ -89,20 +90,11 @@ actual fun SendReceiveSatsDialog(sendRequest: Boolean, onConfirm: () -> Unit) {
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             label = {
-//                                Text("Enter Sats", color = MaterialTheme.colorScheme.tertiary.copy(
-//                                    alpha = 0.2f
-//                                ))
-//                            ProvideEmphasis(emphasis = EmphasisAmbient.current.medium) {
-//                                Text(
-//                                    text = stringResource(id = R.string.notes),
-//                                    style = typography.body2
-//                                )
-//                            }
                             }
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 "Sats",
                                 color = MaterialTheme.colorScheme.tertiary,
@@ -115,30 +107,42 @@ actual fun SendReceiveSatsDialog(sendRequest: Boolean, onConfirm: () -> Unit) {
 //                       shape = RoundedCornerShape(68.dp),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
-                            backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            backgroundColor = MaterialTheme.colorScheme.background,
                             unfocusedBorderColor = MaterialTheme.colorScheme.tertiary.copy(
                                 alpha = 0.2f
                             ), textColor = MaterialTheme.colorScheme.tertiary
                         ),
+                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                         value = text.value,
                         onValueChange = {
                             text.value = it
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         label = {
-                            Text("Enter Message", color = MaterialTheme.colorScheme.tertiary.copy(
+                            Text("Memo", color = MaterialTheme.colorScheme.tertiary.copy(
                                 alpha = 0.2f
-                            ))
+                            ), textAlign = TextAlign.Center)
                         }
                     )
-                    Spacer(modifier = Modifier.height(50.dp).width(250.dp))
-                    Box(modifier = Modifier.width(120.dp)) {
-                        CommonButton("Continue") {}
-                    }
+                    Spacer(modifier = Modifier.height(0.dp).width(250.dp))
+                    if(showDialog.value)
+                        PaymentDetailTemplate{
+                            showDialog.value=false
+                        }
+
 
                 }
             }
-        }, title = null, confirmButton = {}
+        }, title = null, confirmButton = {
+            Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
+                Box(modifier = Modifier.width(150.dp)
+                    .height(60.dp).padding(bottom = 16.dp)) {
+                    CommonButton("CONFIRM", textButtonSize = 12.sp, fontWeight = FontWeight.W600) {
+                        showDialog.value=true
+                    }
+                }
+            }
+        }
     )
 //    CustomDialogWithResultExample(onPositiveClick = {}, onNegativeClick = {}, onDismiss = {})
 }

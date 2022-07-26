@@ -287,6 +287,7 @@ fun SphinxChatDetailBottomAppBar(
             horizontalArrangement = Arrangement.Center
         ) {
             val clickState= remember { mutableStateOf(false) }
+            val showSendReceiveDialog= remember { mutableStateOf(false) }
             Spacer(modifier = Modifier.width(16.dp))
             IconButton(
                 onClick = {
@@ -297,15 +298,29 @@ fun SphinxChatDetailBottomAppBar(
                     .size(30.dp),
             ) {
                 Icon(Icons.Default.Add,contentDescription = null)
-                var currentSelectedItem by remember { mutableStateOf<ChatActionMenuEnums?>(null) }
+                val currentSelectedItem =remember { mutableStateOf<ChatActionMenuEnums?>(null) }
                 if(clickState.value)
                 ChatActionMenu(clickState.value){
-                  currentSelectedItem=it
+                  currentSelectedItem.value=it
+                    showSendReceiveDialog.value=true
+                    clickState.value=false
                 }
-                when(currentSelectedItem){
-                    ChatActionMenuEnums.REQUEST -> SendReceiveSatsDialog(sendRequest = false) {  }
-                    ChatActionMenuEnums.SEND -> SendReceiveSatsDialog {  }
-                    ChatActionMenuEnums.CANCEL -> {}
+
+                when(currentSelectedItem.value){
+                    ChatActionMenuEnums.REQUEST ->{
+                        if(showSendReceiveDialog.value)
+                        SendReceiveSatsDialog(sendRequest = false) {
+                            showSendReceiveDialog.value=false
+                        }
+
+                    }
+                    ChatActionMenuEnums.SEND -> {
+                        if(showSendReceiveDialog.value)
+                        SendReceiveSatsDialog { showSendReceiveDialog.value=false }
+                    }
+                    ChatActionMenuEnums.CANCEL -> {clickState.value=false
+                        currentSelectedItem.value=null
+                    }
                     else ->{}
                 }
             }

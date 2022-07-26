@@ -24,6 +24,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogState
@@ -36,65 +37,87 @@ import com.example.compose.sphinx_action_menu
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-actual fun ChatActionMenu(showDialog:Boolean,callBack: (ChatActionMenuEnums) -> Unit) {
-    if(showDialog)
-    AlertDialog(
-        onDismissRequest = {
+actual fun ChatActionMenu(showDialog: Boolean, callBack: (ChatActionMenuEnums) -> Unit) {
+    if (showDialog)
+        AlertDialog(
+            onDismissRequest = {
 //            openDialog.value = false
-        },
-        dialogProvider = CustomAlertDialogProvider ,
+            },
+            dialogProvider = CustomAlertDialogProvider,
 
-        modifier = Modifier.padding(0.dp).height(170.dp).width(250.dp),
+            modifier = Modifier.padding(0.dp).height(150.dp).width(250.dp),
 //        contentColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(5),
+            shape = RoundedCornerShape(5),
 
-        backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        text = {
-            Column( verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Column (modifier = Modifier.clickable {
-                    callBack(ChatActionMenuEnums.REQUEST)
-                }){
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 12.dp, end = 12.dp)) {
-                        Image(
-                            painter = imageResource(Res.drawable.ic_request),
-                            contentDescription = "receive", colorFilter = ColorFilter.tint(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary),
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text("Receive", color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.W600, fontSize = 16.sp)
+            backgroundColor = MaterialTheme.colorScheme.background,
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                ) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Column(modifier = Modifier.clickable {
+                        callBack(ChatActionMenuEnums.REQUEST)
+                    }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 12.dp, end = 12.dp)
+                        ) {
+                            Image(
+                                painter = imageResource(Res.drawable.ic_request),
+                                contentDescription = "receive",
+                                colorFilter = ColorFilter.tint(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary),
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                "Receive",
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontWeight = FontWeight.W600,
+                                fontSize = 16.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Divider(color = MaterialTheme.colorScheme.onBackground)
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Divider(color = MaterialTheme.colorScheme.onBackground)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Column(modifier = Modifier.clickable {
-                    callBack(ChatActionMenuEnums.SEND)
-                }) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(12.dp)) {
-                        Image(
-                            painter = imageResource(Res.drawable.ic_send),
-                            contentDescription = "Sphinx Logo",colorFilter = ColorFilter.tint(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary),
-                            modifier = Modifier.size(15.dp)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text("Send", color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.W600, fontSize = 16.sp)
-                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Column(modifier = Modifier.clickable {
+                        callBack(ChatActionMenuEnums.SEND)
+                    }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().padding(12.dp)
+                        ) {
+                            Image(
+                                painter = imageResource(Res.drawable.ic_send),
+                                contentDescription = "Sphinx Logo",
+                                colorFilter = ColorFilter.tint(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary),
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                "Send",
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontWeight = FontWeight.W600,
+                                fontSize = 16.sp
+                            )
+                        }
 //                Spacer(modifier = Modifier.height(8.dp))
-                    Divider(color = MaterialTheme.colorScheme.onBackground)
+                        Divider(color = MaterialTheme.colorScheme.onBackground)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("CANCEL",
+
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.W600,
+                        fontSize = 12.sp,
+                        modifier = Modifier.fillMaxWidth().clickable { callBack(ChatActionMenuEnums.CANCEL) }, textAlign = TextAlign.Center)
+
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {   callBack(ChatActionMenuEnums.CANCEL) }, horizontalArrangement = Arrangement.Center) {
+            },
+            title = null,
 
-                    Text("CANCEL", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.W600, fontSize = 12.sp)
-
-                }
-
-
-            }
-        },
-        title =null,
-
-        buttons = {}
-    )
+            buttons = {}
+        )
 }

@@ -34,7 +34,7 @@ object CustomAlertDialogProvider : AlertDialogProvider {
                     windowSize: IntSize,
                     layoutDirection: LayoutDirection,
                     popupContentSize: IntSize
-                ): IntOffset = IntOffset(280,0)
+                ): IntOffset = IntOffset(600,0)
             },
             focusable = true,
             onDismissRequest = onDismissRequest,
@@ -49,7 +49,7 @@ object CustomAlertDialogProvider : AlertDialogProvider {
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize().width(400.dp).background(Color.Black.copy(alpha = 0.2f))
+                    .fillMaxWidth(0.8f).fillMaxHeight().background(Color.Black.copy(alpha = 0.2f))
                     .pointerInput(onDismissRequest) {
                         detectTapGestures(onPress = { onDismissRequest() })
                     },

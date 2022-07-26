@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.state.LandingScreenState
@@ -18,6 +19,8 @@ import chat.sphinx.common.state.LandingScreenType
 fun CommonButton(
     text: String,
     enabled: Boolean? = true,
+    textButtonSize:TextUnit=16.sp,
+    fontWeight: FontWeight=FontWeight.W400,
     callback:()->Unit
 ) {
     val color=if(enabled == true)androidx.compose.material3.MaterialTheme.colorScheme.secondary else androidx.compose.material3.MaterialTheme.colorScheme.onBackground
@@ -34,9 +37,9 @@ fun CommonButton(
     ) {
         Text(
             text = text,
-            fontSize = 16.sp,
+            fontSize = textButtonSize,
             color = textColor,
-            fontWeight = FontWeight.W400,
+            fontWeight = fontWeight,
             fontFamily = Roboto
         )
     }
