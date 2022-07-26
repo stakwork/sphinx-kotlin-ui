@@ -21,6 +21,7 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.saveFile
 import chat.sphinx.wrapper.message.media.*
 import kotlinx.coroutines.launch
+import okio.Path
 
 @Composable
 fun MessageFile(
@@ -40,7 +41,11 @@ fun MessageFile(
     }
 
     if (localFilepath != null) {
-        FileUI(messageMedia)
+        FileUI(
+            messageMedia.localFile,
+            messageMedia.fileName,
+            messageMedia.mediaType
+        )
     } else {
         LoadingFile()
     }
@@ -53,7 +58,9 @@ fun LoadingFile() {
 
 @Composable
 fun FileUI(
-    media: MessageMedia?,
+    path: Path? = null,
+    fileName: FileName? = null,
+    mediaType: MediaType? = null,
 ) {
     val scope = rememberCoroutineScope()
 
@@ -63,7 +70,7 @@ fun FileUI(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Icon(
-            if (media?.mediaType?.isPdf == true) Icons.Default.PictureAsPdf else Icons.Default.FileCopy,
+            if (mediaType?.isPdf == true) Icons.Default.PictureAsPdf else Icons.Default.FileCopy,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.tertiary
         )
@@ -72,7 +79,7 @@ fun FileUI(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                media?.fileName?.value ?: "Loading...",
+                fileName?.value ?: "Loading...",
                 fontFamily = Roboto,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.tertiary,
@@ -82,11 +89,11 @@ fun FileUI(
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                if (media?.localFile != null)
+                if (path != null)
 //                    if (media.mediaType.isPdf)
 //                        "1 page"
 //                    else
-                        media?.localFile?.toFile()?.length()?.toFileSize()?.asFormattedString() ?: "0 KB"
+                    path.toFile()?.length()?.toFileSize()?.asFormattedString() ?: "0 KB"
                 else
                     "-",
                 fontFamily = Roboto,
@@ -96,19 +103,17 @@ fun FileUI(
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        if (media?.localFile != null) {
+        if (path != null) {
             Icon(
                 Icons.Default.Download,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.clickable {
-                    media.localFile?.let { path ->
-                        scope.launch {
-                            saveFile(
-                                media.fileName ?: FileName("File.txt"),
-                                path
-                            )
-                        }
+                    scope.launch {
+                        saveFile(
+                            fileName ?: FileName("File.txt"),
+                            path
+                        )
                     }
                 }
             )

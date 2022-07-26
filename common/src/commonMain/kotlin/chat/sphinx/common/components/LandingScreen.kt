@@ -50,11 +50,10 @@ fun LandingScreen() {
 //                }
             }
             LandingScreenType.ExistingUserPIN -> {
-                    ExistingUserPINScreen(restoreExistingUserViewModel)
+                ExistingUserPINScreen(restoreExistingUserViewModel)
             }
             LandingScreenType.RestoreFromKeystore -> {
-
-                    RestoreFromKeychainScreen(restoreFromKeystoreStore)
+                RestoreFromKeychainScreen(restoreFromKeystoreStore)
             }
             LandingScreenType.Loading ->  ConnectingDialog()
             LandingScreenType.RestoreExistingUserSuccess -> WelcomeScreen()

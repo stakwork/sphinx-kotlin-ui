@@ -11,7 +11,7 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.UserColorsHelper
-import chat.sphinx.utils.createAttachmentFileDownload
+import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
@@ -67,11 +67,6 @@ abstract class ChatViewModel(
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
 
     val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
-
-    private val attachmentFileDownloader: chat.sphinx.utils.AttachmentFileDownloader = createAttachmentFileDownload(
-        memeServerTokenHandler,
-        memeInputStreamHandler
-    )
 
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
     private var messagesLoadJob: Job? = null
@@ -333,7 +328,10 @@ abstract class ChatViewModel(
             fileName = filepath.name.toFileName(),
             isLocalFile = true
         )
-        onSendMessage()
+    }
+
+    fun resetMessageFile() {
+        editMessageState.attachmentInfo.value = null
     }
 
     fun onSendMessage() {
@@ -420,9 +418,5 @@ abstract class ChatViewModel(
 
     fun downloadFileMedia(message: Message, sent: Boolean) {
         repositoryMedia.downloadMediaIfApplicable(message, sent)
-    }
-
-    fun saveFile(message: Message) {
-        attachmentFileDownloader.saveFile(message)
     }
 }

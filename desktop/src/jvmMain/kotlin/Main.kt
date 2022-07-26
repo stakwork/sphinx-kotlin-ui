@@ -1,5 +1,4 @@
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.key.Key
@@ -24,6 +23,8 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
+import theme.LocalSpacing
+import theme.Spacing
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
 import java.awt.event.WindowStateListener
@@ -31,9 +32,6 @@ import java.awt.event.WindowStateListener
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
     val windowState = rememberWindowState()
-    val content = remember {
-        ContentState.applyContent(windowState)
-    }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
 
     val sphinxStore = remember { SphinxStore() }
@@ -111,10 +109,15 @@ fun main() = application {
                 this.window.addWindowFocusListener(dashboardViewModel)
 
                 AppTheme(useDarkTheme = true) {
+                    Dashboard(sphinxState, dashboardViewModel)
+
                     DesktopSphinxNotifications(
                         window,
                         icon = sphinxIcon
                     )
+                }
+
+                CompositionLocalProvider(LocalSpacing provides Spacing()){
                     if (ContentState.sendFilePickerDialog.isAwaiting) {
                         FilePickerDialog(
                             window,
@@ -136,7 +139,6 @@ fun main() = application {
                             desiredFileName = ContentState.saveFilePickerDialog.desiredFileName
                         )
                     }
-                    Dashboard(sphinxState, dashboardViewModel)
                 }
             }
         }

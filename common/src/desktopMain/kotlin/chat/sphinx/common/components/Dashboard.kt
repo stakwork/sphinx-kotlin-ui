@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
@@ -28,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.chat.AttachmentPreview
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -48,7 +48,6 @@ import chat.sphinx.wrapper.util.getInitials
 import com.example.compose.place_holder_text
 import com.example.compose.primary_green
 import com.example.compose.sphinx_orange
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
@@ -103,20 +102,30 @@ actual fun Dashboard(
                         }
                     }
 
-                    Scaffold(scaffoldState = scaffoldState, topBar = {
-                        SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel)
-                    }, bottomBar = {
-                        SphinxChatDetailBottomAppBar(chatViewModel)
-                    }) {
+                    Scaffold(
+                        scaffoldState = scaffoldState,
+                        topBar = {
+                            SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel) },
+                        bottomBar = {
+                            SphinxChatDetailBottomAppBar(chatViewModel)
+                        }
+                    ) { paddingValues ->
                         Column(
-                            modifier = Modifier.fillMaxSize().background(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
+                                .padding(paddingValues),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            chatViewModel?.let {
-                                MessageListUI(it)
+                            chatViewModel?.let { chatViewModel ->
+                                MessageListUI(chatViewModel)
                             }
                         }
+                        AttachmentPreview(
+                            chatViewModel,
+                            Modifier.padding(paddingValues)
+                        )
                     }
                 }
                 splitter {
@@ -134,48 +143,7 @@ actual fun Dashboard(
                 }
             }
 
-            fullScreenImageState.value?.let { imagePath ->
-                val backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                val fullscreenBackgroundColor = Color(
-                    red = backgroundColor.red,
-                    green = backgroundColor.green,
-                    blue = backgroundColor.blue,
-                    alpha = 0.45f
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(fullscreenBackgroundColor)
-                        .clickable(enabled = false, onClick = {  })
-                ) {
-                    PhotoFileImage(
-                        imagePath,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit // TODO: Figure out which fill works best depending on image size
-                    )
-                    // Close Fullscreen button
-                    Box(
-                        modifier = Modifier.padding(40.dp).align(Alignment.TopEnd)
-                    ) {
-                        IconButton(
-                            onClick = {
-                                fullScreenImageState.value = null
-                            },
-                            modifier = Modifier.clip(CircleShape)
-                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                                .size(40.dp),
-                        ) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Close fullscreen image view",
-                                tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-                    }
-
-                }
-            }
+            ImageFullScreen(fullScreenImageState)
 
             val restoreState by dashboardViewModel.restoreStateFlow.collectAsState()
             restoreState?.let { restoreState ->
@@ -369,8 +337,8 @@ fun SphinxChatDetailBottomAppBar(
                 IconButton(
                     onClick = { 
                         scope.launch {
-                            ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
-                                if (chatViewModel != null) run {
+                            if (chatViewModel != null) run {
+                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
                                     chatViewModel.onMessageFileChanged(path)
                                 }
                             }

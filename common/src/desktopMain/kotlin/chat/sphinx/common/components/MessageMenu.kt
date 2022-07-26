@@ -85,7 +85,7 @@ actual fun MessageMenu(
 
         if (chatMessage.message.isReplyAllowed) {
             DropdownMenuItem(onClick = {
-                chatMessage.setAsReplyToMessage(chatViewModel.editMessageState)
+                chatViewModel.editMessageState.replyToMessage.value = chatMessage
                 dismissKebab()
             }) {
                 OptionItem("Reply", imageVector = Icons.Default.Reply)
