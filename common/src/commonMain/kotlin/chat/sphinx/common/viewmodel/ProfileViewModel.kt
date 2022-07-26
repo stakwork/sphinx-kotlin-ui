@@ -10,6 +10,8 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
+import chat.sphinx.wrapper.contact.PrivatePhoto
+import chat.sphinx.wrapper.contact.toPrivatePhoto
 import chat.sphinx.wrapper.message.SphinxCallLink
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -96,7 +98,7 @@ class ProfileViewModel(val dashboardViewModel: DashboardViewModel){
         scope.launch(dispatchers.mainImmediate) {
             contactRepository.updateOwner(
                 alias = profileState.alias,
-                privatePhoto = null,
+                privatePhoto = profileState.privatePhoto?.toPrivatePhoto(),
                 tipAmount = null
             ).let { loadResponse ->
                 setStatus(loadResponse)
@@ -119,7 +121,6 @@ class ProfileViewModel(val dashboardViewModel: DashboardViewModel){
             )
         }
     }
-
-    private fun toPrivatePhotoBoolean(privatePhoto: Int?) : Boolean = privatePhoto != 1
+    private fun toPrivatePhotoBoolean(privatePhoto: Int?) : Boolean = privatePhoto == 1
 
 }

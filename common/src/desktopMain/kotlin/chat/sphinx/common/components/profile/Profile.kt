@@ -356,15 +356,16 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                     color = Color.LightGray,
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = viewModel.profileState.privatePhoto ?: true,
-                    enabled = viewModel.profileState.privatePhoto != null,
-                    onCheckedChange = {viewModel.onPrivatePhotoSwitchChange(it)},
-                    colors = SwitchDefaults.colors(
-                        checkedTrackColor = MaterialTheme.colorScheme.secondary,
-                        checkedThumbColor = MaterialTheme.colorScheme.secondary
-                    ),
-                )
+                if(viewModel.profileState.privatePhoto != null) {
+                    Switch(
+                        checked = !viewModel.profileState.privatePhoto!!,
+                        onCheckedChange = { viewModel.onPrivatePhotoSwitchChange(!it) },
+                        colors = SwitchDefaults.colors(
+                            checkedTrackColor = MaterialTheme.colorScheme.secondary,
+                            checkedThumbColor = MaterialTheme.colorScheme.secondary
+                        ),
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(28.dp))
         }
