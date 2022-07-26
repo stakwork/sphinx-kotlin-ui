@@ -1,9 +1,11 @@
 package chat.sphinx.common.components.notifications
 
+import Roboto
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -18,12 +20,15 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
@@ -60,7 +65,7 @@ fun DesktopSphinxNotifications(
             title = "Sphinx Notifications",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.TopEnd),
-                size = getPreferredWindowSize(210, 40+(78+15) * notifications.size)
+                size = getPreferredWindowSize(300, 40 + (80 + 15) * notifications.size)
             ),
             alwaysOnTop = true,
             transparent = true,
@@ -90,23 +95,17 @@ fun DesktopSphinxNotifications(
                 }
             }
 
-            // We can also close notifications when the mouse moves over them
-//            window.addMouseMotionListener(
-//                sphinxMouseMotionListener
-//            )
             dashboardWindow.addMouseMotionListener(
                 sphinxMouseMotionListener
             )
 
-            Box(
-                modifier = Modifier
-            ) {
-
+            Box(modifier = Modifier.fillMaxSize())
+            {
                 Column(
                     modifier = Modifier.align(Alignment.TopEnd)
                         .padding(
                             top = 20.dp,
-                            end = 20.dp
+                            end = 50.dp
                         )
                         .fillMaxWidth()
                 ) {
@@ -115,56 +114,60 @@ fun DesktopSphinxNotifications(
                             Spacer(Modifier.height(15.dp))
                             Box(
                                 modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.background)
+                                    .background(MaterialTheme.colorScheme.background, RoundedCornerShape(10.dp))
                                     .align(Alignment.End)
-                                    .clickable {
+                                    .defaultMinSize(300.dp, 0.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .align(Alignment.TopEnd)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = "Close notification",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .align(Alignment.TopEnd)
+                                            .clickable {
+                                                notifications.remove(notification.key)
+                                            }
+                                    )
+                                }
+
+                                Column (
+                                    modifier = Modifier.padding(
+                                        top = 15.dp,
+                                        bottom = 15.dp,
+                                        start = 15.dp,
+                                        end = 30.dp
+                                    ).clickable {
                                         if (dashboardWindow.isMinimized) {
                                             dashboardWindow.isMinimized = false
                                         }
                                         dashboardWindow.toFront()
                                         notifications.clear()
                                     }
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(5.dp)
-                                        .align(Alignment.TopEnd)
-                                ) {
-                                    IconButton(
-                                        onClick = {
-                                            notifications.clear()
-                                        },
-                                        modifier = Modifier.clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.secondary)
-                                            .align(Alignment.TopEnd)
-                                            .size(30.dp),
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Close,
-                                            contentDescription = "Close notification",
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(30.dp)
-                                        )
-                                    }
-                                }
-
-                                Column (
-                                    modifier = Modifier.padding(
-                                        top = 20.dp,
-                                        bottom = 10.dp,
-                                        start = 10.dp,
-                                        end = 10.dp
-                                    )
                                 ) {
                                     Text(
                                         text = notification.value.first,
                                         fontWeight = FontWeight.SemiBold,
+                                        fontFamily = Roboto,
+                                        fontSize = 16.sp,
                                         color = MaterialTheme.colorScheme.tertiary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
+                                    Spacer(Modifier.height(8.dp))
                                     Text(
                                         text = notification.value.second,
                                         fontWeight = FontWeight.Light,
+                                        fontFamily = Roboto,
+                                        fontSize = 13.sp,
                                         color = MaterialTheme.colorScheme.tertiary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -178,7 +181,6 @@ fun DesktopSphinxNotifications(
     }
 
     if (notifications.isNotEmpty() && dashboardWindow.isActive) {
-        // If we have notifications but the dashboardWindow is active we shouldn't show notifications
         notifications.clear()
     }
 }
