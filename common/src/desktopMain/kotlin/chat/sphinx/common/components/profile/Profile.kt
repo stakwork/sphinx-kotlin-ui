@@ -33,10 +33,13 @@ import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.pin.ChangePin
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.components.pin.PINScreenType
+import chat.sphinx.common.state.BackUpPinState
+import chat.sphinx.common.state.PinType
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
+import chat.sphinx.common.viewmodel.dashboard.PinExportKeysViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -405,7 +408,7 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                 )
             )
             Spacer(modifier = Modifier.height(12.dp))
-            val lockedDashboardViewModel = remember { LockedDashboardViewModel() }
+            val pinExportKeysViewModel = remember { PinExportKeysViewModel() }
             val onTapBackUpKeys = remember { mutableStateOf(false) }
             CommonButton("Backup your key", endIcon = Icons.Default.VpnKey) {
 
@@ -421,9 +424,13 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                     ),
                 ) {
                     PINScreen(
-                        lockedDashboardViewModel,
+                        pinExportKeysViewModel,
                         pinScreenType = PINScreenType.ENTER_PIN_TO_BACK_UP_YOUR_KEYS
                     )
+                    if(pinExportKeysViewModel.pinState.success) {
+                        Column {
+                        }
+                    }
                 }
             Spacer(modifier = Modifier.height(24.dp))
             CommonButton(

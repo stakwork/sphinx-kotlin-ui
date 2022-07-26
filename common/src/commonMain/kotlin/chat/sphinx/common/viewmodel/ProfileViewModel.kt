@@ -123,4 +123,5 @@ class ProfileViewModel(val dashboardViewModel: DashboardViewModel){
     }
     private fun toPrivatePhotoBoolean(privatePhoto: Int?) : Boolean = privatePhoto == 1
 
+
 }
