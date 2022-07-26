@@ -1,9 +1,8 @@
 package chat.sphinx.common.state
 
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.ResponseError
 import chat.sphinx.wrapper.PhotoUrl
-import chat.sphinx.wrapper.contact.PrivatePhoto
-import chat.sphinx.wrapper.lightning.LightningNodePubKey
-import chat.sphinx.wrapper.lightning.Sat
 
 data class ProfileState(
    val alias: String = "",
@@ -12,6 +11,7 @@ data class ProfileState(
    val accountBalance: String = "0",
    val photoUrl: PhotoUrl? = null,
    val privatePhoto: Boolean? = null,
-   val defaultCallServer: String = ""
-
-)
+   val meetingServerUrl: String = "",
+   val saveButtonEnabled: Boolean = false,
+   val status: LoadResponse<Any, ResponseError>? = null,
+   )

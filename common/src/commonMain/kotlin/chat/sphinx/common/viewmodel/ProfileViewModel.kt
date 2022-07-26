@@ -1,21 +1,22 @@
 package chat.sphinx.common.viewmodel
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import chat.sphinx.common.state.ContactState
 import chat.sphinx.common.state.ProfileState
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.ResponseError
+import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.message.SphinxCallLink
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
+import com.russhwolf.settings.Settings
 
-class ProfileViewModel(val dashboardViewModel: DashboardViewModel) {
+class ProfileViewModel(val dashboardViewModel: DashboardViewModel){
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
@@ -46,12 +47,10 @@ class ProfileViewModel(val dashboardViewModel: DashboardViewModel) {
                             routeHint = owner.routeHint?.value ?: "",
                             photoUrl = owner.photoUrl,
                             privatePhoto = toPrivatePhotoBoolean(owner.privatePhoto.value)
-
                         )
                     }
                 }
             }
-
         }
     }
     init {
@@ -61,21 +60,62 @@ class ProfileViewModel(val dashboardViewModel: DashboardViewModel) {
 
     fun onPrivatePhotoSwitchChange(checked: Boolean){
         setProfileState {
-            copy(privatePhoto = checked)
+            copy(
+                privatePhoto = checked,
+                saveButtonEnabled = true
+            )
         }
     }
     fun onDefaultCallServerChange(text: String){
         setProfileState {
-            copy(defaultCallServer = text)
+            copy(
+                meetingServerUrl = text,
+                saveButtonEnabled = true
+            )
         }
     }
+
+    fun onAliasTextChanged(text: String) {
+        setProfileState {
+            copy(
+                alias = text,
+                saveButtonEnabled = true
+            )
+        }
+    }
+
+    private fun setStatus(status: LoadResponse<Any, ResponseError>?) {
+        setProfileState {
+            copy(
+                status = status
+            )
+        }
+    }
+
+    fun updateOwnerDetails(){
+        scope.launch(dispatchers.mainImmediate) {
+            contactRepository.updateOwner(
+                alias = profileState.alias,
+                privatePhoto = null,
+                tipAmount = null
+            ).let { loadResponse ->
+                setStatus(loadResponse)
+            }
+        }
+    }
+
+
+    private val settings: Settings = createPlatformSettings()
 
     private fun loadServerUrls(){
         val callServerUrl = SphinxCallLink.CALL_SERVER_URL_KEY
         val defaultCallServer = SphinxCallLink.DEFAULT_CALL_SERVER_URL
+
+//        val meetingServerUrl = settings.getString(callServerUrl, defaultCallServer)
+
         setProfileState {
             copy(
-                defaultCallServer = defaultCallServer
+                meetingServerUrl = defaultCallServer
             )
         }
     }

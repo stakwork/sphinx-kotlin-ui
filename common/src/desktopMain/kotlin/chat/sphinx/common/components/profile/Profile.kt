@@ -28,7 +28,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.DesktopResource
-import chat.sphinx.common.components.CommonTextField
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.pin.ChangePin
@@ -39,9 +38,11 @@ import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.platform.imageResource
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.Response
 import chat.sphinx.utils.getPreferredWindowSize
-import chat.sphinx.wrapper.PhotoUrl
 import com.example.compose.AppTheme
+import com.example.compose.badge_red
 
 @Composable
 fun Profile(dashboardViewModel: DashboardViewModel) {
@@ -273,8 +274,7 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                 )
                 BasicTextField(
                     value = viewModel.profileState.alias,
-                    onValueChange = {
-                    },
+                    onValueChange = {viewModel.onAliasTextChanged(it)},
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
@@ -380,7 +380,7 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = viewModel.profileState.defaultCallServer,
+                    value = viewModel.profileState.meetingServerUrl,
                     onValueChange = {viewModel.onDefaultCallServerChange(it) },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
@@ -428,12 +428,36 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
             CommonButton(
                 "Save Changes",
                 customColor = MaterialTheme.colorScheme.secondaryContainer,
+                enabled = viewModel.profileState.saveButtonEnabled,
             ) {
-
+                viewModel.updateOwnerDetails()
+            }
+            Box(
+                Modifier.fillMaxWidth().height(28.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (viewModel.profileState.status is Response.Error) {
+                   Text(
+                        text = "There was an error, please try again later",
+                        fontSize = 12.sp,
+                        fontFamily = Roboto,
+                        color = badge_red,
+                    )
+                }
+                if (viewModel.profileState.status is LoadResponse.Loading) {
+                    CircularProgressIndicator(
+                        Modifier.padding(start = 8.dp).size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                }
             }
         }
     }
     if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
         QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.profileState.nodePubKey, null))
+    }
+    if (viewModel.profileState.status is Response.Success){
+        dashboardViewModel.toggleProfileWindow(false)
     }
 }
