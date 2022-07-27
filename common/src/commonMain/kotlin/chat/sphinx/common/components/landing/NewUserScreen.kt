@@ -163,12 +163,6 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                 }
             }
 
-            newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
-                Text(
-                    text = invitationCodeErrorMessage,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
             Spacer(modifier = Modifier.height(16.dp))
             AnimatedContainer(fromBottomToTop = 20) {
                 Box(
@@ -193,6 +187,17 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                             tint = textColor
                         )
                     }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier.height(20.dp), contentAlignment = Alignment.Center
+            ) {
+                newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
+                    Text(
+                        text = invitationCodeErrorMessage,
+                        color = badge_red
+                    )
                 }
             }
         }
