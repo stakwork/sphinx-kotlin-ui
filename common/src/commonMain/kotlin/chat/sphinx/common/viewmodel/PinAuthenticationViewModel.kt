@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 
 abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
 
+    val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
+
     override fun onPINTextChanged(text: String) {
         setPINState {
             copy(
@@ -26,7 +28,6 @@ abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
     override fun onSubmitPIN() {
         val text = pinState.sphinxPIN.toCharArray()
         val password = Password(text)
-        val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
         val userInput = authenticationCoreManager.getNewUserInput()
         pinState.sphinxPIN.forEach {
             userInput.addCharacter(it)
@@ -44,7 +45,7 @@ abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
         val request = AuthenticationRequest.LogIn(password)
 
         scope.launch(SphinxContainer.appModule.dispatchers.default) {
-            SphinxContainer.authenticationModule.authenticationCoreManager.authenticate(
+            authenticationCoreManager.authenticate(
                 userInput,
                 listOf(request)
             ).collect { response ->
