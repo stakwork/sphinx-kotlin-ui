@@ -128,6 +128,10 @@ class DashboardViewModel: WindowFocusListener {
             return
         }
 
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            repositoryDashboard.networkRefreshBalance.collect { }
+        }
+
         jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
 
             repositoryDashboard.networkRefreshLatestContacts.collect { response ->
@@ -179,10 +183,6 @@ class DashboardViewModel: WindowFocusListener {
             if (_networkStateFlow.value is Response.Error) {
                 jobNetworkRefresh?.cancel()
             }
-
-            contactRepository.networkRefreshContacts.collect { }
-
-            repositoryDashboard.networkRefreshBalance.collect { }
         }
     }
 
