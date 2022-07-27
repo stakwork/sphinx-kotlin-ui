@@ -127,7 +127,7 @@ fun ImageLoadingView() {
                 modifier = Modifier.size(40.dp)
             )
             Spacer(modifier=Modifier.height(2.dp))
-            Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.onBackground)
+            Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.tertiary)
             Spacer(modifier=Modifier.height(16.dp))
         }
     }
