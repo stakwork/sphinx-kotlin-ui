@@ -38,6 +38,7 @@ import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.components.pin.PINScreenType
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
+import chat.sphinx.common.viewmodel.ResetPinViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.PinExportKeysViewModel
 import chat.sphinx.platform.imageResource
@@ -228,6 +229,7 @@ fun AdvanceTab(viewModel: ProfileViewModel) {
         )
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
         val openChangePinScreen = remember { mutableStateOf(false) }
+        val resetPinViewModel = remember { ResetPinViewModel()}
         Box(modifier = Modifier.clickable { openChangePinScreen.value = true }) {
             Text(
                 "Change Pin",
@@ -237,7 +239,7 @@ fun AdvanceTab(viewModel: ProfileViewModel) {
                 color = MaterialTheme.colorScheme.secondary
             )
             if (openChangePinScreen.value) {
-                ChangePin()
+                ChangePin(resetPinViewModel)
             }
         }
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)

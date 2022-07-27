@@ -10,7 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -26,11 +26,13 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.profile.onTapClose
+import chat.sphinx.common.viewmodel.ResetPinViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.utils.onKeyUp
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-actual fun ChangePin() {
+fun ChangePin(resetPinViewModel: ResetPinViewModel) {
     Window(
         onCloseRequest = ::onTapClose,
         title = "Sphinx",
@@ -52,11 +54,24 @@ actual fun ChangePin() {
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(40.dp))
-            TextField("Old Pin")
+            TextField(
+                value = resetPinViewModel.pinState.sphinxPIN,
+                textLabel = "Old PIN"
+            ){
+                resetPinViewModel.onPINTextChanged(it)
+            }
             Spacer(modifier = Modifier.height(34.dp))
-            TextField("New Pin")
+            TextField(
+                value = resetPinViewModel.newPinState.newPin,
+                textLabel = "New PIN"){
+                resetPinViewModel.setNewPin(it)
+            }
             Spacer(modifier = Modifier.height(34.dp))
-            TextField("Confirm New Pin")
+            TextField(
+                value =resetPinViewModel.newPinState.confirmedPin,
+                textLabel = "Confirm New PIN"){
+                resetPinViewModel.setConfirmedNewPin(it)
+            }
             Spacer(modifier = Modifier.height(40.dp))
             Box(modifier = Modifier.fillMaxWidth(.75f)) {
 
@@ -93,17 +108,18 @@ actual fun ChangePin() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun TextField(value: String) {
+private fun TextField(value: String, textLabel: String, modifier: Modifier = Modifier, onValueChange: (String) -> Unit) {
+    val maxLength = 6
     OutlinedTextField(
         shape = RoundedCornerShape(68.dp),
-        placeholder = {
-            Text(
-                value,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.tertiary.copy(alpha = .7f)
-            )
-        },
-        textStyle = TextStyle(fontSize = 24.sp),
+        modifier = modifier,
+        label = { Text(
+            text = textLabel,
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.tertiary.copy(alpha = .7f),
+            modifier = Modifier.padding(4.dp)
+        ) },
+        textStyle = TextStyle(fontSize = 24.sp, color = Color.White),
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = MaterialTheme.colorScheme.secondary,
             backgroundColor = MaterialTheme.colorScheme.surface,
@@ -111,8 +127,12 @@ private fun TextField(value: String) {
                 alpha = 0.8f
             )
         ),
-        value = "",
+        value = value,
+        visualTransformation = PasswordVisualTransformation(),
         onValueChange = {
+            if(it.length <= maxLength){
+            onValueChange(it)
+            }
         },
         singleLine = true
     )
