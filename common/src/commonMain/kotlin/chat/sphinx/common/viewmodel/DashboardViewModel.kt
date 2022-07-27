@@ -23,11 +23,11 @@ import kotlinx.coroutines.flow.collect
 
 class DashboardViewModel: WindowFocusListener {
     val dispatchers = SphinxContainer.appModule.dispatchers
-    val viewModelScope = SphinxContainer.appModule.applicationScope
-    val sphinxNotificationManager = createSphinxNotificationManager()
-    val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
-    val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-    val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
+    private val viewModelScope = SphinxContainer.appModule.applicationScope
+    private val sphinxNotificationManager = createSphinxNotificationManager()
+    private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+    private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
 
     private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
         MutableStateFlow(null)
@@ -58,6 +58,13 @@ class DashboardViewModel: WindowFocusListener {
         _qrWindowStateFlow.value = open
     }
 
+    private fun getRelayKeys() {
+        viewModelScope.launch(dispatchers.io) {
+            repositoryDashboard.getAndSaveTransportKey()
+            repositoryDashboard.getOrCreateHMacKey()
+        }
+    }
+
     private var screenInit: Boolean = false
     fun screenInit() {
         if (screenInit) {
@@ -66,10 +73,7 @@ class DashboardViewModel: WindowFocusListener {
             screenInit = true
         }
 
-        if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
-            DashboardScreenState.screenState(DashboardScreenType.Unlocked)
-        }
-
+        getRelayKeys()
         networkRefresh()
         connectSocket()
 
