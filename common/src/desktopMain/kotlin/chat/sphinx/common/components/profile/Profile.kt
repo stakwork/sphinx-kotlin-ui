@@ -167,13 +167,13 @@ fun Tabs(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel) {
         }
         when (tabIndex) { // 6.
             0 -> BasicTab(viewModel, dashboardViewModel)
-            1 -> AdvanceTab(viewModel)
+            1 -> AdvanceTab(viewModel, dashboardViewModel)
         }
     }
 }
 
 @Composable
-fun AdvanceTab(viewModel: ProfileViewModel) {
+fun AdvanceTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
             Column {
@@ -230,7 +230,7 @@ fun AdvanceTab(viewModel: ProfileViewModel) {
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
         val openChangePinScreen = remember { mutableStateOf(false) }
         val resetPinViewModel = remember { ResetPinViewModel()}
-        Box(modifier = Modifier.clickable { openChangePinScreen.value = true }) {
+        Box(modifier = Modifier.clickable { dashboardViewModel.toggleChangePinWindow(true)}) {
             Text(
                 "Change Pin",
                 textAlign = TextAlign.Center,
@@ -238,8 +238,8 @@ fun AdvanceTab(viewModel: ProfileViewModel) {
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
-            if (openChangePinScreen.value) {
-                ChangePin(resetPinViewModel)
+            if (dashboardViewModel.changePinWindowStateFlow.collectAsState().value) {
+                ChangePin(resetPinViewModel, dashboardViewModel)
             }
         }
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)

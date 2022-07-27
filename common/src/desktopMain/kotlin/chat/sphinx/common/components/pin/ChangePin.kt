@@ -26,15 +26,17 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.profile.onTapClose
+import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.ResetPinViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.utils.onKeyUp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ChangePin(resetPinViewModel: ResetPinViewModel) {
+fun ChangePin(resetPinViewModel: ResetPinViewModel, dashboardViewModel: DashboardViewModel) {
     Window(
-        onCloseRequest = ::onTapClose,
+        onCloseRequest = { dashboardViewModel.toggleChangePinWindow(false) },
         title = "Sphinx",
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),

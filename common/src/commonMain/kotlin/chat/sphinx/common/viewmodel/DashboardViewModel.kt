@@ -80,6 +80,17 @@ class DashboardViewModel: WindowFocusListener {
         _backUpWindowStateFlow.value = open
     }
 
+    private val _changePinWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val changePinWindowStateFlow: StateFlow<Boolean>
+        get() = _changePinWindowStateFlow.asStateFlow()
+
+    fun toggleChangePinWindow(open: Boolean) {
+        _changePinWindowStateFlow.value = open
+    }
+
     private var screenInit: Boolean = false
     fun screenInit() {
         if (screenInit) {
