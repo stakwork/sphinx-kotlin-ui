@@ -31,10 +31,8 @@ import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
-import chat.sphinx.wrapper.message.MessageType
-import chat.sphinx.wrapper.message.isBotRes
+import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.isImage
-import chat.sphinx.wrapper.message.retrieveTextToShow
 import com.example.compose.badge_red
 import com.example.compose.light_divider
 
@@ -57,11 +55,13 @@ fun ChatCard(
     ) {
         val density = LocalDensity.current
         var rowWidth by remember { mutableStateOf(0.dp) }
-
         Column(modifier = Modifier.onSizeChanged {
             rowWidth = with(density) { it.width.toDp() }
         }) {
-            chatMessage.message.replyMessage?.let { _ ->
+            if(chatMessage.message.isPaidMessage){
+                PaidMessageUI(chatMessage)
+            }
+           else chatMessage.message.replyMessage?.let { _ ->
                 ReplyingToMessageUI(
                     chatMessage,
                     chatViewModel
@@ -70,7 +70,7 @@ fun ChatCard(
                 CustomDivider(color = light_divider, modifier = Modifier.width(rowWidth))
             }
             chatMessage.message.messageMedia?.let { media ->
-                Column(modifier = Modifier.padding( if(media.mediaType.isImage) 0.dp else 12.dp)) {
+                Column(modifier = Modifier.padding( if(media.mediaType.isImage||chatMessage.message.isPaidMessage) 0.dp else 12.dp)) {
                     if (media.mediaType.isImage) {
                         chatMessage.message.messageMedia?.let { messageMedia ->
                             MessageMediaImage(
@@ -80,7 +80,7 @@ fun ChatCard(
                                 modifier = Modifier.wrapContentHeight().fillMaxWidth()
                             )
                         }
-                    } else {
+                    } else if (chatMessage.message.isPaidMessage.not()){
                         Icon(
                             Icons.Default.AttachFile,
                             contentDescription = "Attachment",
