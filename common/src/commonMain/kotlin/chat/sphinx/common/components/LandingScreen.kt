@@ -16,6 +16,7 @@ import chat.sphinx.common.viewmodel.RestoreFromKeystoreStore
 
 @Composable
 fun LandingScreen() {
+
     val restoreExistingUserViewModel = remember { RestoreExistingUserViewModel() }
     val restoreFromKeystoreStore = remember { RestoreFromKeystoreStore() }
     val newUserStore = remember { NewUserStore() }
@@ -26,41 +27,27 @@ fun LandingScreen() {
 
         when (LandingScreenState.screenState()) {
             LandingScreenType.LandingPage -> {
-//                WelcomeScreen()
-//                val lockedDashboardViewModel = remember { LockedDashboardViewModel() }
                 LandingUI()
-
             }
             LandingScreenType.NewUser -> {
-                NewUserScreen(
-                    newUserStore
-                )
+                NewUserScreen(newUserStore)
             }
             LandingScreenType.RestoreExistingUser -> {
-//                                val lockedDashboardViewModel = remember { LockedDashboardViewModel() }
-//                PINScreen(lockedDashboardViewModel)
-
                 RestoreExistingUserScreen(restoreExistingUserViewModel)
-//                if(restoreExistingUserViewModel.state.isLoading==true){
-//                    ConnectingDialog()
-//                } else if(restoreExistingUserViewModel.state.infoMessage=="success"){
-//                    WelcomeScreen()
-//                } else {
-//
-//                }
             }
             LandingScreenType.ExistingUserPIN -> {
-                    ExistingUserPINScreen(restoreExistingUserViewModel)
+                ExistingUserPINScreen(restoreExistingUserViewModel)
             }
             LandingScreenType.RestoreFromKeystore -> {
-
-                    RestoreFromKeychainScreen(restoreFromKeystoreStore)
+                RestoreFromKeychainScreen(restoreFromKeystoreStore)
             }
-            LandingScreenType.Loading ->  ConnectingDialog()
-            LandingScreenType.RestoreExistingUserSuccess -> WelcomeScreen()
+            LandingScreenType.Loading -> {
+                ConnectingDialog()
+            }
+            LandingScreenType.RestoreExistingUserSuccess -> {
+                WelcomeScreen()
+            }
         }
-
-//        ConnectingDialog()
     }
 
 
