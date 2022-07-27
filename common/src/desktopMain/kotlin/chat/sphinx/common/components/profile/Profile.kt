@@ -19,6 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,10 +36,7 @@ import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.pin.ChangePin
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.components.pin.PINScreenType
-import chat.sphinx.common.state.BackUpPinState
-import chat.sphinx.common.state.PinType
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.PinExportKeysViewModel
@@ -408,15 +408,21 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                 )
             )
             Spacer(modifier = Modifier.height(12.dp))
+
             val pinExportKeysViewModel = remember { PinExportKeysViewModel() }
             val onTapBackUpKeys = remember { mutableStateOf(false) }
+            val backUpKey = pinExportKeysViewModel.backUpKey.collectAsState().value
+            val clipboardManager: ClipboardManager = LocalClipboardManager.current
+            val copiedToClipBoard = pinExportKeysViewModel.copiedToClipBoard
+
             CommonButton("Backup your key", endIcon = Icons.Default.VpnKey) {
 
+                dashboardViewModel.toggleBackUpWindow(true)
                 onTapBackUpKeys.value = true
             }
-            if (onTapBackUpKeys.value)
+            if (dashboardViewModel.backUpWindowStateFlow.collectAsState().value)
                 Window(
-                    onCloseRequest = ::onTapClose,
+                    onCloseRequest = {dashboardViewModel.toggleBackUpWindow(false)},
                     title = "Sphinx",
                     state = WindowState(
                         position = WindowPosition.Aligned(Alignment.Center),
@@ -425,11 +431,13 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                 ) {
                     PINScreen(
                         pinExportKeysViewModel,
-                        pinScreenType = PINScreenType.ENTER_PIN_TO_BACK_UP_YOUR_KEYS
+                        pinScreenType = PINScreenType.ENTER_PIN_TO_BACK_UP_YOUR_KEYS,
+                        copiedToClipBoard = copiedToClipBoard.value
                     )
-                    if(pinExportKeysViewModel.pinState.success) {
-                        Column {
-                        }
+                    if(backUpKey != null) {
+                        clipboardManager.setText(AnnotatedString(backUpKey))
+                        copiedToClipBoard.value = true
+                        pinExportKeysViewModel.setBackUpKey(null)
                     }
                 }
             Spacer(modifier = Modifier.height(24.dp))

@@ -5,17 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
@@ -26,10 +20,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
-import chat.sphinx.common.components.WelcomeScreen
-import chat.sphinx.common.components.landing.ConnectingDialog
-import chat.sphinx.common.state.LandingScreenState
-import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.PINHandlingViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
@@ -41,7 +31,8 @@ import utils.AnimatedContainer
 @Composable
 fun PINScreen(
     pinHandlingViewModel: PINHandlingViewModel,
-    pinScreenType: PINScreenType = PINScreenType.ENTER_PIN_TO_UNLOCK
+    pinScreenType: PINScreenType = PINScreenType.ENTER_PIN_TO_UNLOCK,
+    copiedToClipBoard: Boolean = false
 ) {
     Box(
         modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
@@ -138,6 +129,19 @@ fun PINScreen(
                         color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(12.dp)
                     )
                 }
+            }
+        }
+        if(copiedToClipBoard) {
+            Column(
+                verticalArrangement = Arrangement.Bottom,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(
+                    text = "Back up key copied to clipboard",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(12.dp)
+                )
             }
         }
     }

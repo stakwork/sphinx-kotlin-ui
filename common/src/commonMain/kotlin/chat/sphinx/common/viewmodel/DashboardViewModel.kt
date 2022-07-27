@@ -69,6 +69,17 @@ class DashboardViewModel: WindowFocusListener {
         _profileStateFlow.value = open
     }
 
+    private val _backUpWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val backUpWindowStateFlow: StateFlow<Boolean>
+        get() = _backUpWindowStateFlow.asStateFlow()
+
+    fun toggleBackUpWindow(open: Boolean) {
+        _backUpWindowStateFlow.value = open
+    }
+
     private var screenInit: Boolean = false
     fun screenInit() {
         if (screenInit) {

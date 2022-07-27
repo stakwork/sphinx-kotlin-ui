@@ -5,6 +5,6 @@ data class PINState(
     val success: Boolean = false,
     val loading: Boolean = false,
     val errorMessage: String? = null,
-    val infoMessage: String? = null
+    val infoMessage: String? = null,
 ) {
 }
