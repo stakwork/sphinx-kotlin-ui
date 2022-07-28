@@ -201,7 +201,7 @@ sealed class DashboardChat {
                     message.messageMedia?.let { media ->
                         when (val type = media.mediaType) {
                             is MediaType.Audio -> {
-                                "An audio clip"
+                                "an audio clip"
                             }
                             is MediaType.Image -> {
                                 if (type.isGif) {

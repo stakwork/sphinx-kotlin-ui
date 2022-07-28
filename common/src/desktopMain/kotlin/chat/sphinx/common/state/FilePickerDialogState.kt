@@ -11,8 +11,8 @@ class FilePickerDialogState<T> {
     val isAwaiting get() = onResult != null
     var desiredFileName: String? = null
 
-    suspend fun awaitResult(desiredFilename: String? = null): T {
-        this.desiredFileName = desiredFilename
+    suspend fun awaitResult(desiredFileName: String? = null): T {
+        this.desiredFileName = desiredFileName
         onResult = CompletableDeferred()
         val result = onResult!!.await()
         onResult = null

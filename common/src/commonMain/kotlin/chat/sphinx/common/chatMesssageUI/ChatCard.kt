@@ -1,18 +1,16 @@
 package chat.sphinx.common.chatMesssageUI
 
 import Roboto
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.Card
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,14 +24,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.CustomDivider
+import chat.sphinx.common.components.MessageAudio
+import chat.sphinx.common.components.MessageFile
 import chat.sphinx.common.components.MessageMediaImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
-import chat.sphinx.wrapper.message.MessageType
-import chat.sphinx.wrapper.message.isBotRes
+import chat.sphinx.wrapper.message.media.isAudio
 import chat.sphinx.wrapper.message.media.isImage
+import chat.sphinx.wrapper.message.media.isPdf
+import chat.sphinx.wrapper.message.media.isUnknown
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import com.example.compose.badge_red
 import com.example.compose.light_divider
@@ -70,7 +71,7 @@ fun ChatCard(
                 CustomDivider(color = light_divider, modifier = Modifier.width(rowWidth))
             }
             chatMessage.message.messageMedia?.let { media ->
-                Column(modifier = Modifier.padding( if(media.mediaType.isImage) 0.dp else 12.dp)) {
+                Column(modifier = Modifier.padding( if (media.mediaType.isImage) 0.dp else 12.dp) ) {
                     if (media.mediaType.isImage) {
                         chatMessage.message.messageMedia?.let { messageMedia ->
                             MessageMediaImage(
@@ -80,11 +81,21 @@ fun ChatCard(
                                 modifier = Modifier.wrapContentHeight().fillMaxWidth()
                             )
                         }
+                    } else if (media.mediaType.isUnknown || media.mediaType.isPdf) {
+                        MessageFile(
+                            chatMessage = chatMessage,
+                            chatViewModel = chatViewModel,
+                        )
+//                    } else if (media.mediaType.isAudio) {
+//                        MessageAudio(
+//                            chatMessage = chatMessage,
+//                            chatViewModel = chatViewModel,
+//                        )
                     } else {
                         Icon(
                             Icons.Default.AttachFile,
                             contentDescription = "Attachment",
-                            tint = Color.Gray,
+                            tint = Color.Green,
                             modifier = Modifier.size(88.dp).padding(4.dp)
                         )
                     }
