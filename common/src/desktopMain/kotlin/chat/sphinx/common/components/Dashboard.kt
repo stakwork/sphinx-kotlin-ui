@@ -19,11 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
@@ -39,6 +42,7 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.utils.onKeyUp
 import chat.sphinx.wrapper.chat.isMuted
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
@@ -329,7 +333,7 @@ fun SphinxChatDetailBottomAppBar(
             MessageReplyingBar(chatViewModel)
 
             Row(
-                modifier = Modifier.fillMaxWidth().height(60.dp),
+                modifier = Modifier.fillMaxWidth().defaultMinSize(Dp.Unspecified, 60.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -379,28 +383,38 @@ fun SphinxChatDetailBottomAppBar(
                 Row(
                     modifier = Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CustomTextField(
-                        trailingIcon = null,
-                        modifier = Modifier.background(
-                            androidx.compose.material3.MaterialTheme.colorScheme.surface,
-                            RoundedCornerShape(percent = 50)
-                        ).padding(horizontal = 6.dp, vertical = 4.dp).height(32.dp),
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        placeholderText = "Message...",
-                        singleLine = false,
-                        maxLines = 4,
-                        onValueChange = {
-                            if (chatViewModel != null) run {
-                                if (it.isNotEmpty() && it.last() == '\n') {
-                                    chatViewModel.onSendMessage()
-                                } else {
-                                    chatViewModel.onMessageTextChanged(it)
+                    Column {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        CustomTextField(
+                            trailingIcon = null,
+                            modifier = Modifier
+                                .background(
+                                    androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                                    RoundedCornerShape(20.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 4.dp)
+                                .defaultMinSize(Dp.Unspecified, 32.dp)
+                                .onKeyEvent(
+                                    onKeyUp(
+                                        Key.Enter
+                                    ) {
+                                        chatViewModel?.onSendMessage()
+                                    }
+                                ),
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            placeholderText = "Message...",
+                            singleLine = false,
+                            maxLines = 4,
+                            onValueChange = {
+                                if (chatViewModel != null) run {
+                                    chatViewModel.onMessageTextChanged(it.trim())
                                 }
-                            }
-                        },
-                        value = chatViewModel?.editMessageState?.messageText?.value ?: ""
-                    )
+                            },
+                            value = chatViewModel?.editMessageState?.messageText?.value ?: ""
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
                 }
                 CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                     Row(

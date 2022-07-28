@@ -339,7 +339,7 @@ abstract class ChatViewModel(
             val sendMessageBuilder = SendMessage.Builder()
                 .setChatId(editMessageState.chatId)
                 .setContactId(editMessageState.contactId)
-                .setText(editMessageState.messageText.value)
+                .setText(editMessageState.messageText.value.trim())
                 .setMessagePrice(editMessageState.price.value?.toSat())
                 .also { builder ->
                     editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->

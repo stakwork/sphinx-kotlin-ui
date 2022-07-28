@@ -53,7 +53,7 @@ actual fun MessageMenu(
     ) {
         val messageText = chatMessage.message.messageContentDecrypted?.value ?: ""
 
-        if (chatMessage.message.isBoostAllowed) {
+        if (chatMessage.isReceived && chatMessage.message.isBoostAllowed) {
             DropdownMenuItem(onClick = {
                 chatMessage.boostMessage()
                 dismissKebab()

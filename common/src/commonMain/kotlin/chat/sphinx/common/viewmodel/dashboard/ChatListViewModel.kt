@@ -1,6 +1,8 @@
 package chat.sphinx.common.viewmodel.dashboard
 
 import androidx.annotation.ColorInt
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.ChatListData
@@ -44,11 +46,19 @@ suspend fun ArrayList<DashboardChat>.updateDashboardChats(
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
+private inline fun List<DashboardChat>.filterDashboardChats(
+    filter: CharSequence
+): List<DashboardChat> =
+    filter {
+        it.chatName?.contains(filter, ignoreCase = true) == true
+    }
+
 class ChatListViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
-    //    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
+    private var dashboardChats: ArrayList<DashboardChat> = ArrayList()
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
 
@@ -64,6 +74,8 @@ class ChatListViewModel {
 
     private val accountOwnerStateFlow: StateFlow<Contact?>
         get() = _accountOwnerStateFlow.asStateFlow()
+
+    var searchText: MutableState<String> = mutableStateOf("")
 
     private var contactsCollectionInitialized: Boolean = false
     private var chatsCollectionInitialized: Boolean = false
@@ -165,12 +177,8 @@ class ChatListViewModel {
                         updateDashboardChatLock,
                         dispatchers
                     )
-                    // TODO: Do a diff operation instead...
-                    ChatListState.screenState(
-                        ChatListData.PopulatedChatListData(
-                            newList
-                        )
-                    )
+                    dashboardChats = newList
+                    filterChats(searchText.value)
                 }
             }
         }
@@ -180,6 +188,28 @@ class ChatListViewModel {
             repositoryDashboard.getAllInvites.distinctUntilChanged().collect {
                 updateChatListContacts(_contactsStateFlow.value)
             }
+        }
+    }
+
+    fun filterChats(filter: String) {
+        searchText.value = filter
+
+        if (filter.isEmpty()) {
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    dashboardChats
+                )
+            )
+        } else {
+            val filteredChats = dashboardChats.filterDashboardChats(
+                filter
+            )
+
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    filteredChats
+                )
+            )
         }
     }
 
@@ -326,11 +356,9 @@ class ChatListViewModel {
                         updateDashboardChatLock,
                         dispatchers
                     )
-                    ChatListState.screenState(
-                        ChatListData.PopulatedChatListData(
-                            currentChats
-                        )
-                    )
+                    dashboardChats = ArrayList(currentChats)
+                    filterChats(searchText.value)
+
                     repositoryDashboard.updatedContactIds = mutableListOf()
                 }
             }
