@@ -45,7 +45,7 @@ fun PaidMessageUI(chatMessage: ChatMessage){
         else Column {
            SentPaidMessage(amount,chatMessage.message.retrievePurchaseStatus()!!)
            Spacer(modifier = Modifier.height(8.dp))
-           Text("Decrypted Message", modifier = Modifier.padding(4.dp), color = MaterialTheme.colorScheme.tertiary, fontSize = 13.sp)
+           Text("Decrypted Message", modifier = Modifier.padding(horizontal = 16.dp, vertical =8.dp), color = MaterialTheme.colorScheme.tertiary, fontSize = 13.sp)
        }
     }
 
