@@ -95,8 +95,8 @@ class DashboardViewModel: WindowFocusListener {
 
     override fun windowGainedFocus(p0: WindowEvent?) {
         if (DashboardScreenState.screenState() == DashboardScreenType.Unlocked) {
-            connectSocket()
             networkRefresh()
+            connectSocket()
         }
     }
 
@@ -117,7 +117,6 @@ class DashboardViewModel: WindowFocusListener {
         get() = _restoreStateFlow.asStateFlow()
 
     private var jobNetworkRefresh: Job? = null
-    private var jobPushNotificationRegistration: Job? = null
 
 
     fun networkRefresh() {
@@ -126,33 +125,6 @@ class DashboardViewModel: WindowFocusListener {
         }
 
         jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
-            contactRepository.networkRefreshContacts.collect { response ->
-                Exhaustive@
-                when (response) {
-                    is LoadResponse.Loading -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Error -> {}
-                    is Response.Success -> {}
-                }
-            }
-
-            repositoryDashboard.networkRefreshBalance.collect { response ->
-                Exhaustive@
-                when (response) {
-                    is LoadResponse.Loading -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Error -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Success -> {}
-                }
-            }
-
-            if (_networkStateFlow.value is Response.Error) {
-                jobNetworkRefresh?.cancel()
-            }
 
             repositoryDashboard.networkRefreshLatestContacts.collect { response ->
                 Exhaustive@
@@ -177,24 +149,6 @@ class DashboardViewModel: WindowFocusListener {
                 jobNetworkRefresh?.cancel()
             }
 
-            // must occur after contacts have been retrieved such that
-            // an account owner is available, otherwise it just suspends
-            // until it is.
-            if (jobPushNotificationRegistration == null) {
-                jobPushNotificationRegistration = launch(dispatchers.mainImmediate) {
-                    // TODO: Return push notifications...
-//                    pushNotificationRegistrar.register().let { response ->
-//                        Exhaustive@
-//                        when (response) {
-//                            is Response.Error -> {
-//                                // TODO: Handle on the UI
-//                            }
-//                            is Response.Success -> {}
-//                        }
-//                    }
-                }
-            }
-
             repositoryDashboard.networkRefreshMessages.collect { response ->
                 Exhaustive@
                 when (response) {
@@ -217,6 +171,14 @@ class DashboardViewModel: WindowFocusListener {
                     }
                 }
             }
+
+            if (_networkStateFlow.value is Response.Error) {
+                jobNetworkRefresh?.cancel()
+            }
+
+            contactRepository.networkRefreshContacts.collect { }
+
+            repositoryDashboard.networkRefreshBalance.collect { }
         }
     }
 

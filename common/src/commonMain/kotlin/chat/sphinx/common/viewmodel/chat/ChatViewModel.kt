@@ -91,7 +91,7 @@ abstract class ChatViewModel(
                 processChatMessages(chat, messages)
             }
 
-            delay(1000L)
+            delay(500L)
 
             messageRepository.getAllMessagesToShowByChatId(chat.id, 1000).distinctUntilChanged().collect { messages ->
                 processChatMessages(chat, messages)
