@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -64,6 +65,7 @@ fun DesktopSphinxNotifications(
             alwaysOnTop = true,
             transparent = true,
             resizable = true,
+            focusable = false,x
             undecorated = true,
             icon = icon
         ) {
@@ -110,62 +112,65 @@ fun DesktopSphinxNotifications(
                         .fillMaxWidth()
                 ) {
                     notifications.forEach { notification ->
-                        Spacer(Modifier.height(15.dp))
-                        Box(
-                            modifier = Modifier
-                                .background(MaterialTheme.colorScheme.background)
-                                .align(Alignment.End)
-                                .clickable {
-                                    if (dashboardWindow.isMinimized) {
-                                        dashboardWindow.isMinimized = false
-                                    }
-                                    dashboardWindow.toFront()
-                                    notifications.clear()
-                                }
-                        ) {
+                        key(notification.key) {
+                            Spacer(Modifier.height(15.dp))
                             Box(
                                 modifier = Modifier
-                                    .padding(5.dp)
-                                    .align(Alignment.TopEnd)
-                            ) {
-                                IconButton(
-                                    onClick = {
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .align(Alignment.End)
+                                    .clickable {
+                                        if (dashboardWindow.isMinimized) {
+                                            dashboardWindow.isMinimized = false
+                                        }
+                                        dashboardWindow.toFront()
                                         notifications.clear()
-                                    },
-                                    modifier = Modifier.clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.secondary)
+                                    }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(5.dp)
                                         .align(Alignment.TopEnd)
-                                        .size(30.dp),
                                 ) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        contentDescription = "Close notification",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(30.dp)
+                                    IconButton(
+                                        onClick = {
+                                            notifications.clear()
+                                        },
+                                        modifier = Modifier.clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.secondary)
+                                            .align(Alignment.TopEnd)
+                                            .size(30.dp),
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "Close notification",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(30.dp)
+                                        )
+                                    }
+                                }
+
+                                Column (
+                                    modifier = Modifier.padding(
+                                        top = 20.dp,
+                                        bottom = 10.dp,
+                                        start = 10.dp,
+                                        end = 10.dp
+                                    )
+                                ) {
+                                    Text(
+                                        text = notification.value.first,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                    )
+                                    Text(
+                                        text = notification.value.second,
+                                        fontWeight = FontWeight.Light,
+                                        color = MaterialTheme.colorScheme.tertiary,
                                     )
                                 }
                             }
-
-                            Column (
-                                modifier = Modifier.padding(
-                                    top = 20.dp,
-                                    bottom = 10.dp,
-                                    start = 10.dp,
-                                    end = 10.dp
-                                )
-                            ) {
-                                Text(
-                                    text = notification.first,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                )
-                                Text(
-                                    text = notification.second,
-                                    fontWeight = FontWeight.Light,
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                )
-                            }
                         }
+
 
                     }
                 }
