@@ -3,42 +3,156 @@ package chat.sphinx.common.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import chat.sphinx.common.state.ContactState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import chat.sphinx.common.state.ResetPinState
+import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
+import chat.sphinx.concepts.authentication.core.model.UserInput
+import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
-class ResetPinViewModel : PinAuthenticationViewModel() {
 
-    data class NewPinState(
-        val newPin: String = "",
-        val confirmedPin:String = ""
-    )
+class ResetPinViewModel {
 
-    var newPinState: NewPinState by mutableStateOf(NewPinState())
+    val scope = SphinxContainer.appModule.applicationScope
+    val dispatchers = SphinxContainer.appModule.dispatchers
+    private val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
+    private val request = AuthenticationRequest.ResetPassword()
+    private var passwordConfirmedForReset: AuthenticateFlowResponse.PasswordConfirmedForReset? = null
 
-    private inline fun setNewPinState(update: NewPinState.() -> NewPinState) {
-        newPinState = newPinState.update()
+    var resetPinState: ResetPinState by mutableStateOf(ResetPinState())
+
+    private inline fun setResetNewPinState(update: ResetPinState.() -> ResetPinState) {
+        resetPinState = resetPinState.update()
     }
 
-    fun setNewPin(pin: String){
-        setNewPinState {
+    private fun newUserPintoUserInput(): UserInput {
+        val newUserPinInput = authenticationCoreManager.getNewUserInput()
+        resetPinState.confirmedPin.forEach {
+            newUserPinInput.addCharacter(it)
+        }
+        return newUserPinInput
+    }
+
+    private val validCurrentPin = mutableStateOf(false)
+
+    fun onCurrentPinChanged(pin: String) {
+        setResetNewPinState {
+            copy(
+                currentPin = pin
+            )
+        }
+        if (pin.length == 6) {
+            onSubmitPIN()
+        }
+        checkValidInput()
+    }
+
+    fun onNewPinChanged(pin: String) {
+        setResetNewPinState {
             copy(
                 newPin = pin
             )
         }
+        checkValidInput()
     }
-    fun setConfirmedNewPin(pin: String){
-        setNewPinState {
+
+    fun onConfirmedNewPinChanged(pin: String) {
+        setResetNewPinState {
             copy(
                 confirmedPin = pin
             )
         }
+        checkValidInput()
     }
 
-    override fun onAuthenticationSucceed() {
 
+    @OptIn(InternalCoroutinesApi::class)
+    fun onSubmitPIN() {
+
+        val userInput = authenticationCoreManager.getNewUserInput()
+        resetPinState.currentPin.forEach {
+            userInput.addCharacter(it)
+        }
+
+        scope.launch(dispatchers.default) {
+            authenticationCoreManager.authenticate(
+                userInput,
+                listOf(request)
+            ).collect { response ->
+
+                when (response) {
+                    is AuthenticateFlowResponse.PasswordConfirmedForReset -> {
+                        passwordConfirmedForReset = response
+                        validCurrentPin.value = true
+                        checkValidInput()
+
+                    }
+                    is AuthenticateFlowResponse.WrongPin -> {
+                        passwordConfirmedForReset = null
+                        validCurrentPin.value = false
+                        checkValidInput()
+                    }
+                    is AuthenticateFlowResponse.Error -> {
+                        passwordConfirmedForReset = null
+                        validCurrentPin.value = false
+                        checkValidInput()
+                    }
+
+                }
+            }
+        }
     }
+
+    fun resetPassword() {
+        scope.launch(dispatchers.mainImmediate) {
+            passwordConfirmedForReset?.let { response ->
+                response.storeNewPasswordToBeSet(newUserPintoUserInput())
+                authenticationCoreManager.resetPassword(
+                    response,
+                    newUserPintoUserInput(),
+                    listOf(request)
+                ).collect { resetPasswordResponse ->
+                    setResetNewPinState {
+                        copy(
+                            status = resetPasswordResponse
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun checkValidInput() {
+
+        resetPinState.apply {
+
+            if (validCurrentPin.value && currentPin.length == 6) {
+                if (newPin.length == 6 && confirmedPin.length == 6) {
+                    if (newPin == confirmedPin) {
+                        setResetNewPinState {
+                            copy(
+                                confirmButtonState = true
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (currentPin.length != 6 ||
+                newPin.length != 6 ||
+                confirmedPin.length != 6 ||
+                newPin != resetPinState.confirmedPin
+            ) {
+                setResetNewPinState {
+                    copy(
+                        confirmButtonState = false
+                    )
+                }
+            }
+        }
+    }
+
 }
 

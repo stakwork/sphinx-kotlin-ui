@@ -1,6 +1,5 @@
 package chat.sphinx.common.components.pin
 
-import CommonButton
 import Roboto
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,15 +7,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -25,16 +21,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import chat.sphinx.common.components.profile.onTapClose
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.ResetPinViewModel
+import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
 import chat.sphinx.utils.getPreferredWindowSize
-import chat.sphinx.utils.onKeyUp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ChangePin(resetPinViewModel: ResetPinViewModel, dashboardViewModel: DashboardViewModel) {
+fun ChangePin(viewModel: ResetPinViewModel, dashboardViewModel: DashboardViewModel) {
     Window(
         onCloseRequest = { dashboardViewModel.toggleChangePinWindow(false) },
         title = "Sphinx",
@@ -57,33 +51,33 @@ fun ChangePin(resetPinViewModel: ResetPinViewModel, dashboardViewModel: Dashboar
             )
             Spacer(modifier = Modifier.height(40.dp))
             TextField(
-                value = resetPinViewModel.pinState.sphinxPIN,
+                value = viewModel.resetPinState.currentPin,
                 textLabel = "Old PIN"
             ){
-                resetPinViewModel.onPINTextChanged(it)
+                viewModel.onCurrentPinChanged(it)
             }
             Spacer(modifier = Modifier.height(34.dp))
             TextField(
-                value = resetPinViewModel.newPinState.newPin,
+                value = viewModel.resetPinState.newPin,
                 textLabel = "New PIN"){
-                resetPinViewModel.setNewPin(it)
+                viewModel.onNewPinChanged(it)
             }
             Spacer(modifier = Modifier.height(34.dp))
             TextField(
-                value =resetPinViewModel.newPinState.confirmedPin,
+                value =viewModel.resetPinState.confirmedPin,
                 textLabel = "Confirm New PIN"){
-                resetPinViewModel.setConfirmedNewPin(it)
+                viewModel.onConfirmedNewPinChanged(it)
             }
             Spacer(modifier = Modifier.height(40.dp))
             Box(modifier = Modifier.fillMaxWidth(.75f)) {
 
                 Button(
                     shape = RoundedCornerShape(23.dp),
-//        enabled = enabled?:true,
-                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.onBackground),
+                    enabled = viewModel.resetPinState.confirmButtonState,
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     onClick = {
-
+                        viewModel.resetPassword()
                     }
                 ) {
                     Text(
@@ -104,7 +98,9 @@ fun ChangePin(resetPinViewModel: ResetPinViewModel, dashboardViewModel: Dashboar
                 )
             }
         }
-
+    }
+    if(viewModel.resetPinState.status is AuthenticateFlowResponse.Success){
+        dashboardViewModel.toggleChangePinWindow(false)
     }
 }
 

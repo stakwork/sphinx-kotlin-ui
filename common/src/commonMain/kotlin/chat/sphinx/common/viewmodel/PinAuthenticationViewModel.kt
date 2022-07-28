@@ -10,10 +10,6 @@ import kotlinx.coroutines.launch
 
 abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
 
-    val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
-    val dispatchers = SphinxContainer.appModule.dispatchers
-
-
     override fun onPINTextChanged(text: String) {
         setPINState {
             copy(

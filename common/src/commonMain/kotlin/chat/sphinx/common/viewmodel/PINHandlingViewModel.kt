@@ -7,7 +7,11 @@ import chat.sphinx.common.state.PINState
 import chat.sphinx.di.container.SphinxContainer
 
 abstract class PINHandlingViewModel {
+
     val scope = SphinxContainer.appModule.applicationScope
+    val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
+    val dispatchers = SphinxContainer.appModule.dispatchers
+
 
     var pinState: PINState by mutableStateOf(initialState())
         protected set
