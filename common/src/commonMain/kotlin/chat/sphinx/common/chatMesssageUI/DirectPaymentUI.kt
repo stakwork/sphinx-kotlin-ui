@@ -30,124 +30,103 @@ fun DirectPaymentUI(
     chatMessage: ChatMessage,
     chatViewModel: ChatViewModel
 ) {
-    val receiverCorner =
-        RoundedCornerShape(
-            topEnd = 10.dp,
-            topStart = 0.dp,
-            bottomEnd = 10.dp,
-            bottomStart = 10.dp
-        )
-    val senderCorner =
-        RoundedCornerShape(
-            topEnd = 0.dp,
-            topStart = 10.dp,
-            bottomEnd = 10.dp,
-            bottomStart = 10.dp
-        )
-    Box() {
-        Card(
-            backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            shape = if (chatMessage.isReceived) receiverCorner else senderCorner,
-            modifier = Modifier.fillMaxWidth(0.25f).conditional(
-                chatMessage.message.messageContentDecrypted?.value?.isEmpty()
-                    ?.not() == true
-            ) { Modifier.fillMaxWidth(0.3f) }
+    Column(
+        horizontalAlignment = if (chatMessage.isSent) Alignment.End else Alignment.Start,
+        modifier = Modifier.fillMaxWidth(0.25f).conditional(
+            chatMessage.message.messageContentDecrypted?.value?.isEmpty()
+                ?.not() == true
+        ) { Modifier.fillMaxWidth(0.3f) }
+    ) {
+        Row(
+            horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
+            modifier = Modifier.fillMaxWidth()
+                .padding(top = 16.dp, start = 8.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(horizontalAlignment = if (chatMessage.isSent) Alignment.End else Alignment.Start) {
-                Row(
-                    horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(top = 16.dp, start = 8.dp, end = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (chatMessage.chat.isTribe()) {
-                        val recipientColor = chatMessage.colors[-chatMessage.message.id.value]
+            if (chatMessage.chat.isTribe()) {
+                val recipientColor = chatMessage.colors[-chatMessage.message.id.value]
 
-                        Box(modifier = Modifier.weight(1f).padding(start = 8.dp, end = 8.dp)) {
-                            PhotoUrlImage(
-                                photoUrl = chatMessage.message.recipientPic,
-                                modifier = Modifier
-                                    .size(25.dp)
-                                    .clip(
-                                        CircleShape
-                                    ),
-                                color = if (recipientColor != null) Color(recipientColor) else null,
-                                firstNameLetter = chatMessage.message.recipientAlias?.value?.getInitials(),
-                                fontSize = 9
-                            )
-                        }
-                    }
-                    if (chatMessage.isReceived && chatMessage.chat.isTribe().not()) {
-                        Image(
-                            painter = imageResource(Res.drawable.ic_received),
-                            contentDescription = "Sent Icon",
-                            modifier = Modifier.size(20.dp),
-                            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.inverseSurface)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                    }
-                    Text(
-                        chatMessage.message.amount.value.toString(),
-                        color = if (chatMessage.isSent) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onBackground
+                Box(modifier = Modifier.weight(1f).padding(start = 8.dp, end = 8.dp)) {
+                    PhotoUrlImage(
+                        photoUrl = chatMessage.message.recipientPic,
+                        modifier = Modifier
+                            .size(25.dp)
+                            .clip(
+                                CircleShape
+                            ),
+                        color = if (recipientColor != null) Color(recipientColor) else null,
+                        firstNameLetter = chatMessage.message.recipientAlias?.value?.getInitials(),
+                        fontSize = 9
                     )
-
-                    if (chatMessage.isSent || chatMessage.chat.isTribe().not()) {
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            "sats",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 10.sp
-                        )
-                    }
-
-                    if (chatMessage.isSent||chatMessage.chat.isTribe())
-                    {
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Image(
-                            painter = imageResource(Res.drawable.ic_sent),
-                            contentDescription = "Sent Icon",
-                            modifier = Modifier.size(20.dp),
-                            colorFilter = if (chatMessage.isSent) ColorFilter.tint(MaterialTheme.colorScheme.tertiary) else ColorFilter.tint(
-                                MaterialTheme.colorScheme.onBackground
-                            )
-                        )
-                    }
-
-
                 }
-                if (chatMessage.message.messageContentDecrypted?.value?.isEmpty()
-                        ?.not() == true
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(top = 8.dp, start = 12.dp, end = 12.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(
-                            chatMessage.message.messageContentDecrypted?.value ?: "",
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
-                    }
-                }
-                chatMessage.message.messageMedia?.let {
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
-                    ) {
+            }
+            if (chatMessage.isReceived && chatMessage.chat.isTribe().not()) {
+                Image(
+                    painter = imageResource(Res.drawable.ic_received),
+                    contentDescription = "Sent Icon",
+                    modifier = Modifier.size(20.dp),
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.inverseSurface)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+            }
+            Text(
+                chatMessage.message.amount.value.toString(),
+                color = if (chatMessage.isSent) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onBackground
+            )
 
-                        MessageMediaImage(
-                            chatMessage.message,
-                            messageMedia = it,
-                            chatViewModel = chatViewModel,
-                            modifier = Modifier.wrapContentHeight().fillMaxWidth()
-                        )
-
-                    }
-                }
-                if (chatMessage.message.messageMedia == null)
-                    Spacer(modifier = Modifier.height(16.dp))
+            if (chatMessage.isSent || chatMessage.chat.isTribe().not()) {
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    "sats",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 10.sp
+                )
             }
 
-        }
+            if (chatMessage.isSent||chatMessage.chat.isTribe())
+            {
+                Spacer(modifier = Modifier.width(6.dp))
+                Image(
+                    painter = imageResource(Res.drawable.ic_sent),
+                    contentDescription = "Sent Icon",
+                    modifier = Modifier.size(20.dp),
+                    colorFilter = if (chatMessage.isSent) ColorFilter.tint(MaterialTheme.colorScheme.tertiary) else ColorFilter.tint(
+                        MaterialTheme.colorScheme.onBackground
+                    )
+                )
+            }
 
+
+        }
+        if (chatMessage.message.messageContentDecrypted?.value?.isEmpty()
+                ?.not() == true
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(top = 8.dp, start = 12.dp, end = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    chatMessage.message.messageContentDecrypted?.value ?: "",
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
+        }
+        chatMessage.message.messageMedia?.let {
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
+            ) {
+
+                MessageMediaImage(
+                    chatMessage.message,
+                    messageMedia = it,
+                    chatViewModel = chatViewModel,
+                    modifier = Modifier.wrapContentHeight().fillMaxWidth()
+                )
+
+            }
+        }
+        if (chatMessage.message.messageMedia == null)
+            Spacer(modifier = Modifier.height(16.dp))
     }
 }

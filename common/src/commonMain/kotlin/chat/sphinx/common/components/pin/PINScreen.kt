@@ -23,6 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
@@ -76,7 +77,12 @@ fun PINScreen(
                    ) {
                        OutlinedTextField(
                            shape = RoundedCornerShape(68.dp),
-                           textStyle = TextStyle(fontSize = 24.sp),
+                           textStyle = TextStyle(
+                               fontSize = 32.sp,
+                               textAlign = TextAlign.Center,
+                               letterSpacing = 15.sp,
+                               lineHeight = 50.sp
+                           ),
                            colors = TextFieldDefaults.outlinedTextFieldColors(
                                focusedBorderColor = MaterialTheme.colorScheme.secondary,
                                backgroundColor = MaterialTheme.colorScheme.tertiary,
