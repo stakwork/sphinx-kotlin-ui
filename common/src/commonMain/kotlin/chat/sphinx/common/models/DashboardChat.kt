@@ -105,8 +105,7 @@ sealed class DashboardChat {
                     "Message deleted"
                 }
                 message.type.isInvoicePayment() -> {
-                    val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                    val amount: String = message.amount.asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Payment Sent: $amount"
@@ -145,7 +144,7 @@ sealed class DashboardChat {
                 }
                 message.type.isBoost() -> {
                     val amount: String = (message.feedBoost?.amount ?: message.amount)
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     "${getMessageSender(message, true)} boost ${amount}"
                 }
@@ -160,7 +159,7 @@ sealed class DashboardChat {
                             }
                             message.feedBoost != null -> {
                                 val amount: String = (message.feedBoost?.amount ?: message.amount)
-                                    .asFormattedString(separator = ',', appendUnit = true)
+                                    .asFormattedString(separator = ' ', appendUnit = true)
 
                                 "${getMessageSender(message)} boost ${amount}"
                             }
@@ -178,7 +177,7 @@ sealed class DashboardChat {
                 }
                 message.type.isInvoice() -> {
                     val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Invoice sent: ${amount}"
@@ -189,7 +188,7 @@ sealed class DashboardChat {
                 }
                 message.type.isDirectPayment() -> {
                     val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Payment Sent: $amount"
