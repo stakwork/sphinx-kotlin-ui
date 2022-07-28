@@ -24,7 +24,10 @@ import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.ResetPinViewModel
 import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.Response
 import chat.sphinx.utils.getPreferredWindowSize
+import com.example.compose.badge_red
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -34,7 +37,7 @@ fun ChangePin(viewModel: ResetPinViewModel, dashboardViewModel: DashboardViewMod
         title = "Sphinx",
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
-            size = getPreferredWindowSize(400, 500)
+            size = getPreferredWindowSize(400, 520)
         ),
     ) {
         Column(
@@ -69,6 +72,34 @@ fun ChangePin(viewModel: ResetPinViewModel, dashboardViewModel: DashboardViewMod
                 viewModel.onConfirmedNewPinChanged(it)
             }
             Spacer(modifier = Modifier.height(40.dp))
+        }
+        Column(
+            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 18.dp, end = 18.dp, bottom = 18.dp),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                Modifier.fillMaxWidth().height(40.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (viewModel.resetPinState.status is AuthenticateFlowResponse.Error ||
+                    viewModel.resetPinState.status is AuthenticateFlowResponse.WrongPin
+                ) {
+                    Text(
+                        text = "There was an error, please try PIN again",
+                        fontSize = 12.sp,
+                        fontFamily = Roboto,
+                        color = badge_red,
+                    )
+                }
+                if (viewModel.resetPinState.status is AuthenticateFlowResponse.Notify) {
+                    CircularProgressIndicator(
+                        Modifier.padding(start = 8.dp).size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                }
+            }
             Box(modifier = Modifier.fillMaxWidth(.75f)) {
 
                 Button(

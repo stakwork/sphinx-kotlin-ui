@@ -197,36 +197,36 @@ fun AdvanceTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewMod
             Spacer(modifier = Modifier.height(28.dp))
         }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceAround,
-            modifier = Modifier.padding(horizontal = 20.dp)
-        ) {
-            Text(
-                "Pin Timeout",
-                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
-                fontSize = 12.sp
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                "12 Hours",
-                color = MaterialTheme.colorScheme.tertiary,
-                fontSize = 12.sp
-            )
-        }
-        var sliderState by remember { mutableStateOf(0f) }
-        Slider(
-            value = sliderState,
-            modifier = Modifier.padding(horizontal = 12.dp),
-            steps = 0,
-            valueRange = 0f..100f,
-            colors = SliderDefaults.colors(
-                activeTrackColor = MaterialTheme.colorScheme.secondary,
-                thumbColor = MaterialTheme.colorScheme.secondary
-            ),
-            onValueChange = { newValue ->
-                sliderState = newValue
-            },
-        )
+//        Row(
+//            horizontalArrangement = Arrangement.SpaceAround,
+//            modifier = Modifier.padding(horizontal = 20.dp)
+//        ) {
+//            Text(
+//                "Pin Timeout",
+//                color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
+//                fontSize = 12.sp
+//            )
+//            Spacer(modifier = Modifier.weight(1f))
+//            Text(
+//                "12 Hours",
+//                color = MaterialTheme.colorScheme.tertiary,
+//                fontSize = 12.sp
+//            )
+//        }
+//        var sliderState by remember { mutableStateOf(0f) }
+//        Slider(
+//            value = sliderState,
+//            modifier = Modifier.padding(horizontal = 12.dp),
+//            steps = 0,
+//            valueRange = 0f..100f,
+//            colors = SliderDefaults.colors(
+//                activeTrackColor = MaterialTheme.colorScheme.secondary,
+//                thumbColor = MaterialTheme.colorScheme.secondary
+//            ),
+//            onValueChange = { newValue ->
+//                sliderState = newValue
+//            },
+//        )
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
         val openChangePinScreen = remember { mutableStateOf(false) }
         val resetPinViewModel = remember { ResetPinViewModel()}
@@ -243,19 +243,19 @@ fun AdvanceTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewMod
             }
         }
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
-        Box(modifier = Modifier.clickable {  }) {
-            Text(
-                "Change Privacy Pin",
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.secondary
-            )
-        }
-        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
+//        Box(modifier = Modifier.clickable {  }) {
+//            Text(
+//                "Change Privacy Pin",
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier.fillMaxWidth().padding(24.dp),
+//                fontSize = 12.sp,
+//                color = MaterialTheme.colorScheme.secondary
+//            )
+//        }
+//        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
     }
     Column(
-        modifier = Modifier.padding(top = 180.dp,start = 40.dp, end = 40.dp, bottom = 24.dp)){
+        modifier = Modifier.padding(top = 300.dp,start = 40.dp, end = 40.dp, bottom = 24.dp)){
         CommonButton(
             "Save Changes",
             customColor = MaterialTheme.colorScheme.secondaryContainer,
