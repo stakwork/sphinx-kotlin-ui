@@ -29,6 +29,7 @@ class LockedDashboardViewModel: PINHandlingViewModel() {
         val password = Password(text)
         val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
         val userInput = authenticationCoreManager.getNewUserInput()
+
         pinState.sphinxPIN.forEach {
             userInput.addCharacter(it)
         }
