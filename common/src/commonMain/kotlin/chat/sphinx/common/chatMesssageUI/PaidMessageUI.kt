@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,6 +25,7 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.message.PurchaseStatus
+import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrievePaidTextAttachmentUrlAndMessageMedia
 import chat.sphinx.wrapper.message.retrievePurchaseStatus
 import chat.sphinx.wrapper.message.retrieveTextToShow
@@ -42,7 +45,7 @@ fun PaidMessageUI(chatMessage: ChatMessage){
     }?.let {
         val amount=chatMessage.message.messageMedia?.price?.value.toString()
        if(chatMessage.isReceived)
-           ReceivedPaidMessage(it,amount, chatMessage.message.retrievePurchaseStatus()!!)
+           ReceivedPaidMessage(it,amount, chatMessage.message.retrievePurchaseStatus()!!,chatMessage)
         else Column {
            SentPaidMessage(amount,chatMessage.message.retrievePurchaseStatus()!!,chatMessage.message.retrieveTextToShow().toString())
 //           Spacer(modifier = Modifier.height(8.dp))
@@ -53,10 +56,18 @@ fun PaidMessageUI(chatMessage: ChatMessage){
 }
 
 @Composable
-private fun ReceivedPaidMessage(message: String,amount: String,status:PurchaseStatus){
+private fun ReceivedPaidMessage(message: String,amount: String,status:PurchaseStatus,chatMessage: ChatMessage){
     Column (modifier = Modifier.fillMaxWidth(0.5f)){
+        if(chatMessage.message.messageMedia?.mediaType?.isImage==true)
+            Box(modifier = Modifier.height(250.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Image(
+                    painter = imageResource(Res.drawable.ic_received_image_not_available), contentDescription = "", modifier = Modifier.height(300.dp).width(300.dp)
+                )
+            }
+        else
         Text(message, fontWeight = FontWeight.W700, fontSize =  if((status is PurchaseStatus.Accepted).not()) 10.sp else 12.sp, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
 //        Spacer(modifier = Modifier.height(4.dp))
+
         if((status is PurchaseStatus.Accepted).not())
         SendSats(amount)
         else ShowPaidMessage(amount)

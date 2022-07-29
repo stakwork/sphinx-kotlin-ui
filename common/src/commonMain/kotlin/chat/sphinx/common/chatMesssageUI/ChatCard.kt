@@ -69,6 +69,7 @@ fun ChatCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 CustomDivider(color = light_divider, modifier = Modifier.width(rowWidth))
             }
+            if(chatMessage.message.isPaidMessage.not())
             chatMessage.message.messageMedia?.let { media ->
                 Column(modifier = Modifier.padding( if(media.mediaType.isImage||chatMessage.message.isPaidMessage) 0.dp else 12.dp)) {
                     if (media.mediaType.isImage) {
