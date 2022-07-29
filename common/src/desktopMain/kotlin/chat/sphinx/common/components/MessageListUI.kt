@@ -35,11 +35,7 @@ import utils.AnimatedContainer
 fun MessageListUI(
     chatViewModel: ChatViewModel
 ) {
-    Box(
-        modifier = Modifier.padding(
-            bottom = 15.dp
-        )
-    ) {
+    Box {
         when (val messageListData = MessageListState.screenState()) {
             is MessageListData.EmptyMessageListData -> {
                 Box(
@@ -83,12 +79,7 @@ fun ChatMessagesList(
     LazyColumn(
         state = listState,
         reverseLayout = true,
-        contentPadding = PaddingValues(
-            bottom = if (chatViewModel?.isReplying()) 94.dp else 50.dp,
-            top = 8.dp,
-            start = 8.dp,
-            end = 8.dp
-        )
+        contentPadding = PaddingValues(8.dp)
     ) {
         itemsIndexed(items, key = { index, item -> item.message.id }){ index, item ->
             print("index is $index with value ${item.message.messageContent?.value}")

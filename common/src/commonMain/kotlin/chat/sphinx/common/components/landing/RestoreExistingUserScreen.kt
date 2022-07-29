@@ -122,12 +122,6 @@ fun RestoreExistingUserScreen(
                             }
                         }
                     }
-                    restoreExistingUserViewModel.state.errorMessage?.let { errorMessage ->
-                        Text(
-                            text = errorMessage,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     AnimatedContainer(fromTopToBottom = 20) {
                         Box(
@@ -152,6 +146,17 @@ fun RestoreExistingUserScreen(
                                     tint = textColor
                                 )
                             }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Box(
+                        modifier = Modifier.height(20.dp), contentAlignment = Alignment.Center
+                    ) {
+                        restoreExistingUserViewModel.state.errorMessage?.let { errorMessage ->
+                            Text(
+                                text = errorMessage,
+                                color = badge_red
+                            )
                         }
                     }
                 }

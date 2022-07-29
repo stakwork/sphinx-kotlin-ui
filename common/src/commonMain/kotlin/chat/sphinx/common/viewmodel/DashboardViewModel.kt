@@ -2,7 +2,7 @@ package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenType
-import chat.sphinx.common.state.DashboardState
+import chat.sphinx.common.state.DashboardScreenState
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.concepts.socket_io.SocketIOState
 import chat.sphinx.di.container.SphinxContainer
@@ -23,11 +23,11 @@ import kotlinx.coroutines.flow.collect
 
 class DashboardViewModel: WindowFocusListener {
     val dispatchers = SphinxContainer.appModule.dispatchers
-    val viewModelScope = SphinxContainer.appModule.applicationScope
-    val sphinxNotificationManager = createSphinxNotificationManager()
-    val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
-    val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-    val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
+    private val viewModelScope = SphinxContainer.appModule.applicationScope
+    private val sphinxNotificationManager = createSphinxNotificationManager()
+    private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+    private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
 
     private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
         MutableStateFlow(null)
@@ -91,6 +91,13 @@ class DashboardViewModel: WindowFocusListener {
         _changePinWindowStateFlow.value = open
     }
 
+    private fun getRelayKeys() {
+        viewModelScope.launch(dispatchers.io) {
+            repositoryDashboard.getAndSaveTransportKey()
+            repositoryDashboard.getOrCreateHMacKey()
+        }
+    }
+
     private var screenInit: Boolean = false
     fun screenInit() {
         if (screenInit) {
@@ -99,11 +106,8 @@ class DashboardViewModel: WindowFocusListener {
             screenInit = true
         }
 
-        if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
-            DashboardState.screenState(DashboardScreenType.Unlocked)
-            networkRefresh()
-        }
-
+        getRelayKeys()
+        networkRefresh()
         connectSocket()
 
         viewModelScope.launch(dispatchers.mainImmediate) {
@@ -115,21 +119,14 @@ class DashboardViewModel: WindowFocusListener {
 
     private fun connectSocket() {
         viewModelScope.launch(dispatchers.mainImmediate) {
-            socketIOManager.socketIOStateFlow.collect { state ->
-                if (state is SocketIOState.Uninitialized ||
-                    state is SocketIOState.Initialized.Disconnected ||
-                    state is SocketIOState.Initialized.Closed) {
-
-                    socketIOManager.connect()
-                }
-            }
+            socketIOManager.connect()
         }
     }
 
     override fun windowGainedFocus(p0: WindowEvent?) {
-        if (DashboardState.screenState() == DashboardScreenType.Unlocked) {
-            connectSocket()
+        if (DashboardScreenState.screenState() == DashboardScreenType.Unlocked) {
             networkRefresh()
+            connectSocket()
         }
     }
 
@@ -150,7 +147,6 @@ class DashboardViewModel: WindowFocusListener {
         get() = _restoreStateFlow.asStateFlow()
 
     private var jobNetworkRefresh: Job? = null
-    private var jobPushNotificationRegistration: Job? = null
 
 
     fun networkRefresh() {
@@ -158,34 +154,11 @@ class DashboardViewModel: WindowFocusListener {
             return
         }
 
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            repositoryDashboard.networkRefreshBalance.collect { }
+        }
+
         jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
-            contactRepository.networkRefreshContacts.collect { response ->
-                Exhaustive@
-                when (response) {
-                    is LoadResponse.Loading -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Error -> {}
-                    is Response.Success -> {}
-                }
-            }
-
-            repositoryDashboard.networkRefreshBalance.collect { response ->
-                Exhaustive@
-                when (response) {
-                    is LoadResponse.Loading -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Error -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Success -> {}
-                }
-            }
-
-            if (_networkStateFlow.value is Response.Error) {
-                jobNetworkRefresh?.cancel()
-            }
 
             repositoryDashboard.networkRefreshLatestContacts.collect { response ->
                 Exhaustive@
@@ -210,24 +183,6 @@ class DashboardViewModel: WindowFocusListener {
                 jobNetworkRefresh?.cancel()
             }
 
-            // must occur after contacts have been retrieved such that
-            // an account owner is available, otherwise it just suspends
-            // until it is.
-            if (jobPushNotificationRegistration == null) {
-                jobPushNotificationRegistration = launch(dispatchers.mainImmediate) {
-                    // TODO: Return push notifications...
-//                    pushNotificationRegistrar.register().let { response ->
-//                        Exhaustive@
-//                        when (response) {
-//                            is Response.Error -> {
-//                                // TODO: Handle on the UI
-//                            }
-//                            is Response.Success -> {}
-//                        }
-//                    }
-                }
-            }
-
             repositoryDashboard.networkRefreshMessages.collect { response ->
                 Exhaustive@
                 when (response) {
@@ -249,6 +204,10 @@ class DashboardViewModel: WindowFocusListener {
                         _networkStateFlow.value = response
                     }
                 }
+            }
+
+            if (_networkStateFlow.value is Response.Error) {
+                jobNetworkRefresh?.cancel()
             }
         }
     }

@@ -19,9 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,11 +29,11 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.DesktopResource
+import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.pin.ChangePin
 import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.components.pin.PINScreenType
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.ResetPinViewModel
@@ -44,16 +42,20 @@ import chat.sphinx.common.viewmodel.dashboard.PinExportKeysViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
+import chat.sphinx.utils.toAnnotatedString
+import chat.sphinx.wrapper.lightning.asFormattedString
 import com.example.compose.AppTheme
 import com.example.compose.badge_red
 
 @Composable
 fun Profile(dashboardViewModel: DashboardViewModel) {
 
-    val viewModel = remember { ProfileViewModel(dashboardViewModel) }
+    val viewModel = remember { ProfileViewModel() }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
     var isOpen by remember { mutableStateOf(true) }
+
     if (isOpen) {
         Window(
             onCloseRequest = {
@@ -62,7 +64,7 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
             title = "Sphinx",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
-                size = getPreferredWindowSize(420, 800)
+                size = getPreferredWindowSize(420, 830)
             ),
 
             icon = sphinxIcon,
@@ -71,12 +73,9 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                 Box(
                     modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
                 ) {
-
                     Column(
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background)
-                            .verticalScroll(
-                                rememberScrollState()
-                            )
+                        modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                        verticalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.Center,
@@ -94,7 +93,9 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                                 Text(
                                     text = viewModel.profileState.alias,
                                     color = MaterialTheme.colorScheme.tertiary,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = SphinxFonts.montserratFamily,
+                                    fontSize = 16.sp
                                 )
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -103,41 +104,46 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                                 ) {
                                     val balance by dashboardViewModel.balanceStateFlow.collectAsState()
                                     Text(
-                                        text = "${balance?.balance?.value ?: 0}",
+                                        text = balance?.balance?.asFormattedString(' ') ?: "0",
                                         color = MaterialTheme.colorScheme.tertiary,
-                                        fontSize = 11.sp
+                                        fontFamily = SphinxFonts.montserratFamily,
+                                        fontSize = 14.sp
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         "sat",
                                         color = MaterialTheme.colorScheme.onBackground,
-                                        fontSize = 11.sp
+                                        fontFamily = SphinxFonts.montserratFamily,
+                                        fontSize = 14.sp
                                     )
                                 }
 
                             }
                         }
-                        Tabs(viewModel, dashboardViewModel)
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
+                            Tabs(viewModel, dashboardViewModel)
+                        }
+                        saveButton(viewModel)
                     }
-
                 }
             }
         }
     }
 }
 
-fun onTapClose() {
-
-}
-
 @Composable
 fun Tabs(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel) {
-    var tabIndex by remember { mutableStateOf(0) } // 1.
+    var tabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Basic", "Advanced")
-    Column() { // 2.
+
+    Column {
         TabRow(
             selectedTabIndex = tabIndex,
-            modifier = Modifier.height(30.dp)
+            modifier = Modifier
+                .height(30.dp)
                 .border(0.5.dp, color = MaterialTheme.colorScheme.onSecondaryContainer),
             backgroundColor = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.secondary,
@@ -165,15 +171,20 @@ fun Tabs(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel) {
                 ) // 5.
             }
         }
-        when (tabIndex) { // 6.
-            0 -> BasicTab(viewModel, dashboardViewModel)
-            1 -> AdvanceTab(viewModel, dashboardViewModel)
+        Row(Modifier.verticalScroll(rememberScrollState())) {
+            when (tabIndex) { // 6.
+                0 -> BasicTab(viewModel, dashboardViewModel)
+                1 -> AdvanceTab(viewModel, dashboardViewModel)
+            }
         }
     }
 }
 
 @Composable
-fun AdvanceTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel) {
+fun AdvanceTab(
+    viewModel: ProfileViewModel,
+    dashboardViewModel: DashboardViewModel
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
             Column {
@@ -184,9 +195,9 @@ fun AdvanceTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewMod
                     color = Color.Gray,
                 )
                 BasicTextField(
-                    value = "htttp://stakwork.sphinx.chat",
-                    onValueChange = {
-                    },
+                    value = viewModel.profileState.serverUrl,
+                    onValueChange = {},
+                    enabled = false,
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
@@ -227,10 +238,11 @@ fun AdvanceTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewMod
 //                sliderState = newValue
 //            },
 //        )
-        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
-        val openChangePinScreen = remember { mutableStateOf(false) }
-        val resetPinViewModel = remember { ResetPinViewModel()}
-        Box(modifier = Modifier.clickable { dashboardViewModel.toggleChangePinWindow(true)}) {
+        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 10.dp)
+//        val openChangePinScreen = remember { mutableStateOf(false) }
+        Box(modifier = Modifier.clickable {
+            dashboardViewModel.toggleChangePinWindow(true)
+        }) {
             Text(
                 "Change Pin",
                 textAlign = TextAlign.Center,
@@ -238,11 +250,8 @@ fun AdvanceTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewMod
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
-            if (dashboardViewModel.changePinWindowStateFlow.collectAsState().value) {
-                ChangePin(resetPinViewModel, dashboardViewModel)
-            }
         }
-        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
+        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 10.dp)
 //        Box(modifier = Modifier.clickable {  }) {
 //            Text(
 //                "Change Privacy Pin",
@@ -254,20 +263,13 @@ fun AdvanceTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewMod
 //        }
 //        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
     }
-    Column(
-        modifier = Modifier.padding(top = 300.dp,start = 40.dp, end = 40.dp, bottom = 24.dp)){
-        CommonButton(
-            "Save Changes",
-            customColor = MaterialTheme.colorScheme.secondaryContainer,
-        ) {
-
-        }
+    if (dashboardViewModel.changePinWindowStateFlow.collectAsState().value) {
+        ResetPin(dashboardViewModel)
     }
 }
 
 @Composable
 fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel) {
-
     Column(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
             Column {
@@ -375,7 +377,7 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
             Spacer(modifier = Modifier.height(28.dp))
         }
 
-        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
+        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 10.dp)
 
         Column(modifier = Modifier.padding(top = 28.dp, start = 32.dp, end = 32.dp)) {
             Column {
@@ -391,16 +393,18 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
+                    enabled = false
                 )
                 Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
             }
         }
 
         Spacer(modifier = Modifier.height(28.dp))
-        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 2.dp)
 
-        Column(modifier = Modifier.padding(top = 12.dp, start = 40.dp, end = 40.dp, bottom = 24.dp)) {
+        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 10.dp)
+
+        Column(modifier = Modifier.padding(top = 16.dp, start = 40.dp, end = 40.dp, bottom = 24.dp)) {
             Text(
                 "Sync more devices",
                 color = MaterialTheme.colorScheme.tertiary,
@@ -409,73 +413,106 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                     Alignment.CenterHorizontally
                 )
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            val pinExportKeysViewModel = remember { PinExportKeysViewModel() }
             val onTapBackUpKeys = remember { mutableStateOf(false) }
-            val backUpKey = pinExportKeysViewModel.backUpKey.collectAsState().value
-            val clipboardManager: ClipboardManager = LocalClipboardManager.current
-            val copiedToClipBoard = pinExportKeysViewModel.copiedToClipBoard
 
             CommonButton("Backup your key", endIcon = Icons.Default.VpnKey) {
-
                 dashboardViewModel.toggleBackUpWindow(true)
                 onTapBackUpKeys.value = true
             }
-            if (dashboardViewModel.backUpWindowStateFlow.collectAsState().value)
-                Window(
-                    onCloseRequest = {dashboardViewModel.toggleBackUpWindow(false)},
-                    title = "Sphinx",
-                    state = WindowState(
-                        position = WindowPosition.Aligned(Alignment.Center),
-                        size = getPreferredWindowSize(400, 500)
-                    ),
-                ) {
-                    PINScreen(
-                        pinExportKeysViewModel,
-                        pinScreenType = PINScreenType.ENTER_PIN_TO_BACK_UP_YOUR_KEYS,
-                        copiedToClipBoard = copiedToClipBoard.value
-                    )
-                    if(backUpKey != null) {
-                        clipboardManager.setText(AnnotatedString(backUpKey))
-                        copiedToClipBoard.value = true
-                        pinExportKeysViewModel.setBackUpKey(null)
-                    }
-                }
-            Spacer(modifier = Modifier.height(24.dp))
-            CommonButton(
-                "Save Changes",
-                customColor = MaterialTheme.colorScheme.secondaryContainer,
-                enabled = viewModel.profileState.saveButtonEnabled,
-            ) {
-                viewModel.updateOwnerDetails()
-            }
-            Box(
-                Modifier.fillMaxWidth().height(28.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (viewModel.profileState.status is Response.Error) {
-                   Text(
-                        text = "There was an error, please try again later",
-                        fontSize = 12.sp,
-                        fontFamily = Roboto,
-                        color = badge_red,
-                    )
-                }
-                if (viewModel.profileState.status is LoadResponse.Loading) {
-                    CircularProgressIndicator(
-                        Modifier.padding(start = 8.dp).size(24.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                }
-            }
         }
+    }
+
+    if (dashboardViewModel.backUpWindowStateFlow.collectAsState().value) {
+        BackupKeys(dashboardViewModel)
     }
     if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
         QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.profileState.nodePubKey, null))
     }
+
     if (viewModel.profileState.status is Response.Success){
         dashboardViewModel.toggleProfileWindow(false)
+    }
+}
+
+@Composable
+fun ResetPin(dashboardViewModel: DashboardViewModel) {
+    val viewModel = remember { ResetPinViewModel() }
+
+    Window(
+        onCloseRequest = { dashboardViewModel.toggleChangePinWindow(false) },
+        title = "Sphinx",
+        state = WindowState(
+            position = WindowPosition.Aligned(Alignment.Center),
+            size = getPreferredWindowSize(400, 600)
+        ),
+    ) {
+        ChangePin(viewModel, dashboardViewModel)
+    }
+}
+
+@Composable
+fun BackupKeys(dashboardViewModel: DashboardViewModel) {
+    val pinExportKeysViewModel = remember { PinExportKeysViewModel() }
+
+    Window(
+        onCloseRequest = { dashboardViewModel.toggleBackUpWindow(false) },
+        title = "Sphinx",
+        state = WindowState(
+            position = WindowPosition.Aligned(Alignment.Center),
+            size = getPreferredWindowSize(400, 500)
+        ),
+    ) {
+        val backupKeysState = pinExportKeysViewModel.backupKeysState
+
+        PINScreen(
+            pinExportKeysViewModel,
+            descriptionMessage = "Enter your PIN to encrypt the keys. You will need it when restoring account on other device",
+            successMessage = if (backupKeysState.restoreString != null) "Back up key copied to clipboard" else null,
+            errorMessage = if (backupKeysState.error) "Backup keys failed" else null,
+        )
+
+        backupKeysState.restoreString?.let {
+            LocalClipboardManager.current.setText(it.toAnnotatedString())
+        }
+    }
+}
+
+@Composable
+fun saveButton(viewModel: ProfileViewModel) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .height(104.dp)
+            .padding(start = 40.dp, end = 40.dp, bottom = 16.dp),
+    ) {
+        Box(
+            Modifier.fillMaxWidth().height(40.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (viewModel.profileState.status is Response.Error) {
+                Text(
+                    text = "There was an error, please try again later",
+                    fontSize = 12.sp,
+                    fontFamily = Roboto,
+                    color = badge_red,
+                )
+            }
+            if (viewModel.profileState.status is LoadResponse.Loading) {
+                CircularProgressIndicator(
+                    Modifier.padding(vertical = 8.dp).size(24.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            }
+        }
+        CommonButton(
+            "Save Changes",
+            customColor = MaterialTheme.colorScheme.secondaryContainer,
+            enabled = viewModel.profileState.saveButtonEnabled,
+        ) {
+            viewModel.updateOwnerDetails()
+        }
     }
 }

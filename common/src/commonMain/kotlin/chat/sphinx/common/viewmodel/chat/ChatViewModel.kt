@@ -11,7 +11,7 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.UserColorsHelper
-import chat.sphinx.utils.createAttachmentFileDownload
+import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
@@ -24,14 +24,16 @@ import chat.sphinx.wrapper.lightning.toSat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.MessageMedia
+import chat.sphinx.wrapper.message.media.toFileName
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import okio.Path
+import utils.deduceMediaType
 import utils.getRandomColorRes
 import java.io.IOException
 import java.io.InputStream
-import okio.Path
 
 suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
     url: String,
@@ -44,7 +46,7 @@ suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
                 url,
                 authenticationToken,
                 mediaKeyDecrypted
-            )
+            )?.first
         }
     }
 }
@@ -65,11 +67,6 @@ abstract class ChatViewModel(
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
 
     val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
-
-    private val attachmentFileDownloader: chat.sphinx.utils.AttachmentFileDownloader = createAttachmentFileDownload(
-        memeServerTokenHandler,
-        memeInputStreamHandler
-    )
 
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
     private var messagesLoadJob: Job? = null
@@ -94,7 +91,7 @@ abstract class ChatViewModel(
                 processChatMessages(chat, messages)
             }
 
-            delay(1000L)
+            delay(500L)
 
             messageRepository.getAllMessagesToShowByChatId(chat.id, 1000).distinctUntilChanged().collect { messages ->
                 processChatMessages(chat, messages)
@@ -149,6 +146,7 @@ abstract class ChatViewModel(
                 }
             )
         }
+
         MessageListState.screenState(
             MessageListData.PopulatedMessageListData(
                 chatMessages
@@ -323,13 +321,25 @@ abstract class ChatViewModel(
     fun isReplying(): Boolean {
         return editMessageState.replyToMessage.value != null
     }
+    fun onMessageFileChanged(filepath: Path) {
+        editMessageState.attachmentInfo.value = AttachmentInfo(
+            filePath = filepath,
+            mediaType = filepath.deduceMediaType(),
+            fileName = filepath.name.toFileName(),
+            isLocalFile = true
+        )
+    }
+
+    fun resetMessageFile() {
+        editMessageState.attachmentInfo.value = null
+    }
 
     fun onSendMessage() {
         scope.launch(dispatchers.mainImmediate) {
             val sendMessageBuilder = SendMessage.Builder()
                 .setChatId(editMessageState.chatId)
                 .setContactId(editMessageState.contactId)
-                .setText(editMessageState.messageText.value)
+                .setText(editMessageState.messageText.value.trim())
                 .setMessagePrice(editMessageState.price.value?.toSat())
                 .also { builder ->
                     editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
@@ -347,10 +357,15 @@ abstract class ChatViewModel(
                         AttachmentInfo(
                             filePath = path,
                             mediaType = MediaType.Text,
+                            path.name.toFileName(),
                             isLocalFile = true,
                         )
                     )
                 }
+            }
+
+            editMessageState.attachmentInfo.value?.let { attachmentInfo ->
+                sendMessageBuilder.setAttachmentInfo(attachmentInfo)
             }
 
             val sendMessage = sendMessageBuilder.build()
@@ -401,7 +416,7 @@ abstract class ChatViewModel(
         }
     }
 
-    fun saveFile(message: Message) {
-        attachmentFileDownloader.saveFile(message)
+    fun downloadFileMedia(message: Message, sent: Boolean) {
+        repositoryMedia.downloadMediaIfApplicable(message, sent)
     }
 }

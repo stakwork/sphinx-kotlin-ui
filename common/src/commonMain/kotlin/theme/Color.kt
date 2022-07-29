@@ -70,6 +70,8 @@ val primary_green = Color(0xFF49C998)
 val light_divider = Color(0xFF3B4755)
 val sphinx_orange = Color(0xFFFFBC58)
 val primary_blue = Color(0xFF618AFF)
+val wash_out_received = Color(0xFF556171)
+val wash_out_send = Color(0xFF829CB9)
 
 
 val randomColor1 = Color(0xFF7077FF)

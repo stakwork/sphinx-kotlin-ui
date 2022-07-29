@@ -1,37 +1,39 @@
 package chat.sphinx.common.viewmodel.dashboard
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import chat.sphinx.common.state.BackupKeysState
 import chat.sphinx.common.viewmodel.PinAuthenticationViewModel
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
 import chat.sphinx.crypto.common.clazzes.Password
 import chat.sphinx.di.container.SphinxContainer
 import io.ktor.util.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.cryptonode.jncryptor.AES256JNCryptor
 import org.cryptonode.jncryptor.CryptorException
 
 class PinExportKeysViewModel : PinAuthenticationViewModel() {
 
-    private val _backUpKey: MutableStateFlow<String?> by lazy {
-        MutableStateFlow(null)
-    }
-    val backUpKey: StateFlow<String?>
-        get() = _backUpKey.asStateFlow()
+    var backupKeysState: BackupKeysState by mutableStateOf(initialState())
 
-    fun setBackUpKey(key: String?){
-        _backUpKey.value = key
-    }
-    val copiedToClipBoard = MutableStateFlow<Boolean>(false)
+    val relayDataHandler = SphinxContainer.networkModule.relayDataHandlerImpl
 
+    private fun initialState(): BackupKeysState = BackupKeysState()
+
+    private inline fun setBackupKeysState(update: BackupKeysState.() -> BackupKeysState) {
+        backupKeysState = backupKeysState.update()
+    }
+
+    override fun onPINTextChanged(text: String) {
+        super.onPINTextChanged(text)
+        backupKeysState = initialState()
+    }
 
     @OptIn(RawPasswordAccess::class, InternalAPI::class)
     override fun onAuthenticationSucceed() {
         scope.launch(dispatchers.mainImmediate) {
             authenticationCoreManager.getEncryptionKey()?.let { encryptionKey ->
-                val relayDataHandler = SphinxContainer.networkModule.relayDataHandlerImpl
-
                 val passwordPin = Password(pinState.sphinxPIN.toCharArray())
                 val relayUrl = relayDataHandler.retrieveRelayUrl()?.value
                 val authToken = relayDataHandler.retrieveAuthorizationToken()?.value
@@ -49,12 +51,27 @@ class PinExportKeysViewModel : PinAuthenticationViewModel() {
                         .toByteArray()
                         .encodeBase64()
 
-                    setBackUpKey(finalString)
+                    setBackupKeysState {
+                        copy(
+                            restoreString = finalString,
+                            error = false
+                        )
+                    }
 
                 } catch (e: CryptorException) {
-//                    submitSideEffect(ProfileSideEffect.BackupKeysFailed)
+                    setBackupKeysState {
+                        copy(
+                            restoreString = null,
+                            error = true
+                        )
+                    }
                 } catch (e: IllegalArgumentException) {
-//                    submitSideEffect(ProfileSideEffect.BackupKeysFailed)
+                    setBackupKeysState {
+                        copy(
+                            restoreString = null,
+                            error = true
+                        )
+                    }
                 }
             }
         }

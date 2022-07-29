@@ -18,16 +18,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import com.russhwolf.settings.Settings
 
-class ProfileViewModel(val dashboardViewModel: DashboardViewModel){
+class ProfileViewModel {
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    private val relayDataHandler = SphinxContainer.networkModule.relayDataHandlerImpl
+
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
-    val accountOwnerStateFlow: StateFlow<Contact?>
+    private val accountOwnerStateFlow: StateFlow<Contact?>
         get() = contactRepository.accountOwner
 
+//    private val settings: Settings = createPlatformSettings()
 
     var profileState: ProfileState by mutableStateOf(initialState())
 
@@ -39,7 +42,6 @@ class ProfileViewModel(val dashboardViewModel: DashboardViewModel){
 
     private fun loadProfile() {
         scope.launch(dispatchers.mainImmediate) {
-
             accountOwnerStateFlow.collect { contactOwner ->
                 contactOwner?.let { owner ->
                     setProfileState {
@@ -48,6 +50,7 @@ class ProfileViewModel(val dashboardViewModel: DashboardViewModel){
                             nodePubKey = owner.nodePubKey?.value ?: "",
                             routeHint = owner.routeHint?.value ?: "",
                             photoUrl = owner.photoUrl,
+                            serverUrl = relayDataHandler.retrieveRelayUrl()?.value ?: "",
                             privatePhoto = toPrivatePhotoBoolean(owner.privatePhoto.value)
                         )
                     }
@@ -103,11 +106,10 @@ class ProfileViewModel(val dashboardViewModel: DashboardViewModel){
             ).let { loadResponse ->
                 setStatus(loadResponse)
             }
+
+//            settings.putString(key = SphinxCallLink.CALL_SERVER_URL_KEY, value = profileState.meetingServerUrl)
         }
     }
-
-
-    private val settings: Settings = createPlatformSettings()
 
     private fun loadServerUrls(){
         val callServerUrl = SphinxCallLink.CALL_SERVER_URL_KEY

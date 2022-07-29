@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
@@ -29,126 +30,130 @@ import chat.sphinx.response.Response
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.badge_red
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ChangePin(viewModel: ResetPinViewModel, dashboardViewModel: DashboardViewModel) {
-    Window(
-        onCloseRequest = { dashboardViewModel.toggleChangePinWindow(false) },
-        title = "Sphinx",
-        state = WindowState(
-            position = WindowPosition.Aligned(Alignment.Center),
-            size = getPreferredWindowSize(400, 520)
-        ),
+fun ChangePin(
+    viewModel: ResetPinViewModel,
+    dashboardViewModel: DashboardViewModel
+) {
+    Column(
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.background)
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier.background(color = MaterialTheme.colorScheme.background)
-                .fillMaxSize().padding(18.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "STANDARD PIN",
-                color = MaterialTheme.colorScheme.tertiary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(40.dp))
-            TextField(
-                value = viewModel.resetPinState.currentPin,
-                textLabel = "Old PIN"
-            ){
-                viewModel.onCurrentPinChanged(it)
-            }
-            Spacer(modifier = Modifier.height(34.dp))
-            TextField(
-                value = viewModel.resetPinState.newPin,
-                textLabel = "New PIN"){
-                viewModel.onNewPinChanged(it)
-            }
-            Spacer(modifier = Modifier.height(34.dp))
-            TextField(
-                value =viewModel.resetPinState.confirmedPin,
-                textLabel = "Confirm New PIN"){
-                viewModel.onConfirmedNewPinChanged(it)
-            }
-            Spacer(modifier = Modifier.height(40.dp))
+        Text(
+            "CHANGE PIN",
+            color = MaterialTheme.colorScheme.tertiary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(40.dp))
+        TextField(
+            value = viewModel.resetPinState.currentPin,
+            textLabel = "Old PIN",
+            modifier = Modifier.fillMaxWidth()
+        ){
+            viewModel.onCurrentPinChanged(it)
         }
-        Column(
-            modifier = Modifier.fillMaxSize().padding(top = 32.dp, start = 18.dp, end = 18.dp, bottom = 18.dp),
-            verticalArrangement = Arrangement.Bottom,
-            horizontalAlignment = Alignment.CenterHorizontally
+        Spacer(modifier = Modifier.height(34.dp))
+        TextField(
+            value = viewModel.resetPinState.newPin,
+            textLabel = "New PIN",
+            modifier = Modifier.fillMaxWidth()
+        ){
+            viewModel.onNewPinChanged(it)
+        }
+        Spacer(modifier = Modifier.height(34.dp))
+        TextField(
+            value =viewModel.resetPinState.confirmedPin,
+            textLabel = "Confirm New PIN",
+            modifier = Modifier.fillMaxWidth()
+        ){
+            viewModel.onConfirmedNewPinChanged(it)
+        }
+        Spacer(modifier = Modifier.height(40.dp))
+        Box(
+            Modifier.fillMaxWidth().height(40.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                Modifier.fillMaxWidth().height(40.dp),
-                contentAlignment = Alignment.Center
+            if (viewModel.resetPinState.status is AuthenticateFlowResponse.Error ||
+                viewModel.resetPinState.status is AuthenticateFlowResponse.WrongPin
             ) {
-                if (viewModel.resetPinState.status is AuthenticateFlowResponse.Error ||
-                    viewModel.resetPinState.status is AuthenticateFlowResponse.WrongPin
-                ) {
-                    Text(
-                        text = "There was an error, please try PIN again",
-                        fontSize = 12.sp,
-                        fontFamily = Roboto,
-                        color = badge_red,
-                    )
-                }
-                if (viewModel.resetPinState.status is AuthenticateFlowResponse.Notify) {
-                    CircularProgressIndicator(
-                        Modifier.padding(start = 8.dp).size(24.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                }
+                Text(
+                    text = viewModel.resetPinState.errorMessage ?: "There was an error, please try again later",
+                    fontSize = 12.sp,
+                    fontFamily = Roboto,
+                    color = badge_red,
+                )
             }
-            Box(modifier = Modifier.fillMaxWidth(.75f)) {
-
-                Button(
-                    shape = RoundedCornerShape(23.dp),
-                    enabled = viewModel.resetPinState.confirmButtonState,
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    onClick = {
-                        viewModel.resetPassword()
-                    }
-                ) {
-                    Text(
-                        text = "Confirm",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.surface,
-                        fontWeight = FontWeight.W600,
-                        fontFamily = Roboto
-                    )
-                }
-                Icon(
-                    Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.align(
-                        Alignment.CenterEnd
-                    ).size(30.dp).padding(end = 12.dp),
-                    tint = MaterialTheme.colorScheme.surface
+            if (viewModel.resetPinState.status is AuthenticateFlowResponse.Notify) {
+                CircularProgressIndicator(
+                    Modifier.size(24.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
                 )
             }
         }
+        Box(
+            Modifier.fillMaxWidth().height(48.dp)
+        ) {
+            Button(
+                shape = RoundedCornerShape(23.dp),
+                enabled = viewModel.resetPinState.buttonEnabled,
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color.White,
+                    disabledBackgroundColor = Color.White.copy(0.5f)
+                ),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                onClick = {
+                    viewModel.resetPassword()
+                }
+            ) {
+                Text(
+                    text = "Confirm",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.surface,
+                    fontWeight = FontWeight.W600,
+                    fontFamily = Roboto
+                )
+            }
+            Icon(
+                Icons.Default.ArrowForward,
+                contentDescription = null,
+                modifier = Modifier.align(
+                    Alignment.CenterEnd
+                ).size(30.dp).padding(end = 12.dp),
+                tint = MaterialTheme.colorScheme.surface
+            )
+        }
     }
-    if(viewModel.resetPinState.status is AuthenticateFlowResponse.Success){
+
+    if (viewModel.resetPinState.status is AuthenticateFlowResponse.Success){
         dashboardViewModel.toggleChangePinWindow(false)
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun TextField(value: String, textLabel: String, modifier: Modifier = Modifier, onValueChange: (String) -> Unit) {
-    val maxLength = 6
     OutlinedTextField(
         shape = RoundedCornerShape(68.dp),
         modifier = modifier,
-        label = { Text(
-            text = textLabel,
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.tertiary.copy(alpha = .7f),
-            modifier = Modifier.padding(4.dp)
-        ) },
-        textStyle = TextStyle(fontSize = 24.sp, color = Color.White),
+        label = {
+            Text(
+                text = textLabel,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.tertiary.copy(alpha = .7f),
+                modifier = Modifier.padding(4.dp)
+            )
+        },
+        textStyle = TextStyle(
+            fontSize = 24.sp,
+            textAlign = TextAlign.Center,
+            letterSpacing = 15.sp,
+            color = Color.White
+        ),
         colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = MaterialTheme.colorScheme.secondary,
             backgroundColor = MaterialTheme.colorScheme.surface,
@@ -159,8 +164,8 @@ private fun TextField(value: String, textLabel: String, modifier: Modifier = Mod
         value = value,
         visualTransformation = PasswordVisualTransformation(),
         onValueChange = {
-            if(it.length <= maxLength){
-            onValueChange(it)
+            if(it.length <= 6){
+                onValueChange(it)
             }
         },
         singleLine = true

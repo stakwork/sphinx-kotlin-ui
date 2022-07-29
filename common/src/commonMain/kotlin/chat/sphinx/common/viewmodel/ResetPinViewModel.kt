@@ -19,7 +19,6 @@ class ResetPinViewModel {
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val authenticationCoreManager = SphinxContainer.authenticationModule.authenticationCoreManager
     private val request = AuthenticationRequest.ResetPassword()
-    private var passwordConfirmedForReset: AuthenticateFlowResponse.PasswordConfirmedForReset? = null
 
     var resetPinState: ResetPinState by mutableStateOf(ResetPinState())
 
@@ -35,12 +34,12 @@ class ResetPinViewModel {
         return newUserPinInput
     }
 
-    private val validCurrentPin = mutableStateOf(false)
-
     fun onCurrentPinChanged(pin: String) {
         setResetNewPinState {
             copy(
-                currentPin = pin
+                currentPin = pin,
+                status = null,
+                errorMessage = null
             )
         }
         if (pin.length == 6) {
@@ -68,9 +67,7 @@ class ResetPinViewModel {
     }
 
 
-    @OptIn(InternalCoroutinesApi::class)
-    fun onSubmitPIN() {
-
+    private fun onSubmitPIN() {
         val userInput = authenticationCoreManager.getNewUserInput()
         resetPinState.currentPin.forEach {
             userInput.addCharacter(it)
@@ -84,22 +81,25 @@ class ResetPinViewModel {
 
                 when (response) {
                     is AuthenticateFlowResponse.PasswordConfirmedForReset -> {
-                        passwordConfirmedForReset = response
-                        validCurrentPin.value = true
-                        checkValidInput()
-
-                    }
-                    is AuthenticateFlowResponse.WrongPin -> {
-                        passwordConfirmedForReset = null
-                        validCurrentPin.value = false
-                        checkValidInput()
-                    }
-                    is AuthenticateFlowResponse.Error -> {
-                        passwordConfirmedForReset = null
-                        validCurrentPin.value = false
+                        setResetNewPinState {
+                            copy(
+                                status = response,
+                                errorMessage = null,
+                                buttonEnabled = false
+                            )
+                        }
                         checkValidInput()
                     }
-
+                    else -> {
+                        setResetNewPinState {
+                            copy(
+                                status = response,
+                                errorMessage = "Invalid Pin",
+                                buttonEnabled = false
+                            )
+                        }
+                        checkValidInput()
+                    }
                 }
             }
         }
@@ -107,7 +107,7 @@ class ResetPinViewModel {
 
     fun resetPassword() {
         scope.launch(dispatchers.mainImmediate) {
-            passwordConfirmedForReset?.let { response ->
+            (resetPinState.status as? AuthenticateFlowResponse.PasswordConfirmedForReset)?.let { response ->
                 response.storeNewPasswordToBeSet(newUserPintoUserInput())
                 authenticationCoreManager.resetPassword(
                     response,
@@ -125,34 +125,27 @@ class ResetPinViewModel {
     }
 
     private fun checkValidInput() {
-
         resetPinState.apply {
-
-            if (validCurrentPin.value && currentPin.length == 6) {
-                if (newPin.length == 6 && confirmedPin.length == 6) {
+            if (status is AuthenticateFlowResponse.PasswordConfirmedForReset) {
+                if (currentPin.length == 6 && newPin.length == 6 && confirmedPin.length == 6) {
                     if (newPin == confirmedPin) {
                         setResetNewPinState {
                             copy(
-                                confirmButtonState = true
+                                errorMessage = null,
+                                buttonEnabled = true
                             )
                         }
+                        return
                     }
                 }
             }
 
-            if (currentPin.length != 6 ||
-                newPin.length != 6 ||
-                confirmedPin.length != 6 ||
-                newPin != resetPinState.confirmedPin
-            ) {
-                setResetNewPinState {
-                    copy(
-                        confirmButtonState = false
-                    )
-                }
+            setResetNewPinState {
+                copy(
+                    buttonEnabled = false
+                )
             }
         }
     }
-
 }
 

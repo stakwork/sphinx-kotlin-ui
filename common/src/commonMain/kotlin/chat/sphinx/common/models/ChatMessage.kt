@@ -25,9 +25,6 @@ class ChatMessage(
     val deleteMessage: () -> Unit,
 //    val replyToMessageAction: () -> Unit
 ) {
-    fun setAsReplyToMessage(editMessageState: EditMessageState) {
-        editMessageState.replyToMessage.value = this
-    }
 
     val replyToMessageSenderAliasPreview: String by lazy {
         val senderAlias = when {

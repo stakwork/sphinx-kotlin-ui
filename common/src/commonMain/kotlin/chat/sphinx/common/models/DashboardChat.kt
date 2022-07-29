@@ -6,10 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import chat.sphinx.wrapper.*
-import chat.sphinx.wrapper.chat.Chat
-import chat.sphinx.wrapper.chat.getColorKey
-import chat.sphinx.wrapper.chat.isConversation
-import chat.sphinx.wrapper.chat.isTribeOwnedByAccount
+import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ContactId
@@ -48,6 +45,8 @@ sealed class DashboardChat {
     abstract fun hasUnseenMessages(): Boolean
 
     abstract fun isEncrypted(): Boolean
+
+    abstract fun isTribe(): Boolean
 
     sealed class Active: DashboardChat() {
 
@@ -91,6 +90,10 @@ sealed class DashboardChat {
             return true
         }
 
+        override fun isTribe(): Boolean {
+            return chat.isTribe()
+        }
+
         @ExperimentalStdlibApi
         override fun getMessageText(): String {
             val message: Message? = message
@@ -102,8 +105,7 @@ sealed class DashboardChat {
                     "Message deleted"
                 }
                 message.type.isInvoicePayment() -> {
-                    val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                    val amount: String = message.amount.asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Payment Sent: $amount"
@@ -142,7 +144,7 @@ sealed class DashboardChat {
                 }
                 message.type.isBoost() -> {
                     val amount: String = (message.feedBoost?.amount ?: message.amount)
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     "${getMessageSender(message, true)} boost ${amount}"
                 }
@@ -157,7 +159,7 @@ sealed class DashboardChat {
                             }
                             message.feedBoost != null -> {
                                 val amount: String = (message.feedBoost?.amount ?: message.amount)
-                                    .asFormattedString(separator = ',', appendUnit = true)
+                                    .asFormattedString(separator = ' ', appendUnit = true)
 
                                 "${getMessageSender(message)} boost ${amount}"
                             }
@@ -175,7 +177,7 @@ sealed class DashboardChat {
                 }
                 message.type.isInvoice() -> {
                     val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Invoice sent: ${amount}"
@@ -186,7 +188,7 @@ sealed class DashboardChat {
                 }
                 message.type.isDirectPayment() -> {
                     val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Payment Sent: $amount"
@@ -198,7 +200,7 @@ sealed class DashboardChat {
                     message.messageMedia?.let { media ->
                         when (val type = media.mediaType) {
                             is MediaType.Audio -> {
-                                "An audio clip"
+                                "an audio clip"
                             }
                             is MediaType.Image -> {
                                 if (type.isGif) {
@@ -270,6 +272,10 @@ sealed class DashboardChat {
                     alias.value + if (withColon) ": " else ""
                 } ?: ""
             }
+
+            override fun isTribe(): Boolean {
+                return chat.isTribe()
+            }
         }
 
         class GroupOrTribe(
@@ -294,6 +300,10 @@ sealed class DashboardChat {
                 return message.senderAlias?.let { alias ->
                     alias.value + if (withColon) ": " else ""
                 } ?: ""
+            }
+
+            override fun isTribe(): Boolean {
+                return chat.isTribe()
             }
         }
     }
@@ -336,6 +346,10 @@ sealed class DashboardChat {
 
             override fun isEncrypted(): Boolean {
                 return !(contact.rsaPublicKey?.value?.isEmpty() ?: true)
+            }
+
+            override fun isTribe(): Boolean {
+                return false
             }
         }
 
@@ -437,6 +451,10 @@ sealed class DashboardChat {
             }
 
             override fun isEncrypted(): Boolean {
+                return false
+            }
+
+            override fun isTribe(): Boolean {
                 return false
             }
         }

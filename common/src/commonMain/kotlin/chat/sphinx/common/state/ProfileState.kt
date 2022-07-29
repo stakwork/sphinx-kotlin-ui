@@ -8,6 +8,7 @@ data class ProfileState(
    val alias: String = "",
    val nodePubKey: String = "",
    val routeHint: String = "",
+   val serverUrl: String = "",
    val accountBalance: String = "0",
    val photoUrl: PhotoUrl? = null,
    val privatePhoto: Boolean? = null,

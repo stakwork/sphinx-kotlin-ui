@@ -1,6 +1,5 @@
 package chat.sphinx.common.state
 
-import androidx.compose.ui.graphics.ImageBitmap
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
 import chat.sphinx.wrapper.PhotoUrl

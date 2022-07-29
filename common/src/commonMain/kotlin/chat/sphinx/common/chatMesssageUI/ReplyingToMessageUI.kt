@@ -27,6 +27,10 @@ import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import com.example.compose.badge_red
 import androidx.compose.ui.platform.LocalDensity
+import chat.sphinx.wrapper.chat.isConversation
+import chat.sphinx.wrapper.chat.isTribe
+import com.example.compose.wash_out_received
+import com.example.compose.wash_out_send
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -74,10 +78,20 @@ fun ReplyingToMessageUI(
                 ),
                 verticalArrangement = Arrangement.Center
             ) {
-                replyMessage.senderAlias?.let { senderAlias ->
+                val alias = if (chatMessage.chat.isTribe()) {
+                    replyMessage.senderAlias?.value
+                } else {
+                    if (replyMessage.sender == chatMessage.accountOwner().id) {
+                        chatMessage.accountOwner().alias?.value
+                    } else {
+                        chatMessage.contact?.alias?.value
+                    }
+                }
+
+                alias?.let { senderAlias ->
                     Text(
                         modifier = Modifier.wrapContentWidth(),
-                        text = senderAlias.value.trim(),
+                        text = senderAlias.trim(),
                         fontFamily = Roboto,
                         fontWeight = FontWeight.W600,
                         textAlign = TextAlign.Start,
@@ -98,7 +112,7 @@ fun ReplyingToMessageUI(
                             textAlign = TextAlign.Start,
                             maxLines = 1,
                             fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            color = if (chatMessage.isSent) wash_out_send else wash_out_received,
                             overflow = TextOverflow.Ellipsis
                         )
                     }

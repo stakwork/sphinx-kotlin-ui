@@ -27,6 +27,7 @@ abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
         val text = pinState.sphinxPIN.toCharArray()
         val password = Password(text)
         val userInput = authenticationCoreManager.getNewUserInput()
+
         pinState.sphinxPIN.forEach {
             userInput.addCharacter(it)
         }
@@ -64,8 +65,8 @@ abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
                     is AuthenticateFlowResponse.Error -> {
                         setPINState {
                             copy(
-                                infoMessage = "Invalid PIN",
-                                errorMessage = null,
+                                infoMessage = null,
+                                errorMessage = "Invalid PIN",
                                 loading = false,
                                 success = false
                             )
@@ -75,8 +76,8 @@ abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
                     is AuthenticateFlowResponse.WrongPin -> {
                         setPINState {
                             copy(
-                                infoMessage = "Invalid PIN",
-                                errorMessage = null,
+                                infoMessage = null,
+                                errorMessage = "Invalid PIN",
                                 loading = false,
                                 success = false
                             )

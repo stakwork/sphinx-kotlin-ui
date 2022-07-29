@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.PhotoUrl
+import chat.sphinx.wrapper.isThumbnailUrl
+import chat.sphinx.wrapper.notThumbnailUrl
 import io.kamel.core.config.KamelConfig
 import io.kamel.core.config.httpFetcher
 import io.kamel.core.config.takeFrom
@@ -51,43 +53,8 @@ fun PhotoUrlImage(
     color: Color? = null,
     fontSize: Int? = null
 ) {
-    if (photoUrl != null) {
-        CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
 
-            val photoUrlResource = lazyPainterResource(
-                data = photoUrl.value
-            )
-
-            KamelImage(
-                resource = photoUrlResource,
-                contentDescription = "avatar",
-                onLoading = {
-                    if (effect != null) {
-                        effect()
-                    } else {
-                        InitialsCircleOrAvatar(
-                            modifier,
-                            firstNameLetter,
-                            color,
-                            fontSize
-                        )
-                    }
-
-                },
-                onFailure = {
-                    InitialsCircleOrAvatar(
-                        modifier,
-                        firstNameLetter,
-                        color,
-                        fontSize
-                    )
-                },
-                contentScale = ContentScale.Crop,
-                modifier = modifier,
-                crossfade = false
-            )
-        }
-    } else {
+    val initials: @Composable () -> Unit = {
         InitialsCircleOrAvatar(
             modifier,
             firstNameLetter,
@@ -95,6 +62,71 @@ fun PhotoUrlImage(
             fontSize
         )
     }
+
+    if (photoUrl != null) {
+        CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
+
+            KamelPhotoUrlImage(
+                photoUrl,
+                modifier,
+                effect,
+                loadingCallback = {
+                    initials.invoke()
+                },
+                errorCallback = {
+                    //Try with not thumbnail image in case it is a GIF profile picture
+                    if (photoUrl.isThumbnailUrl) {
+                        KamelPhotoUrlImage(
+                            photoUrl.notThumbnailUrl,
+                            modifier,
+                            effect,
+                            loadingCallback = {
+                                initials.invoke()
+                            },
+                            errorCallback = {
+                                initials.invoke()
+                            }
+                        )
+                    } else {
+                        initials.invoke()
+                    }
+                }
+            )
+        }
+    } else {
+        initials.invoke()
+    }
+}
+
+@Composable
+fun KamelPhotoUrlImage(
+    photoUrl: PhotoUrl,
+    modifier: Modifier = Modifier,
+    effect: @Composable (() -> Unit?)? = null,
+    loadingCallback: @Composable () -> Unit,
+    errorCallback: @Composable () -> Unit
+) {
+    val photoUrlResource = lazyPainterResource(
+        data = photoUrl.value
+    )
+
+    KamelImage(
+        resource = photoUrlResource,
+        contentDescription = "avatar",
+        onLoading = {
+            if (effect != null) {
+                effect()
+            } else {
+                loadingCallback()
+            }
+        },
+        onFailure = {
+            errorCallback()
+        },
+        contentScale = ContentScale.Crop,
+        modifier = modifier,
+        crossfade = false
+    )
 }
 
 @Composable
