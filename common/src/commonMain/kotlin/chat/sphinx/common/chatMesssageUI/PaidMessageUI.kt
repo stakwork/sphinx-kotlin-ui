@@ -25,6 +25,7 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.message.PurchaseStatus
 import chat.sphinx.wrapper.message.retrievePaidTextAttachmentUrlAndMessageMedia
 import chat.sphinx.wrapper.message.retrievePurchaseStatus
+import chat.sphinx.wrapper.message.retrieveTextToShow
 
 @Composable
 fun PaidMessageUI(chatMessage: ChatMessage){
@@ -43,9 +44,9 @@ fun PaidMessageUI(chatMessage: ChatMessage){
        if(chatMessage.isReceived)
            ReceivedPaidMessage(it,amount, chatMessage.message.retrievePurchaseStatus()!!)
         else Column {
-           SentPaidMessage(amount,chatMessage.message.retrievePurchaseStatus()!!)
-           Spacer(modifier = Modifier.height(8.dp))
-           Text("Decrypted Message", modifier = Modifier.padding(horizontal = 16.dp, vertical =8.dp), color = MaterialTheme.colorScheme.tertiary, fontSize = 13.sp)
+           SentPaidMessage(amount,chatMessage.message.retrievePurchaseStatus()!!,chatMessage.message.retrieveTextToShow().toString())
+//           Spacer(modifier = Modifier.height(8.dp))
+//           Text("Decrypted Message", modifier = Modifier.padding(horizontal = 16.dp, vertical =8.dp), color = MaterialTheme.colorScheme.tertiary, fontSize = 13.sp)
        }
     }
 
@@ -54,8 +55,8 @@ fun PaidMessageUI(chatMessage: ChatMessage){
 @Composable
 private fun ReceivedPaidMessage(message: String,amount: String,status:PurchaseStatus){
     Column (modifier = Modifier.fillMaxWidth(0.5f)){
-        Text(message, fontWeight = FontWeight.W600, fontSize =  if((status is PurchaseStatus.Accepted).not()) 10.sp else 12.sp, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(16.dp))
-        Spacer(modifier = Modifier.height(8.dp))
+        Text(message, fontWeight = FontWeight.W700, fontSize =  if((status is PurchaseStatus.Accepted).not()) 10.sp else 12.sp, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+//        Spacer(modifier = Modifier.height(4.dp))
         if((status is PurchaseStatus.Accepted).not())
         SendSats(amount)
         else ShowPaidMessage(amount)
@@ -65,16 +66,16 @@ private fun ReceivedPaidMessage(message: String,amount: String,status:PurchaseSt
 
 @Composable
 fun SendSats(amount: String) {
-    Row(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer).fillMaxWidth().height(40.dp), verticalAlignment = Alignment.CenterVertically,) {
+    Row(modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer).fillMaxWidth().height(45.dp), verticalAlignment = Alignment.CenterVertically,) {
 //            Spacer(modifier = Modifier.width(2.dp).height(2.dp))
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Image(
             painter = imageResource(Res.drawable.ic_sent), contentDescription = null, colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text("PAY", color = MaterialTheme.colorScheme.tertiary, fontSize = 14.sp, fontWeight = FontWeight.W600, modifier = Modifier.weight(1f))
         Text("$amount SAT", fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiary)
-        Spacer(modifier = Modifier.width(8.dp).height(8.dp))
+        Spacer(modifier = Modifier.width(12.dp).height(12.dp))
     }
 }
 
@@ -92,24 +93,36 @@ fun ShowPaidMessage(amount: String) {
     }
 }
 @Composable
-private fun SentPaidMessage(amount:String,status: PurchaseStatus){
+private fun SentPaidMessage(amount:String,status: PurchaseStatus,textToShow: String){
     val text= when(status){
         PurchaseStatus.Accepted -> "Purchase Success"
         PurchaseStatus.Denied -> "Purchase Failed"
         PurchaseStatus.Pending -> "Pending"
         PurchaseStatus.Processing -> "Processing"
     }
-    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.padding(8.dp)) {
+    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp).fillMaxWidth(calculateWidth(textToShow))) {
         Card ( backgroundColor = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp),
         ){
-            Text(amount,fontSize = 10.sp, color = MaterialTheme.colorScheme.tertiary,modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+            Text("$amount SAT",fontSize = 10.sp, color = MaterialTheme.colorScheme.tertiary,modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontWeight = FontWeight.W600)
         }
-        Spacer(modifier = Modifier.width(16.dp))
-        Card ( backgroundColor = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp),
-        ){
+        Spacer(modifier = Modifier.weight(1f))
+        Box( contentAlignment = Alignment.CenterEnd){
 
-            Text(text, fontWeight = FontWeight.W600, fontSize = 10.sp, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+            Card ( backgroundColor = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp)
+            ){
+
+                Text(text, fontWeight = FontWeight.W700, fontSize = 10.sp, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),)
+            }
         }
 
     }
+}
+
+fun calculateWidth(text:String): Float {
+    return if(text.length>100) 1f
+    else{
+        if(text.length<20)return 0.3f
+        text.length.toString().split("").get(1).toFloat().div(10f)
+    }
+
 }
