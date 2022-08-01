@@ -114,7 +114,7 @@ fun ChatCard(
                         ReceivedPaidMessageButton(
                             chatMessage,
                             modifier = Modifier.width(
-                                maxOf(rowWidth, 200.dp)
+                                maxOf(rowWidth, 250.dp)
                             )
                             .height(45.dp)
                         )
@@ -125,7 +125,7 @@ fun ChatCard(
         SentPaidMessage(
             chatMessage,
             modifier = Modifier.width(
-                maxOf(rowWidth, 200.dp)
+                maxOf(rowWidth, 250.dp)
             )
         )
     }
