@@ -394,7 +394,6 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
-                    enabled = false
                 )
                 Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
             }

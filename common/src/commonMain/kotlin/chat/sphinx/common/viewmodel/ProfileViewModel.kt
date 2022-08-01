@@ -7,6 +7,7 @@ import chat.sphinx.common.state.ProfileState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
+import chat.sphinx.utils.ServersUrlsHelper
 import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
@@ -23,6 +24,7 @@ class ProfileViewModel {
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val relayDataHandler = SphinxContainer.networkModule.relayDataHandlerImpl
+    private val serversUrls = ServersUrlsHelper()
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -30,7 +32,6 @@ class ProfileViewModel {
     private val accountOwnerStateFlow: StateFlow<Contact?>
         get() = contactRepository.accountOwner
 
-//    private val settings: Settings = createPlatformSettings()
 
     var profileState: ProfileState by mutableStateOf(initialState())
 
@@ -107,23 +108,20 @@ class ProfileViewModel {
                 setStatus(loadResponse)
             }
 
-//            settings.putString(key = SphinxCallLink.CALL_SERVER_URL_KEY, value = profileState.meetingServerUrl)
+            serversUrls.setMeetingServer(profileState.meetingServerUrl)
         }
     }
 
     private fun loadServerUrls(){
-        val callServerUrl = SphinxCallLink.CALL_SERVER_URL_KEY
-        val defaultCallServer = SphinxCallLink.DEFAULT_CALL_SERVER_URL
-
-//        val meetingServerUrl = settings.getString(callServerUrl, defaultCallServer)
+        val meetingServer = serversUrls.getMeetingServer()
 
         setProfileState {
             copy(
-                meetingServerUrl = defaultCallServer
+                meetingServerUrl = meetingServer
             )
         }
     }
-    private fun toPrivatePhotoBoolean(privatePhoto: Int?) : Boolean = privatePhoto == 1
 
+    private fun toPrivatePhotoBoolean(privatePhoto: Int?) : Boolean = privatePhoto == 1
 
 }
