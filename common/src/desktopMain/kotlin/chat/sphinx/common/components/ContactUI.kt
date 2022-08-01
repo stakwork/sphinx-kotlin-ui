@@ -33,8 +33,8 @@ import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.dashboard.ContactId
-import com.example.compose.badge_red
-import com.example.compose.light_divider
+import theme.badge_red
+import theme.light_divider
 
 @Composable
 fun AddContactWindow(dashboardViewModel: DashboardViewModel) {

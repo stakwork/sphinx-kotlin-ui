@@ -27,7 +27,7 @@ import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.media.isImage
-import com.example.compose.place_holder_text
+import theme.place_holder_text
 import utils.AnimatedContainer
 
 

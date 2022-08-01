@@ -13,24 +13,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import chat.sphinx.common.components.CustomDivider
 import chat.sphinx.common.components.MessageMediaImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
-import com.example.compose.badge_red
-import androidx.compose.ui.platform.LocalDensity
-import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.chat.isTribe
-import com.example.compose.wash_out_received
-import com.example.compose.wash_out_send
+import theme.wash_out_received
+import theme.wash_out_send
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

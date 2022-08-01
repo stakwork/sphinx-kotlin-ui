@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.SphinxFonts
-import com.example.compose.primary_green
+import theme.primary_green
 
 @Composable
 fun JitsiAudioVideoCall(

@@ -1,12 +1,10 @@
 package chat.sphinx.common.chatMesssageUI
 
 import Roboto
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Card
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -33,8 +31,8 @@ import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.isImage
-import com.example.compose.badge_red
-import com.example.compose.light_divider
+import theme.badge_red
+import theme.light_divider
 
 @Composable
 fun ChatCard(

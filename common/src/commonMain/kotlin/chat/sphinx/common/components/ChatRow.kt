@@ -14,13 +14,10 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -35,18 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import chat.sphinx.common.Res
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.platform.imageResource
-import chat.sphinx.wrapper.invite.isDelivered
-import chat.sphinx.wrapper.invite.isExpired
-import chat.sphinx.wrapper.invite.isPaymentPending
-import chat.sphinx.wrapper.invite.isReady
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.util.getInitials
-import com.example.compose.primary_green
-
-
-import views.LoadingShimmerEffect
-import views.ShimmerCircleAvatar
-import views.ShimmerGridItem
+import theme.primary_green
 
 
 @OptIn(ExperimentalStdlibApi::class)

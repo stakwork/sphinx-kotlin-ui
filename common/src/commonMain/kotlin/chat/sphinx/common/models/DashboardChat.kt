@@ -8,17 +8,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import chat.sphinx.wrapper.*
 import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
-import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.invite.InviteStatus
 import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
-import com.example.compose.badge_red
-import com.example.compose.primary_blue
-import com.example.compose.primary_green
-import com.example.compose.sphinx_orange
+import theme.badge_red
+import theme.primary_blue
+import theme.primary_green
+import theme.sphinx_orange
 import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
 import chat.sphinx.wrapper.invite.Invite as InviteWrapper
