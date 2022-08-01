@@ -92,19 +92,13 @@ fun ChatCard(
                                 chatMessage = chatMessage,
                                 chatViewModel = chatViewModel,
                             )
+                        }
 //                    } else if (media.mediaType.isAudio) {
 //                        MessageAudio(
 //                            chatMessage = chatMessage,
 //                            chatViewModel = chatViewModel,
 //                        )
-                        } else if (chatMessage.message.isPaidMessage.not()) {
-                            Icon(
-                                Icons.Default.AttachFile,
-                                contentDescription = "Attachment",
-                                tint = Color.Green,
-                                modifier = Modifier.size(88.dp).padding(4.dp)
-                            )
-                        }
+//                    }
                     }
                     Column {
                         MessageTextLabel(chatMessage, chatViewModel)
