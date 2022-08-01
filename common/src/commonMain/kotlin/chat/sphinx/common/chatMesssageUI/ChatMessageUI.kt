@@ -117,7 +117,6 @@ fun ChatMessageUI(
                                             chatMessage,
                                             chatViewModel
                                         )
-                                        ReceivedPaidMessageButton(chatMessage)
                                     }
                                     if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
                                         ChatOptionMenu(chatMessage, chatViewModel)

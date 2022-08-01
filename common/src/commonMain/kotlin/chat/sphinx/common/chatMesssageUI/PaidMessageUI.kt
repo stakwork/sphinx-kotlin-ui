@@ -32,6 +32,7 @@ import theme.primary_red
 @Composable
 fun ReceivedPaidMessageButton(
     chatMessage: ChatMessage,
+    modifier: Modifier = Modifier
 ) {
     if (chatMessage.message.isPaidMessage && chatMessage.isReceived) {
         val status = chatMessage.message.retrievePurchaseStatus() ?: PurchaseStatus.Pending
@@ -43,7 +44,7 @@ fun ReceivedPaidMessageButton(
         }
 
         Card(
-            modifier = Modifier.fillMaxWidth().height(45.dp),
+            modifier = modifier,
             backgroundColor = backgroundColor,
             shape = RoundedCornerShape(topEnd = 0.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp),
         ) {
@@ -123,8 +124,9 @@ fun ReceivedPaidMessageButton(
 }
 
 @Composable
-fun SentPaidMessageButton(
+fun SentPaidMessage(
     chatMessage: ChatMessage,
+    modifier: Modifier = Modifier
 ) {
     if (chatMessage.message.isPaidMessage && chatMessage.isSent) {
         val status = chatMessage.message.retrievePurchaseStatus() ?: PurchaseStatus.Pending
@@ -138,7 +140,7 @@ fun SentPaidMessageButton(
         }
 
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = modifier
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,

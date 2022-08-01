@@ -120,7 +120,8 @@ fun DirectPaymentUI(
                 MessageMediaImage(
                     chatMessage.message,
                     chatViewModel = chatViewModel,
-                    modifier = Modifier.wrapContentHeight().fillMaxWidth()
+                    modifier = Modifier.wrapContentHeight().fillMaxWidth(),
+                    isReceived = chatMessage.isReceived
                 )
 
             }

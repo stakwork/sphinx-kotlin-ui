@@ -58,7 +58,7 @@ fun ReplyingToMessageUI(
                         replyMessage,
                         chatViewModel,
                         modifier = Modifier.width(36.dp),
-                        true
+                        isReplyView = true
                     )
                 } else {
                     Icon(

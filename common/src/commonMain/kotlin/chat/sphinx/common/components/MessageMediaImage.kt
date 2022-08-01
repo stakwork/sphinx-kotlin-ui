@@ -9,6 +9,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Attachment
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +36,8 @@ fun MessageMediaImage(
     message: Message,
     chatViewModel: ChatViewModel,
     modifier: Modifier = Modifier,
-    isReplyView: Boolean = false
+    isReplyView: Boolean = false,
+    isReceived: Boolean = false
 ) {
     val localFilepath = rememberSaveable { mutableStateOf(message.messageMedia?.localFile) }
     val imageLoadError = rememberSaveable { mutableStateOf(false) }
@@ -44,7 +46,9 @@ fun MessageMediaImage(
     val urlAndMessageMedia = message.retrieveUrlAndMessageMedia()
     val url = urlAndMessageMedia?.first
 
-    if (message.isPaidPendingMessage) {
+    if (
+        message.isPaidPendingMessage && isReceived
+    ) {
         PaidImageOverlay(modifier, isReplyView)
     } else {
         LaunchedEffect(url) {
@@ -82,7 +86,7 @@ fun MessageMediaImage(
                     fullScreenImageState.value = localFilepath.value
                 },
                 effect = {
-                    ImageLoadingView()
+                    ImageLoadingView(modifier)
                 }
             )
         } else if (imageLoadError.value) {
@@ -91,16 +95,25 @@ fun MessageMediaImage(
                 contentDescription = "",
                 modifier = modifier.aspectRatio(1f)
             )
+        } else if (isReplyView) {
+            Icon(
+                Icons.Default.AttachFile,
+                contentDescription = "Attachment",
+                tint = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(29.dp).padding(2.dp)
+            )
         } else {
-            ImageLoadingView()
+            ImageLoadingView(modifier)
         }
     }
 }
 
 @Composable
-fun ImageLoadingView() {
+fun ImageLoadingView(
+    modifier: Modifier,
+) {
     Box(
-        modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+        modifier = modifier.aspectRatio(1f),
         contentAlignment = Alignment.Center
     ){
         Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
