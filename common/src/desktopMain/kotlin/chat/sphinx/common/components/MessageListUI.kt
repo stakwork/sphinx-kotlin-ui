@@ -28,6 +28,7 @@ import chat.sphinx.common.state.MessageListState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.media.isImage
 import com.example.compose.place_holder_text
+import kotlinx.coroutines.launch
 import utils.AnimatedContainer
 
 
@@ -44,6 +45,7 @@ fun MessageListUI(
             }
             is MessageListData.PopulatedMessageListData -> {
                 val listState = rememberLazyListState()
+
                 val chatMessages = messageListData.messages
                 val items= mutableStateListOf<ChatMessage>()
                 items.addAll(chatMessages)
@@ -76,11 +78,20 @@ fun ChatMessagesList(
     listState: LazyListState,
     chatViewModel: ChatViewModel
 ) {
+    val scope = rememberCoroutineScope()
+
     LazyColumn(
         state = listState,
         reverseLayout = true,
         contentPadding = PaddingValues(8.dp)
     ) {
+
+        chatViewModel.onSendMessageCallback = {
+            scope.launch {
+                listState.scrollToItem(0)
+            }
+        }
+
         itemsIndexed(items, key = { index, item -> item.message.id }){ index, item ->
             print("index is $index with value ${item.message.messageContent?.value}")
 

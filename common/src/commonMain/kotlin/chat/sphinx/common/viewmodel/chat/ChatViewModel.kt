@@ -71,6 +71,8 @@ abstract class ChatViewModel(
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
     private var messagesLoadJob: Job? = null
 
+    var onSendMessageCallback: (() -> Unit)? = null
+
     init {
         messagesLoadJob = scope.launch(dispatchers.mainImmediate) {
             loadChatMessages()
@@ -375,9 +377,13 @@ abstract class ChatViewModel(
             } else if (sendMessage.first != null) {
                 sendMessage.first?.let { message ->
                     messageRepository.sendMessage(message)
+
                     setEditMessageState {
                         initialState()
                     }
+
+                    delay(500L)
+                    onSendMessageCallback?.invoke()
                 }
             }
         }
