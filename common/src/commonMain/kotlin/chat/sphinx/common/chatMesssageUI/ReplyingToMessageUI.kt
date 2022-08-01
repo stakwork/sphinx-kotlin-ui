@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -24,10 +23,10 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import chat.sphinx.wrapper.chat.isTribe
+import chat.sphinx.wrapper.message.retrieveUrlAndMessageMedia
 import theme.wash_out_received
 import theme.wash_out_send
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ReplyingToMessageUI(
     chatMessage: ChatMessage,
@@ -42,7 +41,8 @@ fun ReplyingToMessageUI(
 
         Row(
             modifier = Modifier.height(44.dp).padding(top = 8.dp, start = 8.dp, end = 8.dp),
-            horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
@@ -50,20 +50,22 @@ fun ReplyingToMessageUI(
                     .fillMaxHeight()
                     .background(color),
             )
-            replyMessage.messageMedia?.let { media ->
+            replyMessage.retrieveUrlAndMessageMedia()?.second?.let { media ->
+                Spacer(modifier = Modifier.width(10.dp))
+
                 if (media.mediaType.isImage) {
                     MessageMediaImage(
-                        chatMessage.message,
-                        media,
+                        replyMessage,
                         chatViewModel,
-                        modifier = Modifier.height(30.dp).width(40.dp).padding(start = 10.dp)
+                        modifier = Modifier.width(36.dp),
+                        true
                     )
                 } else {
                     Icon(
                         Icons.Default.AttachFile,
                         contentDescription = "Attachment",
                         tint = Color.Gray,
-                        modifier = Modifier.height(88.dp).padding(start = 10.dp)
+                        modifier = Modifier.width(36.dp)
                     )
                 }
             }

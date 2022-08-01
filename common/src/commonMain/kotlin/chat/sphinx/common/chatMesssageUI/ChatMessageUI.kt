@@ -106,15 +106,19 @@ fun ChatMessageUI(
                                     if (chatMessage.isReceived) {
                                         BubbleArrow(false, bubbleColor)
                                     }
-                                    ChatCard(
-                                        chatMessage,
-                                        chatViewModel,
-                                        modifier = if (chatMessage.message.isMediaAttachmentAvailable) {
+                                    Column(
+                                        modifier = if (chatMessage.message.isMediaMessage) {
                                             Modifier.fillMaxWidth(0.5f)
                                         } else {
                                             Modifier.weight(1f, fill = false)
                                         }
-                                    )
+                                    ) {
+                                        ChatCard(
+                                            chatMessage,
+                                            chatViewModel
+                                        )
+                                        ReceivedPaidMessageButton(chatMessage)
+                                    }
                                     if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
                                         ChatOptionMenu(chatMessage, chatViewModel)
                                     }

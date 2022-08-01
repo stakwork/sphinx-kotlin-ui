@@ -23,6 +23,7 @@ object Res {
         const val ic_coin =  "drawable/ic_coin.xml"
         const val ic_qr_code =  "drawable/ic_qr_code.xml"
         const val ic_received_image_not_available =  "drawable/received_image_not_available.xml"
+        const val paid_image_blurred_placeholder =  "drawable/paid_image_blurred_placeholder.png"
         const val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"
 
         const val existing_user_image = "drawable/existinguserimage.png"

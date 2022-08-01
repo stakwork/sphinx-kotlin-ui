@@ -1,187 +1,182 @@
 package chat.sphinx.common.chatMesssageUI
 
+import Roboto
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrokenImage
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.platform.imageResource
-import chat.sphinx.wrapper.message.PurchaseStatus
-import chat.sphinx.wrapper.message.media.isImage
-import chat.sphinx.wrapper.message.retrievePaidTextAttachmentUrlAndMessageMedia
-import chat.sphinx.wrapper.message.retrievePurchaseStatus
-import chat.sphinx.wrapper.message.retrieveTextToShow
+import chat.sphinx.utils.SphinxFonts
+import chat.sphinx.wrapper.lightning.asFormattedString
+import chat.sphinx.wrapper.message.*
+import theme.primary_green
+import theme.primary_red
+
 
 @Composable
-fun PaidMessageUI(chatMessage: ChatMessage) {
-    chatMessage.message.retrievePurchaseStatus()?.run {
+fun ReceivedPaidMessageButton(
+    chatMessage: ChatMessage,
+) {
+    if (chatMessage.message.isPaidMessage && chatMessage.isReceived) {
+        val status = chatMessage.message.retrievePurchaseStatus() ?: PurchaseStatus.Pending
 
-        when (this) {
-            PurchaseStatus.Accepted -> "LOADING MESSAGE..."
-            PurchaseStatus.Denied -> "UNABLE TO LOAD MESSAGE DATA"
-            PurchaseStatus.Pending -> "PAY TO UNLOCK MESSAGE"
-            PurchaseStatus.Processing -> "LOADING MESSAGE..."
+        val backgroundColor = if (status is PurchaseStatus.Denied) {
+            primary_red
+        } else {
+            primary_green
         }
-//        if(this is PurchaseStatus.Accepted)
-//            chatMessage.message.retrievePaidTextAttachmentUrlAndMessageMedia()
-    }?.let {
-        val amount = chatMessage.message.messageMedia?.price?.value.toString()
-        if (chatMessage.isReceived)
-            ReceivedPaidMessage(it, amount, chatMessage.message.retrievePurchaseStatus()!!, chatMessage)
-        else Column {
-            SentPaidMessage(
-                amount,
-                chatMessage.message.retrievePurchaseStatus()!!,
-                chatMessage.message.retrieveTextToShow().toString()
-            )
-//           Spacer(modifier = Modifier.height(8.dp))
-//           Text("Decrypted Message", modifier = Modifier.padding(horizontal = 16.dp, vertical =8.dp), color = MaterialTheme.colorScheme.tertiary, fontSize = 13.sp)
-        }
-    }
 
-}
-
-@Composable
-private fun ReceivedPaidMessage(message: String, amount: String, status: PurchaseStatus, chatMessage: ChatMessage) {
-    Column(modifier = Modifier.fillMaxWidth(0.5f)) {
-        if (chatMessage.message.messageMedia?.mediaType?.isImage == true)
-            Box(modifier = Modifier.height(250.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Image(
-                    painter = imageResource(Res.drawable.ic_received_image_not_available),
-                    contentDescription = "",
-                    modifier = Modifier.height(300.dp).width(300.dp)
-
-                )
-            }
-        else
-            Text(
-                message,
-                fontWeight = FontWeight.W700,
-                fontSize = if ((status is PurchaseStatus.Accepted).not()) 10.sp else 12.sp,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-            )
-        if ((status is PurchaseStatus.Accepted).not())
-            SendSats(amount)
-        else ShowPaidMessage(amount)
-    }
-
-}
-
-@Composable
-fun SendSats(amount: String) {
-    Row(
-        modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer).fillMaxWidth().height(45.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Spacer(modifier = Modifier.width(12.dp))
-        Image(
-            painter = imageResource(Res.drawable.ic_sent),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            "PAY",
-            color = MaterialTheme.colorScheme.tertiary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.W600,
-            modifier = Modifier.weight(1f)
-        )
-        Text("$amount SAT", fontSize = 12.sp, color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.W600)
-        Spacer(modifier = Modifier.width(12.dp).height(12.dp))
-    }
-}
-
-@Composable
-fun ShowPaidMessage(amount: String) {
-    Row(
-        modifier = Modifier.background(MaterialTheme.colorScheme.secondaryContainer).fillMaxWidth().height(50.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Spacer(modifier = Modifier.width(8.dp))
-        Icon(
-            Icons.Default.Done,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            "Purchase Succeed",
-            color = MaterialTheme.colorScheme.tertiary,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.W600,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-@Composable
-private fun SentPaidMessage(amount: String, status: PurchaseStatus, textToShow: String) {
-    val text = when (status) {
-        PurchaseStatus.Accepted -> "Purchase Success"
-        PurchaseStatus.Denied -> "Purchase Failed"
-        PurchaseStatus.Pending -> "Pending"
-        PurchaseStatus.Processing -> "Processing"
-    }
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp).fillMaxWidth(calculateWidth(textToShow))
-    ) {
         Card(
-            backgroundColor = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.fillMaxWidth().height(45.dp),
+            backgroundColor = backgroundColor,
+            shape = RoundedCornerShape(topEnd = 0.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp),
         ) {
-            Text(
-                "$amount SAT",
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                fontWeight = FontWeight.W600
-            )
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        Box(contentAlignment = Alignment.CenterEnd) {
+            val amount = chatMessage.message.messageMedia?.price?.asFormattedString(' ', appendUnit = true) ?: "0 sat"
 
-            Card(
-                backgroundColor = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(4.dp)
-            ) {
-                Text(
-                    text,
-                    fontWeight = FontWeight.W700,
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                )
+            val statusString = when (status) {
+                PurchaseStatus.Accepted -> "Purchase Succeeded"
+                PurchaseStatus.Denied -> "Purchase Denied"
+                PurchaseStatus.Pending -> "PAY"
+                PurchaseStatus.Processing -> "Processing Payment..."
+            }
+
+            val statusIcon = when (status) {
+                PurchaseStatus.Accepted -> Icons.Default.Check
+                PurchaseStatus.Denied -> Icons.Default.ErrorOutline
+                else -> null
+            }
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    if (status.isPurchasePending()) {
+                        Image(
+                            painter = imageResource(Res.drawable.ic_sent),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary)
+                        )
+                    } else if (statusIcon != null) {
+                        Icon(
+                            statusIcon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.tertiary,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    if (status.isPurchasePending()) {
+                        Text(
+                            statusString,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.W600,
+                            fontFamily = SphinxFonts.montserratFamily,
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Text(
+                            statusString,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.W400,
+                            fontFamily = Roboto,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Text(
+                        amount,
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontFamily = Roboto,
+                        fontWeight = FontWeight.W400
+                    )
+                    Spacer(modifier = Modifier.width(12.dp).height(12.dp))
+                }
             }
         }
-
     }
 }
 
-fun calculateWidth(text: String): Float {
-    return if (text.length > 100) 1f
-    else {
-        if (text.length < 20) return 0.3f
-        text.length.toString().split("").get(1).toFloat().div(10f)
-    }
+@Composable
+fun SentPaidMessageButton(
+    chatMessage: ChatMessage,
+) {
+    if (chatMessage.message.isPaidMessage && chatMessage.isSent) {
+        val status = chatMessage.message.retrievePurchaseStatus() ?: PurchaseStatus.Pending
+        val amount = chatMessage.message.messageMedia?.price?.asFormattedString(' ', appendUnit = true) ?: "0 sat"
 
+        val text = when (status) {
+            PurchaseStatus.Accepted -> "Succeeded"
+            PurchaseStatus.Denied -> "Denied"
+            PurchaseStatus.Pending -> "Pending"
+            PurchaseStatus.Processing -> "Processing payment..."
+        }
+
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                    .align(Alignment.TopCenter)
+                    .absoluteOffset(x = 0.dp, y = 0.dp)
+            ) {
+                Box(contentAlignment = Alignment.CenterStart) {
+                    Card(
+                        backgroundColor = primary_green, shape = RoundedCornerShape(4.dp),
+                    ) {
+                        Text(
+                            amount.uppercase(),
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            fontWeight = FontWeight.W600,
+                            fontFamily = Roboto
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Box(contentAlignment = Alignment.CenterEnd) {
+                    Card(
+                        backgroundColor = primary_green, shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text,
+                            fontWeight = FontWeight.W700,
+                            fontSize = 10.sp,
+                            fontFamily = Roboto,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
