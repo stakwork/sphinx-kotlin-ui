@@ -35,21 +35,24 @@ fun MessageMediaImage(
     val localFilepath = rememberSaveable { mutableStateOf(messageMedia.localFile) }
     val imageLoadError = rememberSaveable { mutableStateOf(false) }
     val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
-    val url=if(message.type == MessageType.DirectPayment) message.retrieveImageUrlAndMessageMedia()?.second?.templateUrl?.value else messageMedia.url?.value
+
+    val url= if (message.type == MessageType.DirectPayment)
+        message.retrieveImageUrlAndMessageMedia()?.second?.templateUrl?.value
+    else messageMedia.url?.value
+
     LaunchedEffect(url) {
         if (localFilepath.value == null) {
             url?.let { mediaURL ->
-                // TODO: Try catch error...
                 try {
                     messageMedia.retrieveRemoteMediaInputStream(
                         mediaURL,
                         chatViewModel.memeServerTokenHandler,
                         chatViewModel.memeInputStreamHandler
                     )?.let { imageInputStream ->
-                        mediaCacheHandler.createImageFile("jpg").let { imageFilepath -> // TODO: Set extension using filename
+                        mediaCacheHandler.createImageFile("jpg").let { imageFilepath ->
                             imageFilepath.toFile().outputStream().use { fileOutputStream ->
                                 imageInputStream.copyTo(fileOutputStream)
-                                // Update local file...
+
                                 chatViewModel.messageRepository.messageMediaUpdateLocalFile(
                                     message,
                                     imageFilepath
@@ -89,7 +92,10 @@ fun MessageMediaImage(
 
 @Composable
 fun ImageLoadingView() {
-    Box(modifier=Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ){
         Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier=Modifier.height(16.dp))
             CircularProgressIndicator(
@@ -98,7 +104,7 @@ fun ImageLoadingView() {
                 modifier = Modifier.size(40.dp)
             )
             Spacer(modifier=Modifier.height(2.dp))
-            Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.onBackground)
+            Text("Loading/Decrypting...", fontSize = 10.sp, color = MaterialTheme.colorScheme.tertiary)
             Spacer(modifier=Modifier.height(16.dp))
         }
     }

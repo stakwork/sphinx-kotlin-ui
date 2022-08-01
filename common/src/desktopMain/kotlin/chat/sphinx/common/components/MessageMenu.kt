@@ -22,13 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.models.ChatMessage
-import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
-import chat.sphinx.utils.platform.getFileSystem
+import chat.sphinx.utils.saveFile
 import chat.sphinx.utils.toAnnotatedString
 import theme.badge_red
 import chat.sphinx.wrapper.message.*
+import chat.sphinx.wrapper.message.media.FileName
 import kotlinx.coroutines.launch
 
 @Composable
@@ -53,7 +53,7 @@ actual fun MessageMenu(
     ) {
         val messageText = chatMessage.message.messageContentDecrypted?.value ?: ""
 
-        if (chatMessage.message.isBoostAllowed) {
+        if (chatMessage.isReceived && chatMessage.message.isBoostAllowed) {
             DropdownMenuItem(onClick = {
                 chatMessage.boostMessage()
                 dismissKebab()
@@ -85,7 +85,7 @@ actual fun MessageMenu(
 
         if (chatMessage.message.isReplyAllowed) {
             DropdownMenuItem(onClick = {
-                chatMessage.setAsReplyToMessage(chatViewModel.editMessageState)
+                chatViewModel.editMessageState.replyToMessage.value = chatMessage
                 dismissKebab()
             }) {
                 OptionItem("Reply", imageVector = Icons.Default.Reply)
@@ -93,23 +93,17 @@ actual fun MessageMenu(
         }
         if (chatMessage.message.isSaveAllowed) {
             DropdownMenuItem(onClick = {
-                // TODO: Save attachment...
                 chatMessage.message.messageMedia?.localFile?.let { attachmentFilepath ->
                     scope.launch {
-                        val saveFilepath = ContentState.saveFilePickerDialog.awaitResult(
-                            attachmentFilepath.name
+                        saveFile(
+                            chatMessage.message.messageMedia?.fileName ?: FileName(attachmentFilepath.name),
+                            attachmentFilepath
                         )
-                        if (saveFilepath != null) {
-                            getFileSystem().copy(
-                                attachmentFilepath,
-                                saveFilepath
-                            )
-                        }
                     }
                 }
                 dismissKebab()
             }) {
-                OptionItem("Save attachment", imageVector = Icons.Default.Save)
+                OptionItem("Save attachment", imageVector = Icons.Default.Download)
             }
         }
 

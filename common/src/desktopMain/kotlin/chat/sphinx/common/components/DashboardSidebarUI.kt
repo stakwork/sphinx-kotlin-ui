@@ -3,23 +3,22 @@ package chat.sphinx.common.components
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.PersonAddAlt
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import theme.place_holder_text
@@ -28,6 +27,9 @@ import theme.primary_red
 
 @Composable
 fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
+
+    val chatListViewModel = remember { ChatListViewModel() }
+
     Box(
         Modifier
             .background(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
@@ -110,7 +112,6 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                     )
                 }
             }
-            var searchText by rememberSaveable { mutableStateOf("") }
             TopAppBar(
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 title = {
@@ -123,7 +124,18 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                                 tint = place_holder_text
                             )
                         },
-                        trailingIcon = null,
+                        trailingIcon = {
+                             if (chatListViewModel.searchText.value.isNotEmpty()) {
+                                 Icon(
+                                     Icons.Filled.Cancel,
+                                     null,
+                                     tint = place_holder_text,
+                                     modifier = Modifier.width(16.dp).clickable {
+                                         chatListViewModel.filterChats("")
+                                     },
+                                 )
+                             }
+                        },
                         modifier = Modifier
                             .background(
                                 androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
@@ -134,9 +146,9 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                         fontSize = 14.sp,
                         placeholderText = "Search",
                         onValueChange = { input ->
-                            searchText = input
+                            chatListViewModel.filterChats(input)
                         },
-                        value = searchText
+                        value = chatListViewModel.searchText.value
                     )
                 },
                 elevation = 8.dp,
@@ -152,12 +164,18 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                     }
                 }
             )
+
+            ChatListUI(chatListViewModel)
+
             val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
             if (addContactWindowState.first){
                 AddContactWindow(dashboardViewModel)
             }
 
-            ChatListUI()
+            val profileWindowState by dashboardViewModel.profileStateFlow.collectAsState()
+            if (profileWindowState){
+                Profile(dashboardViewModel)
+            }
         }
     }
 }

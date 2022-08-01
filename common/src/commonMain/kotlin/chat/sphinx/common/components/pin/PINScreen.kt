@@ -24,15 +24,20 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
 import chat.sphinx.utils.SphinxFonts
 import theme.badge_red
+import theme.primary_green
 import utils.AnimatedContainer
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PINScreen(
-    pinHandlingViewModel: PINHandlingViewModel
+    pinHandlingViewModel: PINHandlingViewModel,
+    descriptionMessage: String? = null,
+    successMessage: String? = null,
+    errorMessage: String? = null
 ) {
     Box(
-       modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
+        modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.background)
     ) {
        Column(modifier = Modifier.background(color = MaterialTheme.colorScheme.background)) {
            Column(
@@ -65,7 +70,12 @@ fun PINScreen(
                    ) {
                        OutlinedTextField(
                            shape = RoundedCornerShape(68.dp),
-                           textStyle = TextStyle(fontSize = 24.sp),
+                           textStyle = TextStyle(
+                               fontSize = 32.sp,
+                               textAlign = TextAlign.Center,
+                               letterSpacing = 15.sp,
+                               lineHeight = 50.sp
+                           ),
                            colors = TextFieldDefaults.outlinedTextFieldColors(
                                focusedBorderColor = MaterialTheme.colorScheme.secondary,
                                backgroundColor = MaterialTheme.colorScheme.tertiary,
@@ -85,6 +95,14 @@ fun PINScreen(
                        )
                    }
                }
+               descriptionMessage?.let {
+                   Spacer(modifier = Modifier.height(16.dp))
+                   Text(
+                       it,
+                       textAlign = TextAlign.Center,
+                       color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(12.dp)
+                   )
+               }
                Spacer(modifier = Modifier.height(16.dp))
                Row(
                    modifier = Modifier.height(50.dp)
@@ -102,9 +120,15 @@ fun PINScreen(
                            )
                            Spacer(modifier = Modifier.height(10.dp))
                        }
-                       pinHandlingViewModel.pinState.errorMessage?.let { errorMessage ->
+                       successMessage?.let {
                            Text(
-                               text = errorMessage,
+                               text = it,
+                               color = primary_green
+                           )
+                       }
+                       (errorMessage ?: pinHandlingViewModel.pinState.errorMessage)?.let {
+                           Text(
+                               text = it,
                                color = badge_red
                            )
                        }

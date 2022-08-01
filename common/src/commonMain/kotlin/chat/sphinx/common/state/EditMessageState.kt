@@ -15,6 +15,4 @@ data class EditMessageState(
     val chatId: ChatId?,
     val contactId: ContactId? = null,
     val replyToMessage: MutableState<ChatMessage?> = mutableStateOf(null)
-) {
-
-}
+)

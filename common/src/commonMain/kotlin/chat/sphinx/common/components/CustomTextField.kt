@@ -37,7 +37,7 @@ fun CustomTextField(
         textStyle = LocalTextStyle.current.copy(
             fontFamily = Roboto,
             fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
+            fontSize = fontSize,
             color = color ?: place_holder_text
         ),
         decorationBox = { innerTextField ->
