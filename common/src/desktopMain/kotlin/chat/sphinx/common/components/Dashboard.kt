@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -240,7 +241,12 @@ fun SphinxChatDetailTopAppBar(
     TopAppBar(
         modifier = Modifier.height(60.dp),
         title = {
-            Column {
+            val openTribeDetailView= remember { mutableStateOf(false) }
+            Column (modifier = Modifier.clickable {
+                openTribeDetailView.value=true
+            }){
+                if(openTribeDetailView.value)
+                    TribeDetailView()
                 Row {
                     Text(
                         text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
