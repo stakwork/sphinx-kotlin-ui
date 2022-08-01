@@ -43,7 +43,7 @@ fun MessageListUI(
                 )
             }
             is MessageListData.PopulatedMessageListData -> {
-                val listState = LazyListState()
+                val listState = rememberLazyListState()
                 val chatMessages = messageListData.messages
                 val items= mutableStateListOf<ChatMessage>()
                 items.addAll(chatMessages)
