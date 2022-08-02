@@ -2,6 +2,7 @@ package chat.sphinx.common.chatMesssageUI
 
 import Roboto
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.wrapper.lightning.asFormattedString
@@ -32,6 +34,7 @@ import theme.primary_red
 @Composable
 fun ReceivedPaidMessageButton(
     chatMessage: ChatMessage,
+    chatViewModel: ChatViewModel,
     modifier: Modifier = Modifier
 ) {
     if (chatMessage.message.isPaidMessage && chatMessage.isReceived) {
@@ -44,7 +47,9 @@ fun ReceivedPaidMessageButton(
         }
 
         Card(
-            modifier = modifier,
+            modifier = modifier.clickable {
+                chatViewModel.payAttachment(chatMessage.message)
+            },
             backgroundColor = backgroundColor,
             shape = RoundedCornerShape(topEnd = 0.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp),
         ) {

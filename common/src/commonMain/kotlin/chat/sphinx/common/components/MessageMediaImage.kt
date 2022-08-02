@@ -19,10 +19,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.fullScreenImageState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.retrieveRemoteMediaInputStream
@@ -33,11 +35,28 @@ import chat.sphinx.wrapper.message.media.MessageMedia
 
 @Composable
 fun MessageMediaImage(
+    chatMessage: ChatMessage,
+    chatViewModel: ChatViewModel,
+    modifier: Modifier = Modifier,
+) {
+    MessageMediaImage(
+        chatMessage.message,
+        chatViewModel,
+        modifier,
+        false,
+        chatMessage.isReceived,
+        ContentScale.Inside
+    )
+}
+
+@Composable
+fun MessageMediaImage(
     message: Message,
     chatViewModel: ChatViewModel,
     modifier: Modifier = Modifier,
     isReplyView: Boolean = false,
-    isReceived: Boolean = false
+    isReceived: Boolean = false,
+    contentScale: ContentScale = ContentScale.FillWidth
 ) {
     val localFilepath = rememberSaveable { mutableStateOf(message.messageMedia?.localFile) }
     val imageLoadError = rememberSaveable { mutableStateOf(false) }
@@ -87,7 +106,8 @@ fun MessageMediaImage(
                 },
                 effect = {
                     ImageLoadingView(modifier)
-                }
+                },
+                contentScale = contentScale
             )
         } else if (imageLoadError.value) {
             Image(

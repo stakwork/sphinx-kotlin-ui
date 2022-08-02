@@ -82,10 +82,9 @@ fun ChatCard(
                     chatMessage.message.messageMedia?.let { media ->
                         if (media.mediaType.isImage) {
                             MessageMediaImage(
-                                chatMessage.message,
+                                chatMessage,
                                 chatViewModel = chatViewModel,
-                                modifier = Modifier.wrapContentHeight().fillMaxWidth(),
-                                isReceived = chatMessage.isReceived
+                                modifier = Modifier.wrapContentHeight().fillMaxWidth()
                             )
                         } else if (media.mediaType.isUnknown || media.mediaType.isPdf) {
                             MessageFile(
@@ -113,6 +112,7 @@ fun ChatCard(
 
                         ReceivedPaidMessageButton(
                             chatMessage,
+                            chatViewModel,
                             modifier = Modifier.width(
                                 maxOf(rowWidth, 250.dp)
                             )
@@ -197,26 +197,28 @@ fun MessageTextLabel(
         )
     } else if (chatMessage.message.isPaidTextMessage) {
 
-        if (chatMessage.isSent && chatMessage.message.messageMedia?.localFile == null) {
+        if (!chatMessage.message.isPaidPendingMessage) {
             val message = chatMessage.message
             val messageMedia = message.messageMedia
 
             LaunchedEffect(messageMedia?.url?.value ?: "") {
-                if (messageMedia?.localFile == null) {
-                    chatViewModel.downloadFileMedia(message, chatMessage.isSent)
-                }
+                chatViewModel.downloadFileMedia(message, chatMessage.isSent)
             }
+        }
+
+        val text = if (chatMessage.isReceived && chatMessage.message.isPaidPendingMessage) {
+            "PAY LO UNLOCK MESSAGE"
+        } else if (chatMessage.isReceived && !chatMessage.message.isPurchaseSucceeded) {
+            "ERROR LOADING MESSAGE"
+        } else {
+            "Loading message..."
         }
 
         Text(
             modifier = Modifier
                 .wrapContentWidth(Alignment.Start)
                 .padding(12.dp, topPadding, 12.dp, 12.dp),
-            text = if (chatMessage.isReceived) {
-                "PAY LO UNLOCK MESSAGE"
-            } else {
-                "Loading message..."
-            },
+            text = text,
             fontWeight = FontWeight.W300,
             fontFamily = Roboto,
             fontSize = 14.sp,

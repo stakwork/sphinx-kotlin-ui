@@ -422,6 +422,30 @@ abstract class ChatViewModel(
         }
     }
 
+    private var payAttachmentJob: Job? = null
+    fun payAttachment(message: Message) {
+        if (payAttachmentJob?.isActive == true) {
+            return
+        }
+
+        payAttachmentJob = scope.launch(dispatchers.mainImmediate) {
+
+            Exhaustive@
+            when (val response = messageRepository.payAttachment(message)) {
+                is Response.Error -> {
+//                    submitSideEffect(ChatSideEffect.Notify(response.cause.message))
+                }
+                is Response.Success -> {
+                    delay(100L)
+                }
+            }
+        }
+
+//        scope.launch(dispatchers.mainImmediate) {
+//            submitSideEffect(sideEffect)
+//        }
+    }
+
     fun downloadFileMedia(message: Message, sent: Boolean) {
         repositoryMedia.downloadMediaIfApplicable(message, sent)
     }

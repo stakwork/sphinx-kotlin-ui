@@ -36,12 +36,6 @@ fun MessageFile(
     val localFilepath = messageMedia?.localFile
     val url = messageMedia?.url?.value ?: ""
 
-    LaunchedEffect(url) {
-        if (localFilepath == null) {
-            chatViewModel.downloadFileMedia(message, chatMessage.isSent)
-        }
-    }
-
     val topPadding = if (chatMessage.message.isPaidMessage && chatMessage.isSent) 44.dp else 12.dp
 
     Column(modifier = Modifier.padding(12.dp, topPadding, 12.dp, 12.dp) ) {
@@ -55,6 +49,10 @@ fun MessageFile(
             PaidPendingFile()
         } else {
             LoadingFile()
+
+            LaunchedEffect(url) {
+                chatViewModel.downloadFileMedia(message, chatMessage.isSent)
+            }
         }
     }
 }

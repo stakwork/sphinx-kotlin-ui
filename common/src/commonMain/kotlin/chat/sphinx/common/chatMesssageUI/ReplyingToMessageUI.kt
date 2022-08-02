@@ -51,7 +51,7 @@ fun ReplyingToMessageUI(
                     .background(color),
             )
             replyMessage.retrieveUrlAndMessageMedia()?.second?.let { media ->
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(5.dp))
 
                 if (media.mediaType.isImage) {
                     MessageMediaImage(
@@ -71,7 +71,7 @@ fun ReplyingToMessageUI(
             }
             Column(
                 modifier = Modifier.padding(
-                    start = 10.dp
+                    start = 5.dp
                 ),
                 verticalArrangement = Arrangement.Center
             ) {
