@@ -1,5 +1,6 @@
 package chat.sphinx.common.viewmodel.chat
 
+import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
@@ -10,6 +11,7 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
+import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
@@ -30,6 +32,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import okio.Path
+import theme.primary_green
+import theme.primary_red
 import utils.deduceMediaType
 import utils.getRandomColorRes
 import java.io.IOException
@@ -414,7 +418,21 @@ abstract class ChatViewModel(
         }
         chatSharedFlow.replayCache.firstOrNull()?.let { chat ->
             toggleChatMutedJob = scope.launch(dispatchers.mainImmediate) {
-                chatRepository.toggleChatMuted(chat)
+                Exhaustive@
+                when (val response = chatRepository.toggleChatMuted(chat)) {
+                    is Response.Error -> {
+                        toast(response.cause.message, color = primary_red)
+                        delay(2_000)
+                    }
+                    is Response.Success -> {
+                        if (response.value) {
+                            toast(
+                                message = "Chat is now muted. You won\'t get push notifications\nfor incoming messages on this chat",
+                                delay = 3000L
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -437,25 +455,49 @@ abstract class ChatViewModel(
             return
         }
 
-        payAttachmentJob = scope.launch(dispatchers.mainImmediate) {
+        confirm(
+            "Confirm Purchase",
+            "Are you sure you want to purchase this item?"
+        ) {
+            payAttachmentJob = scope.launch(dispatchers.mainImmediate) {
 
-            Exhaustive@
-            when (val response = messageRepository.payAttachment(message)) {
-                is Response.Error -> {
-//                    submitSideEffect(ChatSideEffect.Notify(response.cause.message))
-                }
-                is Response.Success -> {
-                    delay(100L)
+                Exhaustive@
+                when (val response = messageRepository.payAttachment(message)) {
+                    is Response.Error -> {
+                        toast(response.cause.message, color = primary_red)
+                    }
+                    is Response.Success -> {}
                 }
             }
         }
-
-//        scope.launch(dispatchers.mainImmediate) {
-//            submitSideEffect(sideEffect)
-//        }
     }
 
     fun downloadFileMedia(message: Message, sent: Boolean) {
         repositoryMedia.downloadMediaIfApplicable(message, sent)
+    }
+
+    private fun toast(
+        message: String,
+        color: Color = primary_green,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(message, color.value, delay)
+        }
+    }
+
+    private fun confirm(
+        title: String,
+        message: String,
+        callback: () -> Unit
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.confirmAlert(
+                "Sphinx",
+                title,
+                message,
+                callback
+            )
+        }
     }
 }

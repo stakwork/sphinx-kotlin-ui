@@ -14,7 +14,9 @@ import chat.sphinx.common.components.landing.ConnectingDialog
 import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.chat.FilePickerDialog
 import chat.sphinx.common.components.chat.FilePickerMode
+import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
@@ -117,6 +119,9 @@ fun main() = application {
 
                 AppTheme(useDarkTheme = true) {
                     Dashboard(sphinxState, dashboardViewModel)
+
+                    DesktopSphinxToast("Sphinx")
+                    DesktopSphinxConfirmAlert("Sphinx")
 
                     DesktopSphinxNotifications(
                         window,

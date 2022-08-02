@@ -32,6 +32,8 @@ import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.QRDetail
+import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.components.pin.ChangePin
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -61,12 +63,11 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
             onCloseRequest = {
                 dashboardViewModel.toggleProfileWindow(false)
             },
-            title = "Sphinx",
+            title = "Profile",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(420, 830)
             ),
-
             icon = sphinxIcon,
         ) {
             AppTheme {
@@ -129,6 +130,8 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                         saveButton(viewModel)
                     }
                 }
+                DesktopSphinxToast("Profile")
+                DesktopSphinxConfirmAlert("Profile")
             }
         }
     }

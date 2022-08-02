@@ -4,10 +4,8 @@ import Roboto
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -17,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
@@ -39,7 +36,6 @@ import java.awt.event.MouseMotionListener
 /**
  * This is a hack to have notifications on all platforms... Could possibly only use it for linux as the mac/windows notifications should work will.
  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DesktopSphinxNotifications(
     dashboardWindow: ComposeWindow,
@@ -112,7 +108,11 @@ fun DesktopSphinxNotifications(
                 sphinxReadingNotificationsListener
             )
 
-            Box(modifier = Modifier.fillMaxSize())
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Transparent)
+            )
             {
                 Column(
                     modifier = Modifier.align(Alignment.TopEnd)
@@ -121,6 +121,7 @@ fun DesktopSphinxNotifications(
                             end = 50.dp
                         )
                         .fillMaxWidth()
+                        .background(Color.Transparent)
                 ) {
                     notifications.forEach { notification ->
                         key(notification.key) {
