@@ -197,7 +197,7 @@ fun MessageTextLabel(
         )
     } else if (chatMessage.message.isPaidTextMessage) {
 
-        if (!chatMessage.message.isPaidPendingMessage) {
+        if (!chatMessage.message.isPaidPendingMessage || chatMessage.isSent) {
             val message = chatMessage.message
             val messageMedia = message.messageMedia
 
