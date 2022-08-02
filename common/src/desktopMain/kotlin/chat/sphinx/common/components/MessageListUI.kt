@@ -71,9 +71,11 @@ fun ChatMessagesList(
         contentPadding = PaddingValues(8.dp)
     ) {
 
-        chatViewModel.onSendMessageCallback = {
+        chatViewModel.onNewMessageCallback = {
             scope.launch {
-                listState.scrollToItem(0)
+                if (listState.firstVisibleItemIndex <= 1) {
+                    listState.scrollToItem(0)
+                }
             }
         }
 
