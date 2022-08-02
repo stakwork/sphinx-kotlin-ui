@@ -109,7 +109,7 @@ fun ChatMessageUI(
                                     ChatCard(
                                         chatMessage,
                                         chatViewModel,
-                                        modifier = if (chatMessage.message.isMediaAttachmentAvailable) {
+                                        modifier = if (chatMessage.message.isAttachmentAvailable) {
                                             Modifier.fillMaxWidth(0.5f)
                                         } else {
                                             Modifier.weight(1f, fill = false)
