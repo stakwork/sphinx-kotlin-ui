@@ -11,8 +11,10 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Help
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,6 +38,7 @@ import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
+import com.example.compose.badge_red
 
 @Composable
 actual fun TribeDetailView() {
@@ -78,7 +81,7 @@ actual fun TribeDetailView() {
                     Icon(
                         Icons.Outlined.Help,
                         contentDescription = null,
-                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(12.dp)
                     )
                 }
@@ -96,7 +99,7 @@ actual fun TribeDetailView() {
 }
 
 @Composable
-private fun TribeTextField(placeholder: String, value: String, onTextChange: (String) -> Unit) {
+fun TribeTextField(placeholder: String, value: String, onTextChange: (String) -> Unit) {
     Column(modifier = Modifier.padding(8.dp)) {
         androidx.compose.material.Text(
             text = placeholder,
@@ -109,13 +112,13 @@ private fun TribeTextField(placeholder: String, value: String, onTextChange: (St
             onValueChange = {
                 onTextChange(it)
             },
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             textStyle = TextStyle(fontSize = 16.sp, color = Color.White, fontFamily = Roboto),
             singleLine = true,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
 
         )
-        Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = MaterialTheme.colorScheme.onBackground)
+        Divider(modifier = Modifier.fillMaxWidth().padding(top = 6.dp), color = MaterialTheme.colorScheme.onBackground)
     }
 }
 
@@ -124,7 +127,7 @@ fun TopHeader() {
     val showOptionMenu = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+//        horizontalArrangement = Arrangement.Center
     ) {
         Column {
             Spacer(modifier = Modifier.height(5.dp))
@@ -135,20 +138,22 @@ fun TopHeader() {
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
-        Column() {
+        Column {
             Text(
                 "Tom Podcast",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.W600,
                 color = MaterialTheme.colorScheme.tertiary
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("Created on Wed Jun 01 06:35", color = MaterialTheme.colorScheme.onBackground, fontSize = 10.sp)
-            Text(
-                "Price per message: 0 sat -  Amount to stake: 0 sat",
-                color = MaterialTheme.colorScheme.tertiary,
-                fontSize = 9.sp
-            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Column {
+                Text("Created on Wed Jun 01 06:35", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp)
+                Text(
+                    "Price per message: 0 sat -  Amount to stake: 0 sat",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontSize = 10.sp
+                )
+            }
         }
 
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
@@ -164,21 +169,38 @@ fun TopHeader() {
                     RoundedCornerShape(16.dp)
                 )
             ) {
+                Spacer(modifier = Modifier.height(4.dp))
                 DropdownMenuItem(
-                    modifier = Modifier.height(30.dp).width(150.dp).clip(RoundedCornerShape(8.dp)),
+                    modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                     onClick = {
                     }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            Icons.Default.ExitToApp,
+                            Icons.Default.Share,
                             contentDescription = "",
-                            tint = MaterialTheme.colorScheme.tertiary
+                            tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Exit Tribe", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Share tribe QR Code", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                    }
+                }
+                Divider(color = MaterialTheme.colorScheme.onBackground)
+                DropdownMenuItem(
+                    modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
+                    onClick = {
+                    }) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "",
+                            tint = badge_red, modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Delete Tribe", color =badge_red, fontSize = 12.sp)
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(2.dp))
         }
     }
 }

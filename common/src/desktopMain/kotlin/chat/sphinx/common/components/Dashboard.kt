@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -246,7 +247,8 @@ fun SphinxChatDetailTopAppBar(
                 openTribeDetailView.value=true
             }){
                 if(openTribeDetailView.value)
-                    TribeDetailView()
+//                    TribeDetailView()
+                    JoinTribeView()
                 Row {
                     Text(
                         text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
