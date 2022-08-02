@@ -116,7 +116,6 @@ class ProfileViewModel {
             }
 
             serversUrls.setMeetingServer(profileState.meetingServerUrl)
-            updateProfilePic()
         }
     }
 
@@ -133,12 +132,16 @@ class ProfileViewModel {
     private fun toPrivatePhotoBoolean(privatePhoto: Int?) : Boolean = privatePhoto == 1
 
     fun onProfilePictureChanged(filepath: Path) {
-            profileState.profilePicture.value = AttachmentInfo(
+        val ext = filepath.toFile().extension
+        val mediaType = MediaType.Image(MediaType.IMAGE + "/$ext")
+
+        profileState.profilePicture.value = AttachmentInfo(
             filePath = filepath,
-            mediaType = MediaType.Image(filepath.toString()),
+            mediaType = mediaType,
             fileName = filepath.name.toFileName(),
             isLocalFile = true
         )
+        updateProfilePic()
     }
 
     private fun updateProfilePic() {
