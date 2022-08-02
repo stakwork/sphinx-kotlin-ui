@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.ProfileState
+import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
@@ -14,10 +15,15 @@ import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.PrivatePhoto
 import chat.sphinx.wrapper.contact.toPrivatePhoto
 import chat.sphinx.wrapper.message.SphinxCallLink
+import chat.sphinx.wrapper.message.media.MediaType
+import chat.sphinx.wrapper.message.media.toFileName
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import com.russhwolf.settings.Settings
+import okio.Path
+import okio.source
+import utils.deduceMediaType
 
 class ProfileViewModel {
 
@@ -25,6 +31,7 @@ class ProfileViewModel {
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val relayDataHandler = SphinxContainer.networkModule.relayDataHandlerImpl
     private val serversUrls = ServersUrlsHelper()
+
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -109,6 +116,7 @@ class ProfileViewModel {
             }
 
             serversUrls.setMeetingServer(profileState.meetingServerUrl)
+            updateProfilePic()
         }
     }
 
@@ -123,5 +131,29 @@ class ProfileViewModel {
     }
 
     private fun toPrivatePhotoBoolean(privatePhoto: Int?) : Boolean = privatePhoto == 1
+
+    fun onProfilePictureChanged(filepath: Path) {
+            profileState.profilePicture.value = AttachmentInfo(
+            filePath = filepath,
+            mediaType = MediaType.Image(filepath.toString()),
+            fileName = filepath.name.toFileName(),
+            isLocalFile = true
+        )
+    }
+
+    private fun updateProfilePic() {
+        scope.launch(dispatchers.mainImmediate){
+            profileState.profilePicture.value?.apply {
+                contactRepository.updateProfilePic(
+                    source = filePath.toFile().source(),
+                    mediaType = mediaType,
+                    fileName = fileName?.value ?: "unknown",
+                    contentLength = null
+                ).let {
+                    val response = it
+                }
+            }
+        }
+    }
 
 }

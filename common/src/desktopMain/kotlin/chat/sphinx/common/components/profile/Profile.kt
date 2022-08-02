@@ -34,6 +34,7 @@ import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.pin.ChangePin
 import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.ResetPinViewModel
@@ -46,8 +47,13 @@ import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.lightning.asFormattedString
+import chat.sphinx.wrapper.message.media.MediaType
+import chat.sphinx.wrapper.message.media.isImage
 import com.example.compose.AppTheme
 import com.example.compose.badge_red
+import kotlinx.coroutines.launch
+import chat.sphinx.wrapper.message.media.toMediaType
+import okio.source
 
 @Composable
 fun Profile(dashboardViewModel: DashboardViewModel) {
@@ -55,6 +61,7 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
     val viewModel = remember { ProfileViewModel() }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
     var isOpen by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
 
     if (isOpen) {
         Window(
@@ -87,6 +94,15 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                                 modifier = Modifier
                                     .size(60.dp)
                                     .clip(CircleShape)
+                                    .clickable {
+                                        scope.launch {
+                                            ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                                viewModel.onProfilePictureChanged(path)
+
+                                            }
+
+                                        }
+                                    }
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(verticalArrangement = Arrangement.Center) {
