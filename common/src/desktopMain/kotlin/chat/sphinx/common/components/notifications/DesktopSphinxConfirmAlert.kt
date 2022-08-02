@@ -34,7 +34,7 @@ import theme.primary_green
 @Composable
 fun DesktopSphinxConfirmAlert(windowTitle: String) {
     when (val value = alert.value) {
-        is AlertConfirm -> {
+        is SphinxAlertConfirm -> {
             if (value.windowTitle == windowTitle) {
                 Box(
                     modifier = Modifier

@@ -482,7 +482,12 @@ abstract class ChatViewModel(
         delay: Long = 2000L
     ) {
         scope.launch(dispatchers.mainImmediate) {
-            sphinxNotificationManager.toast(message, color.value, delay)
+            sphinxNotificationManager.toast(
+                "Sphinx",
+                message,
+                color.value,
+                delay
+            )
         }
     }
 

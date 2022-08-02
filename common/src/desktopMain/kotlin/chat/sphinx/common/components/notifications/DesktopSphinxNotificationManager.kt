@@ -26,9 +26,8 @@ object DesktopSphinxNotificationManager: SphinxNotificationManager {
         )
     }
 
-    override fun clearNotification(notificationId: Int) {
-        notifications.clear()
-        // TODO: implement clear notification functionality for desktop
+    override fun clearNotification(notificationId: Long) {
+        notifications.remove(notificationId)
     }
 
     override suspend fun toast(
