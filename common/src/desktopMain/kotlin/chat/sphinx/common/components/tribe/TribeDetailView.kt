@@ -50,7 +50,6 @@ actual fun TribeDetailView() {
             position = WindowPosition.Aligned(Alignment.Center),
             size = getPreferredWindowSize(400, 500)
         ),
-//        icon = sphinxIcon,
     ) {
         Column(
             modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant).padding(16.dp)

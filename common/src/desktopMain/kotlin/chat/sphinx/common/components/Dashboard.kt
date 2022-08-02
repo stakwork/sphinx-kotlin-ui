@@ -247,8 +247,8 @@ fun SphinxChatDetailTopAppBar(
                 openTribeDetailView.value=true
             }){
                 if(openTribeDetailView.value)
-//                    TribeDetailView()
-                    JoinTribeView()
+                    TribeDetailView()
+//                    JoinTribeView()
                 Row {
                     Text(
                         text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
