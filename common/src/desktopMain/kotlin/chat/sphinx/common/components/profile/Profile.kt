@@ -89,21 +89,32 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(24.dp)
                         ) {
-                            PhotoUrlImage(
-                                photoUrl = viewModel.profileState.photoUrl,
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        scope.launch {
-                                            ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
-                                                viewModel.onProfilePictureChanged(path)
+                            if(viewModel.profileState.profilePictureResponse is LoadResponse.Loading){
+
+                                CircularProgressIndicator(
+                                    Modifier.padding(vertical = 8.dp).size(60.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            }
+                            else {
+                                PhotoUrlImage(
+                                    photoUrl = viewModel.profileState.photoUrl,
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            scope.launch {
+                                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                                    viewModel.onProfilePictureChanged(path)
+
+                                                }
 
                                             }
-
                                         }
-                                    }
-                            )
+                                )
+                            }
+
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(verticalArrangement = Arrangement.Center) {
                                 Text(
@@ -133,9 +144,9 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                                         fontSize = 14.sp
                                     )
                                 }
-
                             }
                         }
+
                         Row(
                             modifier = Modifier
                                 .weight(1f)

@@ -9,21 +9,15 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.ServersUrlsHelper
-import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
-import chat.sphinx.wrapper.contact.PrivatePhoto
 import chat.sphinx.wrapper.contact.toPrivatePhoto
-import chat.sphinx.wrapper.message.SphinxCallLink
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
-import com.russhwolf.settings.Settings
 import okio.Path
-import okio.source
-import utils.deduceMediaType
+import kotlinx.coroutines.flow.collect
 
 class ProfileViewModel {
 
@@ -135,6 +129,12 @@ class ProfileViewModel {
         val ext = filepath.toFile().extension
         val mediaType = MediaType.Image(MediaType.IMAGE + "/$ext")
 
+        setProfileState {
+            copy(
+                profilePictureResponse = LoadResponse.Loading
+            )
+        }
+
         profileState.profilePicture.value = AttachmentInfo(
             filePath = filepath,
             mediaType = mediaType,
@@ -148,12 +148,16 @@ class ProfileViewModel {
         scope.launch(dispatchers.mainImmediate){
             profileState.profilePicture.value?.apply {
                 contactRepository.updateProfilePic(
-                    source = filePath.toFile().source(),
+                    path = filePath,
                     mediaType = mediaType,
                     fileName = fileName?.value ?: "unknown",
                     contentLength = null
-                ).let {
-                    val response = it
+                ).let { response ->
+                    setProfileState {
+                        copy(
+                            profilePictureResponse = response
+                        )
+                    }
                 }
             }
         }

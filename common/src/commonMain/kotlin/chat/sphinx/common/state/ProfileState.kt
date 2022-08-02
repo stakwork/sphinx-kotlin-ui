@@ -18,5 +18,6 @@ data class ProfileState(
    val meetingServerUrl: String = "",
    val saveButtonEnabled: Boolean = false,
    val status: LoadResponse<Any, ResponseError>? = null,
-   val profilePicture: MutableState<AttachmentInfo?> = mutableStateOf(null)
+   val profilePicture: MutableState<AttachmentInfo?> = mutableStateOf(null),
+   val profilePictureResponse: LoadResponse<Any, ResponseError>? = null
    )
