@@ -71,7 +71,9 @@ abstract class ChatViewModel(
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
     private var messagesLoadJob: Job? = null
 
-    var onSendMessageCallback: (() -> Unit)? = null
+    var onNewMessageCallback: (() -> Unit)? = null
+    private var messagesSize: Int = 0
+
 
     init {
         messagesLoadJob = scope.launch(dispatchers.mainImmediate) {
@@ -154,6 +156,13 @@ abstract class ChatViewModel(
                 chatMessages
             )
         )
+
+        if (messagesSize != messages.size) {
+            messagesSize = messages.size
+
+            delay(200L)
+            onNewMessageCallback?.invoke()
+        }
     }
 
     private suspend fun getColorsMapFor(
@@ -382,8 +391,8 @@ abstract class ChatViewModel(
                         initialState()
                     }
 
-                    delay(500L)
-                    onSendMessageCallback?.invoke()
+                    delay(200L)
+                    onNewMessageCallback?.invoke()
                 }
             }
         }
