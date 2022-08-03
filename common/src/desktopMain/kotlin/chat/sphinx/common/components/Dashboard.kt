@@ -222,7 +222,7 @@ fun SphinxChatDetailTopAppBar(
                         text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
                         modifier = Modifier.clickable {
                             if (dashboardChat.isTribe()) {
-                                // Open TribeDetailView()
+                                dashboardViewModel?.toggleTribeDetailWindow(true)
                             } else {
                                 dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact(contactId))
                             }

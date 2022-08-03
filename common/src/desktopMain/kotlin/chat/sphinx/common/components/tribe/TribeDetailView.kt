@@ -36,14 +36,17 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.OptionItem
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.chat.KebabMenu
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
 import com.example.compose.badge_red
 
 @Composable
-actual fun TribeDetailView() {
+actual fun TribeDetailView(dashboardViewModel: DashboardViewModel) {
     Window(
-        onCloseRequest = {},
+        onCloseRequest = {
+            dashboardViewModel.toggleTribeDetailWindow(false)
+        },
         title = "Sphinx",
 
         state = WindowState(

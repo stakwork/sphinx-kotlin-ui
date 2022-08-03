@@ -4,7 +4,6 @@ import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardScreenState
 import chat.sphinx.concepts.socket_io.SocketIOManager
-import chat.sphinx.concepts.socket_io.SocketIOState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -45,6 +44,17 @@ class DashboardViewModel: WindowFocusListener {
 
     fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
         _contactWindowStateFlow.value = Pair(open, screen)
+    }
+
+    private val _tribeDetailWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val tribeDetailStateFlow: StateFlow<Boolean>
+        get() = _tribeDetailWindowStateFlow.asStateFlow()
+
+    fun toggleTribeDetailWindow(open: Boolean) {
+        _tribeDetailWindowStateFlow.value = open
     }
 
     private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {
