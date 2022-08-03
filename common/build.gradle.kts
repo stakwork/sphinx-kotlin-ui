@@ -69,8 +69,6 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 api(compose.desktop.components.splitPane)
 
-                // https://mvnrepository.com/artifact/me.friwi/jcefmaven
-                implementation("me.friwi:jcefmaven:100.0.14.3")
                 implementation(project(":javafx-web-view"))
             }
         }

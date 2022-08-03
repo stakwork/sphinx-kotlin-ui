@@ -6,12 +6,10 @@ import java.net.URL
 
 @Composable
 actual fun SphinxWebView(url: URL) {
-//    WebView(url)
     JavaFXWebView(url)
 }
 
 @Composable
 actual fun SphinxWebView(htmlContent: String) {
-//    WebView(htmlContent)
     JavaFXWebView(htmlContent)
 }
