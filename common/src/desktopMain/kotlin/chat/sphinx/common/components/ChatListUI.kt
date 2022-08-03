@@ -26,9 +26,10 @@ import utils.AnimatedContainer
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
-fun ChatListUI() {
+fun ChatListUI(
+    chatListViewModel: ChatListViewModel
+) {
     val listState = rememberLazyListState()
-    val chatListViewModel = remember { ChatListViewModel() }
 
     Box {
         when (val chatListData = ChatListState.screenState()) {

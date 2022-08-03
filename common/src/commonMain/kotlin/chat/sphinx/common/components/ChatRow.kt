@@ -1,3 +1,4 @@
+
 package chat.sphinx.common.components
 
 import Roboto
@@ -226,19 +227,22 @@ fun ChatRow(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
 
+                            val unseenCountState = dashboardChat.unseenMessageFlow?.collectAsState(0)
+                            val isUnseen = (dashboardChat.hasUnseenMessages() || unseenCountState?.value ?: 0 > 0)
+
                             Text(
                                 text = lastMessage,
                                 fontSize = 13.sp,
-                                fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W700 else FontWeight.W400,
+                                fontWeight = if (isUnseen) FontWeight.W700 else FontWeight.W400,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f),
-                                color = if (dashboardChat.hasUnseenMessages())
+                                color = if (isUnseen)
                                     androidx.compose.material3.MaterialTheme.colorScheme.tertiary else
                                     androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                             )
 
-                            dashboardChat.unseenMessageFlow?.collectAsState(0)?.let {
+                            unseenCountState?.let {
                                 if (it.value != 0L) MessageCount(it.value.toString())
                             }
                         }

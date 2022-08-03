@@ -1,6 +1,7 @@
 package chat.sphinx.common.chatMesssageUI
 
 import Roboto
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -9,6 +10,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,6 +27,8 @@ fun ChatMessageUI(
     chatViewModel: ChatViewModel
 ) {
     print("rebuilding ${chatMessage.message.id}")
+
+    val bubbleColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary
 
     Column(modifier = Modifier.padding(8.dp)) {
         Row(
@@ -58,7 +63,6 @@ fun ChatMessageUI(
                     verticalArrangement = Arrangement.Top,
                 ) {
                     if (chatMessage.message.type.isGroupAction()) {
-                        // If any joined tribe will show below text
                         TribeHeaderMessage(chatMessage)
                     } else {
                         Row(
@@ -66,16 +70,13 @@ fun ChatMessageUI(
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            DisplayConditionalIcons(chatMessage) // display icons according to different conditions
+                            DisplayConditionalIcons(chatMessage)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.Top,
                         ) {
-                            if (chatMessage.isSent) {
-                                ChatOptionMenu(chatMessage, chatViewModel)
-                            }
                             when {
                                 (chatMessage.isDeleted || chatMessage.isFlagged) -> {
                                     val text = if (chatMessage.isDeleted) {
@@ -98,13 +99,13 @@ fun ChatMessageUI(
                                         )
                                     }
                                 }
-                                chatMessage.message.isSphinxCallLink -> {
-                                    JitsiAudioVideoCall(chatMessage, chatViewModel)
-                                }
-                                chatMessage.message.type == MessageType.DirectPayment -> {
-                                    DirectPaymentUI(chatMessage, chatViewModel)
-                                }
                                 else -> {
+                                    if (chatMessage.isSent) {
+                                        ChatOptionMenu(chatMessage, chatViewModel)
+                                    }
+                                    if (chatMessage.isReceived) {
+                                        BubbleArrow(false, bubbleColor)
+                                    }
                                     ChatCard(
                                         chatMessage,
                                         chatViewModel,
@@ -114,10 +115,13 @@ fun ChatMessageUI(
                                             Modifier.weight(1f, fill = false)
                                         }
                                     )
+                                    if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
+                                        ChatOptionMenu(chatMessage, chatViewModel)
+                                    }
+                                    if (chatMessage.isSent) {
+                                        BubbleArrow(true, bubbleColor)
+                                    }
                                 }
-                            }
-                            if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
-                                ChatOptionMenu(chatMessage, chatViewModel)
                             }
                         }
                     }
@@ -125,6 +129,37 @@ fun ChatMessageUI(
             }
         }
     }
+}
+
+@Composable
+fun BubbleArrow(
+    sent: Boolean,
+    color: Color,
+) {
+    val density = LocalDensity.current
+    val width = with(density) { 5.dp.roundToPx() }.toFloat()
+    val height = with(density) { 7.dp.roundToPx() }.toFloat()
+
+    Canvas(modifier = Modifier.width(5.dp).height(7.dp), onDraw = {
+        drawPath(
+            color = color,
+            path = if (sent) {
+                Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(width, 0f)
+                    lineTo(0f, height)
+                    lineTo(0f, 0f)
+                }
+            } else {
+                Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(width, 0f)
+                    lineTo(width, height)
+                    lineTo(0f, 0f)
+                }
+            }
+        )
+    })
 }
 
 
