@@ -216,18 +216,14 @@ fun SphinxChatDetailTopAppBar(
     TopAppBar(
         modifier = Modifier.height(60.dp),
         title = {
-            val openTribeDetailView= remember { mutableStateOf(false) }
-            Column (modifier = Modifier.clickable {
-                openTribeDetailView.value=true
-            }){
-                if(openTribeDetailView.value)
-                    TribeDetailView()
-//                    JoinTribeView()
+            Column {
                 Row {
                     Text(
                         text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
                         modifier = Modifier.clickable {
-                            if (dashboardChat.isTribe().not()) {
+                            if (dashboardChat.isTribe()) {
+                                // Open TribeDetailView()
+                            } else {
                                 dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact(contactId))
                             }
                         }

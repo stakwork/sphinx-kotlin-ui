@@ -224,7 +224,7 @@ fun Tabs() {
             }
             Card(
                 shape = RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp),
-                backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+                backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer
             ) {
                 Text(
                     tabTitles.get(1),
