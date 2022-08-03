@@ -22,5 +22,6 @@ rootProject.name = "sphinx-kotlin-ui"
 include(":android")
 include(":desktop")
 include(":common")
+include(":javafx-web-view")
 include(":sphinx-kotlin-core")
 

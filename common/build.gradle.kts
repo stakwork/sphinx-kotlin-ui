@@ -71,6 +71,7 @@ kotlin {
 
                 // https://mvnrepository.com/artifact/me.friwi/jcefmaven
                 implementation("me.friwi:jcefmaven:100.0.14.3")
+                implementation(project(":javafx-web-view"))
             }
         }
         val desktopTest by getting
