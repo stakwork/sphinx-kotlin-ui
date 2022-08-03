@@ -14,12 +14,14 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.utils.SphinxFonts
 import com.example.compose.primary_green
+import chat.sphinx.wrapper.message.toSphinxCallLink
 
 @Composable
 fun JitsiAudioVideoCall(
     chatMessage: ChatMessage
 ) {
     val uriHandler = LocalUriHandler.current
+    val sphinxCallLink = chatMessage.message.messageContentDecrypted?.value?.toSphinxCallLink()
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -42,8 +44,8 @@ fun JitsiAudioVideoCall(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                chatMessage.message.messageContentDecrypted?.value?.let { link ->
-                    uriHandler.openUri("$link#config.startAudioOnly=true")
+                sphinxCallLink?.audioCallLink?.let {
+                    uriHandler.openUri(it)
                 }
             },
             modifier = Modifier.fillMaxWidth(),
@@ -64,30 +66,32 @@ fun JitsiAudioVideoCall(
                 modifier = Modifier.size(17.dp)
             )
         }
-        Button(
-            onClick = {
-                chatMessage.message.messageContentDecrypted?.value?.let { link ->
-                    uriHandler.openUri(link)
+        if (sphinxCallLink?.startAudioOnly == false) {
+            Button(
+                onClick = {
+                    sphinxCallLink?.videoCallLink?.let {
+                        uriHandler.openUri(it)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(backgroundColor = primary_green)
+            ) {
+                Row {
+                    Spacer(modifier = Modifier.weight(1.0f))
+                    Text(
+                        "VIDEO",
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontFamily = SphinxFonts.montserratFamily,
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.weight(1.0f))
+                    Icon(
+                        Icons.Default.Videocam,
+                        contentDescription = "Video Call",
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(17.dp)
+                    )
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(backgroundColor = primary_green)
-        ) {
-            Row {
-                Spacer(modifier = Modifier.weight(1.0f))
-                Text(
-                    "VIDEO",
-                    color = MaterialTheme.colorScheme.tertiary,
-                    fontFamily = SphinxFonts.montserratFamily,
-                    fontSize = 12.sp
-                )
-                Spacer(modifier = Modifier.weight(1.0f))
-                Icon(
-                    Icons.Default.Videocam,
-                    contentDescription = "Video Call",
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(17.dp)
-                )
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
