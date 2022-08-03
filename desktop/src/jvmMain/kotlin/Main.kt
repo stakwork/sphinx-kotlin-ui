@@ -24,6 +24,8 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
+import signUp.PinAndNameView
+import signUp.WelcomeMessageView
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
 import java.awt.event.WindowStateListener
@@ -62,27 +64,30 @@ fun main() = application {
 //    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
-            Window(
-                onCloseRequest = ::exitApplication,
-                title = "Sphinx",
-                state = WindowState(
-                    position = WindowPosition.Aligned(Alignment.Center),
-                    size = getPreferredWindowSize(800, 500)
-                ),
-                undecorated = true,
-                icon = sphinxIcon,
-            ) {
-                AppTheme {
-                    SphinxSplash()
-                    LaunchedEffect(windowState) {
-                        delay(1000L)
-                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-                            ContentState.onContentReady(ScreenType.DashboardScreen)
-                        } else {
-                            ContentState.onContentReady(ScreenType.LandingScreen)
-                        }
-                    }
-                }
+//            Window(
+//                onCloseRequest = ::exitApplication,
+//                title = "Sphinx",
+//                state = WindowState(
+//                    position = WindowPosition.Aligned(Alignment.Center),
+//                    size = getPreferredWindowSize(800, 500)
+//                ),
+//                undecorated = true,
+//                icon = sphinxIcon,
+//            ) {
+//                AppTheme {
+//                    SphinxSplash()
+//                    LaunchedEffect(windowState) {
+//                        delay(1000L)
+//                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+//                            ContentState.onContentReady(ScreenType.DashboardScreen)
+//                        } else {
+//                            ContentState.onContentReady(ScreenType.LandingScreen)
+//                        }
+//                    }
+//                }
+//            }
+            AppTheme(useDarkTheme = true) {
+                WelcomeMessageView()
             }
         }
         ScreenType.DashboardScreen -> {
