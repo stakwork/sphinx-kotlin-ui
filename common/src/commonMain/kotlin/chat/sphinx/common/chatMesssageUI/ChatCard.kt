@@ -46,6 +46,7 @@ fun ChatCard(
     modifier: Modifier? = null,
 ) {
     val uriHandler = LocalUriHandler.current
+  
     val receiverCorner =
         RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
     val senderCorner =
@@ -167,7 +168,6 @@ fun ChatCard(
                                             //
                                             //                                }
                                         }
-
                                     }
                                 }
                                 if (chatMessage.showFailedContainer) {

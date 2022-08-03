@@ -3,6 +3,7 @@ package chat.sphinx.common.chatMesssageUI
 import Roboto
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +21,7 @@ import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
+import chat.sphinx.common.components.SendSatsPopUp
 
 @Composable
 fun ChatMessageUI(
@@ -31,6 +33,11 @@ fun ChatMessageUI(
     val bubbleColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary
 
     Column(modifier = Modifier.padding(8.dp)) {
+        val openSatsDialog= remember { mutableStateOf(false) }
+        if(openSatsDialog.value)
+            SendSatsPopUp {
+                openSatsDialog.value=false
+            }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start
@@ -45,7 +52,6 @@ fun ChatMessageUI(
                  * Show [ImageProfile] at the starting of chat message if
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
-
                 val showProfilePic = (
                     chatMessage.groupActionLabelText.isNullOrEmpty() &&
                     chatMessage.isReceived &&
