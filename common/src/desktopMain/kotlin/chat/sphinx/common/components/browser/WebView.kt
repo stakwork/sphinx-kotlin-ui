@@ -30,6 +30,9 @@ fun WebView(
             },
         factory = {
             cefBrowser.uiComponent
+        },
+        update = {
+            cefBrowser.uiComponent
         }
     )
 }

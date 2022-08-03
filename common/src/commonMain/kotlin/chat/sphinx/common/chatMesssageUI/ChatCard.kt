@@ -26,16 +26,15 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.CustomDivider
 import chat.sphinx.common.components.MessageFile
 import chat.sphinx.common.components.MessageMediaImage
+import chat.sphinx.common.components.browser.SphinxWebView
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
-import chat.sphinx.wrapper.message.MessageType
-import chat.sphinx.wrapper.message.isSphinxCallLink
+import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.message.media.isPdf
 import chat.sphinx.wrapper.message.media.isUnknown
-import chat.sphinx.wrapper.message.retrieveTextToShow
 import com.example.compose.badge_red
 import com.example.compose.light_divider
 
@@ -125,6 +124,18 @@ fun ChatCard(
                                         fontSize = 13.sp,
                                         color = badge_red
                                     )
+                                } else if (chatMessage.message.type.isBotRes()) {
+                                    chatMessage.message.retrieveBotResponseHtmlString()?.let { html ->
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth()
+                                                .height(80.dp)
+                                        ) {
+                                            SphinxWebView(
+                                                html
+                                            )
+                                        }
+
+                                    }
                                 } else {
                                     chatMessage.message.retrieveTextToShow()?.let { messageText ->
                                         Row(
