@@ -128,7 +128,7 @@ fun ChatCard(
                                     chatMessage.message.retrieveBotResponseHtmlString()?.let { html ->
                                         Column(
                                             modifier = Modifier.fillMaxWidth()
-                                                .height(80.dp)
+                                                .height(100.dp)
                                         ) {
                                             SphinxWebView(
                                                 html
