@@ -1,16 +1,17 @@
 package chat.sphinx.common.components.menu
 
+import Roboto
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.Gif
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,96 +32,197 @@ import androidx.compose.ui.window.DialogState
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.ImageFullScreen
+import chat.sphinx.common.components.chat.FilePreview
+import chat.sphinx.common.state.ContentState
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.CustomAlertDialogProvider
+import chat.sphinx.utils.SphinxFonts
+import chat.sphinx.wrapper.message.media.isImage
+import com.example.compose.badge_red
+import com.example.compose.light_divider
 import com.example.compose.sphinx_action_menu
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-actual fun ChatActionMenu(
-    showDialog: Boolean,
-    callBack: (ChatActionMenuEnums) -> Unit
+fun ChatAction(
+    chatViewModel: ChatViewModel?,
+    modifier: Modifier = Modifier
 ) {
-    if (showDialog)
-        AlertDialog(
-            onDismissRequest = {
-//            openDialog.value = false
-            },
-            dialogProvider = CustomAlertDialogProvider,
-
-            modifier = Modifier.padding(0.dp).height(150.dp).width(250.dp),
-//        contentColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(5),
-
-            backgroundColor = MaterialTheme.colorScheme.background,
-            text = {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight()
-                ) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Column(modifier = Modifier.clickable {
-                        callBack(ChatActionMenuEnums.REQUEST)
-                    }) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 12.dp, end = 12.dp)
-                        ) {
-                            Image(
-                                painter = imageResource(Res.drawable.ic_request),
-                                contentDescription = "receive",
-                                colorFilter = ColorFilter.tint(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary),
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                "Receive",
-                                color = MaterialTheme.colorScheme.tertiary,
-                                fontWeight = FontWeight.W600,
-                                fontSize = 16.sp
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Divider(color = MaterialTheme.colorScheme.onBackground)
+    chatViewModel?.let {
+        chatViewModel?.chatActionsStateFlow?.collectAsState()?.value?.let { chatActionsMode ->
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = modifier
+                    .clickable(
+                        onClick = {
+                            chatViewModel.toggleChatActionsPopup(null)
+                        },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    )
+                    .fillMaxSize()
+                    .background(color = Color.Black.copy(0.4f))
+            ) {
+                when (chatActionsMode) {
+                    ChatViewModel.ChatActionsMode.MENU -> {
+                        ChatActionMenu(chatViewModel)
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Column(modifier = Modifier.clickable {
-                        callBack(ChatActionMenuEnums.SEND)
-                    }) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().padding(12.dp)
-                        ) {
-                            Image(
-                                painter = imageResource(Res.drawable.ic_send),
-                                contentDescription = "Sphinx Logo",
-                                colorFilter = ColorFilter.tint(color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary),
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                "Send",
-                                color = MaterialTheme.colorScheme.tertiary,
-                                fontWeight = FontWeight.W600,
-                                fontSize = 16.sp
-                            )
-                        }
-//                Spacer(modifier = Modifier.height(8.dp))
-                        Divider(color = MaterialTheme.colorScheme.onBackground)
+                    ChatViewModel.ChatActionsMode.REQUEST -> {
+
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("CANCEL",
+                    ChatViewModel.ChatActionsMode.SEND_AMOUNT -> {
 
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.W600,
-                        fontSize = 12.sp,
-                        modifier = Modifier.fillMaxWidth().clickable { callBack(ChatActionMenuEnums.CANCEL) }, textAlign = TextAlign.Center)
+                    }
+                    ChatViewModel.ChatActionsMode.SEND_TEMPLATE -> {
 
+                    }
                 }
-            },
-            title = null,
+            }
+        }
+    }
+}
 
-            buttons = {}
-        )
+@Composable
+fun ChatActionMenu(
+    chatViewModel: ChatViewModel
+) {
+    val scope = rememberCoroutineScope()
+
+    Row(
+        modifier = Modifier
+            .width(300.dp)
+            .wrapContentHeight()
+            .background(
+                color = MaterialTheme.colorScheme.background,
+                shape = RoundedCornerShape(10)
+            )
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(30.dp, 10.dp, 20.dp, 0.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .clickable(
+                        onClick = {
+                            scope.launch {
+                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                    chatViewModel.toggleChatActionsPopup(null)
+                                    chatViewModel.onMessageFileChanged(path)
+                                }
+                            }
+                        },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    )
+            ) {
+                Icon(
+                    Icons.Default.AttachFile,
+                    "File",
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.width(24.dp)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    "File",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = Roboto,
+                    fontSize = 17.sp
+                )
+            }
+            Divider(color = light_divider, thickness = 0.5.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .clickable(
+                        onClick = {
+//                            chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.REQUEST)
+                        },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    )
+            ) {
+                Image(
+                    painter = imageResource(Res.drawable.ic_request),
+                    contentDescription = "receive",
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.tertiary),
+                    modifier = Modifier.size(18.dp).padding(1.dp)
+                )
+                Spacer(modifier = Modifier.width(22.dp))
+                Text(
+                    "Receive",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = Roboto,
+                    fontSize = 17.sp
+                )
+            }
+            Divider(color = light_divider, thickness = 0.5.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .clickable(
+                        onClick = {
+//                            chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.SEND_AMOUNT)
+                        },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    )
+            ) {
+                Image(
+                    painter = imageResource(Res.drawable.ic_send),
+                    contentDescription = "send",
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.tertiary),
+                    modifier = Modifier.size(18.dp).padding(1.dp)
+                )
+                Spacer(modifier = Modifier.width(22.dp))
+                Text(
+                    "Send",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = Roboto,
+                    fontSize = 17.sp
+                )
+            }
+            Divider(color = light_divider, thickness = 0.5.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
+                    .clickable(
+                        onClick = {
+                            chatViewModel.toggleChatActionsPopup(null)
+                        },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    )
+            ) {
+                Text(
+                    "CANCEL",
+                    color = badge_red,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = SphinxFonts.montserratFamily,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+        }
+    }
 }

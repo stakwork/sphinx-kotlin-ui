@@ -31,10 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.chat.AttachmentPreview
-import chat.sphinx.common.components.menu.ChatActionMenu
-import chat.sphinx.common.components.menu.ChatActionMenuEnums
+import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -130,6 +128,10 @@ actual fun Dashboard(
                             }
                         }
                         AttachmentPreview(
+                            chatViewModel,
+                            Modifier.padding(paddingValues)
+                        )
+                        ChatAction(
                             chatViewModel,
                             Modifier.padding(paddingValues)
                         )
@@ -327,6 +329,7 @@ fun SphinxChatDetailBottomAppBar(
     chatViewModel: ChatViewModel?
 ) {
     val scope = rememberCoroutineScope()
+
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
@@ -341,35 +344,11 @@ fun SphinxChatDetailBottomAppBar(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Spacer(modifier = Modifier.width(16.dp))
-//                IconButton(
-//                    onClick = {
-//                        scope.launch {
-//                            if (chatViewModel != null) run {
-//                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
-//                                    chatViewModel.onMessageFileChanged(path)
-//                                }
-//                            }
-//                        }
-//                    },
-//                    modifier = Modifier.clip(CircleShape)
-//                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-//                        .size(30.dp),
-//                ) {
-//                    Icon(
-//                        Icons.Default.Add,
-//                        contentDescription = "content description",
-//                        tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-//                        modifier = Modifier.size(21.dp)
-//                    )
-//                }
-                val clickState= remember { mutableStateOf(false) }
-                val showSendReceiveDialog= remember { mutableStateOf(false) }
                 IconButton(
                     onClick = {
-                        clickState.value = true
+                        chatViewModel?.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.MENU)
                     },
-                    modifier = Modifier
-                        .clip(CircleShape)
+                    modifier = Modifier.clip(CircleShape)
                         .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                         .size(30.dp),
                 ) {
@@ -379,35 +358,6 @@ fun SphinxChatDetailBottomAppBar(
                         tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.size(21.dp)
                     )
-                    val currentSelectedItem = remember { mutableStateOf<ChatActionMenuEnums?>(null) }
-                    if (clickState.value)
-                        ChatActionMenu(clickState.value) {
-                            currentSelectedItem.value = it
-                            showSendReceiveDialog.value = true
-                            clickState.value = false
-                        }
-
-                    when (currentSelectedItem.value) {
-                        ChatActionMenuEnums.REQUEST -> {
-                            if (showSendReceiveDialog.value) {
-                                SendReceiveSatsDialog(sendRequest = false) {
-                                    showSendReceiveDialog.value=false
-                                }
-                            }
-                        }
-                        ChatActionMenuEnums.SEND -> {
-                            if (showSendReceiveDialog.value) {
-                                SendReceiveSatsDialog {
-                                    showSendReceiveDialog.value = false
-                                }
-                            }
-                        }
-                        ChatActionMenuEnums.CANCEL -> {
-                            clickState.value = false
-                            currentSelectedItem.value = null
-                        }
-                        else -> {}
-                    }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 IconButton(onClick = {}, modifier = Modifier.height(25.dp).width(18.dp)) {

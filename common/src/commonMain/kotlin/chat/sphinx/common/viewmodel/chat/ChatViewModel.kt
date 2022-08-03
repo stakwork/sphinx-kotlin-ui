@@ -11,7 +11,6 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.UserColorsHelper
-import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
@@ -70,6 +69,21 @@ abstract class ChatViewModel(
 
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
     private var messagesLoadJob: Job? = null
+
+    enum class ChatActionsMode {
+        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE
+    }
+
+    private val _chatActionsStateFlow: MutableStateFlow<ChatActionsMode?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    val chatActionsStateFlow: StateFlow<ChatActionsMode?>
+        get() = _chatActionsStateFlow.asStateFlow()
+
+    fun toggleChatActionsPopup(mode: ChatActionsMode?) {
+        _chatActionsStateFlow.value = mode
+    }
 
     init {
         messagesLoadJob = scope.launch(dispatchers.mainImmediate) {
