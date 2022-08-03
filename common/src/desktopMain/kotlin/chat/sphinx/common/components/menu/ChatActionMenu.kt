@@ -33,6 +33,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.ImageFullScreen
+import chat.sphinx.common.components.SendReceiveAmountPopup
 import chat.sphinx.common.components.chat.FilePreview
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -70,10 +71,10 @@ fun ChatAction(
                         ChatActionMenu(chatViewModel)
                     }
                     ChatViewModel.ChatActionsMode.REQUEST -> {
-
+                        SendReceiveAmountPopup(chatViewModel)
                     }
                     ChatViewModel.ChatActionsMode.SEND_AMOUNT -> {
-
+                        SendReceiveAmountPopup(chatViewModel)
                     }
                     ChatViewModel.ChatActionsMode.SEND_TEMPLATE -> {
 
@@ -90,13 +91,13 @@ fun ChatActionMenu(
 ) {
     val scope = rememberCoroutineScope()
 
-    Row(
+    Box(
         modifier = Modifier
             .width(300.dp)
             .wrapContentHeight()
             .background(
                 color = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(10)
+                shape = RoundedCornerShape(10.dp)
             )
     ) {
         Column(
@@ -177,7 +178,7 @@ fun ChatActionMenu(
                     .height(55.dp)
                     .clickable(
                         onClick = {
-//                            chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.SEND_AMOUNT)
+                            chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.SEND_AMOUNT)
                         },
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }

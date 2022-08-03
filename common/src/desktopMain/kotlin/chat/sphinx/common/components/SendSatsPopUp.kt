@@ -31,7 +31,7 @@ import chat.sphinx.wrapper.PhotoUrl
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-actual fun SendSatsPopUp(onClose:()->Unit) {
+fun SendSatsPopUp(onClose:()->Unit) {
     AlertDialog(
         onDismissRequest = {
 //            openDialog.value = false
@@ -86,10 +86,10 @@ actual fun SendSatsPopUp(onClose:()->Unit) {
 
 
         }
-        if(sendPaymentDetails.value)
-            SendReceiveSatsDialog(sendRequest = true) {
-                sendPaymentDetails.value=false
-            }
+//        if(sendPaymentDetails.value)
+//            SendReceiveSatsDialog(sendRequest = true) {
+//                sendPaymentDetails.value=false
+//            }
     }, dismissButton = {}, confirmButton = {}
     )
 }
