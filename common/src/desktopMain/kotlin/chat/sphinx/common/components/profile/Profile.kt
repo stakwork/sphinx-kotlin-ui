@@ -54,6 +54,7 @@ import com.example.compose.badge_red
 import kotlinx.coroutines.launch
 import chat.sphinx.wrapper.message.media.toMediaType
 import okio.source
+import utils.deduceMediaType
 
 @Composable
 fun Profile(dashboardViewModel: DashboardViewModel) {
@@ -89,15 +90,13 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(24.dp)
                         ) {
-                            if(viewModel.profileState.profilePictureResponse is LoadResponse.Loading){
-
+                            if (viewModel.profileState.profilePictureResponse is LoadResponse.Loading) {
                                 CircularProgressIndicator(
-                                    Modifier.padding(vertical = 8.dp).size(60.dp),
+                                    Modifier.padding(10.dp).size(40.dp),
                                     color = Color.White,
                                     strokeWidth = 2.dp
                                 )
-                            }
-                            else {
+                            } else {
                                 PhotoUrlImage(
                                     photoUrl = viewModel.profileState.photoUrl,
                                     modifier = Modifier
@@ -106,10 +105,10 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                                         .clickable {
                                             scope.launch {
                                                 ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
-                                                    viewModel.onProfilePictureChanged(path)
-
+                                                    if (path.deduceMediaType().isImage) {
+                                                        viewModel.onProfilePictureChanged(path)
+                                                    }
                                                 }
-
                                             }
                                         }
                                 )
