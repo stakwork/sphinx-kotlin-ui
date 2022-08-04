@@ -21,7 +21,7 @@ import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
-import chat.sphinx.common.components.SendSatsPopUp
+import chat.sphinx.wrapper.chat.isTribe
 
 @Composable
 fun ChatMessageUI(
@@ -33,11 +33,6 @@ fun ChatMessageUI(
     val bubbleColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary
 
     Column(modifier = Modifier.padding(8.dp)) {
-        val openSatsDialog= remember { mutableStateOf(false) }
-        if(openSatsDialog.value)
-            SendSatsPopUp {
-                openSatsDialog.value=false
-            }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start
@@ -61,7 +56,14 @@ fun ChatMessageUI(
 
                 Box(modifier = Modifier.width(42.dp)) {
                     if (showProfilePic) {
-                        ImageProfile(chatMessage)
+                        ImageProfile(
+                            chatMessage,
+                            Modifier.clickable {
+                                if (chatMessage.chat.isTribe()) {
+                                    chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.SEND_TRIBE)
+                                }
+                            }
+                        )
                         Spacer(modifier = Modifier.width(12.dp).background(color = Color.Red))
                     }
                 }

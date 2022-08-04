@@ -34,6 +34,7 @@ import androidx.compose.ui.window.PopupPositionProvider
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.ImageFullScreen
 import chat.sphinx.common.components.SendReceiveAmountPopup
+import chat.sphinx.common.components.SendTribePaymentPopUp
 import chat.sphinx.common.components.chat.FilePreview
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -78,6 +79,9 @@ fun ChatAction(
                     }
                     ChatViewModel.ChatActionsMode.SEND_TEMPLATE -> {
 
+                    }
+                    ChatViewModel.ChatActionsMode.SEND_TRIBE -> {
+                        SendTribePaymentPopUp(chatViewModel)
                     }
                 }
             }

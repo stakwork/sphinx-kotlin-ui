@@ -71,7 +71,7 @@ abstract class ChatViewModel(
     private var messagesLoadJob: Job? = null
 
     enum class ChatActionsMode {
-        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE
+        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE
     }
 
     private val _chatActionsStateFlow: MutableStateFlow<ChatActionsMode?> by lazy {
