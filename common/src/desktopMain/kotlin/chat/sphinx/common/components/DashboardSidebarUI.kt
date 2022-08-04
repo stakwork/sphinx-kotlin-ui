@@ -178,8 +178,8 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 Profile(dashboardViewModel)
             }
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
-            if (tribeWindowState){
-                TribeDetailView(dashboardViewModel)
+            if (tribeWindowState.first){
+                TribeDetailView(dashboardViewModel, tribeWindowState.second!!)
             }
         }
     }

@@ -3,12 +3,14 @@ package chat.sphinx.common.viewmodel
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardScreenState
+import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
 import kotlinx.coroutines.Job
@@ -46,15 +48,15 @@ class DashboardViewModel: WindowFocusListener {
         _contactWindowStateFlow.value = Pair(open, screen)
     }
 
-    private val _tribeDetailWindowStateFlow: MutableStateFlow<Boolean> by lazy {
-        MutableStateFlow(false)
+    private val _tribeDetailWindowStateFlow: MutableStateFlow<Pair<Boolean, ChatId?>> by lazy {
+        MutableStateFlow(Pair(false, null))
     }
 
-    val tribeDetailStateFlow: StateFlow<Boolean>
+    val tribeDetailStateFlow: StateFlow<Pair<Boolean, ChatId?>>
         get() = _tribeDetailWindowStateFlow.asStateFlow()
 
-    fun toggleTribeDetailWindow(open: Boolean) {
-        _tribeDetailWindowStateFlow.value = open
+    fun toggleTribeDetailWindow(open: Boolean, chatId: ChatId?) {
+        _tribeDetailWindowStateFlow.value = Pair(open, chatId)
     }
 
     private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {

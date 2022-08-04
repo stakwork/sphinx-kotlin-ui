@@ -3,17 +3,13 @@ package chat.sphinx.common.components.tribe
 import Roboto
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
-import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Help
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,20 +27,24 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import chat.sphinx.common.Res
-import chat.sphinx.common.components.OptionItem
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.chat.TribeDetailViewModel
 import chat.sphinx.utils.getPreferredWindowSize
-import chat.sphinx.wrapper.PhotoUrl
+import chat.sphinx.wrapper.dashboard.ChatId
 import com.example.compose.badge_red
 
 @Composable
-actual fun TribeDetailView(dashboardViewModel: DashboardViewModel) {
+actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatId) {
+
+    val viewModel = remember { TribeDetailViewModel() }
+    viewModel.loadTribeDetail(chatId)
+
+
     Window(
         onCloseRequest = {
-            dashboardViewModel.toggleTribeDetailWindow(false)
+            dashboardViewModel.toggleTribeDetailWindow(false,  null)
         },
         title = "Sphinx",
 
@@ -58,14 +57,13 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel) {
             modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant).padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(10.dp))
-            TopHeader()
+            TopHeader(viewModel)
             Spacer(modifier = Modifier.height(16.dp))
-            TribeTextField("Alias", "Sachin") {}
+            TribeTextField("Alias", viewModel.tribeDetailState.userAlias) {}
             Box (){
-                TribeTextField("Profile Picture", "https://www.google.co.in") {}
+                TribeTextField("Profile Picture", viewModel.tribeDetailState.myPhotoUrl?.value ?: "") {}
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp)){
-                    PhotoUrlImage(
-                        PhotoUrl("https://picsum.photos/200/300"), modifier = Modifier
+                    PhotoUrlImage(photoUrl = viewModel.tribeDetailState.myPhotoUrl, modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape).align(Alignment.TopEnd)
                     )
@@ -125,7 +123,7 @@ fun TribeTextField(placeholder: String, value: String, onTextChange: (String) ->
 }
 
 @Composable
-fun TopHeader() {
+fun TopHeader(viewModel: TribeDetailViewModel) {
     val showOptionMenu = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -133,8 +131,7 @@ fun TopHeader() {
     ) {
         Column {
             Spacer(modifier = Modifier.height(5.dp))
-            PhotoUrlImage(
-                PhotoUrl("https://picsum.photos/200/300"), modifier = Modifier
+            PhotoUrlImage(photoUrl = viewModel.tribeDetailState.tribePhotoUrl, modifier = Modifier
                     .size(55.dp)
                     .clip(CircleShape)
             )
@@ -142,16 +139,16 @@ fun TopHeader() {
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
-                "Tom Podcast",
+                text = viewModel.tribeDetailState.tribeName,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.W600,
                 color = MaterialTheme.colorScheme.tertiary
             )
             Spacer(modifier = Modifier.height(2.dp))
             Column {
-                Text("Created on Wed Jun 01 06:35", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp)
+                Text(viewModel.tribeDetailState.createDate, color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp)
                 Text(
-                    "Price per message: 0 sat -  Amount to stake: 0 sat",
+                    viewModel.tribeDetailState.tribeConfigurations,
                     color = MaterialTheme.colorScheme.tertiary,
                     fontSize = 10.sp
                 )
