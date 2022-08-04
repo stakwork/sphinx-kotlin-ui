@@ -45,7 +45,6 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
     val viewModel = remember { TribeDetailViewModel() }
     viewModel.loadTribeDetail(chatId)
 
-
     Window(
         onCloseRequest = {
             dashboardViewModel.toggleTribeDetailWindow(false,  null)
