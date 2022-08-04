@@ -20,9 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
-import chat.sphinx.wrapper.PhotoUrl
-import com.example.compose.light_divider
-import com.example.compose.primary_red
+import theme.light_divider
+import theme.primary_red
 
 
 @Composable

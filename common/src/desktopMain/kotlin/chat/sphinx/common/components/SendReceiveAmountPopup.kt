@@ -10,8 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,10 +23,10 @@ import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
-import com.example.compose.badge_red
-import com.example.compose.light_divider
-import com.example.compose.place_holder_text
-import com.example.compose.primary_blue
+import theme.badge_red
+import theme.light_divider
+import theme.place_holder_text
+import theme.primary_blue
 
 
 @Composable
