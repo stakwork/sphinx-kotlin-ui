@@ -13,9 +13,12 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +34,8 @@ import chat.sphinx.wrapper.util.getInitials
 @Composable
 actual fun WelcomeMessageView() {
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
+    val hideCurrentWindow= remember { mutableStateOf(false) }
+    if(hideCurrentWindow.value.not())
     Window(
         onCloseRequest = {},
         title = "Sphinx",
@@ -65,28 +70,40 @@ actual fun WelcomeMessageView() {
                 Text("Welcome to Sphinx", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp,)
                 Column(modifier = Modifier.fillMaxHeight()) {
                     Spacer(modifier = Modifier.weight(1f))
-                    Box(modifier = Modifier.height(45.dp).width(200.dp)) {
-                        Button(
-                            shape = RoundedCornerShape(30.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
-                            modifier = Modifier.fillMaxWidth().height(40.dp),
-                            onClick = {
 
-                            }
-                        ) {
-                            androidx.compose.material.Text(
-                                text = "Get Started",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.tertiary,
-                                fontWeight = FontWeight.W400,
-                                fontFamily = Roboto
-                            )
+
+                            Button(
+                                shape = RoundedCornerShape(30.dp),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+                                modifier = Modifier.width(220.dp).height(40.dp),
+                                onClick = {
+                                    hideCurrentWindow.value=true
+                                }
+                            ) {
+                                 Row (verticalAlignment = Alignment.CenterVertically){
+//                                     Spacer(modifier = Modifier.weight(1f))
+                                     Box(modifier = Modifier.weight(0.7f), contentAlignment = Alignment.CenterEnd){
+                                         androidx.compose.material.Text(
+                                             text = "Get Started",
+                                             fontSize = 12.sp,
+                                             color = MaterialTheme.colorScheme.tertiary,
+                                             fontWeight = FontWeight.W400,
+                                             fontFamily = Roboto
+                                         )
+                                     }
+                                     Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.CenterEnd){
+                                         Icon(Icons.Default.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.align(Alignment.CenterEnd).size(14.dp))
+                                     }
+                                 }
+
                         }
-                        Icon(Icons.Default.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.align(Alignment.CenterEnd).size(18.dp).padding(end = 8.dp))
-                    }
+
+
                     Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
     }
+    if(hideCurrentWindow.value)
+        PinAndNameView()
 }

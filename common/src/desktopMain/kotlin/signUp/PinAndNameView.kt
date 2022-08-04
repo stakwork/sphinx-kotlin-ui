@@ -30,6 +30,8 @@ import chat.sphinx.utils.getPreferredWindowSize
 @Composable
 actual fun PinAndNameView() {
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
+    val hideCurrentWindow= remember { mutableStateOf(false) }
+    if(hideCurrentWindow.value.not())
     Window(
         onCloseRequest = {},
         title = "Sphinx",
@@ -92,7 +94,7 @@ actual fun PinAndNameView() {
                                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
                                 modifier = Modifier.fillMaxWidth().height(35.dp),
                                 onClick = {
-
+                                    hideCurrentWindow.value=true
                                 }
                             ) {
                                 androidx.compose.material.Text(
@@ -117,6 +119,8 @@ actual fun PinAndNameView() {
             }
         }
     }
+    if(hideCurrentWindow.value)
+        ProfileImageView()
 }
 
 @Composable

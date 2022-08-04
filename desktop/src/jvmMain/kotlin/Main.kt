@@ -25,6 +25,8 @@ import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
 import signUp.PinAndNameView
+import signUp.ProfileImageView
+import signUp.ReadyToUse
 import signUp.WelcomeMessageView
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
