@@ -37,7 +37,9 @@ import chat.sphinx.common.components.SendReceiveAmountPopup
 import chat.sphinx.common.components.SendTribePaymentPopUp
 import chat.sphinx.common.components.chat.FilePreview
 import chat.sphinx.common.state.ContentState
+import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.CustomAlertDialogProvider
 import chat.sphinx.utils.SphinxFonts
@@ -53,13 +55,13 @@ fun ChatAction(
     modifier: Modifier = Modifier
 ) {
     chatViewModel?.let {
-        chatViewModel?.chatActionsStateFlow?.collectAsState()?.value?.let { chatActionsMode ->
+        chatViewModel?.chatActionsStateFlow?.collectAsState()?.value?.let { state ->
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = modifier
                     .clickable(
                         onClick = {
-                            chatViewModel.toggleChatActionsPopup(null)
+                            chatViewModel.hideChatActionsPopup()
                         },
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
@@ -67,21 +69,32 @@ fun ChatAction(
                     .fillMaxSize()
                     .background(color = Color.Black.copy(0.4f))
             ) {
-                when (chatActionsMode) {
+                when (state.first) {
                     ChatViewModel.ChatActionsMode.MENU -> {
                         ChatActionMenu(chatViewModel)
                     }
-                    ChatViewModel.ChatActionsMode.REQUEST -> {
-                        SendReceiveAmountPopup(chatViewModel)
-                    }
                     ChatViewModel.ChatActionsMode.SEND_AMOUNT -> {
-                        SendReceiveAmountPopup(chatViewModel)
-                    }
-                    ChatViewModel.ChatActionsMode.SEND_TEMPLATE -> {
-
+                        state.second?.let { paymentData ->
+                            SendReceiveAmountPopup(
+                                chatViewModel, PaymentViewModel(chatViewModel, paymentData)
+                            )
+                        }
                     }
                     ChatViewModel.ChatActionsMode.SEND_TRIBE -> {
-                        SendTribePaymentPopUp(chatViewModel)
+                        state.second?.let { paymentData ->
+                            SendTribePaymentPopUp(
+                                chatViewModel, PaymentViewModel(chatViewModel, paymentData)
+                            )
+                        }
+                    }
+                    ChatViewModel.ChatActionsMode.REQUEST -> {
+                        //TODO implement request payment
+//                        SendReceiveAmountPopup(
+//                            chatViewModel
+//                        )
+                    }
+                    ChatViewModel.ChatActionsMode.SEND_TEMPLATE -> {
+                        //TODO implement payment template
                     }
                 }
             }
@@ -121,7 +134,7 @@ fun ChatActionMenu(
                         onClick = {
                             scope.launch {
                                 ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
-                                    chatViewModel.toggleChatActionsPopup(null)
+                                    chatViewModel.hideChatActionsPopup()
                                     chatViewModel.onMessageFileChanged(path)
                                 }
                             }
@@ -182,7 +195,13 @@ fun ChatActionMenu(
                     .height(55.dp)
                     .clickable(
                         onClick = {
-                            chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.SEND_AMOUNT)
+                            chatViewModel.toggleChatActionsPopup(
+                                ChatViewModel.ChatActionsMode.SEND_AMOUNT,
+                                PaymentViewModel.PaymentData(
+                                    chatViewModel.chatId,
+                                    (chatViewModel as? ChatContactViewModel)?.contactId
+                                )
+                            )
                         },
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
@@ -211,7 +230,7 @@ fun ChatActionMenu(
                     .height(55.dp)
                     .clickable(
                         onClick = {
-                            chatViewModel.toggleChatActionsPopup(null)
+                            chatViewModel.hideChatActionsPopup()
                         },
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
 import chat.sphinx.wrapper.chat.isTribe
@@ -60,7 +61,13 @@ fun ChatMessageUI(
                             chatMessage,
                             Modifier.clickable {
                                 if (chatMessage.chat.isTribe()) {
-                                    chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.SEND_TRIBE)
+                                    chatViewModel.toggleChatActionsPopup(
+                                        ChatViewModel.ChatActionsMode.SEND_TRIBE,
+                                        PaymentViewModel.PaymentData(
+                                            chatId = chatMessage.chat.id,
+                                            messageUUID = chatMessage.message.uuid
+                                        )
+                                    )
                                 }
                             }
                         )

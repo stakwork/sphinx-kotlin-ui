@@ -10,14 +10,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.PhotoUrl
 import com.example.compose.light_divider
 import com.example.compose.primary_red
@@ -25,7 +27,8 @@ import com.example.compose.primary_red
 
 @Composable
 fun SendTribePaymentPopUp(
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    paymentViewModel: PaymentViewModel
 ) {
     Box(
         modifier = Modifier
@@ -42,7 +45,7 @@ fun SendTribePaymentPopUp(
                 .size(60.dp)
                 .align(Alignment.TopEnd)
                 .clickable {
-                    chatViewModel.toggleChatActionsPopup(null)
+                    chatViewModel.hideChatActionsPopup()
                 },
             contentAlignment = Alignment.Center,
         ){
@@ -53,20 +56,23 @@ fun SendTribePaymentPopUp(
                 modifier = Modifier.size(18.dp)
             )
         }
+
+        val message by paymentViewModel.messageSharedFlow.collectAsState(null)
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             Spacer(modifier = Modifier.height(34.dp))
             PhotoUrlImage(
-                PhotoUrl("https://picsum.photos/200/300"),
+                message?.senderPic,
                 modifier = Modifier
                     .size(128.dp)
                     .clip(CircleShape)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Ricky",
+                message?.senderAlias?.value ?: "-",
                 color = MaterialTheme.colorScheme.tertiary,
                 fontFamily = Roboto,
                 fontSize = 30.sp,
@@ -76,7 +82,13 @@ fun SendTribePaymentPopUp(
             Button(
                 modifier = Modifier.width(220.dp).height(50.dp),
                 onClick = {
-
+                    chatViewModel.toggleChatActionsPopup(
+                        ChatViewModel.ChatActionsMode.SEND_AMOUNT,
+                        PaymentViewModel.PaymentData(
+                            chatId = paymentViewModel.paymentData.chatId,
+                            messageUUID = paymentViewModel.paymentData.messageUUID
+                        )
+                    )
                 },
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(

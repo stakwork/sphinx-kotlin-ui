@@ -2,6 +2,7 @@ package chat.sphinx.common.viewmodel.chat
 
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
@@ -18,6 +19,7 @@ import chat.sphinx.wrapper.chat.ChatName
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.lightning.toSat
 import chat.sphinx.wrapper.message.*
@@ -74,15 +76,22 @@ abstract class ChatViewModel(
         MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE
     }
 
-    private val _chatActionsStateFlow: MutableStateFlow<ChatActionsMode?> by lazy {
+    private val _chatActionsStateFlow: MutableStateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?> by lazy {
         MutableStateFlow(null)
     }
 
-    val chatActionsStateFlow: StateFlow<ChatActionsMode?>
+    val chatActionsStateFlow: StateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?>
         get() = _chatActionsStateFlow.asStateFlow()
 
-    fun toggleChatActionsPopup(mode: ChatActionsMode?) {
-        _chatActionsStateFlow.value = mode
+    fun toggleChatActionsPopup(
+        mode: ChatActionsMode,
+        data: PaymentViewModel.PaymentData? = null
+    ) {
+        _chatActionsStateFlow.value = Pair(mode, data)
+    }
+
+    fun hideChatActionsPopup() {
+        _chatActionsStateFlow.value = null
     }
 
     init {
@@ -354,7 +363,7 @@ abstract class ChatViewModel(
                 .setChatId(editMessageState.chatId)
                 .setContactId(editMessageState.contactId)
                 .setText(editMessageState.messageText.value.trim())
-                .setMessagePrice(editMessageState.price.value?.toSat())
+                .setPaidMessagePrice(editMessageState.price.value?.toSat())
                 .also { builder ->
                     editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
                         builder.setReplyUUID(replyUUID)

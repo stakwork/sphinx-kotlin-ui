@@ -21,7 +21,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
+import com.example.compose.badge_red
 import com.example.compose.light_divider
 import com.example.compose.place_holder_text
 import com.example.compose.primary_blue
@@ -29,11 +33,9 @@ import com.example.compose.primary_blue
 
 @Composable
 fun SendReceiveAmountPopup(
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    viewModel: PaymentViewModel
 ) {
-    val text = remember { mutableStateOf("") }
-    val sats = remember { mutableStateOf("") }
-
     Box(
         modifier = Modifier
             .width(380.dp)
@@ -58,7 +60,7 @@ fun SendReceiveAmountPopup(
                     modifier = Modifier
                         .size(60.dp)
                         .clickable {
-                            chatViewModel.toggleChatActionsPopup(null)
+                            chatViewModel.hideChatActionsPopup()
                         },
                     contentAlignment = Alignment.Center,
                 ){
@@ -75,7 +77,7 @@ fun SendReceiveAmountPopup(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        "SEND PAYMENT",
+                        if (viewModel.mode == PaymentViewModel.PaymentMode.SEND) "SEND PAYMENT" else "REQUEST PAYMENT",
                         color = MaterialTheme.colorScheme.tertiary,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = SphinxFonts.montserratFamily,
@@ -99,9 +101,9 @@ fun SendReceiveAmountPopup(
                     ) {
                         Spacer(modifier = Modifier.width(66.dp))
                         OutlinedTextField(
-                            value = sats.value,
+                            value = viewModel.chatPaymentState.amount?.toString() ?: "",
                             onValueChange = {
-                                sats.value = it
+                                viewModel.onAmountTextChanged(it)
                             },
                             modifier = Modifier.width(150.dp),
                             textStyle = TextStyle(
@@ -147,9 +149,9 @@ fun SendReceiveAmountPopup(
                             .padding(horizontal = 40.dp)
                     ) {
                         OutlinedTextField(
-                            value = text.value,
+                            value = viewModel.chatPaymentState.message,
                             onValueChange = {
-                                text.value = it
+                                viewModel.onMessageChanged(it)
                             },
                             modifier = Modifier.fillMaxWidth(),
                             textStyle = TextStyle(
@@ -177,7 +179,28 @@ fun SendReceiveAmountPopup(
                         )
                         Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
                     }
-                    Spacer(modifier = Modifier.height(60.dp).fillMaxWidth())
+                    Spacer(modifier = Modifier.height(40.dp).fillMaxWidth())
+                    Box(
+                        Modifier.fillMaxWidth().height(40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (viewModel.chatPaymentState.status is Response.Error) {
+                            Text(
+                                text = "There was an error, please try again later",
+                                fontSize = 12.sp,
+                                fontFamily = Roboto,
+                                color = badge_red,
+                            )
+                        }
+                        if (viewModel.chatPaymentState.status is LoadResponse.Loading) {
+                            CircularProgressIndicator(
+                                Modifier.padding(start = 8.dp).size(24.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+
                 }
             }
             Box(
@@ -187,10 +210,10 @@ fun SendReceiveAmountPopup(
             ) {
                 CommonButton(
                     callback = {
-
+                        viewModel.sendPayment()
                     },
                     text = "Confirm",
-                    enabled = true
+                    enabled = viewModel.chatPaymentState.saveButtonEnabled
                 )
             }
         }
