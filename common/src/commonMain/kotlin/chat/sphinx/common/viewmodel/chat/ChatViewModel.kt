@@ -3,6 +3,7 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
@@ -13,7 +14,6 @@ import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
-import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
@@ -21,6 +21,7 @@ import chat.sphinx.wrapper.chat.ChatName
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.lightning.toSat
 import chat.sphinx.wrapper.message.*
@@ -78,6 +79,27 @@ abstract class ChatViewModel(
     var onNewMessageCallback: (() -> Unit)? = null
     private var messagesSize: Int = 0
 
+    enum class ChatActionsMode {
+        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE
+    }
+
+    private val _chatActionsStateFlow: MutableStateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    val chatActionsStateFlow: StateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?>
+        get() = _chatActionsStateFlow.asStateFlow()
+
+    fun toggleChatActionsPopup(
+        mode: ChatActionsMode,
+        data: PaymentViewModel.PaymentData? = null
+    ) {
+        _chatActionsStateFlow.value = Pair(mode, data)
+    }
+
+    fun hideChatActionsPopup() {
+        _chatActionsStateFlow.value = null
+    }
 
     init {
         messagesLoadJob = scope.launch(dispatchers.mainImmediate) {
@@ -355,7 +377,7 @@ abstract class ChatViewModel(
                 .setChatId(editMessageState.chatId)
                 .setContactId(editMessageState.contactId)
                 .setText(editMessageState.messageText.value.trim())
-                .setMessagePrice(editMessageState.price.value?.toSat())
+                .setPaidMessagePrice(editMessageState.price.value?.toSat())
                 .also { builder ->
                     editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
                         builder.setReplyUUID(replyUUID)

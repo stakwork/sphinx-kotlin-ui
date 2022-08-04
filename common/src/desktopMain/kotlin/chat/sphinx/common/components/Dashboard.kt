@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.chat.AttachmentPreview
+import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -127,6 +128,10 @@ actual fun Dashboard(
                             }
                         }
                         AttachmentPreview(
+                            chatViewModel,
+                            Modifier.padding(paddingValues)
+                        )
+                        ChatAction(
                             chatViewModel,
                             Modifier.padding(paddingValues)
                         )
@@ -324,6 +329,7 @@ fun SphinxChatDetailBottomAppBar(
     chatViewModel: ChatViewModel?
 ) {
     val scope = rememberCoroutineScope()
+
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
@@ -339,14 +345,8 @@ fun SphinxChatDetailBottomAppBar(
             ) {
                 Spacer(modifier = Modifier.width(16.dp))
                 IconButton(
-                    onClick = { 
-                        scope.launch {
-                            if (chatViewModel != null) run {
-                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
-                                    chatViewModel.onMessageFileChanged(path)
-                                }
-                            }
-                        }
+                    onClick = {
+                        chatViewModel?.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.MENU)
                     },
                     modifier = Modifier.clip(CircleShape)
                         .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)

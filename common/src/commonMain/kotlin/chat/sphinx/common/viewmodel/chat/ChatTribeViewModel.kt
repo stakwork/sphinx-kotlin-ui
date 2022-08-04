@@ -82,7 +82,6 @@ class ChatTribeViewModel(
     }
 
     override var editMessageState: EditMessageState by mutableStateOf(initialState())
-        set
 
     override fun initialState(): EditMessageState = EditMessageState(
         chatId = chatId

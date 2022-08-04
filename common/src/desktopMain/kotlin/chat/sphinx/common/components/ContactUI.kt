@@ -315,7 +315,6 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
                     }
                 }
                 Divider(modifier = Modifier.padding(top = 4.dp), color = Color.Gray)
-
             }
 
             Spacer(modifier = Modifier.height(28.dp))

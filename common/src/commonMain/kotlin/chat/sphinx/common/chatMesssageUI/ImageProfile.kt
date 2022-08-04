@@ -15,13 +15,14 @@ import chat.sphinx.wrapper.util.getInitials
 
 @Composable
 fun ImageProfile(
-    chatMessage: ChatMessage
+    chatMessage: ChatMessage,
+    modifier: Modifier = Modifier
 ) {
     val color = chatMessage.colors[chatMessage.message.id.value]
 
     PhotoUrlImage(
         chatMessage.contact?.photoUrl?.thumbnailUrl ?: chatMessage.message.senderPic?.thumbnailUrl,
-        modifier = Modifier
+        modifier = modifier
             .size(30.dp)
             .clip(CircleShape),
         color = if (color != null) Color(color) else null,

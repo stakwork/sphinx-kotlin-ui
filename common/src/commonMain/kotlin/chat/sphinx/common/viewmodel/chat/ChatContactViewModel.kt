@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.*
 
 class ChatContactViewModel(
     chatId: ChatId?,
-    private val contactId: ContactId
+    val contactId: ContactId
 ): ChatViewModel(
     chatId
 ) {
@@ -143,7 +143,6 @@ class ChatContactViewModel(
     }
 
     override var editMessageState: EditMessageState by mutableStateOf(initialState())
-        protected set
 
     override fun initialState(): EditMessageState = EditMessageState(
         chatId = chatId,
