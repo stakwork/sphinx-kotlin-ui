@@ -1,5 +1,6 @@
 package chat.sphinx.common.components.tribe
 
+import CommonButton
 import Roboto
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -50,7 +51,7 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
 
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
-            size = getPreferredWindowSize(400, 500)
+            size = getPreferredWindowSize(400, 560)
         ),
     ) {
         Column(
@@ -59,7 +60,9 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
             Spacer(modifier = Modifier.height(10.dp))
             TopHeader(viewModel)
             Spacer(modifier = Modifier.height(16.dp))
-            TribeTextField("Alias", viewModel.tribeDetailState.userAlias) {}
+            TribeTextField("Alias", viewModel.tribeDetailState.userAlias) {
+                viewModel.onAliasTextChanged(it)
+            }
             Box (){
                 TribeTextField("Profile Picture", viewModel.tribeDetailState.myPhotoUrl?.value ?: "") {}
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp)){
@@ -93,6 +96,22 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
             ) {
                 Text("Select PIN", fontSize = 17.sp, color = MaterialTheme.colorScheme.tertiary)
                 Tabs()
+            }
+        }
+        Column(
+            modifier = Modifier.fillMaxSize().padding(bottom = 12.dp, start = 56.dp, end = 56.dp),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            if(viewModel.tribeDetailState.saveButtonEnable) {
+                CommonButton(
+                    enabled = true,
+                    text = "SAVE",
+                    callback = {
+                        viewModel.updateProfileAlias()
+                        dashboardViewModel.toggleTribeDetailWindow(false, null)
+                    }
+                )
             }
         }
     }

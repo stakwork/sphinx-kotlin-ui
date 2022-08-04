@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.TribeDetailState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.chat.ChatAlias
 import chat.sphinx.wrapper.chat.isTribeOwnedByAccount
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
@@ -66,6 +67,29 @@ class TribeDetailViewModel() {
                 }
             }
 
+        }
+    }
+
+    fun onAliasTextChanged(text: String){
+        setTribeDetailState {
+            copy(
+                userAlias = text,
+                saveButtonEnable = true
+            )
+
+        }
+    }
+
+    fun updateProfileAlias(){
+        scope.launch(dispatchers.mainImmediate) {
+            detailChatId?.let { chatId ->
+                chatRepository.updateChatProfileInfo(
+                    chatId,
+                    ChatAlias(tribeDetailState.userAlias)
+                )
+            }.let {
+
+            }
         }
     }
 
