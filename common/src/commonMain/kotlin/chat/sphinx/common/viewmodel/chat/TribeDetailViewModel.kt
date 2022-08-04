@@ -5,7 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.TribeDetailState
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatAlias
 import chat.sphinx.wrapper.chat.isTribeOwnedByAccount
 import chat.sphinx.wrapper.contact.Contact
@@ -24,6 +26,7 @@ class TribeDetailViewModel() {
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
 
     private var detailChatId: ChatId? = null
+    private var currentChat: Chat? = null
 
 
     private val accountOwnerStateFlow: StateFlow<Contact?>
@@ -37,7 +40,6 @@ class TribeDetailViewModel() {
         this.detailChatId = chatId
 
         loadTribeDetail()
-
     }
 
     private fun loadTribeDetail(){
@@ -47,6 +49,7 @@ class TribeDetailViewModel() {
                     contactOwner?.let { owner ->
                         chatRepository.getChatById(it)?.let { chat ->
 
+                            currentChat = chat
                             val tribeOwner = chat.isTribeOwnedByAccount(owner.nodePubKey)
                             val shareTribeUrl = "sphinx.chat://?action=tribe&uuid=${chat.uuid.value}&host=${chat.host?.value}"
 
@@ -69,7 +72,6 @@ class TribeDetailViewModel() {
                     }
                 }
             }
-
         }
     }
 
@@ -79,7 +81,6 @@ class TribeDetailViewModel() {
                 userAlias = text,
                 saveButtonEnable = true
             )
-
         }
     }
 
@@ -90,11 +91,27 @@ class TribeDetailViewModel() {
                     chatId,
                     ChatAlias(tribeDetailState.userAlias)
                 )
-            }.let {
-
             }
         }
     }
+
+    fun exitAndDeleteTribe(){
+        currentChat?.let{ chat ->
+            scope.launch(dispatchers.mainImmediate){
+                chatRepository.exitAndDeleteTribe(chat).let { response ->
+                    if (response == Response.Success( true)) {
+                        setTribeDetailState {
+                            copy(
+                                exitTribe = true
+                            )
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
 
     var tribeDetailState: TribeDetailState by mutableStateOf(initialTribeDetailState())
 

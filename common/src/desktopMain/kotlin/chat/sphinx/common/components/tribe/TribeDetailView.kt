@@ -214,6 +214,7 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                     DropdownMenuItem(
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
+                            viewModel.exitAndDeleteTribe()
                             showOptionMenu.value = false
                         }
                     ) {
@@ -231,6 +232,7 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                     DropdownMenuItem(
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
+                            viewModel.exitAndDeleteTribe()
                             showOptionMenu.value = false
                         }
                     ) {
@@ -251,6 +253,9 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
     }
     if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
         QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.tribeDetailState.shareTribeUrl, null))
+    }
+    if (viewModel.tribeDetailState.exitTribe){
+        dashboardViewModel.toggleTribeDetailWindow(false, null)
     }
 }
 
