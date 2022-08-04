@@ -71,7 +71,7 @@ fun SendTribePaymentPopUp(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                message?.senderAlias?.value ?: "-",
+                message?.senderAlias?.value ?: "",
                 color = MaterialTheme.colorScheme.tertiary,
                 fontFamily = Roboto,
                 fontSize = 30.sp,

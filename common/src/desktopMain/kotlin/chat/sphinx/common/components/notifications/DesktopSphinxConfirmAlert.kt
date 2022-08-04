@@ -28,9 +28,6 @@ import chat.sphinx.utils.SphinxFonts
 import theme.badge_red
 import theme.primary_green
 
-/**
- * This is a hack to have notifications on all platforms... Could possibly only use it for linux as the mac/windows notifications should work will.
- */
 @Composable
 fun DesktopSphinxConfirmAlert(windowTitle: String) {
     when (val value = alert.value) {
@@ -82,7 +79,7 @@ fun DesktopSphinxConfirmAlert(windowTitle: String) {
                                     alert.value = null
                                 },
                                 colors = ButtonDefaults.buttonColors(backgroundColor = badge_red),
-                                modifier = Modifier.wrapContentSize().padding(8.dp),
+                                modifier = Modifier.wrapContentSize().padding(horizontal = 8.dp),
                             ) {
                                 Text(
                                     "CANCEL",
@@ -97,7 +94,7 @@ fun DesktopSphinxConfirmAlert(windowTitle: String) {
                                     alert.value = null
                                 },
                                 colors = ButtonDefaults.buttonColors(backgroundColor = primary_green),
-                                modifier = Modifier.wrapContentSize().padding(8.dp),
+                                modifier = Modifier.wrapContentSize().padding(horizontal = 8.dp),
                             ) {
                                 Text(
                                     "CONFIRM",

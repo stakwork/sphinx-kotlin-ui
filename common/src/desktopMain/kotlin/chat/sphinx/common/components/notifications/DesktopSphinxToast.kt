@@ -8,7 +8,6 @@ import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -18,9 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.notifications.DesktopSphinxNotificationManager.toast
 
-/**
- * This is a hack to have notifications on all platforms... Could possibly only use it for linux as the mac/windows notifications should work will.
- */
 @Composable
 fun DesktopSphinxToast(windowTitle: String) {
     when (val value = toast.value) {

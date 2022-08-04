@@ -202,6 +202,7 @@ fun ChatRow(
                     Text(
                         text = dashboardChat.getMessageText(),
                         fontSize = 13.sp,
+                        fontFamily = Roboto,
                         fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

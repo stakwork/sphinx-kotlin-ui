@@ -149,7 +149,7 @@ fun ChatActionMenu(
                     .height(55.dp)
                     .clickable(
                         onClick = {
-//                            chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.REQUEST)
+                            chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.REQUEST)
                         },
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }

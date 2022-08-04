@@ -33,7 +33,6 @@ class ProfileViewModel {
     private val accountOwnerStateFlow: StateFlow<Contact?>
         get() = contactRepository.accountOwner
 
-
     var profileState: ProfileState by mutableStateOf(initialState())
 
     private fun initialState(): ProfileState = ProfileState()
@@ -162,5 +161,4 @@ class ProfileViewModel {
             }
         }
     }
-
 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -477,8 +478,11 @@ fun ResetPin(dashboardViewModel: DashboardViewModel) {
 }
 
 @Composable
-fun BackupKeys(dashboardViewModel: DashboardViewModel) {
+fun BackupKeys(
+    dashboardViewModel: DashboardViewModel
+) {
     val pinExportKeysViewModel = remember { PinExportKeysViewModel() }
+    val clipboardManager = LocalClipboardManager.current
 
     Window(
         onCloseRequest = { dashboardViewModel.toggleBackUpWindow(false) },
@@ -498,7 +502,7 @@ fun BackupKeys(dashboardViewModel: DashboardViewModel) {
         )
 
         backupKeysState.restoreString?.let {
-            LocalClipboardManager.current.setText(it.toAnnotatedString())
+            clipboardManager.setText(it.toAnnotatedString())
         }
     }
 }

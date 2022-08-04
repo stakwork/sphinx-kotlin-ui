@@ -44,7 +44,7 @@ fun PriceChip(
             )
             Row(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.tertiary.copy(alpha = .4f), RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.tertiary.copy(alpha = .3f), RoundedCornerShape(50))
                     .fillMaxHeight()
                     .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically

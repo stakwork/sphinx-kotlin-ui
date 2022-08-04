@@ -1,6 +1,7 @@
 package chat.sphinx.common.viewmodel.chat
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
@@ -15,9 +16,11 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
+import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
@@ -66,7 +69,7 @@ abstract class ChatViewModel(
     val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
-    val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
+    private val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
     val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
@@ -94,6 +97,11 @@ abstract class ChatViewModel(
         mode: ChatActionsMode,
         data: PaymentViewModel.PaymentData? = null
     ) {
+        if (mode == ChatActionsMode.REQUEST) {
+            toast("Request amount not implemented yet")
+            return
+        }
+
         _chatActionsStateFlow.value = Pair(mode, data)
     }
 
@@ -167,12 +175,20 @@ abstract class ChatViewModel(
                     boostMessage(chat, message.uuid)
                 },
                 flagMessage = {
-                    // TODO: Requires confirmation
-                    flagMessage(chat, message)
+                    confirm(
+                        "Confirm Flagging message",
+                        "Are you sure you want to flag this message? This action can not be undone"
+                    ) {
+                        flagMessage(chat, message)
+                    }
                 },
                 deleteMessage = {
-                    // TODO: Requires confirmation...
-                    deleteMessage(message)
+                    confirm(
+                        "Confirm Deleting message",
+                        "Are you sure you want to delete this message? This action can not be undone"
+                    ) {
+                        deleteMessage(message)
+                    }
                 }
             )
         }
@@ -264,7 +280,7 @@ abstract class ChatViewModel(
 
             when (response) {
                 is Response.Error -> {
-                    // TODO: submitSideEffect(ChatSideEffect.Notify(app.getString(R.string.notify_boost_failure)))
+                    toast("Boost payment failed", primary_red)
                 }
                 is Response.Success -> {}
             }
@@ -281,7 +297,7 @@ abstract class ChatViewModel(
         scope.launch(dispatchers.mainImmediate) {
             when (messageRepository.deleteMessage(message)) {
                 is Response.Error -> {
-                    // TODO: submitSideEffect(ChatSideEffect.Notify("Failed to delete Message"))
+                    toast("Failed to delete Message", primary_red)
                 }
                 is Response.Success -> {}
             }
@@ -371,8 +387,13 @@ abstract class ChatViewModel(
         editMessageState.attachmentInfo.value = null
     }
 
+    private var sendMessageJob: Job? = null
     fun onSendMessage() {
-        scope.launch(dispatchers.mainImmediate) {
+        if (sendMessageJob?.isActive == true) {
+            return
+        }
+
+        sendMessageJob = scope.launch(dispatchers.mainImmediate) {
             val sendMessageBuilder = SendMessage.Builder()
                 .setChatId(editMessageState.chatId)
                 .setContactId(editMessageState.contactId)
@@ -407,9 +428,7 @@ abstract class ChatViewModel(
 
             val sendMessage = sendMessageBuilder.build()
 
-            if (sendMessage.second != null) {
-                // TODO: update user on error...
-            } else if (sendMessage.first != null) {
+            if (sendMessage.first != null) {
                 sendMessage.first?.let { message ->
                     messageRepository.sendMessage(message)
 
@@ -420,6 +439,8 @@ abstract class ChatViewModel(
                     delay(200L)
                     onNewMessageCallback?.invoke()
                 }
+            } else if (sendMessage.second != null) {
+                toast("Message Validation failed: ${sendMessage.second?.name}", primary_red)
             }
         }
     }
@@ -498,7 +519,7 @@ abstract class ChatViewModel(
         repositoryMedia.downloadMediaIfApplicable(message, sent)
     }
 
-    private fun toast(
+    fun toast(
         message: String,
         color: Color = primary_green,
         delay: Long = 2000L

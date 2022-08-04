@@ -38,12 +38,11 @@ actual fun MessageMenu(
     chatViewModel: ChatViewModel
 ) {
     val scope = rememberCoroutineScope()
+    val clipboardManager = LocalClipboardManager.current
 
     val dismissKebab = {
         isVisible.value = false
     }
-
-    val clipboardManager = LocalClipboardManager.current
 
     CursorDropdownMenu(
         expanded = isVisible.value,
@@ -63,9 +62,8 @@ actual fun MessageMenu(
         }
         if (chatMessage.message.isCopyAllowed) {
             DropdownMenuItem(onClick = {
-                clipboardManager.setText(
-                    messageText.toAnnotatedString()
-                )
+                clipboardManager.setText(messageText.toAnnotatedString())
+                chatViewModel.toast("Text copied to clipboard")
                 dismissKebab()
             }) {
                 OptionItem("Copy text", imageVector = Icons.Default.ContentCopy)
@@ -74,9 +72,8 @@ actual fun MessageMenu(
 
         if (chatMessage.message.isCopyLinkAllowed) {
             DropdownMenuItem(onClick = {
-                clipboardManager.setText(
-                    messageText.toAnnotatedString()
-                )
+                clipboardManager.setText(messageText.toAnnotatedString())
+                chatViewModel.toast("Call Link copied to clipboard")
                 dismissKebab()
             }) {
                 OptionItem("Copy Call Link", imageVector = Icons.Default.Link)

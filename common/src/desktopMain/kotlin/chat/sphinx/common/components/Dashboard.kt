@@ -57,6 +57,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
+import theme.primary_blue
 import utils.AnimatedContainer
 import java.awt.Cursor
 
@@ -346,7 +347,16 @@ fun SphinxChatDetailBottomAppBar(
                 Spacer(modifier = Modifier.width(16.dp))
                 IconButton(
                     onClick = {
-                        chatViewModel?.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.MENU)
+                        if (chatViewModel is ChatTribeViewModel) {
+                            scope.launch {
+                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                    chatViewModel.hideChatActionsPopup()
+                                    chatViewModel.onMessageFileChanged(path)
+                                }
+                            }
+                        } else {
+                            chatViewModel?.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.MENU)
+                        }
                     },
                     modifier = Modifier.clip(CircleShape)
                         .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
@@ -411,7 +421,8 @@ fun SphinxChatDetailBottomAppBar(
                                     chatViewModel.onMessageTextChanged(it.trim())
                                 }
                             },
-                            value = chatViewModel?.editMessageState?.messageText?.value ?: ""
+                            value = chatViewModel?.editMessageState?.messageText?.value ?: "",
+                            cursorBrush = primary_blue
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                     }
