@@ -48,6 +48,8 @@ class TribeDetailViewModel() {
                         chatRepository.getChatById(it)?.let { chat ->
 
                             val tribeOwner = chat.isTribeOwnedByAccount(owner.nodePubKey)
+                            val shareTribeUrl = "sphinx.chat://?action=tribe&uuid=${chat.uuid.value}&host=${chat.host?.value}"
+
 
                             setTribeDetailState {
                                 copy(
@@ -59,7 +61,8 @@ class TribeDetailViewModel() {
                                             " - Amount to stake: ${chat.escrowAmount?.value ?: 0L} sat ",
                                     userAlias = chat.myAlias?.value ?: "",
                                     myPhotoUrl = chat.myPhotoUrl ?: owner.photoUrl,
-                                    tribeOwner = tribeOwner
+                                    tribeOwner = tribeOwner,
+                                    shareTribeUrl = shareTribeUrl
                                 )
                             }
                         }

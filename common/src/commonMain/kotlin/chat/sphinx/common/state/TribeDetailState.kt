@@ -10,5 +10,6 @@ data class TribeDetailState(
     val userAlias: String = "",
     val myPhotoUrl: PhotoUrl? = null,
     val tribeOwner: Boolean = false,
-    val saveButtonEnable: Boolean = false
+    val saveButtonEnable: Boolean = false,
+    val shareTribeUrl: String = ""
     )

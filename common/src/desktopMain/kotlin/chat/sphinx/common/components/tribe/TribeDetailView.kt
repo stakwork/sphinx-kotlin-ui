@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Help
 import androidx.compose.material3.MaterialTheme
@@ -29,9 +30,11 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.PhotoUrlImage
+import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.chat.KebabMenu
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.TribeDetailViewModel
+import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.dashboard.ChatId
 import com.example.compose.badge_red
@@ -58,7 +61,7 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
             modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant).padding(16.dp)
         ) {
             Spacer(modifier = Modifier.height(10.dp))
-            TopHeader(viewModel)
+            TopHeader(dashboardViewModel, viewModel)
             Spacer(modifier = Modifier.height(16.dp))
             TribeTextField("Alias", viewModel.tribeDetailState.userAlias) {
                 viewModel.onAliasTextChanged(it)
@@ -142,7 +145,7 @@ fun TribeTextField(placeholder: String, value: String, onTextChange: (String) ->
 }
 
 @Composable
-fun TopHeader(viewModel: TribeDetailViewModel) {
+fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailViewModel) {
     val showOptionMenu = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -176,50 +179,78 @@ fun TopHeader(viewModel: TribeDetailViewModel) {
 
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
             KebabMenu(
-                contentDescription = "Menu"
+                contentDescription = "Menu",
             ) {
-                showOptionMenu.value = showOptionMenu.value.not()
+                showOptionMenu.value = true
             }
             CursorDropdownMenu(
                 expanded = showOptionMenu.value,
 
-                onDismissRequest = {}, modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary).clip(
+                onDismissRequest = {showOptionMenu.value = false},
+                modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary).clip(
                     RoundedCornerShape(16.dp)
                 )
             ) {
-                Spacer(modifier = Modifier.height(4.dp))
-                DropdownMenuItem(
-                    modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
-                    onClick = {
-                    }) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Share,
-                            contentDescription = "",
-                            tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Share tribe QR Code", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                if (viewModel.tribeDetailState.tribeOwner) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    DropdownMenuItem(
+                        modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
+                        onClick = {
+                            dashboardViewModel.toggleQRWindow(true)
+                            showOptionMenu.value = false
+                        }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Share,
+                                contentDescription = "",
+                                tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Share tribe QR Code", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                        }
                     }
-                }
-                Divider(color = MaterialTheme.colorScheme.onBackground)
-                DropdownMenuItem(
-                    modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
-                    onClick = {
-                    }) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "",
-                            tint = badge_red, modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Delete Tribe", color =badge_red, fontSize = 12.sp)
+                    Divider(color = MaterialTheme.colorScheme.onBackground)
+                    DropdownMenuItem(
+                        modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
+                        onClick = {
+                            showOptionMenu.value = false
+                        }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "",
+                                tint = badge_red, modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Delete Tribe", color = badge_red, fontSize = 12.sp)
+                        }
+                    }
+                } else {
+                    DropdownMenuItem(
+                        modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
+                        onClick = {
+                            showOptionMenu.value = false
+                        }
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.Logout,
+                                contentDescription = "",
+                                tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Exit Tribe", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                        }
                     }
                 }
             }
             Spacer(modifier = Modifier.height(2.dp))
         }
+    }
+    if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
+        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.tribeDetailState.shareTribeUrl, null))
     }
 }
 
