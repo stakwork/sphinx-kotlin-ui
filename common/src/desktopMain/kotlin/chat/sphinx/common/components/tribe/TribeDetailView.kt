@@ -4,6 +4,7 @@ import CommonButton
 import Roboto
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.Help
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -29,21 +29,29 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.components.ImageLoadingView
+import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.chat.KebabMenu
+import chat.sphinx.common.state.ContentState
+import chat.sphinx.common.state.fullScreenImageState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.TribeDetailViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
+import chat.sphinx.response.LoadResponse
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.message.media.isImage
+import kotlinx.coroutines.launch
 import theme.badge_red
+import utils.deduceMediaType
 
 @Composable
 actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatId) {
 
-    val viewModel = remember { TribeDetailViewModel() }
-    viewModel.loadTribeDetail(chatId)
+    val viewModel = TribeDetailViewModel(chatId)
+    val scope = rememberCoroutineScope()
 
     Window(
         onCloseRequest = {
@@ -57,73 +65,128 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
         ),
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant).padding(16.dp)
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant).padding(32.dp)
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
             TopHeader(dashboardViewModel, viewModel)
-            Spacer(modifier = Modifier.height(16.dp))
-            TribeTextField("Alias", viewModel.tribeDetailState.userAlias) {
+
+            TribeTextField(
+                "Alias",
+                viewModel.tribeDetailState.userAlias
+            ) {
                 viewModel.onAliasTextChanged(it)
             }
-            Box (){
-                TribeTextField("Profile Picture", viewModel.tribeDetailState.myPhotoUrl?.value ?: "") {}
-                Box(modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp)){
-                    PhotoUrlImage(photoUrl = viewModel.tribeDetailState.myPhotoUrl, modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape).align(Alignment.TopEnd)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "Privacy Setting",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-                IconButton(onClick = {}, modifier = Modifier.size(20.dp)) {
-                    Icon(
-                        Icons.Outlined.Help,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(12.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Box(
+                modifier = Modifier
             ) {
-                Text("Select PIN", fontSize = 17.sp, color = MaterialTheme.colorScheme.tertiary)
-                Tabs()
+                TribeTextField(
+                    "Profile Picture",
+                    viewModel.tribeDetailState.myPhotoUrl?.value ?: "",
+                    Modifier.padding(end = 50.dp),
+                    false
+                ) {}
+                Box(
+                    modifier = Modifier
+                        .padding(top = 6.dp)
+                        .align(Alignment.TopEnd)
+                        .wrapContentSize()
+                ){
+                    val onImageClick = {
+                        scope.launch {
+                            ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                if (path.deduceMediaType().isImage) {
+                                    viewModel.onProfilePictureChanged(path)
+                                }
+                            }
+                        }
+                    }
+
+                    viewModel.tribeDetailState.myPhotoUrl?.let {
+                        PhotoUrlImage(
+                            photoUrl = it,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    onImageClick.invoke()
+                                }
+                        )
+                    }
+                    viewModel.tribeDetailState.userPicture?.let {
+                        PhotoFileImage(
+                            it.filePath,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    onImageClick.invoke()
+                                },
+                            effect = {}
+                        )
+                    }
+                }
             }
+//            Spacer(modifier = Modifier.height(16.dp))
+//            Row(verticalAlignment = Alignment.CenterVertically) {
+//                Text(
+//                    "Privacy Setting",
+//                    fontSize = 12.sp,
+//                    color = Color.Gray,
+//                    modifier = Modifier.padding(start = 10.dp)
+//                )
+//                IconButton(onClick = {}, modifier = Modifier.size(20.dp)) {
+//                    Icon(
+//                        Icons.Outlined.Help,
+//                        contentDescription = null,
+//                        tint = MaterialTheme.colorScheme.onBackground,
+//                        modifier = Modifier.size(12.dp)
+//                    )
+//                }
+//            }
+//            Spacer(modifier = Modifier.height(16.dp))
+//            Row(
+//                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+//                horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                Text("Select PIN", fontSize = 17.sp, color = MaterialTheme.colorScheme.tertiary)
+//                Tabs()
+//            }
         }
         Column(
-            modifier = Modifier.fillMaxSize().padding(bottom = 12.dp, start = 56.dp, end = 56.dp),
+            modifier = Modifier.fillMaxSize().padding(32.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            if(viewModel.tribeDetailState.saveButtonEnable) {
-                CommonButton(
-                    enabled = true,
-                    text = "SAVE",
-                    callback = {
-                        viewModel.updateProfileAlias()
-                        dashboardViewModel.toggleTribeDetailWindow(false, null)
-                    }
+            if (viewModel.tribeDetailState.updateResponse is LoadResponse.Loading) {
+                CircularProgressIndicator(
+                    Modifier.padding(20.dp).size(40.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
                 )
             }
+            CommonButton(
+                enabled = viewModel.tribeDetailState.saveButtonEnable,
+                text = "SAVE",
+                callback = {
+                    viewModel.updateUserInfo()
+                }
+            )
         }
     }
 }
 
 @Composable
-fun TribeTextField(placeholder: String, value: String, onTextChange: (String) -> Unit) {
-    Column(modifier = Modifier.padding(8.dp)) {
-        androidx.compose.material.Text(
-            text = placeholder,
+fun TribeTextField(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onTextChange: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
             fontSize = 12.sp,
             fontFamily = Roboto,
             color = MaterialTheme.colorScheme.onBackground,
@@ -133,9 +196,10 @@ fun TribeTextField(placeholder: String, value: String, onTextChange: (String) ->
             onValueChange = {
                 onTextChange(it)
             },
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            modifier = modifier.fillMaxWidth().padding(top = 4.dp),
             textStyle = TextStyle(fontSize = 16.sp, color = Color.White, fontFamily = Roboto),
             singleLine = true,
+            enabled = enabled,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
 
         )
@@ -147,8 +211,7 @@ fun TribeTextField(placeholder: String, value: String, onTextChange: (String) ->
 fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailViewModel) {
     val showOptionMenu = remember { mutableStateOf(false) }
     Row(
-        modifier = Modifier.fillMaxWidth(),
-//        horizontalArrangement = Arrangement.Center
+        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
     ) {
         Column {
             Spacer(modifier = Modifier.height(5.dp))

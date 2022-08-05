@@ -169,17 +169,19 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             ChatListUI(chatListViewModel)
 
             val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
-            if (addContactWindowState.first){
+            if (addContactWindowState.first) {
                 AddContactWindow(dashboardViewModel)
             }
 
             val profileWindowState by dashboardViewModel.profileStateFlow.collectAsState()
-            if (profileWindowState){
+            if (profileWindowState) {
                 Profile(dashboardViewModel)
             }
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
-            if (tribeWindowState.first){
-                TribeDetailView(dashboardViewModel, tribeWindowState.second!!)
+            if (tribeWindowState.first) {
+                tribeWindowState.second?.let { chatId ->
+                    TribeDetailView(dashboardViewModel, chatId)
+                }
             }
         }
     }
