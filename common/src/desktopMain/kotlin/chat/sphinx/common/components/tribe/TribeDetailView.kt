@@ -37,7 +37,7 @@ import chat.sphinx.common.viewmodel.chat.TribeDetailViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.dashboard.ChatId
-import com.example.compose.badge_red
+import theme.badge_red
 
 @Composable
 actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatId) {
