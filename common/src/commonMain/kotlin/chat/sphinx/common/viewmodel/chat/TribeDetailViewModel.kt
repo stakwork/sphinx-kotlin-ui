@@ -69,7 +69,7 @@ class TribeDetailViewModel(
                                 myPhotoUrl = chat.myPhotoUrl ?: owner.photoUrl,
                                 tribeOwner = tribeOwner,
                                 shareTribeUrl = shareTribeUrl,
-                                saveButtonEnable = true,
+                                saveButtonEnable = false,
                                 updateResponse = null
                             )
                         }
