@@ -6,9 +6,8 @@ import chat.sphinx.utils.platform.getFileSystem
 import chat.sphinx.wrapper.message.media.MediaType
 
 
-import com.example.compose.*
 import okio.Path
-import java.io.IOException
+import theme.*
 import java.nio.file.Files
 
 fun Path.deduceMediaType(): MediaType {

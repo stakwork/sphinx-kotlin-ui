@@ -1,8 +1,6 @@
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,9 +11,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import chat.sphinx.common.state.LandingScreenState
-import chat.sphinx.common.state.LandingScreenType
-import javax.swing.Icon
 
 @Composable
 fun CommonButton(
@@ -23,19 +18,22 @@ fun CommonButton(
     enabled: Boolean? = true,
     customColor: Color? = null,
     endIcon: ImageVector? = null,
-    textButtonSize:TextUnit=16.sp,
+    textButtonSize:TextUnit = 16.sp,
     backgroundColor: Color? = null,
+    fontWeight: FontWeight = FontWeight.W400,
     callback:()->Unit
 ) {
     val color= if (enabled == true) {
-        backgroundColor
-            ?: androidx.compose.material3.MaterialTheme.colorScheme.secondary
+        backgroundColor ?: androidx.compose.material3.MaterialTheme.colorScheme.secondary
     } else {
-        backgroundColor?.copy(alpha = 0.7f)
-            ?: androidx.compose.material3.MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
+        backgroundColor?.copy(alpha = 0.7f) ?: androidx.compose.material3.MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
     }
 
-    val textColor= if (enabled == true) androidx.compose.material3.MaterialTheme.colorScheme.tertiary else androidx.compose.material3.MaterialTheme.colorScheme.tertiary.copy(alpha = 0.7f)
+    val textColor= if (enabled == true) {
+        androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+    } else {
+        androidx.compose.material3.MaterialTheme.colorScheme.tertiary.copy(alpha = 0.7f)
+    }
 
     Button(
         shape = RoundedCornerShape(23.dp),
@@ -46,12 +44,12 @@ fun CommonButton(
             if (enabled==true) callback()
         }
     ) {
-        Box() {
+        Box {
             Text(
                 text = text,
                 fontSize = textButtonSize,
                 color = textColor,
-                fontWeight = FontWeight.W400,
+                fontWeight = fontWeight,
                 fontFamily = Roboto,
                 modifier = Modifier.fillMaxWidth().align(Alignment.Center),
                 textAlign = TextAlign.Center
@@ -65,7 +63,6 @@ fun CommonButton(
                 )
             }
         }
-
     }
 
 }

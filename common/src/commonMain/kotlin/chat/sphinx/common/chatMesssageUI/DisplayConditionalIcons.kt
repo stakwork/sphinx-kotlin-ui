@@ -17,10 +17,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
-import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
-import com.example.compose.place_holder_text
+import theme.place_holder_text
 
 @Composable
 fun DisplayConditionalIcons(

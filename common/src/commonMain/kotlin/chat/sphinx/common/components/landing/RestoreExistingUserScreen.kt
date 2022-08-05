@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.font.FontWeight
@@ -25,7 +24,7 @@ import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.onKeyUp
-import com.example.compose.badge_red
+import theme.badge_red
 import utils.AnimatedContainer
 import views.BackButton
 

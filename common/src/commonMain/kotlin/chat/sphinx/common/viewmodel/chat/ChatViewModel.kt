@@ -1,7 +1,10 @@
 package chat.sphinx.common.viewmodel.chat
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.*
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
@@ -10,15 +13,18 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
+import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
-import chat.sphinx.utils.createPlatformSettings
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
+import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.lightning.toSat
 import chat.sphinx.wrapper.message.*
@@ -30,6 +36,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import okio.Path
+import theme.primary_green
+import theme.primary_red
 import utils.deduceMediaType
 import utils.getRandomColorRes
 import java.io.IOException
@@ -61,7 +69,7 @@ abstract class ChatViewModel(
     val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
-    val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
+    private val repositoryMedia = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryMedia
     val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
@@ -70,6 +78,36 @@ abstract class ChatViewModel(
 
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
     private var messagesLoadJob: Job? = null
+
+    var onNewMessageCallback: (() -> Unit)? = null
+    private var messagesSize: Int = 0
+
+    enum class ChatActionsMode {
+        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE
+    }
+
+    private val _chatActionsStateFlow: MutableStateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    val chatActionsStateFlow: StateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?>
+        get() = _chatActionsStateFlow.asStateFlow()
+
+    fun toggleChatActionsPopup(
+        mode: ChatActionsMode,
+        data: PaymentViewModel.PaymentData? = null
+    ) {
+        if (mode == ChatActionsMode.REQUEST) {
+            toast("Request amount not implemented yet")
+            return
+        }
+
+        _chatActionsStateFlow.value = Pair(mode, data)
+    }
+
+    fun hideChatActionsPopup() {
+        _chatActionsStateFlow.value = null
+    }
 
     init {
         messagesLoadJob = scope.launch(dispatchers.mainImmediate) {
@@ -137,12 +175,20 @@ abstract class ChatViewModel(
                     boostMessage(chat, message.uuid)
                 },
                 flagMessage = {
-                    // TODO: Requires confirmation
-                    flagMessage(chat, message)
+                    confirm(
+                        "Confirm Flagging message",
+                        "Are you sure you want to flag this message? This action can not be undone"
+                    ) {
+                        flagMessage(chat, message)
+                    }
                 },
                 deleteMessage = {
-                    // TODO: Requires confirmation...
-                    deleteMessage(message)
+                    confirm(
+                        "Confirm Deleting message",
+                        "Are you sure you want to delete this message? This action can not be undone"
+                    ) {
+                        deleteMessage(message)
+                    }
                 }
             )
         }
@@ -152,6 +198,13 @@ abstract class ChatViewModel(
                 chatMessages
             )
         )
+
+        if (messagesSize != messages.size) {
+            messagesSize = messages.size
+
+            delay(200L)
+            onNewMessageCallback?.invoke()
+        }
     }
 
     private suspend fun getColorsMapFor(
@@ -227,7 +280,7 @@ abstract class ChatViewModel(
 
             when (response) {
                 is Response.Error -> {
-                    // TODO: submitSideEffect(ChatSideEffect.Notify(app.getString(R.string.notify_boost_failure)))
+                    toast("Boost payment failed", primary_red)
                 }
                 is Response.Success -> {}
             }
@@ -244,7 +297,7 @@ abstract class ChatViewModel(
         scope.launch(dispatchers.mainImmediate) {
             when (messageRepository.deleteMessage(message)) {
                 is Response.Error -> {
-                    // TODO: submitSideEffect(ChatSideEffect.Notify("Failed to delete Message"))
+                    toast("Failed to delete Message", primary_red)
                 }
                 is Response.Success -> {}
             }
@@ -334,13 +387,18 @@ abstract class ChatViewModel(
         editMessageState.attachmentInfo.value = null
     }
 
+    private var sendMessageJob: Job? = null
     fun onSendMessage() {
-        scope.launch(dispatchers.mainImmediate) {
+        if (sendMessageJob?.isActive == true) {
+            return
+        }
+
+        sendMessageJob = scope.launch(dispatchers.mainImmediate) {
             val sendMessageBuilder = SendMessage.Builder()
                 .setChatId(editMessageState.chatId)
                 .setContactId(editMessageState.contactId)
                 .setText(editMessageState.messageText.value.trim())
-                .setMessagePrice(editMessageState.price.value?.toSat())
+                .setPaidMessagePrice(editMessageState.price.value?.toSat())
                 .also { builder ->
                     editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
                         builder.setReplyUUID(replyUUID)
@@ -370,15 +428,19 @@ abstract class ChatViewModel(
 
             val sendMessage = sendMessageBuilder.build()
 
-            if (sendMessage.second != null) {
-                // TODO: update user on error...
-            } else if (sendMessage.first != null) {
+            if (sendMessage.first != null) {
                 sendMessage.first?.let { message ->
                     messageRepository.sendMessage(message)
+
                     setEditMessageState {
                         initialState()
                     }
+
+                    delay(200L)
+                    onNewMessageCallback?.invoke()
                 }
+            } else if (sendMessage.second != null) {
+                toast("Message Validation failed: ${sendMessage.second?.name}", primary_red)
             }
         }
     }
@@ -399,7 +461,21 @@ abstract class ChatViewModel(
         }
         chatSharedFlow.replayCache.firstOrNull()?.let { chat ->
             toggleChatMutedJob = scope.launch(dispatchers.mainImmediate) {
-                chatRepository.toggleChatMuted(chat)
+                Exhaustive@
+                when (val response = chatRepository.toggleChatMuted(chat)) {
+                    is Response.Error -> {
+                        toast(response.cause.message, color = primary_red)
+                        delay(2_000)
+                    }
+                    is Response.Success -> {
+                        if (response.value) {
+                            toast(
+                                message = "Chat is now muted. You won\'t get push notifications\nfor incoming messages on this chat",
+                                delay = 3000L
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -416,7 +492,60 @@ abstract class ChatViewModel(
         }
     }
 
+    private var payAttachmentJob: Job? = null
+    fun payAttachment(message: Message) {
+        if (payAttachmentJob?.isActive == true) {
+            return
+        }
+
+        confirm(
+            "Confirm Purchase",
+            "Are you sure you want to purchase this item?"
+        ) {
+            payAttachmentJob = scope.launch(dispatchers.mainImmediate) {
+
+                Exhaustive@
+                when (val response = messageRepository.payAttachment(message)) {
+                    is Response.Error -> {
+                        toast(response.cause.message, color = primary_red)
+                    }
+                    is Response.Success -> {}
+                }
+            }
+        }
+    }
+
     fun downloadFileMedia(message: Message, sent: Boolean) {
         repositoryMedia.downloadMediaIfApplicable(message, sent)
+    }
+
+    fun toast(
+        message: String,
+        color: Color = primary_green,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(
+                "Sphinx",
+                message,
+                color.value,
+                delay
+            )
+        }
+    }
+
+    private fun confirm(
+        title: String,
+        message: String,
+        callback: () -> Unit
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.confirmAlert(
+                "Sphinx",
+                title,
+                message,
+                callback
+            )
+        }
     }
 }

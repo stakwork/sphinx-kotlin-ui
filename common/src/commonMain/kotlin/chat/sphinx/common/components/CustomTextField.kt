@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import com.example.compose.place_holder_text
+import theme.place_holder_text
 
 @Composable
 fun CustomTextField(
@@ -26,6 +26,7 @@ fun CustomTextField(
     fontSize: TextUnit = MaterialTheme.typography.body2.fontSize,
     singleLine: Boolean = true,
     maxLines: Int = 4,
+    cursorBrush: Color? = null
 ) {
     BasicTextField(
         modifier = modifier.fillMaxWidth(),
@@ -33,7 +34,7 @@ fun CustomTextField(
         onValueChange = onValueChange,
         singleLine = singleLine,
         maxLines = maxLines,
-        cursorBrush = SolidColor(MaterialTheme.colors.primary),
+        cursorBrush = SolidColor(cursorBrush ?: MaterialTheme.colors.primary),
         textStyle = LocalTextStyle.current.copy(
             fontFamily = Roboto,
             fontWeight = FontWeight.Normal,
@@ -51,8 +52,10 @@ fun CustomTextField(
                         Text(
                             placeholderText,
                             style = LocalTextStyle.current.copy(
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground.copy(alpha = .7f),
-                                fontSize = fontSize
+                                fontFamily = Roboto,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = fontSize,
+                                color = place_holder_text
                             )
                         )
                     innerTextField()

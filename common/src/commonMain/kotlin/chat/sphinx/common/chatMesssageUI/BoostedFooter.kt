@@ -24,63 +24,66 @@ import chat.sphinx.wrapper.util.getInitials
 
 @Composable
 fun BoostedFooter(
-    boostReactionsState: ChatMessage.BoostLayoutState,
+    chatMessage: ChatMessage,
     modifier: Modifier
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-    ) {
-
-        val activeIcon = boostReactionsState.boostedByOwner || boostReactionsState.showSent
-
-        Image(
-            painter = imageResource(
-                if (activeIcon) Res.drawable.ic_boost_green else Res.drawable.ic_boost_gray
-            ),
-            contentDescription = "Boosted Icon",
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = "${boostReactionsState.totalAmount.asFormattedString(' ')}",
-            color = MaterialTheme.colorScheme.tertiary,
-            fontSize = 11.sp
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Box(
-            modifier = Modifier.weight(1f),
-            contentAlignment = Alignment.CenterEnd
+    chatMessage.boostsLayoutState?.let { boostReactionsState ->
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
         ) {
-            boostReactionsState.senders.forEachIndexed { index, it ->
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .absoluteOffset(
-                            calculatePosition(boostReactionsState.senders.size, index), 0.dp
-                        )
-                ) {
-                    if (index < 3) {
-                        PhotoUrlImage(
-                            photoUrl = it.photoUrl?.thumbnailUrl,
-                            modifier = Modifier
-                                .size(25.dp)
-                                .clip(CircleShape),
-                            color = if (it.color != null) Color(it.color) else Color.Gray,
-                            firstNameLetter = (it.alias?.value)?.getInitials(),
-                            fontSize = 9
-                        )
+
+            val activeIcon = boostReactionsState.boostedByOwner || boostReactionsState.showSent
+
+            Image(
+                painter = imageResource(
+                    if (activeIcon) Res.drawable.ic_boost_green else Res.drawable.ic_boost_gray
+                ),
+                contentDescription = "Boosted Icon",
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "${boostReactionsState.totalAmount.asFormattedString(' ')}",
+                color = MaterialTheme.colorScheme.tertiary,
+                fontSize = 11.sp
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                boostReactionsState.senders.forEachIndexed { index, it ->
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .absoluteOffset(
+                                calculatePosition(boostReactionsState.senders.size, index), 0.dp
+                            )
+                    ) {
+                        if (index < 3) {
+                            PhotoUrlImage(
+                                photoUrl = it.photoUrl?.thumbnailUrl,
+                                modifier = Modifier
+                                    .size(25.dp)
+                                    .clip(CircleShape),
+                                color = if (it.color != null) Color(it.color) else Color.Gray,
+                                firstNameLetter = (it.alias?.value)?.getInitials(),
+                                fontSize = 9
+                            )
+                        }
                     }
                 }
             }
-        }
-        if (boostReactionsState.senders.size > 3) {
-            Text(
-                text = "+${(boostReactionsState.senders.size) - 3}",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.padding(start = 4.dp)
-            )
+            if (boostReactionsState.senders.size > 3) {
+                Text(
+                    text = "+${(boostReactionsState.senders.size) - 3}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
         }
     }
 }

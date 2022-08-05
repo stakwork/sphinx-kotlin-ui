@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.saveFile
+import chat.sphinx.wrapper.message.isPaidMessage
+import chat.sphinx.wrapper.message.isPaidPendingMessage
 import chat.sphinx.wrapper.message.media.*
 import kotlinx.coroutines.launch
 import okio.Path
@@ -26,7 +28,7 @@ import okio.Path
 @Composable
 fun MessageFile(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel,
+    chatViewModel: ChatViewModel
 ) {
 
     val message = chatMessage.message
@@ -34,20 +36,24 @@ fun MessageFile(
     val localFilepath = messageMedia?.localFile
     val url = messageMedia?.url?.value ?: ""
 
-    LaunchedEffect(url) {
-        if (localFilepath == null) {
-            chatViewModel.downloadFileMedia(message, chatMessage.isSent)
-        }
-    }
+    val topPadding = if (chatMessage.message.isPaidMessage && chatMessage.isSent) 44.dp else 12.dp
 
-    if (localFilepath != null) {
-        FileUI(
-            messageMedia.localFile,
-            messageMedia.fileName,
-            messageMedia.mediaType
-        )
-    } else {
-        LoadingFile()
+    Column(modifier = Modifier.padding(12.dp, topPadding, 12.dp, 12.dp) ) {
+        if (localFilepath != null) {
+            FileUI(
+                messageMedia.localFile,
+                messageMedia.fileName,
+                messageMedia.mediaType
+            )
+        } else if (chatMessage.isReceived && chatMessage.message.isPaidPendingMessage){
+            PaidPendingFile()
+        } else {
+            LoadingFile()
+
+            LaunchedEffect(url) {
+                chatViewModel.downloadFileMedia(message, chatMessage.isSent)
+            }
+        }
     }
 }
 
@@ -57,10 +63,16 @@ fun LoadingFile() {
 }
 
 @Composable
+fun PaidPendingFile() {
+    FileUI(paidPending = true)
+}
+
+@Composable
 fun FileUI(
     path: Path? = null,
     fileName: FileName? = null,
     mediaType: MediaType? = null,
+    paidPending: Boolean = false
 ) {
     val scope = rememberCoroutineScope()
 
@@ -79,7 +91,11 @@ fun FileUI(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                fileName?.value ?: "Loading...",
+                if (paidPending) {
+                    "PAY TO UNLOCK FILE"
+                } else {
+                    fileName?.value ?: "Loading..."
+                },
                 fontFamily = Roboto,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.tertiary,
@@ -117,7 +133,7 @@ fun FileUI(
                     }
                 }
             )
-        } else {
+        } else if (!paidPending) {
             CircularProgressIndicator(
                 strokeWidth = 2.dp,
                 color = MaterialTheme.colorScheme.tertiary,

@@ -16,7 +16,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
@@ -24,9 +23,10 @@ import chat.sphinx.common.viewmodel.PINHandlingViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.onKeyUp
 import chat.sphinx.utils.SphinxFonts
-import com.example.compose.badge_red
-import com.example.compose.primary_green
+import theme.badge_red
+import theme.primary_green
 import utils.AnimatedContainer
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

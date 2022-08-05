@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.chat.AttachmentPreview
+import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
@@ -52,13 +53,14 @@ import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.util.getInitials
-import com.example.compose.place_holder_text
-import com.example.compose.primary_green
-import com.example.compose.sphinx_orange
+import theme.place_holder_text
+import theme.primary_green
+import theme.sphinx_orange
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
+import theme.primary_blue
 import utils.AnimatedContainer
 import java.awt.Cursor
 
@@ -130,6 +132,10 @@ actual fun Dashboard(
                             }
                         }
                         AttachmentPreview(
+                            chatViewModel,
+                            Modifier.padding(paddingValues)
+                        )
+                        ChatAction(
                             chatViewModel,
                             Modifier.padding(paddingValues)
                         )
@@ -329,6 +335,7 @@ fun SphinxChatDetailBottomAppBar(
     chatViewModel: ChatViewModel?
 ) {
     val scope = rememberCoroutineScope()
+
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
@@ -344,13 +351,16 @@ fun SphinxChatDetailBottomAppBar(
             ) {
                 Spacer(modifier = Modifier.width(16.dp))
                 IconButton(
-                    onClick = { 
-                        scope.launch {
-                            if (chatViewModel != null) run {
+                    onClick = {
+                        if (chatViewModel is ChatTribeViewModel) {
+                            scope.launch {
                                 ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                    chatViewModel.hideChatActionsPopup()
                                     chatViewModel.onMessageFileChanged(path)
                                 }
                             }
+                        } else {
+                            chatViewModel?.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.MENU)
                         }
                     },
                     modifier = Modifier.clip(CircleShape)
@@ -416,7 +426,8 @@ fun SphinxChatDetailBottomAppBar(
                                     chatViewModel.onMessageTextChanged(it.trim())
                                 }
                             },
-                            value = chatViewModel?.editMessageState?.messageText?.value ?: ""
+                            value = chatViewModel?.editMessageState?.messageText?.value ?: "",
+                            cursorBrush = primary_blue
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                     }

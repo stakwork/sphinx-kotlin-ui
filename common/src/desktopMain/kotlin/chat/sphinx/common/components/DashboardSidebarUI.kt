@@ -22,9 +22,9 @@ import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import com.example.compose.place_holder_text
-import com.example.compose.primary_green
-import com.example.compose.primary_red
+import theme.place_holder_text
+import theme.primary_green
+import theme.primary_red
 
 @Composable
 fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {

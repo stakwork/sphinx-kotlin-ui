@@ -1,4 +1,4 @@
-package com.example.compose
+package theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -43,7 +43,7 @@ val md_theme_dark_tertiary = Color(0xFFFFFFFF)
 val md_theme_dark_onTertiary = Color(0xFF000000)
 val md_theme_dark_tertiaryContainer = Color(0xFF5b3d57)
 val md_theme_dark_onTertiaryContainer = Color(0xFFffd7f7)
-val md_theme_dark_error = Color(0xFFffb4a9)
+val md_theme_dark_error = Color(0xFFbc6060)
 val md_theme_dark_errorContainer = Color(0xFF930006)
 val md_theme_dark_onError = Color(0xFF680003)
 val md_theme_dark_onErrorContainer = Color(0xFFffdad4)
@@ -72,6 +72,7 @@ val sphinx_orange = Color(0xFFFFBC58)
 val primary_blue = Color(0xFF618AFF)
 val wash_out_received = Color(0xFF556171)
 val wash_out_send = Color(0xFF829CB9)
+val sphinx_action_menu = Color(0xFF909BAA)
 
 
 val randomColor1 = Color(0xFF7077FF)

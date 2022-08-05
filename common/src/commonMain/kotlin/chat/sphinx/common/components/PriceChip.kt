@@ -5,23 +5,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.TextFieldDefaults.textFieldColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import com.example.compose.place_holder_text
 
 @Composable
 fun PriceChip(
@@ -49,7 +44,7 @@ fun PriceChip(
             )
             Row(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.tertiary.copy(alpha = .4f), RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.tertiary.copy(alpha = .3f), RoundedCornerShape(50))
                     .fillMaxHeight()
                     .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -63,7 +58,8 @@ fun PriceChip(
                         fontFamily = Roboto,
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
-                        color = Color.White
+                        color = Color.White,
+                        textAlign = TextAlign.Center
                     ),
                     onValueChange = {
                         if (chatViewModel != null) run {

@@ -22,6 +22,8 @@ object Res {
         const val ic_received =  "drawable/ic_received.xml"
         const val ic_coin =  "drawable/ic_coin.xml"
         const val ic_qr_code =  "drawable/ic_qr_code.xml"
+        const val ic_received_image_not_available =  "drawable/received_image_not_available.xml"
+        const val paid_image_blurred_placeholder =  "drawable/paid_image_blurred_placeholder.png"
         const val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"
 
         const val existing_user_image = "drawable/existinguserimage.png"
@@ -30,6 +32,14 @@ object Res {
         const val landing_page_image = "drawable/landingpageimage.png"
 
         const val connection_animation =  "drawable/connecting.gif"
+        const val ic_camera =  "drawable/ic_camera.xml"
+        const val ic_media_library =  "drawable/ic_media_library.xml"
+        const val ic_paid_message =  "drawable/ic_paid_message.xml"
+        const val ic_request =  "drawable/ic_request.xml"
+        const val ic_send =  "drawable/ic_send.xml"
+
+        // chat action sheet
+
     }
 
     object string {

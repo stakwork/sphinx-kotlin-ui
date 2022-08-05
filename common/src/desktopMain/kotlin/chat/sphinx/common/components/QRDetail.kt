@@ -25,10 +25,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
+import chat.sphinx.utils.toAnnotatedString
 
 @Composable
 fun QRDetail(
@@ -44,7 +46,7 @@ fun QRDetail(
             onCloseRequest = {
                 dashboardViewModel.toggleQRWindow(false)
             },
-            title = "",
+            title = "QR Code",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(357, 550)
@@ -55,7 +57,8 @@ fun QRDetail(
                 modifier = Modifier.fillMaxSize()
                     .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
                     .clickable {
-                        clipboardManager.setText(AnnotatedString(viewModel.contactQRCodeState.pubKey))
+                        clipboardManager.setText(viewModel.contactQRCodeState.pubKey.toAnnotatedString())
+                        viewModel.toast("Code copied to clipboard")
                     }
             ) {
                 Column(
@@ -131,6 +134,7 @@ fun QRDetail(
                     )
                 }
             }
+            DesktopSphinxToast("QR Code")
         }
     }
 }

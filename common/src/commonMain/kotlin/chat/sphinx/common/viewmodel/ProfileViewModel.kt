@@ -4,33 +4,34 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.ProfileState
+import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
-import chat.sphinx.utils.createPlatformSettings
+import chat.sphinx.utils.ServersUrlsHelper
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
-import chat.sphinx.wrapper.contact.PrivatePhoto
 import chat.sphinx.wrapper.contact.toPrivatePhoto
-import chat.sphinx.wrapper.message.SphinxCallLink
+import chat.sphinx.wrapper.message.media.MediaType
+import chat.sphinx.wrapper.message.media.toFileName
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okio.Path
 import kotlinx.coroutines.flow.collect
-import com.russhwolf.settings.Settings
 
 class ProfileViewModel {
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val relayDataHandler = SphinxContainer.networkModule.relayDataHandlerImpl
+    private val serversUrls = ServersUrlsHelper()
+
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
     private val accountOwnerStateFlow: StateFlow<Contact?>
         get() = contactRepository.accountOwner
-
-//    private val settings: Settings = createPlatformSettings()
 
     var profileState: ProfileState by mutableStateOf(initialState())
 
@@ -107,23 +108,57 @@ class ProfileViewModel {
                 setStatus(loadResponse)
             }
 
-//            settings.putString(key = SphinxCallLink.CALL_SERVER_URL_KEY, value = profileState.meetingServerUrl)
+            serversUrls.setMeetingServer(profileState.meetingServerUrl)
         }
     }
 
     private fun loadServerUrls(){
-        val callServerUrl = SphinxCallLink.CALL_SERVER_URL_KEY
-        val defaultCallServer = SphinxCallLink.DEFAULT_CALL_SERVER_URL
-
-//        val meetingServerUrl = settings.getString(callServerUrl, defaultCallServer)
+        val meetingServer = serversUrls.getMeetingServer()
 
         setProfileState {
             copy(
-                meetingServerUrl = defaultCallServer
+                meetingServerUrl = meetingServer
             )
         }
     }
+
     private fun toPrivatePhotoBoolean(privatePhoto: Int?) : Boolean = privatePhoto == 1
 
+    fun onProfilePictureChanged(filepath: Path) {
+        val ext = filepath.toFile().extension
+        val mediaType = MediaType.Image(MediaType.IMAGE + "/$ext")
 
+        setProfileState {
+            copy(
+                profilePictureResponse = LoadResponse.Loading
+            )
+        }
+
+        profileState.profilePicture.value = AttachmentInfo(
+            filePath = filepath,
+            mediaType = mediaType,
+            fileName = filepath.name.toFileName(),
+            isLocalFile = true
+        )
+        updateProfilePic()
+    }
+
+    private fun updateProfilePic() {
+        scope.launch(dispatchers.mainImmediate){
+            profileState.profilePicture.value?.apply {
+                contactRepository.updateProfilePic(
+                    path = filePath,
+                    mediaType = mediaType,
+                    fileName = fileName?.value ?: "unknown",
+                    contentLength = null
+                ).let { response ->
+                    setProfileState {
+                        copy(
+                            profilePictureResponse = response
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

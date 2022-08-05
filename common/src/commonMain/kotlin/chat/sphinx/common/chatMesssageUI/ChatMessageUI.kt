@@ -3,6 +3,7 @@ package chat.sphinx.common.chatMesssageUI
 import Roboto
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
@@ -18,8 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
+import chat.sphinx.wrapper.chat.isTribe
 
 @Composable
 fun ChatMessageUI(
@@ -45,7 +48,6 @@ fun ChatMessageUI(
                  * Show [ImageProfile] at the starting of chat message if
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
-
                 val showProfilePic = (
                     chatMessage.groupActionLabelText.isNullOrEmpty() &&
                     chatMessage.isReceived &&
@@ -55,7 +57,20 @@ fun ChatMessageUI(
 
                 Box(modifier = Modifier.width(42.dp)) {
                     if (showProfilePic) {
-                        ImageProfile(chatMessage)
+                        ImageProfile(
+                            chatMessage,
+                            Modifier.clickable {
+                                if (chatMessage.chat.isTribe()) {
+                                    chatViewModel.toggleChatActionsPopup(
+                                        ChatViewModel.ChatActionsMode.SEND_TRIBE,
+                                        PaymentViewModel.PaymentData(
+                                            chatId = chatMessage.chat.id,
+                                            messageUUID = chatMessage.message.uuid
+                                        )
+                                    )
+                                }
+                            }
+                        )
                         Spacer(modifier = Modifier.width(12.dp).background(color = Color.Red))
                     }
                 }
@@ -106,15 +121,18 @@ fun ChatMessageUI(
                                     if (chatMessage.isReceived) {
                                         BubbleArrow(false, bubbleColor)
                                     }
-                                    ChatCard(
-                                        chatMessage,
-                                        chatViewModel,
-                                        modifier = if (chatMessage.message.isMediaAttachmentAvailable) {
+                                    Column(
+                                        modifier = if (chatMessage.message.isMediaMessage) {
                                             Modifier.fillMaxWidth(0.5f)
                                         } else {
                                             Modifier.weight(1f, fill = false)
                                         }
-                                    )
+                                    ) {
+                                        ChatCard(
+                                            chatMessage,
+                                            chatViewModel
+                                        )
+                                    }
                                     if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
                                         ChatOptionMenu(chatMessage, chatViewModel)
                                     }

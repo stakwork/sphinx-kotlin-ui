@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -29,11 +30,13 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.DesktopResource
-import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.QRDetail
+import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.components.pin.ChangePin
 import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.ResetPinViewModel
@@ -46,8 +49,11 @@ import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.lightning.asFormattedString
+import chat.sphinx.wrapper.message.media.isImage
 import com.example.compose.AppTheme
-import com.example.compose.badge_red
+import theme.badge_red
+import kotlinx.coroutines.launch
+import utils.deduceMediaType
 
 @Composable
 fun Profile(dashboardViewModel: DashboardViewModel) {
@@ -55,18 +61,18 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
     val viewModel = remember { ProfileViewModel() }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
     var isOpen by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
 
     if (isOpen) {
         Window(
             onCloseRequest = {
                 dashboardViewModel.toggleProfileWindow(false)
             },
-            title = "Sphinx",
+            title = "Profile",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(420, 830)
             ),
-
             icon = sphinxIcon,
         ) {
             AppTheme {
@@ -82,12 +88,30 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(24.dp)
                         ) {
-                            PhotoUrlImage(
-                                photoUrl = viewModel.profileState.photoUrl,
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .clip(CircleShape)
-                            )
+                            if (viewModel.profileState.profilePictureResponse is LoadResponse.Loading) {
+                                CircularProgressIndicator(
+                                    Modifier.padding(10.dp).size(40.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                PhotoUrlImage(
+                                    photoUrl = viewModel.profileState.photoUrl,
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            scope.launch {
+                                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                                    if (path.deduceMediaType().isImage) {
+                                                        viewModel.onProfilePictureChanged(path)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                )
+                            }
+
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(verticalArrangement = Arrangement.Center) {
                                 Text(
@@ -117,9 +141,9 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                                         fontSize = 14.sp
                                     )
                                 }
-
                             }
                         }
+
                         Row(
                             modifier = Modifier
                                 .weight(1f)
@@ -129,6 +153,8 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                         saveButton(viewModel)
                     }
                 }
+                DesktopSphinxToast("Profile")
+                DesktopSphinxConfirmAlert("Profile")
             }
         }
     }
@@ -394,7 +420,6 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
-                    enabled = false
                 )
                 Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
             }
@@ -453,8 +478,11 @@ fun ResetPin(dashboardViewModel: DashboardViewModel) {
 }
 
 @Composable
-fun BackupKeys(dashboardViewModel: DashboardViewModel) {
+fun BackupKeys(
+    dashboardViewModel: DashboardViewModel
+) {
     val pinExportKeysViewModel = remember { PinExportKeysViewModel() }
+    val clipboardManager = LocalClipboardManager.current
 
     Window(
         onCloseRequest = { dashboardViewModel.toggleBackUpWindow(false) },
@@ -474,7 +502,7 @@ fun BackupKeys(dashboardViewModel: DashboardViewModel) {
         )
 
         backupKeysState.restoreString?.let {
-            LocalClipboardManager.current.setText(it.toAnnotatedString())
+            clipboardManager.setText(it.toAnnotatedString())
         }
     }
 }
