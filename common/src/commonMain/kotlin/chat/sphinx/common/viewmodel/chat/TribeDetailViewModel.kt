@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.common.state.TribeDetailState
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.concepts.network.query.chat.model.ChatDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.di.container.SphinxContainer
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.collect
 import okio.Path
 
 class TribeDetailViewModel(
+    private val dashboardViewModel: DashboardViewModel,
     private val detailChatId: ChatId
 ) {
 
@@ -149,11 +151,7 @@ class TribeDetailViewModel(
 
     private fun updateFinished(response: Response<ChatDto, ResponseError>) {
         if (response is Response.Success) {
-            setTribeDetailState {
-                copy(
-                    exitTribe = true
-                )
-            }
+            dashboardViewModel.toggleTribeDetailWindow(false, null)
         } else if (response is Response.Error) {
             loadTribeDetail()
         }
@@ -170,11 +168,7 @@ class TribeDetailViewModel(
 
                 chatRepository.exitAndDeleteTribe(chat).let { response ->
                     if (response == Response.Success( true)) {
-                        setTribeDetailState {
-                            copy(
-                                exitTribe = true
-                            )
-                        }
+                        dashboardViewModel.toggleTribeDetailWindow(false, null)
                         ChatDetailState.screenState(ChatDetailData.EmptyChatDetailData)
                     } else {
                         loadTribeDetail()

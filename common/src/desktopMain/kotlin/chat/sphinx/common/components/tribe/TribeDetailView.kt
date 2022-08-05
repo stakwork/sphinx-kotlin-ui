@@ -50,7 +50,7 @@ import utils.deduceMediaType
 @Composable
 actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatId) {
 
-    val viewModel = TribeDetailViewModel(chatId)
+    val viewModel = TribeDetailViewModel(dashboardViewModel, chatId)
     val scope = rememberCoroutineScope()
 
     Window(
@@ -315,9 +315,6 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
     }
     if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
         QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.tribeDetailState.shareTribeUrl, null))
-    }
-    if (viewModel.tribeDetailState.exitTribe){
-        dashboardViewModel.toggleTribeDetailWindow(false, null)
     }
 }
 
