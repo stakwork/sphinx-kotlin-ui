@@ -53,7 +53,7 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
-            packageVersion = "1.0.4"
+            packageVersion = "1.0.5"
 
             val iconsRoot = project.file("../common/src/desktopMain/resources/images")
             val sphinxProperties = Properties().apply {
