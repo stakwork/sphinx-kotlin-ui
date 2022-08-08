@@ -61,7 +61,6 @@ actual fun PinAndNameView() {
             Row(modifier = Modifier.fillMaxSize()) {
 
                 Box(
-//                contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxHeight()
                         .weight(1f).background(MaterialTheme.colorScheme.background)
@@ -114,9 +113,9 @@ actual fun PinAndNameView() {
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                             TextField("Nickname") {}
                             Spacer(modifier = Modifier.height(8.dp))
-                            TextField("Set PIN (6 Digits)",isPasswordField = true) {}
+                            TextField("Set PIN (6 Digits)", isPasswordField = true) {}
                             Spacer(modifier = Modifier.height(8.dp))
-                            TextField("Confirm PIN",isPasswordField = true) {}
+                            TextField("Confirm PIN", isPasswordField = true) {}
                         }
                         Button(
                             shape = RoundedCornerShape(30.dp),
@@ -156,80 +155,31 @@ actual fun PinAndNameView() {
 }
 
 @Composable
-private fun TextField(headerName: String,isPasswordField:Boolean=false, onTextChange: (String) -> Unit) {
+private fun TextField(headerName: String, isPasswordField: Boolean = false, onTextChange: (String) -> Unit) {
     val value = remember { mutableStateOf("") }
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
         Spacer(modifier = Modifier.width(16.dp))
         Text(headerName, fontSize = 10.sp, color = MaterialTheme.colorScheme.onBackground)
     }
     Spacer(modifier = Modifier.height(2.dp))
-//    OutlinedTextField(
-//        shape = RoundedCornerShape(56.dp),
-//        colors = TextFieldDefaults.outlinedTextFieldColors(
-//
-//            focusedBorderColor = MaterialTheme.colorScheme.tertiary,
-//            backgroundColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//            unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//            textColor = MaterialTheme.colorScheme.tertiary,
-//        ),
-//
-//        value = value.value,
-//        textStyle = LocalTextStyle.current.copy(
-//            color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-//            fontSize = 10.sp
-//        ),
-//        modifier = Modifier.fillMaxWidth().height(40.dp),
-//        onValueChange = {
-//            onTextChange(it)
-//            value.value = it
-//        },
-//        singleLine = true,
-//    )
-//    val focusState = remember { mutableStateOf(false) }
-//    val focusRequester = FocusRequester()
-//    BasicTextField(value = value.value,
-//        onValueChange = {
-//                        value.value=it
-//        }, Modifier.fillMaxWidth(),
-//        textStyle = LocalTextStyle.current.copy(
-//            color = MaterialTheme.colorScheme.tertiary,
-//            fontSize = 10.sp
-//        ),
-//        decorationBox = {
-//            Row(
-//                Modifier
-//                    .background(
-//                        androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
-//                        RoundedCornerShape(percent = 50)
-//                    ).focusRequester(focusRequester)
-//                    .padding(16.dp)
-//                    .fillMaxWidth().onFocusChanged {
-//                        focusState.value = it.isFocused
-//                    }.border(
-//                        BorderStroke(
-//                            1.dp,
-//                            color = if (focusState.value) MaterialTheme.colorScheme.tertiary else androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
-//                        )
-//                    ).tapGestureFilter { focusModifier.requestFocus() }
-//                                        ,
-//            ) {
-//
-//            }
-//        }
-//    )
-    val isFocus= remember { mutableStateOf(false) }
+    val isFocus = remember { mutableStateOf(false) }
     Box {
         BasicTextField(
-            modifier= Modifier.height(36.dp).clip(
+            modifier = Modifier.height(36.dp).clip(
                 RoundedCornerShape(percent = 50)
             ).background(
                 Color(0xFF001317),
-            ).border(if(isFocus.value) BorderStroke(2.dp,MaterialTheme.colorScheme.secondary) else BorderStroke(2.dp,Color.Transparent),shape = RoundedCornerShape(50)).onFocusChanged {
-                isFocus.value=it.isFocused
+            ).border(
+                if (isFocus.value) BorderStroke(
+                    2.dp,
+                    MaterialTheme.colorScheme.secondary
+                ) else BorderStroke(2.dp, Color.Transparent), shape = RoundedCornerShape(50)
+            ).onFocusChanged {
+                isFocus.value = it.isFocused
             }.padding(horizontal = 16.dp, vertical = 4.dp),
             value = value.value,
             onValueChange = {
-                value.value=it
+                value.value = it
             },
 
             singleLine = true,
@@ -240,21 +190,14 @@ private fun TextField(headerName: String,isPasswordField:Boolean=false, onTextCh
                 fontFamily = Roboto,
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
-                color =  androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
             ),
-            visualTransformation = if(isPasswordField)PasswordVisualTransformation() else VisualTransformation.None,
+            visualTransformation = if (isPasswordField) PasswordVisualTransformation() else VisualTransformation.None,
             decorationBox = { innerTextField ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(Modifier.weight(1f)) {
-//                        androidx.compose.material.Text(
-//                            "",
-//                            style = LocalTextStyle.current.copy(
-//                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = .7f),
-//                                fontSize = 14.sp
-//                            )
-//                        )
                         innerTextField()
                     }
                 }

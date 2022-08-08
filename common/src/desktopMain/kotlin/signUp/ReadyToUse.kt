@@ -54,7 +54,6 @@ actual fun ReadyToUse() {
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             Box(
-//                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f).background(MaterialTheme.colorScheme.background)
@@ -83,26 +82,36 @@ actual fun ReadyToUse() {
                                     PhotoUrlImage(
                                         photoUrl = null,
                                         modifier = Modifier
-                                            .size(50.dp)
-                                        ,
+                                            .size(50.dp),
                                         firstNameLetter = ("Sachin Kumar").getInitials(),
                                         fontSize = 9
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Tomas", color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground)
+                                    Text(
+                                        "Tomas",
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                                    )
                                 }
                             }
                         }
                         Box(
-//                            Icons.Filled.ChangeHistory,
-//                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.offset(x = 77.dp, y = 55.dp).size(15.dp).rotate(180f).background(shape = TriangleEdgeShape(60), color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary),
-//                            contentDescription = null
+                            modifier = Modifier.offset(x = 77.dp, y = 55.dp).size(15.dp).rotate(180f).background(
+                                shape = TriangleEdgeShape(60),
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+                            ),
                         )
                     }
                 }
-                Box(modifier = Modifier.size(35.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.1f)).align(Alignment.Center), contentAlignment = Alignment.Center) {
-                    Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.size(35.dp).clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.1f))
+                        .align(Alignment.Center), contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier.size(7.dp).clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
 
                     }
                 }
