@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-class EditContactViewModel() : ContactViewModel() {
+class EditContactViewModel : ContactViewModel() {
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
@@ -39,30 +39,24 @@ class EditContactViewModel() : ContactViewModel() {
     }
 
     fun loadContact(contactId: ContactId?) {
-        this.contactId = contactId
-
-        loadContact()
+        if (this.contactId != contactId) {
+            this.contactId = contactId
+            loadContact()
+        }
     }
 
     private fun loadContact() {
         scope.launch(dispatchers.mainImmediate) {
             contactId?.let {
                 contactRepository.getContactById(it).firstOrNull()?.let { contact ->
-//                    contact.nodePubKey?.let { lightningNodePubKey ->
-
-//                        val subscription = subscriptionRepository.getActiveSubscriptionByContactId(
-//                            contactId
-//                        ).firstOrNull()
-
-                        setContactState {
-                            copy(
-                                contactAlias = contact.alias?.value ?: "",
-                                lightningNodePubKey = contact.nodePubKey?.value ?: "",
-                                lightningRouteHint = contact.routeHint?.value ?: "",
-                                photoUrl = contact.photoUrl,
-                            )
-                        }
-//                    }
+                    setContactState {
+                        copy(
+                            contactAlias = contact.alias?.value ?: "",
+                            lightningNodePubKey = contact.nodePubKey?.value ?: "",
+                            lightningRouteHint = contact.routeHint?.value ?: "",
+                            photoUrl = contact.photoUrl,
+                        )
+                    }
                 }
             }
         }
@@ -78,12 +72,12 @@ class EditContactViewModel() : ContactViewModel() {
     }
 
     override fun onAddressTextChanged(text: String) {
-        TODO("Not yet implemented")
+        //TODO("Not yet implemented")
     }
 
 
     override fun onRouteHintTextChanged(text: String) {
-        TODO("Not yet implemented")
+        //TODO("Not yet implemented")
     }
 
     private fun setStatus(status: LoadResponse<Any, ResponseError>?) {

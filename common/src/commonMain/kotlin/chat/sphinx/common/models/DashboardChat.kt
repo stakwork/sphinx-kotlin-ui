@@ -244,7 +244,7 @@ sealed class DashboardChat {
             override val message: Message?,
             val contact: Contact,
             override val color: Int?,
-            override val unseenMessageFlow: Flow<Long?>,
+            override val unseenMessageFlow: Flow<Long?>?,
         ): Active() {
 
             init {
@@ -282,7 +282,7 @@ sealed class DashboardChat {
             override val message: Message?,
             override val owner: Contact?,
             override val color: Int?,
-            override val unseenMessageFlow: Flow<Long?>,
+            override val unseenMessageFlow: Flow<Long?>?,
         ): Active() {
 
             override val chatName: String?

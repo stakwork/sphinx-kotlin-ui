@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.EditMessageState
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.concepts.network.query.lightning.model.route.isRouteAvailable
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -17,9 +18,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class ChatTribeViewModel(
-    chatId: ChatId
+    chatId: ChatId,
+    dashboardViewModel: DashboardViewModel
 ): ChatViewModel(
-    chatId
+    chatId,
+    dashboardViewModel
 ) {
     override val chatSharedFlow: SharedFlow<Chat?> = flow {
         chatId?.let { emitAll(chatRepository.getChatByIdFlow(it)) }

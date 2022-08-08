@@ -28,10 +28,8 @@ import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.ChatMuted
-
 import androidx.compose.ui.text.font.FontWeight
 import chat.sphinx.common.Res
-import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.util.getInitials
@@ -41,8 +39,7 @@ import theme.primary_green
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun ChatRow(
-    dashboardChat: DashboardChat,
-    chatListViewModel: ChatListViewModel
+    dashboardChat: DashboardChat
 ) {
     val today00: DateTime by lazy {
         DateTime.getToday00()

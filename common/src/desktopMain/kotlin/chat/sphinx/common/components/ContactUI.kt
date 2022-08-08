@@ -33,6 +33,7 @@ import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.dashboard.ContactId
+import chat.sphinx.wrapper.lightning.LightningNodeDescriptor
 import theme.badge_red
 import theme.light_divider
 
@@ -55,7 +56,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             when (screenState) {
                 is ContactScreenState.Choose -> AddContact(dashboardViewModel)
                 is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
-                is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null)
+                is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null, screenState.pubKey)
                 is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
             }
         }
@@ -84,7 +85,7 @@ fun AddContact(dashboardViewModel: DashboardViewModel) {
             Divider(Modifier.padding(12.dp), color = Color.Transparent)
             CommonButton(
                 callback = {
-                    dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx)
+                    dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx())
                 },
                 text = "Already on Sphinx",
                 enabled = true
@@ -216,7 +217,11 @@ fun AddNewContactOnSphinx() {
 }
 
 @Composable
-fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
+fun ContactForm(
+    dashboardViewModel: DashboardViewModel,
+    contactId: ContactId?,
+    pubKey: LightningNodeDescriptor? = null
+) {
 
     val editMode = (contactId != null)
 
@@ -225,6 +230,8 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
     } else {
         remember { AddContactViewModel() }
     }
+
+    (viewModel as? AddContactViewModel)?.fillPubKey(pubKey?.value)
 
     if ((viewModel as? EditContactViewModel)?.contactId != contactId) {
         (viewModel as? EditContactViewModel)?.loadContact(contactId)

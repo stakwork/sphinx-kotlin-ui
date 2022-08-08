@@ -8,11 +8,17 @@ import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.*
 import androidx.compose.ui.graphics.Color
+import chat.sphinx.concepts.link_preview.model.*
+import chat.sphinx.utils.linkify.LinkSpec
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.contact.ContactAlias
 import chat.sphinx.wrapper.contact.toContactAlias
+import chat.sphinx.wrapper.lightning.LightningNodeDescriptor
 import chat.sphinx.wrapper.lightning.Sat
+import chat.sphinx.wrapper.tribe.TribeJoinLink
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class ChatMessage(
     val chat: Chat,
@@ -23,7 +29,7 @@ class ChatMessage(
     val boostMessage: () -> Unit,
     val flagMessage: () -> Unit,
     val deleteMessage: () -> Unit,
-//    val replyToMessageAction: () -> Unit
+    private val previewProvider: suspend (link: LinkSpec) -> LinkPreview?,
 ) {
 
     val replyToMessageSenderAliasPreview: String by lazy {
@@ -108,21 +114,7 @@ class ChatMessage(
         }
     }
 
-    val messageUISpacerWidth: Int by lazy {
-        message.retrieveTextToShow()?.let { messageText ->
-            when {
-                messageText.length > 100 -> 40
-                messageText.length > 50 -> 50
-                else -> 60
-            }
-        } ?: 40
-    }
 
-    val isAdminView = if (chat.ownerPubKey == null || accountOwner().nodePubKey == null) {
-        false
-    } else {
-        chat.ownerPubKey == accountOwner().nodePubKey
-    }
 
     val isSent: Boolean by lazy {
         message.sender == chat.contactIds.firstOrNull()
@@ -155,24 +147,21 @@ class ChatMessage(
         isSent && message.status.isFailed()
     }
 
+    private var linkPreviewLayoutState: LinkPreview? = null
+    private val previewLock = Mutex()
+    suspend fun retrieveLinkPreview(link: LinkSpec): LinkPreview? {
+        return linkPreviewLayoutState ?: previewLock.withLock {
+            linkPreviewLayoutState ?: previewProvider?.invoke(link)
+                ?.also { linkPreviewLayoutState = it }
+        }
+    }
+
     private val unsupportedMessageTypes: List<MessageType> by lazy {
         listOf(
             MessageType.Attachment,
             MessageType.Payment,
             MessageType.GroupAction.TribeDelete,
         )
-    }
-
-    val unsupportedMessageType: String? by lazy {
-        if (
-            unsupportedMessageTypes.contains(message.type) && message.messageMedia?.mediaType?.isSphinxText != true &&
-            message.messageMedia?.mediaType?.isImage != true && message.messageMedia?.mediaType?.isAudio != true &&
-            message.messageMedia?.mediaType?.isVideo != true
-        ) {
-            "${message.type} messages are unsupported"
-        } else {
-            null
-        }
     }
 
     val invoiceExpirationHeader: String? by lazy {
@@ -229,4 +218,37 @@ class ChatMessage(
         val alias: ContactAlias?,
         val color: Int?,
     )
+
+    sealed class LinkPreview private constructor() {
+        data class ContactPreview(
+            val alias: ContactAlias?,
+            val photoUrl: PhotoUrl?,
+            val showBanner: Boolean,
+
+            // Used only to anchor data for click listeners
+            val lightningNodeDescriptor: LightningNodeDescriptor
+        ): LinkPreview()
+
+        data class HttpUrlPreview(
+            val title: HtmlPreviewTitle?,
+            val domainHost: HtmlPreviewDomainHost,
+            val description: PreviewDescription?,
+            val imageUrl: PreviewImageUrl?,
+            val favIconUrl: HtmlPreviewFavIconUrl?,
+
+            // Used only to anchor data for click listeners
+            val url: String,
+        ): LinkPreview()
+
+        data class TribeLinkPreview(
+            val name: TribePreviewName,
+            val description: PreviewDescription?,
+            val imageUrl: PreviewImageUrl?,
+            val showBanner: Boolean,
+
+            // Used only to anchor data for click listeners
+            val joinLink: TribeJoinLink,
+        ) : LinkPreview()
+    }
+
 }

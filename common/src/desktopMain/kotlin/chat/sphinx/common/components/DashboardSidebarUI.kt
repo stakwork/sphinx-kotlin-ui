@@ -166,7 +166,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 }
             )
 
-            ChatListUI(chatListViewModel)
+            ChatListUI()
 
             val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
             if (addContactWindowState.first) {

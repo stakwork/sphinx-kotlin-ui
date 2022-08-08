@@ -22,9 +22,8 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
-import chat.sphinx.wrapper.isValidPeopleConnectLink
-import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
 import chat.sphinx.wrapper.chat.isTribe
+import chat.sphinx.utils.containLinks
 
 @Composable
 fun ChatMessageUI(
@@ -123,8 +122,13 @@ fun ChatMessageUI(
                                     if (chatMessage.isReceived) {
                                         BubbleArrow(false, bubbleColor)
                                     }
+
+                                    val messageContainsLinks = (chatMessage.message.retrieveTextToShow()?.containLinks() == true)
+
                                     Column(
-                                        modifier = if (chatMessage.message.isMediaMessage) {
+                                        modifier = if (messageContainsLinks) {
+                                            Modifier.width(350.dp)
+                                        } else if (chatMessage.message.isMediaMessage) {
                                             Modifier.fillMaxWidth(0.5f)
                                         } else {
                                             Modifier.weight(1f, fill = false)
@@ -132,7 +136,12 @@ fun ChatMessageUI(
                                     ) {
                                         ChatCard(
                                             chatMessage,
-                                            chatViewModel
+                                            chatViewModel,
+                                            modifier = if (messageContainsLinks) {
+                                                Modifier.width(350.dp)
+                                            } else {
+                                                null
+                                            }
                                         )
                                     }
                                     if (chatMessage.isReceived && chatMessage.isDeleted.not()) {

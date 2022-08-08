@@ -18,6 +18,7 @@ object Res {
         const val ic_giphy =  "drawable/ic_giphy_logo_1.xml"
         const val ic_boost_green =  "drawable/ic_boost_green.xml"
         const val ic_boost_gray =  "drawable/ic_boost_gray.xml"
+        const val ic_add_contact =  "drawable/ic_add_contact.xml"
         const val ic_sent =  "drawable/ic_sent.xml"
         const val ic_received =  "drawable/ic_received.xml"
         const val ic_coin =  "drawable/ic_coin.xml"
