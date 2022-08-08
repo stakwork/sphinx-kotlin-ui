@@ -81,6 +81,17 @@ class DashboardViewModel: WindowFocusListener {
         _profileStateFlow.value = open
     }
 
+    private val _joinTribeStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val joinTribeStateFlow: StateFlow<Boolean>
+        get() = _joinTribeStateFlow.asStateFlow()
+
+    fun toggleJoinTribeWindow(open: Boolean) {
+        _joinTribeStateFlow.value = open
+    }
+
     private val _backUpWindowStateFlow: MutableStateFlow<Boolean> by lazy {
         MutableStateFlow(false)
     }

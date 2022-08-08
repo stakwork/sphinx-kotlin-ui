@@ -26,13 +26,16 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.PhotoUrlImage
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
 
 @Composable
-actual fun JoinTribeView() {
+actual fun JoinTribeView(dashboardViewModel: DashboardViewModel) {
     Window(
-        onCloseRequest = {},
+        onCloseRequest = {
+            dashboardViewModel.toggleJoinTribeWindow(false)
+        },
         title = "Sphinx",
 
         state = WindowState(
