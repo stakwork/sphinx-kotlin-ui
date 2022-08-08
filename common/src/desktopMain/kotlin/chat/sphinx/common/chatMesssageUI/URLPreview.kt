@@ -95,7 +95,7 @@ actual fun URLPreview(
                     maxLines = 1
                 )
             }
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             PhotoUrlImage(
                 linkPreview.imageUrl?.toPhotoUrl(),
                 modifier = Modifier.size(80.dp)

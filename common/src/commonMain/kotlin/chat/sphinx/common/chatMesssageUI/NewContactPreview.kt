@@ -7,6 +7,7 @@ import chat.sphinx.utils.linkify.LinkSpec
 
 @Composable
 expect fun NewContactPreview(
+    chatMessage: ChatMessage,
     linkPreview: ChatMessage.LinkPreview.ContactPreview,
     chatViewModel: ChatViewModel
 )

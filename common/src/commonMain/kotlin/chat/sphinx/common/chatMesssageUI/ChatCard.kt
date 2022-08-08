@@ -265,14 +265,16 @@ fun LinkPreviews(
         var linkPreview: MutableState<ChatMessage.LinkPreview?> = rememberSaveable { mutableStateOf(null) }
 
         LaunchedEffect(link.url) {
-            linkPreview.value = chatMessage.retrieveLinkPreview(link)
+            if (linkPreview.value == null) {
+                linkPreview.value = chatMessage.retrieveLinkPreview(link)
+            }
         }
 
         when (linkPreview.value) {
             is ChatMessage.LinkPreview.ContactPreview -> {
                 (linkPreview.value as? ChatMessage.LinkPreview.ContactPreview)?.let { contactLinkPreview ->
                     if (contactLinkPreview.showBanner) {
-                        NewContactPreview(contactLinkPreview, chatViewModel)
+                        NewContactPreview(chatMessage, contactLinkPreview, chatViewModel)
                     } else {
                         ExistingContactPreview(contactLinkPreview, chatViewModel)
                     }
@@ -281,7 +283,7 @@ fun LinkPreviews(
             is ChatMessage.LinkPreview.TribeLinkPreview -> {
                 (linkPreview.value as? ChatMessage.LinkPreview.TribeLinkPreview)?.let { tribeLinkPreview ->
                     if (tribeLinkPreview.showBanner) {
-                        NewTribePreview(tribeLinkPreview, chatViewModel)
+                        NewTribePreview(chatMessage, tribeLinkPreview, chatViewModel)
                     } else {
                         ExistingTribePreview(tribeLinkPreview, chatViewModel)
                     }

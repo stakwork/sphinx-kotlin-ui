@@ -34,6 +34,7 @@ import chat.sphinx.wrapper.PhotoUrl
 
 @Composable
 actual fun NewTribePreview(
+    chatMessage: ChatMessage,
     linkPreview: ChatMessage.LinkPreview.TribeLinkPreview,
     chatViewModel: ChatViewModel
 ) {
@@ -41,7 +42,13 @@ actual fun NewTribePreview(
         width = 2f,
         pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f), 0f)
     )
-    val color = MaterialTheme.colorScheme.onBackground
+
+    val color = if (chatMessage.isSent) {
+        MaterialTheme.colorScheme.inversePrimary
+    } else {
+        MaterialTheme.colorScheme.onBackground
+    }
+
     Box(
         modifier = Modifier
             .size(350.dp, 168.dp)
@@ -117,7 +124,13 @@ actual fun NewTribePreview(
                 },
                 modifier = Modifier.fillMaxWidth().height(40.dp),
                 contentPadding= PaddingValues(0.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary)
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = if (chatMessage.isSent) {
+                        MaterialTheme.colorScheme.inversePrimary
+                    } else {
+                        MaterialTheme.colorScheme.secondary
+                    }
+                )
             ) {
                 Text(
                     "SEE TRIBE",

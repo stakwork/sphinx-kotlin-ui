@@ -7,6 +7,7 @@ import chat.sphinx.utils.linkify.LinkSpec
 
 @Composable
 actual fun NewTribePreview(
+    chatMessage: ChatMessage,
     linkPreview: ChatMessage.LinkPreview.TribeLinkPreview,
     chatViewModel: ChatViewModel
 ) {
