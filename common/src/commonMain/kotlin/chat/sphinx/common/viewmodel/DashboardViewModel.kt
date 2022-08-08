@@ -1,32 +1,34 @@
 package chat.sphinx.common.viewmodel
 
+import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenType
-import chat.sphinx.common.state.DashboardState
+import chat.sphinx.common.state.DashboardScreenState
+import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.concepts.socket_io.SocketIOManager
-import chat.sphinx.concepts.socket_io.SocketIOState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
-import chat.sphinx.wrapper.lightning.Sat
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.awt.event.WindowEvent
+import java.awt.event.WindowFocusListener
+import kotlinx.coroutines.flow.collect
 
-class DashboardViewModel {
+class DashboardViewModel: WindowFocusListener {
     val dispatchers = SphinxContainer.appModule.dispatchers
-    val viewModelScope = SphinxContainer.appModule.applicationScope
-    val sphinxNotificationManager = createSphinxNotificationManager()
-    val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
-    val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-    val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
+    private val viewModelScope = SphinxContainer.appModule.applicationScope
+    private val sphinxNotificationManager = createSphinxNotificationManager()
+    private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+    private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
 
     private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
         MutableStateFlow(null)
@@ -35,19 +37,90 @@ class DashboardViewModel {
     val balanceStateFlow: StateFlow<NodeBalance?>
         get() = _balanceStateFlow.asStateFlow()
 
-    init {
-        if (SphinxContainer.authenticationModule.authenticationCoreManager.getEncryptionKey() != null) {
-            DashboardState.screenState(DashboardScreenType.Unlocked)
-            networkRefresh()
+    private val _contactWindowStateFlow: MutableStateFlow<Pair<Boolean, ContactScreenState?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
+    val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
+        get() = _contactWindowStateFlow.asStateFlow()
+
+    fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
+        _contactWindowStateFlow.value = Pair(open, screen)
+    }
+
+    private val _tribeDetailWindowStateFlow: MutableStateFlow<Pair<Boolean, ChatId?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
+    val tribeDetailStateFlow: StateFlow<Pair<Boolean, ChatId?>>
+        get() = _tribeDetailWindowStateFlow.asStateFlow()
+
+    fun toggleTribeDetailWindow(open: Boolean, chatId: ChatId?) {
+        _tribeDetailWindowStateFlow.value = Pair(open, chatId)
+    }
+
+    private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val qrWindowStateFlow: StateFlow<Boolean>
+        get() = _qrWindowStateFlow.asStateFlow()
+
+    fun toggleQRWindow(open: Boolean) {
+        _qrWindowStateFlow.value = open
+    }
+
+    private val _profileStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val profileStateFlow: StateFlow<Boolean>
+        get() = _profileStateFlow.asStateFlow()
+
+    fun toggleProfileWindow(open: Boolean) {
+        _profileStateFlow.value = open
+    }
+
+    private val _backUpWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val backUpWindowStateFlow: StateFlow<Boolean>
+        get() = _backUpWindowStateFlow.asStateFlow()
+
+    fun toggleBackUpWindow(open: Boolean) {
+        _backUpWindowStateFlow.value = open
+    }
+
+    private val _changePinWindowStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val changePinWindowStateFlow: StateFlow<Boolean>
+        get() = _changePinWindowStateFlow.asStateFlow()
+
+    fun toggleChangePinWindow(open: Boolean) {
+        _changePinWindowStateFlow.value = open
+    }
+
+    private fun getRelayKeys() {
+        viewModelScope.launch(dispatchers.io) {
+            repositoryDashboard.getAndSaveTransportKey()
+            repositoryDashboard.getOrCreateHMacKey()
+        }
+    }
+
+    private var screenInit: Boolean = false
+    fun screenInit() {
+        if (screenInit) {
+            return
+        } else {
+            screenInit = true
         }
 
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            socketIOManager.socketIOStateFlow.collect { state ->
-                if (state is SocketIOState.Uninitialized) {
-                    socketIOManager.connect()
-                }
-            }
-        }
+        getRelayKeys()
+        networkRefresh()
+        connectSocket()
 
         viewModelScope.launch(dispatchers.mainImmediate) {
             repositoryDashboard.getAccountBalanceStateFlow().collect {
@@ -55,6 +128,21 @@ class DashboardViewModel {
             }
         }
     }
+
+    private fun connectSocket() {
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            socketIOManager.connect()
+        }
+    }
+
+    override fun windowGainedFocus(p0: WindowEvent?) {
+        if (DashboardScreenState.screenState() == DashboardScreenType.Unlocked) {
+            networkRefresh()
+            connectSocket()
+        }
+    }
+
+    override fun windowLostFocus(p0: WindowEvent?) { }
 
     private val _networkStateFlow: MutableStateFlow<LoadResponse<Boolean, ResponseError>> by lazy {
         MutableStateFlow(LoadResponse.Loading)
@@ -71,7 +159,6 @@ class DashboardViewModel {
         get() = _restoreStateFlow.asStateFlow()
 
     private var jobNetworkRefresh: Job? = null
-    private var jobPushNotificationRegistration: Job? = null
 
 
     fun networkRefresh() {
@@ -79,34 +166,11 @@ class DashboardViewModel {
             return
         }
 
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            repositoryDashboard.networkRefreshBalance.collect { }
+        }
+
         jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
-            contactRepository.networkRefreshContacts.collect { response ->
-                Exhaustive@
-                when (response) {
-                    is LoadResponse.Loading -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Error -> {}
-                    is Response.Success -> {}
-                }
-            }
-
-            repositoryDashboard.networkRefreshBalance.collect { response ->
-                Exhaustive@
-                when (response) {
-                    is LoadResponse.Loading -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Error -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Success -> {}
-                }
-            }
-
-            if (_networkStateFlow.value is Response.Error) {
-                jobNetworkRefresh?.cancel()
-            }
 
             repositoryDashboard.networkRefreshLatestContacts.collect { response ->
                 Exhaustive@
@@ -131,24 +195,6 @@ class DashboardViewModel {
                 jobNetworkRefresh?.cancel()
             }
 
-            // must occur after contacts have been retrieved such that
-            // an account owner is available, otherwise it just suspends
-            // until it is.
-            if (jobPushNotificationRegistration == null) {
-                jobPushNotificationRegistration = launch(dispatchers.mainImmediate) {
-                    // TODO: Return push notifications...
-//                    pushNotificationRegistrar.register().let { response ->
-//                        Exhaustive@
-//                        when (response) {
-//                            is Response.Error -> {
-//                                // TODO: Handle on the UI
-//                            }
-//                            is Response.Success -> {}
-//                        }
-//                    }
-                }
-            }
-
             repositoryDashboard.networkRefreshMessages.collect { response ->
                 Exhaustive@
                 when (response) {
@@ -170,6 +216,10 @@ class DashboardViewModel {
                         _networkStateFlow.value = response
                     }
                 }
+            }
+
+            if (_networkStateFlow.value is Response.Error) {
+                jobNetworkRefresh?.cancel()
             }
         }
     }

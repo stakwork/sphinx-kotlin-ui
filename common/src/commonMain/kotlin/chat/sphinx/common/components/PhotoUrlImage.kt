@@ -1,9 +1,9 @@
 package chat.sphinx.common.components
 
+import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -12,11 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.resolveDefaults
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.PhotoUrl
+import chat.sphinx.wrapper.isThumbnailUrl
+import chat.sphinx.wrapper.notThumbnailUrl
 import io.kamel.core.config.KamelConfig
 import io.kamel.core.config.httpFetcher
 import io.kamel.core.config.takeFrom
@@ -46,59 +48,110 @@ val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
 fun PhotoUrlImage(
     photoUrl: PhotoUrl?,
     modifier: Modifier = Modifier,
-    effect: @Composable() (() -> Unit?)? = null,
+    effect: @Composable (() -> Unit?)? = null,
     firstNameLetter: String? = null,
-    color: Color? = null
+    color: Color? = null,
+    fontSize: Int? = null
 ) {
+
+    val initials: @Composable () -> Unit = {
+        InitialsCircleOrAvatar(
+            modifier,
+            firstNameLetter,
+            color,
+            fontSize
+        )
+    }
+
     if (photoUrl != null) {
         CompositionLocalProvider(LocalKamelConfig provides kamelConfig) {
 
-            val photoUrlResource = lazyPainterResource(
-                data = photoUrl.value
-            )
-
-            KamelImage(
-                resource = photoUrlResource,
-                contentDescription = "avatar",
-                onLoading = {
-                    if (effect != null) {
-                        effect()
-                    } else {
-                        Image(
-                            modifier = modifier,
-                            painter = imageResource(Res.drawable.profile_avatar),
-                            contentDescription = "avatar",
-                            contentScale = ContentScale.Crop
+            KamelPhotoUrlImage(
+                photoUrl,
+                modifier,
+                effect,
+                loadingCallback = {
+                    initials.invoke()
+                },
+                errorCallback = {
+                    //Try with not thumbnail image in case it is a GIF profile picture
+                    if (photoUrl.isThumbnailUrl) {
+                        KamelPhotoUrlImage(
+                            photoUrl.notThumbnailUrl,
+                            modifier,
+                            effect,
+                            loadingCallback = {
+                                initials.invoke()
+                            },
+                            errorCallback = {
+                                initials.invoke()
+                            }
                         )
+                    } else {
+                        initials.invoke()
                     }
-
-                },
-                onFailure = {
-                    Image(
-                        modifier = modifier,
-                        painter = imageResource(Res.drawable.profile_avatar),
-                        contentDescription = "avatar",
-                        contentScale = ContentScale.Crop
-                    )
-                },
-                contentScale = ContentScale.Crop,
-                modifier = modifier,
-                crossfade = false
+                }
             )
         }
     } else {
-        if (firstNameLetter == null) {
-            Image(
-                modifier = modifier,
-                painter = imageResource(Res.drawable.profile_avatar),
-                contentDescription = "avatar",
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            color?.let { Modifier.background(it, shape = CircleShape).size(30.dp) }?.let {
-                Box(modifier = it, contentAlignment = Alignment.Center) {
-                    Text(text = firstNameLetter, color = Color.White)
-                }
+        initials.invoke()
+    }
+}
+
+@Composable
+fun KamelPhotoUrlImage(
+    photoUrl: PhotoUrl,
+    modifier: Modifier = Modifier,
+    effect: @Composable (() -> Unit?)? = null,
+    loadingCallback: @Composable () -> Unit,
+    errorCallback: @Composable () -> Unit
+) {
+    val photoUrlResource = lazyPainterResource(
+        data = photoUrl.value
+    )
+
+    KamelImage(
+        resource = photoUrlResource,
+        contentDescription = "avatar",
+        onLoading = {
+            if (effect != null) {
+                effect()
+            } else {
+                loadingCallback()
+            }
+        },
+        onFailure = {
+            errorCallback()
+        },
+        contentScale = ContentScale.Crop,
+        modifier = modifier,
+        crossfade = false
+    )
+}
+
+@Composable
+fun InitialsCircleOrAvatar(
+    modifier: Modifier = Modifier,
+    firstNameLetter: String? = null,
+    color: Color? = null,
+    fontSize: Int? = null
+) {
+    if (firstNameLetter == null || color == null) {
+        Image(
+            modifier = modifier,
+            painter = imageResource(Res.drawable.profile_avatar),
+            contentDescription = "avatar",
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        color?.let { modifier.background(it, shape = CircleShape) }?.let {
+            Box(modifier = it, contentAlignment = Alignment.Center) {
+                Text(
+                    text = firstNameLetter,
+                    color = Color.White,
+                    fontFamily = Roboto,
+                    fontSize = fontSize?.sp ?: TextUnit.Unspecified
+                )
             }
         }
     }

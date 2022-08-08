@@ -8,37 +8,24 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Green
-import androidx.compose.ui.graphics.Color.Companion.Yellow
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
-import chat.sphinx.common.state.LandingScreenState
-import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.NewUserStore
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.onKeyUp
-import com.example.compose.badge_red
-import kotlinx.coroutines.delay
-import org.intellij.lang.annotations.JdkConstants
+import theme.badge_red
 import utils.AnimatedContainer
 import views.BackButton
 
@@ -163,12 +150,6 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                 }
             }
 
-            newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
-                Text(
-                    text = invitationCodeErrorMessage,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
             Spacer(modifier = Modifier.height(16.dp))
             AnimatedContainer(fromBottomToTop = 20) {
                 Box(
@@ -176,8 +157,8 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                 ) {
                     CommonButton(
                         text = "Submit",
-                        newUserStore.state.invitationCodeText.isNotEmpty(),
-                        newUserStore::onSubmitInvitationCode
+                        enabled = newUserStore.state.invitationCodeText.isNotEmpty(),
+                        callback = newUserStore::onSubmitInvitationCode
                     )
                     Column(
                         horizontalAlignment = Alignment.End,
@@ -193,6 +174,17 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                             tint = textColor
                         )
                     }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier.height(20.dp), contentAlignment = Alignment.Center
+            ) {
+                newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
+                    Text(
+                        text = invitationCodeErrorMessage,
+                        color = badge_red
+                    )
                 }
             }
         }

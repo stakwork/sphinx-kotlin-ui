@@ -39,6 +39,10 @@ kotlin {
                 implementation(compose.material3)
                 api(project(":sphinx-kotlin-core"))
                 implementation("com.alialbaali.kamel:kamel-image:0.3.0")
+                implementation("com.google.zxing:core:3.5.0")
+                implementation("com.russhwolf:multiplatform-settings:0.8.1")
+                implementation("org.cryptonode.jncryptor:jncryptor:1.2.0")
+//                implementation ("com.google.accompanist:accompanist-pager:0.23.1")
 //                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
 //                implementation ("com.google.accompanist:accompanist-flowlayout:0.24.12-rc")
             }

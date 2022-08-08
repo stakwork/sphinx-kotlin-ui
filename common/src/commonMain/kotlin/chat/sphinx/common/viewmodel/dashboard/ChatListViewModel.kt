@@ -1,11 +1,18 @@
 package chat.sphinx.common.viewmodel.dashboard
 
+import androidx.annotation.ColorInt
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.SphinxDispatchers
+import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.chat.Chat
+import chat.sphinx.wrapper.chat.getColorKey
 import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.contact.*
 import chat.sphinx.wrapper.dashboard.ContactId
@@ -17,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import utils.getRandomColorRes
 
 /**
  * Sorts and filters the provided list.
@@ -38,14 +46,23 @@ suspend fun ArrayList<DashboardChat>.updateDashboardChats(
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
+private inline fun List<DashboardChat>.filterDashboardChats(
+    filter: CharSequence
+): List<DashboardChat> =
+    filter {
+        it.chatName?.contains(filter, ignoreCase = true) == true
+    }
+
 class ChatListViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
-    //    val dashboardChats: ArrayList<DashboardChat> = ArrayList()
-    val sphinxNotificationManager = createSphinxNotificationManager()
-    val repositoryDashboard =
-        SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+    private var dashboardChats: ArrayList<DashboardChat> = ArrayList()
+    private val sphinxNotificationManager = createSphinxNotificationManager()
+    private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
+
+    private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
 
     private val _contactsStateFlow: MutableStateFlow<List<Contact>> by lazy {
         MutableStateFlow(emptyList())
@@ -57,6 +74,8 @@ class ChatListViewModel {
 
     private val accountOwnerStateFlow: StateFlow<Contact?>
         get() = _accountOwnerStateFlow.asStateFlow()
+
+    var searchText: MutableState<String> = mutableStateOf("")
 
     private var contactsCollectionInitialized: Boolean = false
     private var chatsCollectionInitialized: Boolean = false
@@ -102,6 +121,7 @@ class ChatListViewModel {
                                             chat,
                                             message,
                                             contact,
+                                            getColorFor(contact, chat),
                                             repositoryDashboard.getUnseenMessagesByChatId(chat.id),
                                         )
                                     )
@@ -112,6 +132,7 @@ class ChatListViewModel {
                                         chat,
                                         message,
                                         accountOwnerStateFlow.value,
+                                        getColorFor(null, chat),
                                         repositoryDashboard.getUnseenMessagesByChatId(chat.id)
                                     )
                                 )
@@ -137,14 +158,15 @@ class ChatListViewModel {
                                             newList.add(
                                                 DashboardChat.Inactive.Invite(
                                                     contact,
-                                                    contactInvite
+                                                    contactInvite,
+                                                    getColorFor(contact, null)
                                                 )
                                             )
                                             continue
                                         }
                                     }
                                     newList.add(
-                                        DashboardChat.Inactive.Conversation(contact)
+                                        DashboardChat.Inactive.Conversation(contact, getColorFor(contact, null))
                                     )
                                 }
 
@@ -155,12 +177,8 @@ class ChatListViewModel {
                         updateDashboardChatLock,
                         dispatchers
                     )
-                    // TODO: Do a diff operation instead...
-                    ChatListState.screenState(
-                        ChatListData.PopulatedChatListData(
-                            newList
-                        )
-                    )
+                    dashboardChats = newList
+                    filterChats(searchText.value)
                 }
             }
         }
@@ -170,6 +188,28 @@ class ChatListViewModel {
             repositoryDashboard.getAllInvites.distinctUntilChanged().collect {
                 updateChatListContacts(_contactsStateFlow.value)
             }
+        }
+    }
+
+    fun filterChats(filter: String) {
+        searchText.value = filter
+
+        if (filter.isEmpty()) {
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    dashboardChats
+                )
+            )
+        } else {
+            val filteredChats = dashboardChats.filterDashboardChats(
+                filter
+            )
+
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    filteredChats
+                )
+            )
         }
     }
 
@@ -266,14 +306,14 @@ class ChatListViewModel {
                             }
                             if (contactInvite != null) {
                                 currentChats.add(
-                                    DashboardChat.Inactive.Invite(contact, contactInvite)
+                                    DashboardChat.Inactive.Invite(contact, contactInvite, getColorFor(contact, null))
                                 )
                                 continue
                             }
                         }
 
                         var updatedContactChat: DashboardChat =
-                            DashboardChat.Inactive.Conversation(contact)
+                            DashboardChat.Inactive.Conversation(contact, getColorFor(contact, null))
 
                         for (chat in currentChats.toList()) {
                             if (chat is DashboardChat.Active.Conversation) {
@@ -282,6 +322,7 @@ class ChatListViewModel {
                                         chat.chat,
                                         chat.message,
                                         contact,
+                                        getColorFor(contact, chat.chat),
                                         chat.unseenMessageFlow
                                     )
                                 }
@@ -300,6 +341,7 @@ class ChatListViewModel {
                                     contactChat,
                                     message,
                                     contact,
+                                    getColorFor(contact, contactChat),
                                     repositoryDashboard.getUnseenMessagesByChatId(contactChat.id)
                                 )
                             }
@@ -314,14 +356,55 @@ class ChatListViewModel {
                         updateDashboardChatLock,
                         dispatchers
                     )
-                    ChatListState.screenState(
-                        ChatListData.PopulatedChatListData(
-                            currentChats
-                        )
-                    )
+                    dashboardChats = ArrayList(currentChats)
+                    filterChats(searchText.value)
+
                     repositoryDashboard.updatedContactIds = mutableListOf()
                 }
             }
         }
+    }
+
+    fun payForInvite(invite: Invite) {
+//        getAccountBalance().firstOrNull()?.let { balance ->
+//            if (balance.balance.value < (invite.price?.value ?: 0)) {
+//                submitSideEffect(
+//                    ChatListSideEffect.Notify(app.getString(R.string.pay_invite_balance_too_low))
+//                )
+//                return
+//            }
+//        }
+
+//        submitSideEffect(
+//            ChatListSideEffect.AlertConfirmPayInvite(invite.price?.value ?: 0) {
+                scope.launch(dispatchers.mainImmediate) {
+                    repositoryDashboard.payForInvite(invite)
+                }
+//            }
+//        )
+    }
+
+    fun deleteInvite(invite: Invite) {
+//        submitSideEffect(
+//            ChatListSideEffect.AlertConfirmDeleteInvite() {
+                scope.launch(dispatchers.mainImmediate) {
+                    repositoryDashboard.deleteInvite(invite)
+                }
+//            }
+//        )
+    }
+
+    @ColorInt
+    suspend fun getColorFor(
+        contact: Contact?,
+        chat: Chat?
+    ): Int? {
+        (contact?.getColorKey() ?: chat?.getColorKey())?.let { colorKey ->
+            return colorsHelper.getColorIntForKey(
+                colorKey,
+                Integer.toHexString(getRandomColorRes().hashCode())
+            )
+        }
+        return null
     }
 }

@@ -17,10 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
-import chat.sphinx.common.state.AppState
-import chat.sphinx.common.state.LandingScreenState
-import chat.sphinx.common.state.LandingScreenType
-import chat.sphinx.common.state.ScreenType
+import chat.sphinx.common.state.*
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 
@@ -66,6 +63,7 @@ fun WelcomeScreen() {
                 Box(
                     modifier = Modifier.height(44.dp).fillMaxWidth(0.7f), contentAlignment = Alignment.Center){
                     CommonButton(text = "Continue",true){
+                        DashboardScreenState.screenState(DashboardScreenType.Unlocked)
                         AppState.screenState(ScreenType.DashboardScreen)
                     }
                     Column(

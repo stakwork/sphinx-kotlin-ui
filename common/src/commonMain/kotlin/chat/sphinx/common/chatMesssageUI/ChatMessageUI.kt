@@ -1,6 +1,9 @@
 package chat.sphinx.common.chatMesssageUI
 
+import Roboto
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
@@ -8,27 +11,29 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import chat.sphinx.common.components.chat.callview.JitsiAudioVideoCall
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.wrapper.lightning.isValidLightningNodePubKey
+import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
-import chat.sphinx.common.components.landing.ExistingUserPINScreen
 import chat.sphinx.wrapper.isValidPeopleConnectLink
 import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
+import chat.sphinx.wrapper.chat.isTribe
 
 @Composable
 fun ChatMessageUI(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel,
-    color: Color
+    chatViewModel: ChatViewModel
 ) {
     print("rebuilding ${chatMessage.message.id}")
+
+    val bubbleColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary
 
     Column(modifier = Modifier.padding(8.dp)) {
         Row(
@@ -45,58 +50,65 @@ fun ChatMessageUI(
                  * Show [ImageProfile] at the starting of chat message if
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
-                if (chatMessage.isReceived && chatMessage.groupActionLabelText.isNullOrEmpty() && chatMessage.isDeleted.not()) {
-                    ImageProfile(chatMessage, color)
-                    Spacer(modifier = Modifier.width(12.dp))
+                val showProfilePic = (
+                    chatMessage.groupActionLabelText.isNullOrEmpty() &&
+                    chatMessage.isReceived &&
+                    chatMessage.isDeleted.not() &&
+                    chatMessage.isFlagged.not()
+                )
+
+                Box(modifier = Modifier.width(42.dp)) {
+                    if (showProfilePic) {
+                        ImageProfile(
+                            chatMessage,
+                            Modifier.clickable {
+                                if (chatMessage.chat.isTribe()) {
+                                    chatViewModel.toggleChatActionsPopup(
+                                        ChatViewModel.ChatActionsMode.SEND_TRIBE,
+                                        PaymentViewModel.PaymentData(
+                                            chatId = chatMessage.chat.id,
+                                            messageUUID = chatMessage.message.uuid
+                                        )
+                                    )
+                                }
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(12.dp).background(color = Color.Red))
+                    }
                 }
                 Column(
                     verticalArrangement = Arrangement.Top,
                 ) {
                     if (chatMessage.message.type.isGroupAction()) {
-                        // If any joined tribe will show below text
                         TribeHeaderMessage(chatMessage)
                     } else {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = if(chatMessage.isDeleted&&chatMessage.isReceived) 42.dp else 4.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            DisplayConditionalIcons(
-                                chatMessage,
-                                chatViewModel,
-                                color
-                            ) // display icons according to different conditions
+                            DisplayConditionalIcons(chatMessage)
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
                             verticalAlignment = Alignment.Top,
                         ) {
-                            if (chatMessage.isSent) {
-                                ChatOptionMenu(chatMessage, chatViewModel)
-                            }
                             when {
-                                chatMessage.message.isSphinxCallLink -> {
-                                    JitsiAudioVideoCall(chatMessage)
-                                }
-                                chatMessage.message.messageContentDecrypted?.value?.isValidPeopleConnectLink == true -> {
-//                                    NewContactPreview(chatMessage)
-                                    ExistingContactPreview(chatMessage)
-                                }
-                                chatMessage.message.messageContentDecrypted?.value?.isValidTribeJoinLink==true->{
-//                                    ExistingTribePreview(chatMessage)
-                                    NewTribePreview(chatMessage)
-                                }
-                                chatMessage.message.type == MessageType.DirectPayment -> {
-                                    DirectPaymentUI(chatMessage, chatViewModel)
-                                }
-                                chatMessage.isDeleted -> {
-                                    Column(modifier = Modifier.padding(horizontal = if(chatMessage.isDeleted&&chatMessage.isReceived) 42.dp else 4.dp)) {
+                                (chatMessage.isDeleted || chatMessage.isFlagged) -> {
+                                    val text = if (chatMessage.isDeleted) {
+                                        "This message has been deleted"
+                                    } else {
+                                        "This message has been flagged"
+                                    }
+
+                                    Column {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
                                             modifier = Modifier.fillMaxWidth(),
-                                            text = "This message has been deleted",
+                                            text = text,
                                             fontWeight = FontWeight.W300,
+                                            fontFamily = Roboto,
                                             color = MaterialTheme.colorScheme.onBackground,
                                             fontStyle = FontStyle.Italic,
                                             fontSize = 11.sp,
@@ -105,32 +117,69 @@ fun ChatMessageUI(
                                     }
                                 }
                                 else -> {
-                                    if (chatMessage.message.isMediaAttachmentAvailable) {
-                                        Box(
-                                            contentAlignment = if (chatMessage.isSent) Alignment.CenterEnd else Alignment.CenterStart,
-                                            modifier = Modifier.fillMaxWidth(0.5f)
-                                        ) {
-                                            ChatCard(chatMessage, color, chatViewModel)
+                                    if (chatMessage.isSent) {
+                                        ChatOptionMenu(chatMessage, chatViewModel)
+                                    }
+                                    if (chatMessage.isReceived) {
+                                        BubbleArrow(false, bubbleColor)
+                                    }
+                                    Column(
+                                        modifier = if (chatMessage.message.isMediaMessage) {
+                                            Modifier.fillMaxWidth(0.5f)
+                                        } else {
+                                            Modifier.weight(1f, fill = false)
                                         }
-                                    } else {
-                                        ChatCard(chatMessage, color, chatViewModel)
+                                    ) {
+                                        ChatCard(
+                                            chatMessage,
+                                            chatViewModel
+                                        )
+                                    }
+                                    if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
+                                        ChatOptionMenu(chatMessage, chatViewModel)
+                                    }
+                                    if (chatMessage.isSent) {
+                                        BubbleArrow(true, bubbleColor)
                                     }
                                 }
                             }
-                            if (chatMessage.isReceived && chatMessage.isDeleted.not()) {
-                                Box(modifier = Modifier.height(50.dp).width(50.dp)) {
-                                    ChatOptionMenu(chatMessage, chatViewModel)
-                                }
-                            }
-
                         }
-
                     }
-
                 }
             }
         }
     }
+}
+
+@Composable
+fun BubbleArrow(
+    sent: Boolean,
+    color: Color,
+) {
+    val density = LocalDensity.current
+    val width = with(density) { 5.dp.roundToPx() }.toFloat()
+    val height = with(density) { 7.dp.roundToPx() }.toFloat()
+
+    Canvas(modifier = Modifier.width(5.dp).height(7.dp), onDraw = {
+        drawPath(
+            color = color,
+            path = if (sent) {
+                Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(width, 0f)
+                    lineTo(0f, height)
+                    lineTo(0f, 0f)
+                }
+            } else {
+                Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(width, 0f)
+                    lineTo(width, height)
+                    lineTo(0f, 0f)
+                }
+            }
+        )
+    })
 }
 
 

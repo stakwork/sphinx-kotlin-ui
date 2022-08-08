@@ -1,18 +1,23 @@
 package chat.sphinx.common.models
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import chat.sphinx.wrapper.*
-import chat.sphinx.wrapper.chat.Chat
-import chat.sphinx.wrapper.chat.getColorKey
-import chat.sphinx.wrapper.chat.isConversation
-import chat.sphinx.wrapper.chat.isTribeOwnedByAccount
+import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
-import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.invite.InviteStatus
 import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
+import theme.badge_red
+import theme.primary_blue
+import theme.primary_green
+import theme.sphinx_orange
 import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
 import chat.sphinx.wrapper.invite.Invite as InviteWrapper
@@ -27,6 +32,7 @@ sealed class DashboardChat {
     abstract val chatName: String?
     abstract val photoUrl: PhotoUrl?
     abstract val sortBy: Long
+    abstract val color: Int?
 
     abstract val unseenMessageFlow: Flow<Long?>?
 
@@ -39,11 +45,7 @@ sealed class DashboardChat {
 
     abstract fun isEncrypted(): Boolean
 
-    abstract fun getColorKey(): String?
-
-    fun getColorKeyFor(contact: Contact?, chat: Chat?): String? {
-        return contact?.getColorKey() ?: chat?.getColorKey()
-    }
+    abstract fun isTribe(): Boolean
 
     sealed class Active: DashboardChat() {
 
@@ -87,8 +89,8 @@ sealed class DashboardChat {
             return true
         }
 
-        override fun getColorKey(): String? {
-            return getColorKeyFor(null, chat)
+        override fun isTribe(): Boolean {
+            return chat.isTribe()
         }
 
         @ExperimentalStdlibApi
@@ -98,13 +100,11 @@ sealed class DashboardChat {
                 message == null -> {
                     ""
                 }
-
                 message.status.isDeleted() -> {
                     "Message deleted"
                 }
                 message.type.isInvoicePayment() -> {
-                    val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                    val amount: String = message.amount.asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Payment Sent: $amount"
@@ -143,7 +143,7 @@ sealed class DashboardChat {
                 }
                 message.type.isBoost() -> {
                     val amount: String = (message.feedBoost?.amount ?: message.amount)
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     "${getMessageSender(message, true)} boost ${amount}"
                 }
@@ -158,7 +158,7 @@ sealed class DashboardChat {
                             }
                             message.feedBoost != null -> {
                                 val amount: String = (message.feedBoost?.amount ?: message.amount)
-                                    .asFormattedString(separator = ',', appendUnit = true)
+                                    .asFormattedString(separator = ' ', appendUnit = true)
 
                                 "${getMessageSender(message)} boost ${amount}"
                             }
@@ -176,7 +176,7 @@ sealed class DashboardChat {
                 }
                 message.type.isInvoice() -> {
                     val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Invoice sent: ${amount}"
@@ -187,7 +187,7 @@ sealed class DashboardChat {
                 }
                 message.type.isDirectPayment() -> {
                     val amount: String = message.amount
-                        .asFormattedString(separator = ',', appendUnit = true)
+                        .asFormattedString(separator = ' ', appendUnit = true)
 
                     if (isMessageSenderSelf(message)) {
                         "Payment Sent: $amount"
@@ -199,7 +199,7 @@ sealed class DashboardChat {
                     message.messageMedia?.let { media ->
                         when (val type = media.mediaType) {
                             is MediaType.Audio -> {
-                                "An audio clip"
+                                "an audio clip"
                             }
                             is MediaType.Image -> {
                                 if (type.isGif) {
@@ -230,6 +230,9 @@ sealed class DashboardChat {
                         }
                     } ?: ""
                 }
+                message.type.isBotRes() -> {
+                    "Bot response received"
+                }
                 else -> {
                     ""
                 }
@@ -240,6 +243,7 @@ sealed class DashboardChat {
             override val chat: Chat,
             override val message: Message?,
             val contact: Contact,
+            override val color: Int?,
             override val unseenMessageFlow: Flow<Long?>,
         ): Active() {
 
@@ -268,8 +272,8 @@ sealed class DashboardChat {
                 } ?: ""
             }
 
-            override fun getColorKey(): String? {
-                return getColorKeyFor(contact, chat)
+            override fun isTribe(): Boolean {
+                return chat.isTribe()
             }
         }
 
@@ -277,6 +281,7 @@ sealed class DashboardChat {
             override val chat: Chat,
             override val message: Message?,
             override val owner: Contact?,
+            override val color: Int?,
             override val unseenMessageFlow: Flow<Long?>,
         ): Active() {
 
@@ -296,10 +301,9 @@ sealed class DashboardChat {
                 } ?: ""
             }
 
-            override fun getColorKey(): String? {
-                return getColorKeyFor(null, chat)
+            override fun isTribe(): Boolean {
+                return chat.isTribe()
             }
-
         }
     }
 
@@ -314,7 +318,8 @@ sealed class DashboardChat {
         }
 
         class Conversation(
-            val contact: Contact
+            val contact: Contact,
+            override val color: Int?,
         ): Inactive() {
 
             override val chatName: String?
@@ -342,15 +347,15 @@ sealed class DashboardChat {
                 return !(contact.rsaPublicKey?.value?.isEmpty() ?: true)
             }
 
-            override fun getColorKey(): String? {
-                return getColorKeyFor(contact, null)
+            override fun isTribe(): Boolean {
+                return false
             }
-
         }
 
         class Invite(
             val contact: Contact,
-            val invite: InviteWrapper?
+            val invite: InviteWrapper?,
+            override val color: Int?,
         ): Inactive() {
 
             override val chatName: String?
@@ -404,29 +409,30 @@ sealed class DashboardChat {
                 }
             }
 
-            fun getInviteIconAndColor(): Pair<String, String>? {
+            @Composable
+            fun getInviteIconAndColor(): Pair<ImageVector, Color>? {
 
                 return when (invite?.status) {
                     is InviteStatus.Pending -> {
-                        Pair("pending", "orange")
+                        Pair(Icons.Filled.Pending, sphinx_orange)
                     }
                     is InviteStatus.Ready, InviteStatus.Delivered -> {
-                        Pair("ready", "green")
+                        Pair(Icons.Filled.Done, primary_green)
                     }
                     is InviteStatus.InProgress -> {
-                        Pair("in progress", "blue")
+                        Pair(Icons.Filled.Sync, primary_blue)
                     }
                     is InviteStatus.PaymentPending -> {
-                        Pair("payment pending", "white")
+                        Pair(Icons.Filled.Payment, androidx.compose.material3.MaterialTheme.colorScheme.onBackground)
                     }
                     is InviteStatus.ProcessingPayment -> {
-                        Pair("payment sent", "white")
+                        Pair(Icons.Filled.Sync, androidx.compose.material3.MaterialTheme.colorScheme.onBackground)
                     }
                     is InviteStatus.Complete -> {
-                        Pair("complete", "green")
+                        Pair(Icons.Filled.Done, primary_green)
                     }
                     is InviteStatus.Expired -> {
-                        Pair("expired", "red")
+                        Pair(Icons.Filled.Error, badge_red)
                     }
                     null,
                     is InviteStatus.Unknown -> {
@@ -440,15 +446,15 @@ sealed class DashboardChat {
             }
 
             override fun hasUnseenMessages(): Boolean {
-                return false
+                return true
             }
 
             override fun isEncrypted(): Boolean {
                 return false
             }
 
-            override fun getColorKey(): String? {
-                return getColorKeyFor(contact, null)
+            override fun isTribe(): Boolean {
+                return false
             }
         }
     }

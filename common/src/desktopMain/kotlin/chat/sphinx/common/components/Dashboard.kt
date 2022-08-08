@@ -19,14 +19,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.chat.AttachmentPreview
+import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.components.tribe.JoinTribeView
+import chat.sphinx.common.components.tribe.TribeDetailView
+import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -37,16 +46,22 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import chat.sphinx.common.components.notifications.DesktopSphinxNotificationManager.notifications
+import chat.sphinx.utils.onKeyUp
+import chat.sphinx.wrapper.chat.isMuted
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
-import com.example.compose.primary_green
-import com.example.compose.primary_red
-import com.example.compose.sphinx_orange
+import chat.sphinx.wrapper.message.media.isImage
+import chat.sphinx.wrapper.util.getInitials
+import theme.place_holder_text
+import theme.primary_green
+import theme.sphinx_orange
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
+import theme.primary_blue
+import utils.AnimatedContainer
 import java.awt.Cursor
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -56,14 +71,16 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
 actual fun Dashboard(
-    sphinxState: SphinxState
+    sphinxState: SphinxState,
+    dashboardViewModel: DashboardViewModel
 ) {
     val splitterState = rememberSplitPaneState()
     var chatViewModel: ChatViewModel? = null
 
-    when (DashboardState.screenState()) {
+    when (DashboardScreenState.screenState()) {
         DashboardScreenType.Unlocked -> {
-            val dashboardViewModel = remember { DashboardViewModel() }
+
+            dashboardViewModel.screenInit()
 
             HorizontalSplitPane(
                 splitPaneState = splitterState
@@ -76,7 +93,9 @@ actual fun Dashboard(
                     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
                     val dashboardChat = (chatDetailState as? ChatDetailData.SelectedChatDetailData)?.dashboardChat
 
+                    chatViewModel?.readMessages()
                     chatViewModel?.cancelMessagesJob()
+
                     chatViewModel = when (chatDetailState) {
                         is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
                             ChatContactViewModel(null, chatDetailState.contactId!!)
@@ -92,20 +111,34 @@ actual fun Dashboard(
                         }
                     }
 
-                    Scaffold(scaffoldState = scaffoldState, topBar = {
-                        SphinxChatDetailTopAppBar(dashboardChat, chatViewModel)
-                    }, bottomBar = {
-                        SphinxChatDetailBottomAppBar(chatViewModel)
-                    }) {
+                    Scaffold(
+                        scaffoldState = scaffoldState,
+                        topBar = {
+                            SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel) },
+                        bottomBar = {
+                            SphinxChatDetailBottomAppBar(chatViewModel)
+                        }
+                    ) { paddingValues ->
                         Column(
-                            modifier = Modifier.fillMaxSize().background(color = androidx.compose.material3.MaterialTheme.colorScheme.background),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
+                                .padding(paddingValues),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            chatViewModel?.let {
-                                MessageListUI(it)
+                            chatViewModel?.let { chatViewModel ->
+                                MessageListUI(chatViewModel)
                             }
                         }
+                        AttachmentPreview(
+                            chatViewModel,
+                            Modifier.padding(paddingValues)
+                        )
+                        ChatAction(
+                            chatViewModel,
+                            Modifier.padding(paddingValues)
+                        )
                     }
                 }
                 splitter {
@@ -123,48 +156,7 @@ actual fun Dashboard(
                 }
             }
 
-            fullScreenImageState.value?.let { imagePath ->
-                val backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                val fullscreenBackgroundColor = Color(
-                    red = backgroundColor.red,
-                    green = backgroundColor.green,
-                    blue = backgroundColor.blue,
-                    alpha = 0.45f
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(fullscreenBackgroundColor)
-                        .clickable(enabled = false, onClick = {  })
-                ) {
-                    PhotoFileImage(
-                        imagePath,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit // TODO: Figure out which fill works best depending on image size
-                    )
-                    // Close Fullscreen button
-                    Box(
-                        modifier = Modifier.padding(40.dp).align(Alignment.TopEnd)
-                    ) {
-                        IconButton(
-                            onClick = {
-                                fullScreenImageState.value = null
-                            },
-                            modifier = Modifier.clip(CircleShape)
-                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                                .size(40.dp),
-                        ) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Close fullscreen image view",
-                                tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-                    }
-
-                }
-            }
+            ImageFullScreen(fullScreenImageState)
 
             val restoreState by dashboardViewModel.restoreStateFlow.collectAsState()
             restoreState?.let { restoreState ->
@@ -201,7 +193,8 @@ actual fun Dashboard(
 @Composable
 fun SphinxChatDetailTopAppBar(
     dashboardChat: DashboardChat?,
-    chatViewModel: ChatViewModel?
+    chatViewModel: ChatViewModel?,
+    dashboardViewModel: DashboardViewModel?
 ) {
     if (dashboardChat == null) {
         Row(
@@ -224,6 +217,7 @@ fun SphinxChatDetailTopAppBar(
     }
 
     val chatName = dashboardChat?.chatName ?: "Unknown Chat"
+    val contactId = chatViewModel?.editMessageState?.contactId
 
     TopAppBar(
         modifier = Modifier.height(60.dp),
@@ -231,7 +225,14 @@ fun SphinxChatDetailTopAppBar(
             Column {
                 Row {
                     Text(
-                        text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700
+                        text = chatName, fontSize = 16.sp, fontWeight = FontWeight.W700,
+                        modifier = Modifier.clickable {
+                            if (dashboardChat.isTribe()) {
+                                chatViewModel?.chatId?.let { dashboardViewModel?.toggleTribeDetailWindow(true, it) }
+                            } else {
+                                dashboardViewModel?.toggleContactWindow(true, ContactScreenState.EditContact(contactId))
+                            }
+                        }
                     )
 
                     Icon(
@@ -294,25 +295,38 @@ fun SphinxChatDetailTopAppBar(
                 dashboardChat.photoUrl,
                 modifier = Modifier
                     .size(46.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+                firstNameLetter = (dashboardChat.chatName ?: "Unknown Chat").getInitials(),
+                color = if (dashboardChat.color != null) Color(dashboardChat.color!!) else null,
+                fontSize = 16
             )
         },
         actions = {
-            IconButton(onClick = {}) {
-                Icon(
-                    Icons.Default.Notifications,
-                    contentDescription = "Mute/Unmute",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                )
+            IconButton(onClick = {
+                chatViewModel?.toggleChatMuted()
+            }) {
+                chatViewModel?.let {
+                    val chat by chatViewModel.chatSharedFlow.collectAsState(
+                        (dashboardChat as? DashboardChat.Active)?.chat
+                    )
+                    Icon(
+                        if (chat?.isMuted() == true) Icons.Default.NotificationsOff else Icons.Default.Notifications,
+                        contentDescription = "Mute/Unmute",
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                    )
+                }
             }
-            IconButton(onClick = {}) {
+            IconButton(onClick = {
+                chatViewModel?.sendCallInvite(false)
+            }) {
                 Icon(
                     Icons.Default.Phone,
                     contentDescription = "Call",
                     tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                 )
             }
-        })
+        }
+    )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -320,113 +334,244 @@ fun SphinxChatDetailTopAppBar(
 fun SphinxChatDetailBottomAppBar(
     chatViewModel: ChatViewModel?
 ) {
+    val scope = rememberCoroutineScope()
+
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxWidth().height(60.dp),
-        elevation = 8.dp
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+        elevation = 8.dp,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Spacer(modifier = Modifier.width(16.dp))
-            IconButton(
-                onClick = { },
-                modifier = Modifier.clip(CircleShape)
-                    .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                    .size(30.dp),
+        Column {
+            MessageReplyingBar(chatViewModel)
+
+            Row(
+                modifier = Modifier.fillMaxWidth().defaultMinSize(Dp.Unspecified, 60.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "content description",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(21.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            IconButton(onClick = {}, modifier = Modifier.height(25.dp).width(18.dp)) {
-                Image(
+                Spacer(modifier = Modifier.width(16.dp))
+                IconButton(
+                    onClick = {
+                        if (chatViewModel is ChatTribeViewModel) {
+                            scope.launch {
+                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                    chatViewModel.hideChatActionsPopup()
+                                    chatViewModel.onMessageFileChanged(path)
+                                }
+                            }
+                        } else {
+                            chatViewModel?.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.MENU)
+                        }
+                    },
+                    modifier = Modifier.clip(CircleShape)
+                        .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                        .size(30.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "content description",
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(21.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                IconButton(onClick = {}, modifier = Modifier.height(25.dp).width(18.dp)) {
+                    Image(
                         painter = imageResource(Res.drawable.ic_giphy),
                         contentDescription = "giphy",
                         contentScale = ContentScale.FillBounds
                     )
-            }
-            IconButton(
-                onClick = {},
-                modifier = Modifier.clip(CircleShape)
-                    .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-                    .wrapContentSize(),
-            ) {
-                Icon(
-                    Icons.Outlined.EmojiEmotions,
-                    contentDescription = "Emoji",
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(30.dp),
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically
-            ) {
-                CustomTextField(
-                    trailingIcon = null,
-                    modifier = Modifier.background(
-                            androidx.compose.material3.MaterialTheme.colorScheme.surface,
-                            RoundedCornerShape(percent = 50)
-                        ).padding(horizontal = 6.dp, vertical = 4.dp).height(32.dp),
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    placeholderText = "Message...",
-                    onValueChange = {
-                        if (chatViewModel != null) run {
-                            chatViewModel.onMessageTextChanged(it)
-                        }
-                    },
-                    value = chatViewModel?.editMessageState?.messageText?.value ?: ""
-                )
-            }
-            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                }
+                IconButton(
+                    onClick = {},
+                    modifier = Modifier.clip(CircleShape)
+                        .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+                        .wrapContentSize(),
                 ) {
-                    Spacer(modifier = Modifier.width(10.dp))
-                    PriceChip()
-                    Spacer(modifier = Modifier.width(10.dp))
-                    IconButton(
-                        onClick = {
-                            if (chatViewModel != null) run {
-                                chatViewModel.onSendMessage()
-                            }
-                        },
-                        modifier = Modifier.clip(CircleShape)
-                            .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
-                            .size(30.dp),
+                    Icon(
+                        Icons.Outlined.EmojiEmotions,
+                        contentDescription = "Emoji",
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(30.dp),
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth().weight(1f), verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        CustomTextField(
+                            trailingIcon = null,
+                            modifier = Modifier
+                                .background(
+                                    androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                                    RoundedCornerShape(20.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 4.dp)
+                                .defaultMinSize(Dp.Unspecified, 32.dp)
+                                .onKeyEvent(
+                                    onKeyUp(
+                                        Key.Enter
+                                    ) {
+                                        chatViewModel?.onSendMessage()
+                                    }
+                                ),
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            placeholderText = "Message...",
+                            singleLine = false,
+                            maxLines = 4,
+                            onValueChange = {
+                                if (chatViewModel != null) run {
+                                    chatViewModel.onMessageTextChanged(it.trim())
+                                }
+                            },
+                            value = chatViewModel?.editMessageState?.messageText?.value ?: "",
+                            cursorBrush = primary_blue
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+                }
+                CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            Icons.Default.Send,
-                            contentDescription = "Send Message",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(18.dp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        PriceChip(chatViewModel)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        IconButton(
+                            onClick = {
+                                if (chatViewModel != null) run {
+                                    chatViewModel.onSendMessage()
+                                }
+                            },
+                            modifier = Modifier.clip(CircleShape)
+                                .background(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
+                                .size(30.dp),
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Send Message",
+                                tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        // TODO: Record Action
+                        IconButton(
+                            onClick = {},
+                            modifier = Modifier.clip(CircleShape)
+                                .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+                                .wrapContentSize(),
+                        ) {
+                            Icon(
+                                Icons.Default.Mic,
+                                contentDescription = "Microphone",
+                                tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.size(27.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MessageReplyingBar(
+    chatViewModel: ChatViewModel?
+) {
+    chatViewModel?.editMessageState?.replyToMessage?.value?.let { replyToMessage ->
+        AnimatedContainer(
+            fromTopToBottom = 20,
+            modifier = Modifier
+                .height(44.dp)
+                .fillMaxWidth()
+                .background(color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
+        ) {
+            Box {
+                Row(
+                    modifier = Modifier
+                        .height(44.dp)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(4.dp)
+                            .fillMaxHeight()
+                            .background(
+                                if (replyToMessage.replyToMessageColor != null) {
+                                    Color(replyToMessage.replyToMessageColor!!)
+                                } else {
+                                    Color.Gray
+                                }
+                            )
+                    )
+                    replyToMessage.message.messageMedia?.let { media ->
+                        if (media.mediaType.isImage) {
+                            Icon(
+                                Icons.Default.Image,
+                                contentDescription = "Image",
+                                tint = Color.Gray,
+                                modifier = Modifier.height(88.dp).padding(start = 10.dp)
+                            )
+                        } else {
+                            // show
+                            Icon(
+                                Icons.Default.AttachFile,
+                                contentDescription = "Attachment",
+                                tint = Color.Gray,
+                                modifier = Modifier.height(88.dp).padding(start = 10.dp)
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .padding(start = 10.dp, end = 40.dp)
+                    ) {
+                        Text(
+                            replyToMessage.replyToMessageSenderAliasPreview,
+                            overflow = TextOverflow.Ellipsis,
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                            fontFamily = Roboto,
+                            fontWeight = FontWeight.W600,
+                            fontSize = 13.sp,
+                            maxLines = 1,
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            replyToMessage.replyToMessageTextPreview,
+                            overflow = TextOverflow.Ellipsis,
+                            color = place_holder_text,
+                            fontWeight = FontWeight.W400,
+                            fontFamily = Roboto,
+                            fontSize = 11.sp,
+                            maxLines = 1,
                         )
                     }
-                    // TODO: Record Action
-                    IconButton(
-                        onClick = {},
-                        modifier = Modifier.clip(CircleShape)
-                            .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-                            .wrapContentSize(),
+                    Box(
+                        contentAlignment = Alignment.CenterEnd,
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         Icon(
-                            Icons.Default.Mic,
-                            contentDescription = "Microphone",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(27.dp)
+                            Icons.Default.Close,
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                            contentDescription = "Close reply to message",
+                            modifier = Modifier.size(20.dp)
+                                .align(Alignment.CenterEnd)
+                                .clickable(
+                                    onClick = {
+                                        chatViewModel?.editMessageState?.replyToMessage?.value = null
+                                    }
+                                ),
                         )
                     }
                 }
             }
-
         }
     }
 }

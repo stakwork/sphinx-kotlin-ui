@@ -1,5 +1,8 @@
+
 package chat.sphinx.common.components
 
+import Roboto
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,8 +15,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,21 +30,26 @@ import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.ChatMuted
 
 import androidx.compose.ui.text.font.FontWeight
-
-
-import views.LoadingShimmerEffect
-import views.ShimmerCircleAvatar
-import views.ShimmerGridItem
+import chat.sphinx.common.Res
+import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
+import chat.sphinx.platform.imageResource
+import chat.sphinx.wrapper.lightning.asFormattedString
+import chat.sphinx.wrapper.util.getInitials
+import theme.primary_green
 
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun ChatRow(
-    dashboardChat: DashboardChat
+    dashboardChat: DashboardChat,
+    chatListViewModel: ChatListViewModel
 ) {
-    // TODO: Create DashboardChatState...
     val today00: DateTime by lazy {
         DateTime.getToday00()
+    }
+
+    val isInvite: Boolean by lazy {
+        (dashboardChat is DashboardChat.Inactive.Invite)
     }
 
     Row(
@@ -73,19 +79,45 @@ fun ChatRow(
                 }
             )
 
-        }.height(62.dp).padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp),
+            if (dashboardChat is DashboardChat.Inactive.Invite) {
+//                dashboardChat.invite?.let { invite ->
+//                    if (invite.status.isReady() || invite.status.isDelivered()) {
+//                        chatListViewModel.dashboardNavigator.toQRCodeDetail(
+//                            invite.inviteString.value,
+//                            binding.root.context.getString(
+//                                R.string.invite_qr_code_header_name
+//                            )
+//                        )
+//                    } else if (invite.status.isPaymentPending()) {
+//                        chatListViewModel.payForInvite(invite)
+//                    } else if (invite.status.isExpired()) {
+//                        chatListViewModel.deleteInvite(invite)
+//                    }
+//                }
+            }
+        }.height(62.dp).background(androidx.compose.material3.MaterialTheme.colorScheme.background)
     ) {
-        Row {
-            PhotoUrlImage(
-                dashboardChat.photoUrl,
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-            )
+        Row(modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp)) {
+            Box(modifier = Modifier.size(46.dp)) {
+                if (isInvite) {
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        painter = imageResource(Res.drawable.ic_qr_code),
+                        contentDescription = "qr_code",
+                    )
+                } else {
+                    PhotoUrlImage(
+                        dashboardChat.photoUrl,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        firstNameLetter = (dashboardChat.chatName ?: "Unknown Chat").getInitials(),
+                        color = if (dashboardChat.color != null) Color(dashboardChat.color!!) else null,
+                        fontSize = 16
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
             Column {
-
                 val lastMessage = dashboardChat.getMessageText()
 
                 Spacer(modifier = Modifier.height(2.dp))
@@ -126,15 +158,29 @@ fun ChatRow(
                                         modifier = Modifier.size(14.dp),
                                         tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                                     )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Text(
+                                    text = dashboardChat.getDisplayTime(today00),
+                                    fontSize = 10.sp,
+                                    maxLines = 1,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                                )
                             }
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text(
-                                text = dashboardChat.getDisplayTime(today00),
-                                fontSize = 10.sp,
-                                maxLines = 1,
-                                color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                            )
-
+                            (dashboardChat as? DashboardChat.Inactive.Invite)?.getInvitePrice()?.let {
+                                if (it.value > 0) {
+                                    Text(
+                                        modifier = Modifier
+                                            .background(color = primary_green, shape = RoundedCornerShape(5.dp))
+                                            .padding(4.dp, 2.dp),
+                                        text = "${it.asFormattedString(' ')}",
+                                        fontSize = 12.sp,
+                                        fontFamily = Roboto,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        color = Color.White
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -145,9 +191,18 @@ fun ChatRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
+                    (dashboardChat as? DashboardChat.Inactive.Invite)?.getInviteIconAndColor()?.let {
+                        Icon(
+                            it.first,
+                            contentDescription = null,
+                            modifier = Modifier.height(16.dp).width(20.dp).padding(end = 4.dp),
+                            tint = it.second,
+                        )
+                    }
                     Text(
                         text = dashboardChat.getMessageText(),
                         fontSize = 13.sp,
+                        fontFamily = Roboto,
                         fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W400 else FontWeight.W700,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -161,19 +216,22 @@ fun ChatRow(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
 
+                            val unseenCountState = dashboardChat.unseenMessageFlow?.collectAsState(0)
+                            val isUnseen = (dashboardChat.hasUnseenMessages() || unseenCountState?.value ?: 0 > 0)
+
                             Text(
                                 text = lastMessage,
                                 fontSize = 13.sp,
-                                fontWeight = if (dashboardChat.hasUnseenMessages()) FontWeight.W700 else FontWeight.W400,
+                                fontWeight = if (isUnseen) FontWeight.W700 else FontWeight.W400,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f),
-                                color = if (dashboardChat.hasUnseenMessages())
+                                color = if (isUnseen)
                                     androidx.compose.material3.MaterialTheme.colorScheme.tertiary else
                                     androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                             )
 
-                            dashboardChat.unseenMessageFlow?.collectAsState(0)?.let {
+                            unseenCountState?.let {
                                 if (it.value != 0L) MessageCount(it.value.toString())
                             }
                         }
