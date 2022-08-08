@@ -6,6 +6,6 @@
   <path
       android:pathData="M0,0h400v500h-400z"
       android:strokeAlpha="0.5"
-      android:fillColor="url(#pattern0)"Z
+      android:fillColor="url(#pattern0)"
       android:fillAlpha="0.5"/>
 </vector>

@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,19 +67,26 @@ actual fun ProfileImageView() {
                     .fillMaxHeight()
                     .weight(1f).background(MaterialTheme.colorScheme.background)
             ) {
-                Image(
-                    painter = imageResource(Res.drawable.ic_desktop_bg_dots),
-                    modifier = Modifier.fillMaxSize(),
-                    contentDescription = null
-                )
+                Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+                    Image(
+                        painter = imageResource(Res.drawable.ic_desktop_bg_dots),
+                        modifier = Modifier.fillMaxWidth().fillMaxHeight().aspectRatio(1f),
+                        contentDescription = null, contentScale = ContentScale.Crop
+                    )
+                }
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(60.dp))
                     Text(
-                        "You are now on the \n lightening network",
+                        "You are now on the \n lightening network!",
                         color = MaterialTheme.colorScheme.tertiary,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.W600
                     )
+                }
+                Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)).align(Alignment.Center), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.size(7.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer), contentAlignment = Alignment.Center) {
+
+                    }
                 }
             }
             Box(
@@ -161,7 +169,7 @@ actual fun ProfileImageView() {
                                 Spacer(modifier = Modifier.weight(1f))
                                 Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Center) {
                                     Text(
-                                        text = "Continue",
+                                        text = "Skip",
                                         fontSize = 12.sp,
                                         color = MaterialTheme.colorScheme.tertiary,
                                         fontWeight = FontWeight.W400,

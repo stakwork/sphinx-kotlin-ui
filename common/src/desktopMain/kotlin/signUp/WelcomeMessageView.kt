@@ -54,7 +54,7 @@ actual fun WelcomeMessageView() {
         ) {
             Column (verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
                 Spacer(modifier = Modifier.height(250.dp))
-                Text("A Message from your friend", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
+                Text("A Message from your friend...", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp)
                 Spacer(modifier = Modifier.height(24.dp))
                 PhotoUrlImage(
                     photoUrl = null,
@@ -67,7 +67,7 @@ actual fun WelcomeMessageView() {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text("Sachin Kumar", color = MaterialTheme.colorScheme.tertiary, fontSize = 13.sp)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Welcome to Sphinx", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp,)
+                Text("Welcome to Sphinx!", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp,)
                 Column(modifier = Modifier.fillMaxHeight()) {
                     Spacer(modifier = Modifier.weight(1f))
 
