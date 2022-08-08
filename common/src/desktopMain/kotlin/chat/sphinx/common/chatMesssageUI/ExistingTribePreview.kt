@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -59,7 +60,8 @@ actual fun ExistingTribePreview(
         ) {
             PhotoUrlImage(
                 linkPreview.imageUrl?.toPhotoUrl(),
-                modifier = Modifier.size(80.dp).clip(RoundedCornerShape(10.dp))
+                modifier = Modifier.size(80.dp).clip(RoundedCornerShape(10.dp)),
+                placeHolderRes = Res.drawable.ic_tribe_place_holder
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(

@@ -51,7 +51,8 @@ fun PhotoUrlImage(
     effect: @Composable (() -> Unit?)? = null,
     firstNameLetter: String? = null,
     color: Color? = null,
-    fontSize: Int? = null
+    fontSize: Int? = null,
+    placeHolderRes: String? = null
 ) {
 
     val initials: @Composable () -> Unit = {
@@ -59,7 +60,8 @@ fun PhotoUrlImage(
             modifier,
             firstNameLetter,
             color,
-            fontSize
+            fontSize,
+            placeHolderRes
         )
     }
 
@@ -134,14 +136,15 @@ fun InitialsCircleOrAvatar(
     modifier: Modifier = Modifier,
     firstNameLetter: String? = null,
     color: Color? = null,
-    fontSize: Int? = null
+    fontSize: Int? = null,
+    placeHolderRes: String? = null
 ) {
     if (firstNameLetter == null || color == null) {
         Image(
             modifier = modifier,
-            painter = imageResource(Res.drawable.profile_avatar),
+            painter = imageResource(placeHolderRes ?: Res.drawable.profile_avatar),
             contentDescription = "avatar",
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Inside
         )
     } else {
         color?.let { modifier.background(it, shape = CircleShape) }?.let {
