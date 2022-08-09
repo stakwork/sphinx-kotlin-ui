@@ -54,9 +54,13 @@ class JoinTribeViewModel() {
         loadTribeData()
     }
 
+    private var loadTribeJob: Job? = null
     private fun loadTribeData(){
+        if (loadTribeJob?.isActive == true) {
+            return
+        }
         tribeJoinLink?.let { tribeJoinLink ->
-            scope.launch(dispatchers.mainImmediate) {
+            loadTribeJob = scope.launch(dispatchers.mainImmediate) {
                 accountOwnerStateFlow.collect { contactOwner ->
                     contactOwner?.let { owner ->
                         networkQueryChat.getTribeInfo(
@@ -104,13 +108,8 @@ class JoinTribeViewModel() {
         }
     }
 
-    private var joinTribeJob: Job? = null
     fun joinTribe() {
-        if (joinTribeJob?.isActive == true) {
-            return
-        }
-
-        joinTribeJob = scope.launch(dispatchers.mainImmediate) {
+        scope.launch(dispatchers.mainImmediate) {
 
             setJoinTribeState {
                 copy(
@@ -121,10 +120,21 @@ class JoinTribeViewModel() {
             tribeInfo?.amount = joinTribeState.price_to_join.toLong()
 
             tribeInfo?.let { tribeDto ->
-                chatRepository.joinTribe(tribeDto).collect {
-                    it
+                chatRepository.joinTribe(tribeDto).collect { response ->
+                    setJoinTribeState {
+                        copy(
+                            status = response
+                        )
+                    }
                 }
             }
+        }
+    }
+    fun onAliasTextChanged(text: String){
+        setJoinTribeState {
+            copy(
+                userAlias = text
+            )
         }
     }
 

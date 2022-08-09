@@ -85,7 +85,9 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                 BoxWithStroke("Time to stake: (hours)", viewModel.joinTribeState.hourToStake, BoxWithStrokeEnums.BOTTOM
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-                TribeTextField("Alias", viewModel.joinTribeState.userAlias) {}
+                TribeTextField("Alias", viewModel.joinTribeState.userAlias) {
+                    viewModel.onAliasTextChanged(it)
+                }
                 Box(
                     modifier = Modifier
                 ) {
