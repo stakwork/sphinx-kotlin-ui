@@ -38,6 +38,10 @@ object Res {
         const val ic_request =  "drawable/ic_request.xml"
         const val ic_send =  "drawable/ic_send.xml"
 
+        // pod cast
+        const val ic_share_podcast =  "drawable/ic_podcast_share_clip.xml"
+        const val ic_podcast_back_15 =  "drawable/ic_podcast_back_15.xml"
+        const val ic_podcast_forward_30 =  "drawable/ic_forward_30.xml"
         // chat action sheet
 
     }

@@ -17,6 +17,7 @@ import chat.sphinx.common.components.chat.FilePickerMode
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
+import chat.sphinx.common.components.podcast.PodcastPlayer
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
@@ -62,27 +63,30 @@ fun main() = application {
 //    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
-            Window(
-                onCloseRequest = ::exitApplication,
-                title = "Sphinx",
-                state = WindowState(
-                    position = WindowPosition.Aligned(Alignment.Center),
-                    size = getPreferredWindowSize(800, 500)
-                ),
-                undecorated = true,
-                icon = sphinxIcon,
-            ) {
-                AppTheme {
-                    SphinxSplash()
-                    LaunchedEffect(windowState) {
-                        delay(1000L)
-                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-                            ContentState.onContentReady(ScreenType.DashboardScreen)
-                        } else {
-                            ContentState.onContentReady(ScreenType.LandingScreen)
-                        }
-                    }
-                }
+//            Window(
+//                onCloseRequest = ::exitApplication,
+//                title = "Sphinx",
+//                state = WindowState(
+//                    position = WindowPosition.Aligned(Alignment.Center),
+//                    size = getPreferredWindowSize(800, 500)
+//                ),
+//                undecorated = true,
+//                icon = sphinxIcon,
+//            ) {
+//                AppTheme {
+//                    SphinxSplash()
+//                    LaunchedEffect(windowState) {
+//                        delay(1000L)
+//                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+//                            ContentState.onContentReady(ScreenType.DashboardScreen)
+//                        } else {
+//                            ContentState.onContentReady(ScreenType.LandingScreen)
+//                        }
+//                    }
+//                }
+//            }
+            AppTheme(useDarkTheme = true) {
+                PodcastPlayer {  }
             }
         }
         ScreenType.DashboardScreen -> {
