@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.ContactState
 import chat.sphinx.common.state.JoinTribeState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
+import chat.sphinx.concepts.network.query.chat.model.TribeDto
 import chat.sphinx.concepts.network.relay_call.NetworkRelayCall
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -28,6 +29,8 @@ class JoinTribeViewModel() {
     val networkQueryChat: NetworkQueryChat = SphinxContainer.networkModule.networkQueryChat
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
+
 
     private val accountOwnerStateFlow: StateFlow<Contact?>
         get() = contactRepository.accountOwner
@@ -40,6 +43,7 @@ class JoinTribeViewModel() {
         joinTribeState = joinTribeState.update()
     }
 
+    private var tribeInfo : TribeDto? = null
     var tribeJoinLink: TribeJoinLink? = null
 
     init {
@@ -63,6 +67,8 @@ class JoinTribeViewModel() {
                         ).collect { loadResponse ->
                             when (loadResponse) {
                                 is Response.Success -> {
+                                    tribeInfo = loadResponse.value
+
                                     loadResponse.apply {
                                         setJoinTribeState {
                                             copy(
@@ -95,6 +101,21 @@ class JoinTribeViewModel() {
                     }
                 }
             }
+        }
+    }
+
+    fun joinTribe(){
+        scope.launch(dispatchers.mainImmediate) {
+
+            tribeInfo?.myAlias = joinTribeState.userAlias
+            tribeInfo?.amount = joinTribeState.price_to_join.toLong()
+
+            tribeInfo?.let { tribeDto ->
+            chatRepository.joinTribe(tribeDto).collect {
+
+            }
+            }
+
         }
     }
 

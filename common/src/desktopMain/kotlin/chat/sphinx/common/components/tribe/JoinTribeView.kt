@@ -98,7 +98,10 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
                     modifier = Modifier.fillMaxWidth(0.7f).height(45.dp).align(Alignment.CenterHorizontally),
-                    onClick = {}
+                    onClick = {
+                        viewModel.joinTribe()
+                        dashboardViewModel.toggleJoinTribeWindow(false, null)
+                    }
                 ) {
                     androidx.compose.material.Text(
                         text = "JOIN TRIBE",
