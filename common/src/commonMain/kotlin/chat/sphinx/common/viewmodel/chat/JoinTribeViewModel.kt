@@ -7,6 +7,7 @@ import chat.sphinx.common.state.JoinTribeState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.network.query.chat.model.TribeDto
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
@@ -14,6 +15,7 @@ import chat.sphinx.wrapper.chat.ChatHost
 import chat.sphinx.wrapper.chat.ChatUUID
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.tribe.TribeJoinLink
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
@@ -22,10 +24,10 @@ class JoinTribeViewModel() {
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
-    val networkQueryChat: NetworkQueryChat = SphinxContainer.networkModule.networkQueryChat
+    private val networkQueryChat: NetworkQueryChat = SphinxContainer.networkModule.networkQueryChat
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-    val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
+    private val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
 
 
     private val accountOwnerStateFlow: StateFlow<Contact?>
@@ -52,7 +54,7 @@ class JoinTribeViewModel() {
         loadTribeData()
     }
 
-    fun loadTribeData(){
+    private fun loadTribeData(){
         tribeJoinLink?.let { tribeJoinLink ->
             scope.launch(dispatchers.mainImmediate) {
                 accountOwnerStateFlow.collect { contactOwner ->
@@ -102,24 +104,28 @@ class JoinTribeViewModel() {
         }
     }
 
-    fun joinTribe(){
-        scope.launch(dispatchers.mainImmediate) {
+    private var joinTribeJob: Job? = null
+    fun joinTribe() {
+        if (joinTribeJob?.isActive == true) {
+            return
+        }
 
+        joinTribeJob = scope.launch(dispatchers.mainImmediate) {
+
+            setJoinTribeState {
+                copy(
+                    status = LoadResponse.Loading
+                )
+            }
             tribeInfo?.myAlias = joinTribeState.userAlias
             tribeInfo?.amount = joinTribeState.price_to_join.toLong()
 
             tribeInfo?.let { tribeDto ->
-            chatRepository.joinTribe(tribeDto).collect {
-                setJoinTribeState {
-                    copy(
-                        status = it
-                    )
+                chatRepository.joinTribe(tribeDto).collect {
+                    it
                 }
             }
-            }
-
         }
     }
-
 
 }

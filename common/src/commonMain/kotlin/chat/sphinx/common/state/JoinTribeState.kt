@@ -26,6 +26,6 @@ data class JoinTribeState(
     val feed_type: Int? = null,
     val userAlias: String = "",
     val userPhotoUrl: PhotoUrl? = null,
-    val status: LoadResponse<Any, ResponseError>? = null,
+    var status: LoadResponse<Any, ResponseError>? = null,
 
     )

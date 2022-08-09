@@ -30,6 +30,8 @@ import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.JoinTribeViewModel
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.Response
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 
@@ -105,16 +107,25 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Box(
+                    Modifier.fillMaxWidth().height(40.dp).padding(bottom = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (viewModel.joinTribeState.status is LoadResponse.Loading) {
+                        CircularProgressIndicator(
+                            Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                }
                 Button(
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
                     modifier = Modifier.fillMaxWidth(0.7f).height(45.dp).align(Alignment.CenterHorizontally),
                     onClick = {
                         viewModel.joinTribe()
-                        dashboardViewModel.toggleJoinTribeWindow(false, null)
                     }
-
                 ) {
                     androidx.compose.material.Text(
                         text = "JOIN TRIBE",
@@ -126,6 +137,9 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                 }
             }
         }
+    }
+    if (viewModel.joinTribeState.status is Response.Success){
+        dashboardViewModel.toggleJoinTribeWindow(false, null)
     }
 }
 
