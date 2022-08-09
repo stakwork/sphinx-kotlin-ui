@@ -30,9 +30,13 @@ import utils.AnimatedContainer
 import androidx.compose.ui.text.style.TextAlign
 
 @Composable
-expect fun PINScreen(
+actual fun PINScreen(
     pinHandlingViewModel: PINHandlingViewModel,
-    descriptionMessage: String? = null,
-    successMessage: String? = null,
-    errorMessage: String? = null
-)
+    descriptionMessage: String?,
+    successMessage: String?,
+    errorMessage: String?
+) {
+    Text(
+        text = "Pin Screen"
+    )
+}
