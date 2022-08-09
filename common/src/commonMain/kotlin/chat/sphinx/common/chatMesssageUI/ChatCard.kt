@@ -44,6 +44,7 @@ import chat.sphinx.wrapper.message.media.isPdf
 import chat.sphinx.wrapper.message.media.isUnknown
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
+import chat.sphinx.wrapper.tribe.toTribeJoinLink
 
 @Composable
 fun ChatCard(
@@ -171,7 +172,7 @@ fun MessageTextLabel(
                         when (annotation.tag) {
                             LinkTag.WebURL.name -> {
                                 if (annotation.item.isValidTribeJoinLink) {
-                                    dashboardViewModel.toggleJoinTribeWindow(true)
+                                    dashboardViewModel.toggleJoinTribeWindow(true, annotation.item.toTribeJoinLink())
                                 }
                                 else {
                                     uriHandler.openUri(annotation.item)

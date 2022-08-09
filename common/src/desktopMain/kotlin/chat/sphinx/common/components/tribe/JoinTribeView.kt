@@ -15,6 +15,7 @@ import androidx.compose.material.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,17 +28,22 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.chat.JoinTribeViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
+import chat.sphinx.wrapper.tribe.TribeJoinLink
 
 @Composable
-actual fun JoinTribeView(dashboardViewModel: DashboardViewModel) {
+actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: TribeJoinLink?) {
+
+    val viewModel = remember { JoinTribeViewModel() }
+    viewModel.loadTribeData(tribeJoinLink)
+
     Window(
         onCloseRequest = {
-            dashboardViewModel.toggleJoinTribeWindow(false)
+            dashboardViewModel.toggleJoinTribeWindow(false, null)
         },
         title = "Sphinx",
-
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
             size = getPreferredWindowSize(400, 800)
@@ -45,58 +51,65 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel) {
 //        icon = sphinxIcon,
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant).padding(vertical = 24.dp, horizontal = 16.dp).verticalScroll(
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant)
+                .padding(vertical = 24.dp, horizontal = 16.dp).verticalScroll(
                 rememberScrollState()
             ), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
         ) {
             PhotoUrlImage(
-                PhotoUrl("https://picsum.photos/200/300"), modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
+                photoUrl = viewModel.joinTribeState.img,
+                modifier = Modifier.size(80.dp).clip(CircleShape)
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text("SLC Bitcoin Lightening Meet Up", fontSize = 28.sp, color = MaterialTheme.colorScheme.tertiary, textAlign = TextAlign.Center)
+            Text(
+                viewModel.joinTribeState.name,
+                fontSize = 28.sp,
+                color = MaterialTheme.colorScheme.tertiary,
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.height(24.dp))
-            Text("Salt lake city meetup first thursday of the month", color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 4.dp))
+            Text(
+                viewModel.joinTribeState.description,
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
+                fontSize = 15.sp,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
             Spacer(modifier = Modifier.height(24.dp))
-           Column(modifier = Modifier.padding(horizontal = 24.dp)){
-               BoxWithStroke("Price to join:","1",BoxWithStrokeEnums.TOP)
-               BoxWithStroke("Price per message:","2")
-               BoxWithStroke("Amount to stake:","5")
-               BoxWithStroke("Time to stake: (hours)","2",BoxWithStrokeEnums.BOTTOM)
-               Spacer(modifier = Modifier.height(24.dp))
-               TribeTextField("Alias", "Sachin") {}
-               Box (){
-                   TribeTextField("Profile Picture", "https://www.google.co.in") {}
-                   Box(modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp)){
-                       PhotoUrlImage(
-                           PhotoUrl("https://picsum.photos/200/300"), modifier = Modifier
-                               .size(40.dp)
-                               .clip(CircleShape).align(Alignment.TopEnd)
-                       )
-                   }
-               }
-               Spacer(modifier = Modifier.height(32.dp))
-               Button(
-                   shape = RoundedCornerShape(30.dp),
-                   colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
-                   modifier = Modifier.fillMaxWidth(0.7f).height(45.dp).align(Alignment.CenterHorizontally),
-                   onClick = {
-
-                   }
-               ) {
-                   androidx.compose.material.Text(
-                       text = "JOIN TRIBE",
-                       fontSize = 14.sp,
-                       color = MaterialTheme.colorScheme.tertiary,
-                       fontWeight = FontWeight.W800,
-                       fontFamily = Roboto
-                   )
-               }
-           }
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                BoxWithStroke("Price to join:", viewModel.joinTribeState.price_to_join, BoxWithStrokeEnums.TOP)
+                BoxWithStroke("Price per message:", viewModel.joinTribeState.price_per_message)
+                BoxWithStroke("Amount to stake:", viewModel.joinTribeState.escrow_amount)
+                BoxWithStroke("Time to stake: (hours)", viewModel.joinTribeState.escrow_millis, BoxWithStrokeEnums.BOTTOM
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                TribeTextField("Alias", viewModel.joinTribeState.userAlias) {}
+                Box() {
+                    TribeTextField("Profile Picture", viewModel.joinTribeState.userPhotoUrl?.value ?: "") {}
+                    Box(modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp)) {
+                        PhotoUrlImage(
+                            photoUrl = viewModel.joinTribeState.userPhotoUrl,
+                            modifier = Modifier.size(40.dp).clip(CircleShape).align(Alignment.TopEnd)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+                Button(
+                    shape = RoundedCornerShape(30.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondary),
+                    modifier = Modifier.fillMaxWidth(0.7f).height(45.dp).align(Alignment.CenterHorizontally),
+                    onClick = {}
+                ) {
+                    androidx.compose.material.Text(
+                        text = "JOIN TRIBE",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontWeight = FontWeight.W800,
+                        fontFamily = Roboto
+                    )
+                }
+            }
         }
-
-
     }
 }
 

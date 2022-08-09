@@ -185,8 +185,8 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 }
             }
             val joinTribeWindowState by dashboardViewModel.joinTribeStateFlow.collectAsState()
-            if (joinTribeWindowState){
-                JoinTribeView(dashboardViewModel)
+            if (joinTribeWindowState.first){
+                JoinTribeView(dashboardViewModel, joinTribeWindowState.second)
             }
         }
     }
