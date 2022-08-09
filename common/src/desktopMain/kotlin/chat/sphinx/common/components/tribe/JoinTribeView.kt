@@ -1,6 +1,5 @@
 package chat.sphinx.common.components.tribe
 
-import CommonButton
 import Roboto
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -12,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,7 +31,6 @@ import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.JoinTribeViewModel
 import chat.sphinx.utils.getPreferredWindowSize
-import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 
 @Composable
@@ -80,16 +80,28 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                 BoxWithStroke("Price to join:", viewModel.joinTribeState.price_to_join, BoxWithStrokeEnums.TOP)
                 BoxWithStroke("Price per message:", viewModel.joinTribeState.price_per_message)
                 BoxWithStroke("Amount to stake:", viewModel.joinTribeState.escrow_amount)
-                BoxWithStroke("Time to stake: (hours)", viewModel.joinTribeState.escrow_millis, BoxWithStrokeEnums.BOTTOM
+                BoxWithStroke("Time to stake: (hours)", viewModel.joinTribeState.hourToStake, BoxWithStrokeEnums.BOTTOM
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 TribeTextField("Alias", viewModel.joinTribeState.userAlias) {}
-                Box() {
-                    TribeTextField("Profile Picture", viewModel.joinTribeState.userPhotoUrl?.value ?: "") {}
-                    Box(modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp)) {
+                Box(
+                    modifier = Modifier
+                ) {
+                    TribeTextField(
+                        "Profile Picture",
+                        viewModel.joinTribeState.userPhotoUrl?.value ?: "",
+                        Modifier.padding(end = 50.dp),
+                        enabled = false
+                    ) {}
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(end = 6.dp)
+                            .wrapContentSize()
+                    ) {
                         PhotoUrlImage(
                             photoUrl = viewModel.joinTribeState.userPhotoUrl,
-                            modifier = Modifier.size(40.dp).clip(CircleShape).align(Alignment.TopEnd)
+                            modifier = Modifier.size(40.dp).clip(CircleShape)
                         )
                     }
                 }
@@ -102,6 +114,7 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                         viewModel.joinTribe()
                         dashboardViewModel.toggleJoinTribeWindow(false, null)
                     }
+
                 ) {
                     androidx.compose.material.Text(
                         text = "JOIN TRIBE",

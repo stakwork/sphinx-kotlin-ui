@@ -1,5 +1,7 @@
 package chat.sphinx.common.state
 
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.ResponseError
 import chat.sphinx.serialization.SphinxBoolean
 import chat.sphinx.wrapper.PhotoUrl
 
@@ -15,7 +17,7 @@ data class JoinTribeState(
     val price_to_join: String = "",
     val price_per_message: String = "",
     val escrow_amount: String = "",
-    val escrow_millis: String = "",
+    val hourToStake: String = "",
     val unlisted: SphinxBoolean? = null,
     val private: Any? = null,
     val deleted: Any? = null,
@@ -23,5 +25,7 @@ data class JoinTribeState(
     val feed_url: String? = "",
     val feed_type: Int? = null,
     val userAlias: String = "",
-    val userPhotoUrl: PhotoUrl? = null
-)
+    val userPhotoUrl: PhotoUrl? = null,
+    val status: LoadResponse<Any, ResponseError>? = null,
+
+    )

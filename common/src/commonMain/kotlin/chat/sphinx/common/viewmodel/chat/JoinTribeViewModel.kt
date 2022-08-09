@@ -3,24 +3,20 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import chat.sphinx.common.state.ContactState
 import chat.sphinx.common.state.JoinTribeState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.network.query.chat.model.TribeDto
-import chat.sphinx.concepts.network.relay_call.NetworkRelayCall
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.ChatHost
 import chat.sphinx.wrapper.chat.ChatUUID
 import chat.sphinx.wrapper.contact.Contact
-import chat.sphinx.wrapper.toPhotoUrl
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
 class JoinTribeViewModel() {
 
@@ -69,6 +65,8 @@ class JoinTribeViewModel() {
                                 is Response.Success -> {
                                     tribeInfo = loadResponse.value
 
+                                    val hourToStake: Long = (loadResponse.value.escrow_millis / 60 / 60 / 1000)
+
                                     loadResponse.apply {
                                         setJoinTribeState {
                                             copy(
@@ -83,7 +81,7 @@ class JoinTribeViewModel() {
                                                 price_to_join = value.price_to_join.toString(),
                                                 price_per_message = value.price_per_message.toString(),
                                                 escrow_amount = value.escrow_amount.toString(),
-                                                escrow_millis = value.escrow_millis.toString(),
+                                                hourToStake = hourToStake.toString(),
                                                 unlisted = value.unlisted,
                                                 private = value.private,
                                                 deleted = value.deleted,
@@ -112,7 +110,11 @@ class JoinTribeViewModel() {
 
             tribeInfo?.let { tribeDto ->
             chatRepository.joinTribe(tribeDto).collect {
-
+                setJoinTribeState {
+                    copy(
+                        status = it
+                    )
+                }
             }
             }
 
