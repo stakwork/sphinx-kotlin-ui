@@ -204,6 +204,7 @@ abstract class ChatViewModel(
 
         MessageListState.screenState(
             MessageListData.PopulatedMessageListData(
+                chat.id,
                 chatMessages
             )
         )
