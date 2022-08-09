@@ -1,5 +1,6 @@
 package chat.sphinx.common.viewmodel.chat
 
+import androidx.annotation.ColorInt
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
@@ -631,16 +632,14 @@ abstract class ChatViewModel(
         scope.launch(dispatchers.mainImmediate) {
             link?.tribeUUID?.toChatUUID()?.let { chatUUID ->
                 chatRepository.getChatByUUID(chatUUID).firstOrNull()?.let { chat ->
-                    ChatDetailState.screenState(
-                        ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
-                            chat.id,
-                            DashboardChat.Active.GroupOrTribe(
-                                chat, null, null, null, null
+                    getDashboardChatFor(null, chat)?.let { dashboardChat ->
+                        ChatDetailState.screenState(
+                            ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
+                                chat.id,
+                                dashboardChat
                             )
                         )
-                    )
-                } ?: run {
-
+                    }
                 }
             }
         }
@@ -650,22 +649,70 @@ abstract class ChatViewModel(
         scope.launch(dispatchers.mainImmediate) {
             ((link as? LightningNodePubKey) ?: (link as? VirtualLightningNodeAddress)?.getPubKey())?.let { publicKey ->
                 contactRepository.getContactByPubKey(publicKey).firstOrNull()?.let { contact ->
-                    repositoryDashboard.getConversationByContactIdFlow(contact.id).firstOrNull()?.let { chat ->
-                        ChatDetailState.screenState(
-                            ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
-                                chat.id,
-                                contact.id,
-                                DashboardChat.Active.Conversation(
-                                    chat, null, contact, null, null
+                    val chat = repositoryDashboard.getConversationByContactIdFlow(contact.id).firstOrNull()
+                    chat?.let {
+                        getDashboardChatFor(contact, chat)?.let { dashboardChat ->
+                            ChatDetailState.screenState(
+                                ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
+                                    chat?.id,
+                                    contact.id,
+                                    dashboardChat
                                 )
                             )
-                        )
+                        }
+                    } ?: run {
+                        getDashboardChatFor(contact, null)?.let { dashboardChat ->
+                            ChatDetailState.screenState(
+                                ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
+                                    contact.id,
+                                    dashboardChat
+                                )
+                            )
+                        }
                     }
                 } ?: run {
                     dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx(link))
                 }
             }
         }
+    }
+
+    private suspend fun getDashboardChatFor(contact: Contact?, chat: Chat?): DashboardChat? {
+        chat?.let { nnChat ->
+            val message: Message? = nnChat.latestMessageId?.let {
+                repositoryDashboard.getMessageById(it).firstOrNull()
+            }
+
+            val owner = getOwner()
+            val color = getColorFor(contact, chat)
+            val unseenMessagesFlow = repositoryDashboard.getUnseenMessagesByChatId(chat.id)
+
+            if (nnChat.isTribe()) {
+                return DashboardChat.Active.GroupOrTribe(
+                    chat,
+                    message,
+                    owner,
+                    color,
+                    unseenMessagesFlow
+                )
+            } else {
+                contact?.let { nnContact ->
+                    return DashboardChat.Active.Conversation(
+                        chat,
+                        message,
+                        nnContact,
+                        color,
+                        unseenMessagesFlow
+                    )
+                }
+            }
+        } ?: contact?.let { nnContact ->
+            return DashboardChat.Inactive.Conversation(
+                nnContact,
+                getColorFor(nnContact, null),
+            )
+        }
+        return null
     }
 
     fun toast(
@@ -696,5 +743,19 @@ abstract class ChatViewModel(
                 callback
             )
         }
+    }
+
+    @ColorInt
+    suspend fun getColorFor(
+        contact: Contact?,
+        chat: Chat?
+    ): Int? {
+        (contact?.getColorKey() ?: chat?.getColorKey())?.let { colorKey ->
+            return colorsHelper.getColorIntForKey(
+                colorKey,
+                Integer.toHexString(getRandomColorRes().hashCode())
+            )
+        }
+        return null
     }
 }
