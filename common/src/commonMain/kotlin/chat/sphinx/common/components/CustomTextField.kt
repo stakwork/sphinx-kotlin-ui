@@ -26,12 +26,14 @@ fun CustomTextField(
     fontSize: TextUnit = MaterialTheme.typography.body2.fontSize,
     singleLine: Boolean = true,
     maxLines: Int = 4,
-    cursorBrush: Color? = null
+    cursorBrush: Color? = null,
+    enabled: Boolean = true
 ) {
     BasicTextField(
         modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
+        enabled = enabled,
         singleLine = singleLine,
         maxLines = maxLines,
         cursorBrush = SolidColor(cursorBrush ?: MaterialTheme.colors.primary),

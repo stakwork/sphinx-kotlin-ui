@@ -21,6 +21,8 @@ import kotlinx.coroutines.launch
 fun MessageListUI(
     chatViewModel: ChatViewModel
 ) {
+    chatViewModel.screenInit()
+
     Box {
         when (val messageListData = MessageListState.screenState()) {
             is MessageListData.EmptyMessageListData -> {

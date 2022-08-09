@@ -128,6 +128,19 @@ abstract class ChatViewModel(
         }
     }
 
+    private var screenInit: Boolean = false
+    fun screenInit() {
+        if (screenInit) {
+            return
+        } else {
+            screenInit = true
+        }
+
+        scope.launch(dispatchers.mainImmediate) {
+            checkChatStatus()
+        }
+    }
+
     fun cancelMessagesJob() {
         messagesLoadJob?.cancel()
     }
@@ -147,6 +160,14 @@ abstract class ChatViewModel(
             MessageListState.screenState(
                 MessageListData.EmptyMessageListData
             )
+        }
+    }
+
+    private suspend fun checkChatStatus() {
+        getChat()?.let{ chat ->
+            if (chat.isPrivateTribe() && chat.status.isPending()) {
+                toast("Waiting for admin approval", delay = 3000L)
+            }
         }
     }
 
@@ -382,9 +403,6 @@ abstract class ChatViewModel(
         }
     }
 
-    fun isReplying(): Boolean {
-        return editMessageState.replyToMessage.value != null
-    }
     fun onMessageFileChanged(filepath: Path) {
         editMessageState.attachmentInfo.value = AttachmentInfo(
             filePath = filepath,

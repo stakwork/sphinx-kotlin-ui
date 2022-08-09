@@ -47,6 +47,8 @@ sealed class DashboardChat {
 
     abstract fun isTribe(): Boolean
 
+    abstract fun getChatOrNull(): Chat?
+
     sealed class Active: DashboardChat() {
 
         abstract val chat: Chat
@@ -275,6 +277,10 @@ sealed class DashboardChat {
             override fun isTribe(): Boolean {
                 return chat.isTribe()
             }
+
+            override fun getChatOrNull(): Chat? {
+                return chat
+            }
         }
 
         class GroupOrTribe(
@@ -303,6 +309,10 @@ sealed class DashboardChat {
 
             override fun isTribe(): Boolean {
                 return chat.isTribe()
+            }
+
+            override fun getChatOrNull(): Chat? {
+                return chat
             }
         }
     }
@@ -349,6 +359,10 @@ sealed class DashboardChat {
 
             override fun isTribe(): Boolean {
                 return false
+            }
+
+            override fun getChatOrNull(): Chat? {
+                return null
             }
         }
 
@@ -455,6 +469,10 @@ sealed class DashboardChat {
 
             override fun isTribe(): Boolean {
                 return false
+            }
+
+            override fun getChatOrNull(): Chat? {
+                return null
             }
         }
     }
