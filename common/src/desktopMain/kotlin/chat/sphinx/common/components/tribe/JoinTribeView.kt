@@ -1,13 +1,10 @@
 package chat.sphinx.common.components.tribe
 
 import Roboto
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
@@ -16,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,18 +26,24 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.PhotoUrlImage
+import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.JoinTribeViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.getPreferredWindowSize
+import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.tribe.TribeJoinLink
+import kotlinx.coroutines.launch
+import utils.deduceMediaType
 
 @Composable
 actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: TribeJoinLink?) {
 
     val viewModel = remember { JoinTribeViewModel() }
     viewModel.loadTribeData(tribeJoinLink)
+    val scope = rememberCoroutineScope()
+
 
     Window(
         onCloseRequest = {
@@ -93,7 +97,7 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                 ) {
                     TribeTextField(
                         "Profile Picture",
-                        viewModel.joinTribeState.userPhotoUrl?.value ?: "",
+                        viewModel.joinTribeState.myPhotoUrl?.value ?: "",
                         Modifier.padding(end = 50.dp),
                         enabled = false
                     ) {}
@@ -103,9 +107,23 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                             .padding(end = 6.dp)
                             .wrapContentSize()
                     ) {
+                        val onImageClick = {
+                            scope.launch {
+                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                    if (path.deduceMediaType().isImage) {
+                                        viewModel.onProfilePictureChanged(path)
+                                    }
+                                }
+                            }
+                        }
                         PhotoUrlImage(
-                            photoUrl = viewModel.joinTribeState.userPhotoUrl,
-                            modifier = Modifier.size(40.dp).clip(CircleShape)
+                            photoUrl = viewModel.joinTribeState.myPhotoUrl,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    onImageClick.invoke()
+                                }
                         )
                     }
                 }

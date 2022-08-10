@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.JoinTribeState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.network.query.chat.model.TribeDto
+import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -14,10 +15,14 @@ import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.ChatHost
 import chat.sphinx.wrapper.chat.ChatUUID
 import chat.sphinx.wrapper.contact.Contact
+import chat.sphinx.wrapper.message.media.MediaType
+import chat.sphinx.wrapper.message.media.toFileName
+import chat.sphinx.wrapper.toPhotoUrl
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okio.Path
 import kotlinx.coroutines.flow.collect
 
 class JoinTribeViewModel() {
@@ -95,7 +100,7 @@ class JoinTribeViewModel() {
                                                 feed_url = value.feed_url,
                                                 feed_type = feed_type,
                                                 userAlias = owner.alias?.value ?: "",
-                                                userPhotoUrl = owner.photoUrl
+                                                myPhotoUrl = owner.photoUrl
                                             )
                                         }
                                     }
@@ -118,6 +123,7 @@ class JoinTribeViewModel() {
             }
             tribeInfo?.myAlias = joinTribeState.userAlias
             tribeInfo?.amount = joinTribeState.price_to_join.toLong()
+            tribeInfo?.setProfileImageFile(joinTribeState.userPicture?.filePath)
 
             tribeInfo?.let { tribeDto ->
                 chatRepository.joinTribe(tribeDto).collect { response ->
@@ -134,6 +140,23 @@ class JoinTribeViewModel() {
         setJoinTribeState {
             copy(
                 userAlias = text
+            )
+        }
+    }
+    fun onProfilePictureChanged(filepath: Path) {
+        val ext = filepath.toFile().extension
+        val mediaType = MediaType.Image(MediaType.IMAGE + "/$ext")
+        val file = filepath.toFile()
+
+        setJoinTribeState {
+            copy(
+                userPicture = AttachmentInfo(
+                    filePath = filepath,
+                    mediaType = mediaType,
+                    fileName = filepath.name.toFileName(),
+                    isLocalFile = true
+                ),
+                myPhotoUrl = file.absolutePath.toPhotoUrl()
             )
         }
     }

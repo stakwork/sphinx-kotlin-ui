@@ -1,5 +1,6 @@
 package chat.sphinx.common.state
 
+import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.ResponseError
 import chat.sphinx.serialization.SphinxBoolean
@@ -25,7 +26,8 @@ data class JoinTribeState(
     val feed_url: String? = "",
     val feed_type: Int? = null,
     val userAlias: String = "",
-    val userPhotoUrl: PhotoUrl? = null,
+    val myPhotoUrl: PhotoUrl? = null,
     var status: LoadResponse<Any, ResponseError>? = null,
+    val userPicture: AttachmentInfo? = null,
 
     )
