@@ -1,9 +1,8 @@
 package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.ContactScreenState
-import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardScreenState
-import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
+import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -89,8 +88,8 @@ class DashboardViewModel: WindowFocusListener {
     val joinTribeStateFlow: StateFlow<Pair<Boolean, TribeJoinLink?>>
         get() = _joinTribeStateFlow.asStateFlow()
 
-    fun toggleJoinTribeWindow(open: Boolean, tribeJoinLink: TribeJoinLink?) {
-        _joinTribeStateFlow.value = Pair(open, tribeJoinLink )
+    fun toggleJoinTribeWindow(open: Boolean, tribeJoinLink: TribeJoinLink? = null) {
+        _joinTribeStateFlow.value = Pair(open, tribeJoinLink)
     }
 
     private val _backUpWindowStateFlow: MutableStateFlow<Boolean> by lazy {

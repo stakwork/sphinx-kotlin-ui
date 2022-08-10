@@ -5,4 +5,4 @@ import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 
 @Composable
-expect fun JoinTribeView (dashboardViewModel: DashboardViewModel, tribeJoinLink: TribeJoinLink?)
+expect fun JoinTribeView (dashboardViewModel: DashboardViewModel, tribeJoinLink: TribeJoinLink)

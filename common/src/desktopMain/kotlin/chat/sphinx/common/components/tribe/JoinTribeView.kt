@@ -5,10 +5,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,26 +34,28 @@ import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import kotlinx.coroutines.launch
+import theme.light_divider
 import utils.deduceMediaType
 
 @Composable
-actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: TribeJoinLink?) {
+actual fun JoinTribeView(
+    dashboardViewModel: DashboardViewModel,
+    tribeJoinLink: TribeJoinLink
+) {
 
-    val viewModel = remember { JoinTribeViewModel() }
-    viewModel.loadTribeData(tribeJoinLink)
+    val viewModel = JoinTribeViewModel(tribeJoinLink, dashboardViewModel)
+
     val scope = rememberCoroutineScope()
-
 
     Window(
         onCloseRequest = {
-            dashboardViewModel.toggleJoinTribeWindow(false, null)
+            dashboardViewModel.toggleJoinTribeWindow(false)
         },
-        title = "Sphinx",
+        title = "Join Tribe",
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
             size = getPreferredWindowSize(400, 800)
         ),
-//        icon = sphinxIcon,
     ) {
         Column(
             modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant)
@@ -84,11 +84,21 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
             )
             Spacer(modifier = Modifier.height(24.dp))
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                BoxWithStroke("Price to join:", viewModel.joinTribeState.price_to_join, BoxWithStrokeEnums.TOP)
-                BoxWithStroke("Price per message:", viewModel.joinTribeState.price_per_message)
-                BoxWithStroke("Amount to stake:", viewModel.joinTribeState.escrow_amount)
-                BoxWithStroke("Time to stake: (hours)", viewModel.joinTribeState.hourToStake, BoxWithStrokeEnums.BOTTOM
-                )
+                Card (
+                    border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground),
+                    shape = RoundedCornerShape(4.dp),
+                    backgroundColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ){
+                    Column {
+                        PriceBox("Price to join:", viewModel.joinTribeState.price_to_join)
+                        Divider(color = MaterialTheme.colorScheme.onBackground, thickness = 1.dp)
+                        PriceBox("Price per message:", viewModel.joinTribeState.price_per_message)
+                        Divider(color = MaterialTheme.colorScheme.onBackground, thickness = 1.dp)
+                        PriceBox("Amount to stake:", viewModel.joinTribeState.escrow_amount)
+                        Divider(color = MaterialTheme.colorScheme.onBackground, thickness = 1.dp)
+                        PriceBox("Time to stake: (hours)", viewModel.joinTribeState.hourToStake)
+                    }
+                }
                 Spacer(modifier = Modifier.height(24.dp))
                 TribeTextField("Alias", viewModel.joinTribeState.userAlias) {
                     viewModel.onAliasTextChanged(it)
@@ -98,14 +108,14 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                 ) {
                     TribeTextField(
                         "Profile Picture",
-                        viewModel.joinTribeState.photoUrlText,
+                        viewModel.joinTribeState.myPhotoUrl?.value ?: "",
                         Modifier.padding(end = 50.dp),
                         enabled = false
                     ) {}
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(end = 6.dp)
+                            .padding(top = 6.dp)
                             .wrapContentSize()
                     ) {
                         val onImageClick = {
@@ -127,7 +137,6 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                                         onImageClick.invoke()
                                     }
                             )
-                            viewModel.onPhotoUrlChange(it.value)
                         }
                         viewModel.joinTribeState.userPicture?.let {
                             PhotoFileImage(
@@ -138,12 +147,14 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                                     .clickable {
                                         onImageClick.invoke()
                                     },
+                                contentScale = ContentScale.Crop,
+                                effect = {}
                             )
-                            viewModel.onPhotoUrlChange(it.filePath.toString())
                         }
                     }
 
                 }
+                Spacer(modifier = Modifier.height(24.dp))
                 Box(
                     Modifier.fillMaxWidth().height(40.dp).padding(bottom = 4.dp),
                     contentAlignment = Alignment.Center
@@ -174,28 +185,31 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                 }
             }
         }
-    }
-    if (viewModel.joinTribeState.status is Response.Success){
-        dashboardViewModel.toggleJoinTribeWindow(false, null)
+        if (viewModel.joinTribeState.loadingTribe) {
+            Box(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    Modifier.size(40.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun BoxWithStroke(labelName:String,value:String,boxWithStrokeEnums: BoxWithStrokeEnums=BoxWithStrokeEnums.NONE) {
-    val roundedCornerShape=when(boxWithStrokeEnums){
-        BoxWithStrokeEnums.TOP -> RoundedCornerShape(topEnd = 4.dp, topStart = 4.dp)
-        BoxWithStrokeEnums.BOTTOM -> RoundedCornerShape(bottomEnd = 4.dp, bottomStart = 4.dp)
-        BoxWithStrokeEnums.NONE -> RoundedCornerShape(0.dp)
+fun PriceBox(
+    labelName: String,
+    value: String,
+) {
+    Row (
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ){
+        Text(labelName, color = MaterialTheme.colorScheme.onBackground, fontSize = 13.sp)
+        Text(value, color = MaterialTheme.colorScheme.onBackground, fontSize = 13.sp)
     }
-    Card (border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.onBackground), shape = roundedCornerShape, backgroundColor = MaterialTheme.colorScheme.onSurfaceVariant){
-        Row (modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween){
-            Text(labelName, color = MaterialTheme.colorScheme.onBackground, fontSize = 13.sp)
-            Text(value, color = MaterialTheme.colorScheme.onBackground, fontSize = 13.sp)
-        }
-    }
-}
- enum class BoxWithStrokeEnums{
-    TOP,
-    BOTTOM,
-    NONE
 }

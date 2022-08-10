@@ -18,5 +18,5 @@ data class JoinTribeState(
     val myPhotoUrl: PhotoUrl? = null,
     var status: LoadResponse<Any, ResponseError>? = null,
     val userPicture: AttachmentInfo? = null,
-    val photoUrlText: String = ""
-    )
+    var loadingTribe: Boolean = true
+)

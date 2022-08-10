@@ -3,7 +3,9 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.state.JoinTribeState
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.network.query.chat.model.TribeDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
@@ -17,15 +19,19 @@ import chat.sphinx.wrapper.chat.ChatUUID
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
-import chat.sphinx.wrapper.toPhotoUrl
 import chat.sphinx.wrapper.tribe.TribeJoinLink
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okio.Path
-import kotlinx.coroutines.flow.collect
+import theme.primary_green
+import theme.primary_red
 
-class JoinTribeViewModel() {
+class JoinTribeViewModel(
+    private val tribeJoinLink: TribeJoinLink,
+    val dashboardViewModel: DashboardViewModel
+) {
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -33,10 +39,6 @@ class JoinTribeViewModel() {
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
-
-
-    private val accountOwnerStateFlow: StateFlow<Contact?>
-        get() = contactRepository.accountOwner
 
     var joinTribeState: JoinTribeState by mutableStateOf(initialState())
 
@@ -47,78 +49,102 @@ class JoinTribeViewModel() {
     }
 
     private var tribeInfo : TribeDto? = null
-    var tribeJoinLink: TribeJoinLink? = null
 
     init {
         loadTribeData()
     }
-
-    fun loadTribeData(tribeJoinLink: TribeJoinLink?){
-        this.tribeJoinLink = tribeJoinLink
-
-        loadTribeData()
-    }
-
-    private var loadTribeJob: Job? = null
     private fun loadTribeData(){
-        if (loadTribeJob?.isActive == true) {
-            return
-        }
-        tribeJoinLink?.let { tribeJoinLink ->
-            loadTribeJob = scope.launch(dispatchers.mainImmediate) {
-                accountOwnerStateFlow.collect { contactOwner ->
-                    contactOwner?.let { owner ->
-                        networkQueryChat.getTribeInfo(
-                            ChatHost(tribeJoinLink.tribeHost),
-                            ChatUUID(tribeJoinLink.tribeUUID)
-                        ).collect { loadResponse ->
-                            when (loadResponse) {
-                                is Response.Success -> {
-                                    tribeInfo = loadResponse.value
+        scope.launch(dispatchers.mainImmediate) {
+            val owner = getOwner()
 
-                                    val hourToStake: Long = (loadResponse.value.escrow_millis / 60 / 60 / 1000)
+            networkQueryChat.getTribeInfo(
+                ChatHost(tribeJoinLink.tribeHost),
+                ChatUUID(tribeJoinLink.tribeUUID)
+            ).collect { loadResponse ->
+                when (loadResponse) {
+                    is Response.Success -> {
+                        loadResponse.apply {
 
-                                    loadResponse.apply {
-                                        setJoinTribeState {
-                                            copy(
-                                                name = value.name,
-                                                description = value.description,
-                                                img = PhotoUrl(value.img.toString()),
-                                                price_to_join = value.price_to_join.toString(),
-                                                price_per_message = value.price_per_message.toString(),
-                                                escrow_amount = value.escrow_amount.toString(),
-                                                hourToStake = hourToStake.toString(),
-                                                userAlias = owner.alias?.value ?: "",
-                                                myPhotoUrl = owner.photoUrl
-                                            )
-                                        }
-                                    }
-                                }
+                            tribeInfo = value
+
+                            val hourToStake: Long = (value.escrow_millis / 60 / 60 / 1000)
+
+                            setJoinTribeState {
+                                copy(
+                                    name = value.name,
+                                    description = value.description,
+                                    img = PhotoUrl(value.img.toString()),
+                                    price_to_join = value.price_to_join.toString(),
+                                    price_per_message = value.price_per_message.toString(),
+                                    escrow_amount = value.escrow_amount.toString(),
+                                    hourToStake = hourToStake.toString(),
+                                    userAlias = owner.alias?.value ?: "",
+                                    myPhotoUrl = owner.photoUrl,
+                                    loadingTribe = false
+                                )
                             }
                         }
+                    }
+                    is Response.Error -> {
+                        setJoinTribeState {
+                            copy(
+                                loadingTribe = false
+                            )
+                        }
+                        toast("There was an error loading the tribe. Please try again later", primary_red)
                     }
                 }
             }
         }
     }
 
-    fun joinTribe() {
-        scope.launch(dispatchers.mainImmediate) {
+    private suspend fun getOwner(): Contact {
+        return contactRepository.accountOwner.value.let { contact ->
+            if (contact != null) {
+                contact
+            } else {
+                var resolvedOwner: Contact? = null
+                try {
+                    contactRepository.accountOwner.collect { ownerContact ->
+                        if (ownerContact != null) {
+                            resolvedOwner = ownerContact
+                            throw Exception()
+                        }
+                    }
+                } catch (e: Exception) {
+                }
+                delay(25L)
 
+                resolvedOwner!!
+            }
+        }
+    }
+
+    private var joinTribeJob: Job? = null
+    fun joinTribe() {
+        if (joinTribeJob?.isActive == true) {
+            return
+        }
+
+        joinTribeJob = scope.launch(dispatchers.mainImmediate) {
             setJoinTribeState {
                 copy(
                     status = LoadResponse.Loading
                 )
             }
+
             tribeInfo?.myAlias = joinTribeState.userAlias
             tribeInfo?.amount = joinTribeState.price_to_join.toLong()
 
             tribeInfo?.let { tribeDto ->
                 chatRepository.joinTribe(tribeDto).collect { response ->
-                    setJoinTribeState {
-                        copy(
-                            status = response
-                        )
+                    when (response) {
+                        is Response.Success -> {
+                            dashboardViewModel.toggleJoinTribeWindow(false)
+                        }
+                        is Response.Error -> {
+                            toast("There was an error joining the tribe. Please try again later", primary_red)
+                        }
                     }
                 }
             }
@@ -151,12 +177,18 @@ class JoinTribeViewModel() {
         tribeInfo?.setProfileImageFile(filepath)
     }
 
-    fun onPhotoUrlChange(text: String){
-        setJoinTribeState {
-            copy(
-                photoUrlText = text
+    private fun toast(
+        message: String,
+        color: Color = primary_green,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(
+                "Join Tribe",
+                message,
+                color.value,
+                delay
             )
         }
     }
-
 }
