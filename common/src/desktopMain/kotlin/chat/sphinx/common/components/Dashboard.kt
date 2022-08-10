@@ -128,7 +128,7 @@ actual fun Dashboard(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             chatViewModel?.let { chatViewModel ->
-                                MessageListUI(chatViewModel)
+                                MessageListUI(chatViewModel, dashboardViewModel)
                             }
                         }
                         AttachmentPreview(
