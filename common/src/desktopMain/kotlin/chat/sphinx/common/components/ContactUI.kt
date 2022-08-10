@@ -27,6 +27,7 @@ import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.contact.EditContactViewModel
+import chat.sphinx.common.viewmodel.contact.InviteFriendViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -96,8 +97,7 @@ fun AddContact(dashboardViewModel: DashboardViewModel) {
 @Composable
 fun AddNewContactOnSphinx() {
 
-    var nicknameText by remember { mutableStateOf("") }
-    var includeMessageText by remember { mutableStateOf("") }
+    val viewModel = remember { InviteFriendViewModel() }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -119,8 +119,8 @@ fun AddNewContactOnSphinx() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
-                value = nicknameText,
-                onValueChange = { nicknameText = it },
+                value = viewModel.inviteFriendState.nickname,
+                onValueChange = { viewModel.onNicknameChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -144,8 +144,8 @@ fun AddNewContactOnSphinx() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
-                value = includeMessageText,
-                onValueChange = { includeMessageText = it },
+                value = viewModel.inviteFriendState.welcomeMessage,
+                onValueChange = { viewModel.onWelcomeMessageChange(it) },
                 modifier = Modifier.fillMaxWidth().height(108.dp),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -176,20 +176,30 @@ fun AddNewContactOnSphinx() {
                         fontFamily = Roboto,
                         color = Color.Gray,
                     )
-                    Row(modifier = Modifier.padding(top = 4.dp)) {
-                        Text(
-                            text = "2 000",
-                            fontSize = 20.sp,
-                            fontFamily = Roboto,
+                    if (viewModel.inviteFriendState.nodePriceStatus is LoadResponse.Loading) {
+                        CircularProgressIndicator(
+                            Modifier.size(32.dp).padding(top = 8.dp),
                             color = Color.White,
+                            strokeWidth = 2.dp,
                         )
-                        Text(
-                            text = "sat",
-                            fontSize = 20.sp,
-                            fontFamily = Roboto,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
+                    } else {
+                        Box() {
+                            Row(modifier = Modifier.padding(top = 4.dp)) {
+                                Text(
+                                    text = viewModel.inviteFriendState.nodePrice,
+                                    fontSize = 20.sp,
+                                    fontFamily = Roboto,
+                                    color = Color.White,
+                                )
+                                Text(
+                                    text = "sat",
+                                    fontSize = 20.sp,
+                                    fontFamily = Roboto,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(start = 4.dp)
+                                )
+                            }
+                        }
                     }
                 }
                 Button(
