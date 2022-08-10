@@ -19,6 +19,7 @@ import chat.sphinx.wrapper.chat.ChatUUID
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
+import chat.sphinx.wrapper.toPhotoUrl
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.Job
@@ -73,7 +74,7 @@ class JoinTribeViewModel(
                                 copy(
                                     name = value.name,
                                     description = value.description,
-                                    img = PhotoUrl(value.img.toString()),
+                                    img = value.img?.toPhotoUrl(),
                                     price_to_join = value.price_to_join.toString(),
                                     price_per_message = value.price_per_message.toString(),
                                     escrow_amount = value.escrow_amount.toString(),
