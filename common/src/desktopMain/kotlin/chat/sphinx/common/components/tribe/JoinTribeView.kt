@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -97,7 +98,7 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                 ) {
                     TribeTextField(
                         "Profile Picture",
-                        viewModel.joinTribeState.myPhotoUrl?.value ?: "",
+                        viewModel.joinTribeState.photoUrlText,
                         Modifier.padding(end = 50.dp),
                         enabled = false
                     ) {}
@@ -116,16 +117,32 @@ actual fun JoinTribeView(dashboardViewModel: DashboardViewModel, tribeJoinLink: 
                                 }
                             }
                         }
-                        PhotoUrlImage(
-                            photoUrl = viewModel.joinTribeState.myPhotoUrl,
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .clickable {
-                                    onImageClick.invoke()
-                                }
-                        )
+                        viewModel.joinTribeState.myPhotoUrl?.let {
+                            PhotoUrlImage(
+                                photoUrl = it,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        onImageClick.invoke()
+                                    }
+                            )
+                            viewModel.onPhotoUrlChange(it.value)
+                        }
+                        viewModel.joinTribeState.userPicture?.let {
+                            PhotoFileImage(
+                                it.filePath,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        onImageClick.invoke()
+                                    },
+                            )
+                            viewModel.onPhotoUrlChange(it.filePath.toString())
+                        }
                     }
+
                 }
                 Box(
                     Modifier.fillMaxWidth().height(40.dp).padding(bottom = 4.dp),

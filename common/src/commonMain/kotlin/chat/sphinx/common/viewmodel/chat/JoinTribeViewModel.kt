@@ -84,21 +84,10 @@ class JoinTribeViewModel() {
                                                 name = value.name,
                                                 description = value.description,
                                                 img = PhotoUrl(value.img.toString()),
-                                                tags = value.tags,
-                                                group_key = value.group_key,
-                                                owner_pubkey = value.owner_pubkey,
-                                                owner_route_hint = value.owner_route_hint,
-                                                owner_alias = value.owner_alias,
                                                 price_to_join = value.price_to_join.toString(),
                                                 price_per_message = value.price_per_message.toString(),
                                                 escrow_amount = value.escrow_amount.toString(),
                                                 hourToStake = hourToStake.toString(),
-                                                unlisted = value.unlisted,
-                                                private = value.private,
-                                                deleted = value.deleted,
-                                                app_url = value.app_url,
-                                                feed_url = value.feed_url,
-                                                feed_type = feed_type,
                                                 userAlias = owner.alias?.value ?: "",
                                                 myPhotoUrl = owner.photoUrl
                                             )
@@ -123,7 +112,6 @@ class JoinTribeViewModel() {
             }
             tribeInfo?.myAlias = joinTribeState.userAlias
             tribeInfo?.amount = joinTribeState.price_to_join.toLong()
-            tribeInfo?.setProfileImageFile(joinTribeState.userPicture?.filePath)
 
             tribeInfo?.let { tribeDto ->
                 chatRepository.joinTribe(tribeDto).collect { response ->
@@ -136,6 +124,7 @@ class JoinTribeViewModel() {
             }
         }
     }
+
     fun onAliasTextChanged(text: String){
         setJoinTribeState {
             copy(
@@ -143,10 +132,10 @@ class JoinTribeViewModel() {
             )
         }
     }
+
     fun onProfilePictureChanged(filepath: Path) {
         val ext = filepath.toFile().extension
         val mediaType = MediaType.Image(MediaType.IMAGE + "/$ext")
-        val file = filepath.toFile()
 
         setJoinTribeState {
             copy(
@@ -156,7 +145,16 @@ class JoinTribeViewModel() {
                     fileName = filepath.name.toFileName(),
                     isLocalFile = true
                 ),
-                myPhotoUrl = file.absolutePath.toPhotoUrl()
+                myPhotoUrl = null
+            )
+        }
+        tribeInfo?.setProfileImageFile(filepath)
+    }
+
+    fun onPhotoUrlChange(text: String){
+        setJoinTribeState {
+            copy(
+                photoUrlText = text
             )
         }
     }
