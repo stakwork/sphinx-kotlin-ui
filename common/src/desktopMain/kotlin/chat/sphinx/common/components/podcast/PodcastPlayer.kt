@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,8 +19,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +53,12 @@ actual fun PodcastPlayer(exitApplication: () -> Unit) {
         undecorated = false,
         icon = sphinxIcon,
     ) {
-        CollapsingEffectScreen()
+        Surface(
+            elevation = 10.dp,
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            CollapsingEffectScreen()
+        }
     }
 
 }
@@ -112,99 +122,152 @@ fun CollapsingEffectScreen() {
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
             }
-            Card (backgroundColor = MaterialTheme.colorScheme.onSecondaryContainer, elevation = 8.dp, shape = RoundedCornerShape(bottomEndPercent = 2, bottomStartPercent = 2)) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.onSecondaryContainer).height(270.dp)
-                        .padding(horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        "Test - Podcast",
-                        color = MaterialTheme.colorScheme.tertiary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.W600
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Box {
-                        Slider(
-                            onValueChange = {
-                                satsPerMinute.value = it
-                            }, value = satsPerMinute.value, colors = SliderDefaults.colors(
-                                activeTrackColor = MaterialTheme.colorScheme.secondary,
-                                thumbColor = MaterialTheme.colorScheme.secondary, inactiveTrackColor = Color(0xFF4D829CB9),
-                            )
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).offset(y = 35.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+            val padding = 4.dp
+            val density = LocalDensity.current
+            Surface(
+                shape = RectangleShape,
+                color = Color.White,
+                elevation = 10.dp,
+                modifier = Modifier
+                    .padding(bottom = padding)
+                    .drawWithContent {
+                        val paddingPx = with(density) { padding.toPx() }
+                        clipRect(
+                            left = 0f,
+                            top = 0f,
+                            right = size.width ,
+                            bottom = size.height + paddingPx
                         ) {
-                            Text(
-                                "00:00:00",
-                                color = MaterialTheme.colorScheme.inverseSurface,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.W600
-                            )
-                            Text(
-                                "00:00:00",
-                                color = MaterialTheme.colorScheme.onBackground,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.W600
-                            )
-
+                            this@drawWithContent.drawContent()
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painter = imageResource(Res.drawable.ic_share_podcast), contentDescription = null, modifier = Modifier.size(50.dp), tint = MaterialTheme.colorScheme.onBackground)
-                        Icon(painter = imageResource(Res.drawable.ic_podcast_back_15), contentDescription = null, modifier = Modifier.size(50.dp),tint = MaterialTheme.colorScheme.onBackground)
-                        IconButton(onClick = {}, modifier = Modifier.size(58.dp).background(MaterialTheme.colorScheme.secondary,
-                            RoundedCornerShape(100)
-                        )){
-                            Icon(Icons.Default.PlayArrow, tint = MaterialTheme.colorScheme.tertiary, contentDescription = null, modifier = Modifier.size(30.dp))
-                        }
-                        Icon(painter = imageResource(Res.drawable.ic_podcast_forward_30), contentDescription = null, modifier = Modifier.size(50.dp),tint = MaterialTheme.colorScheme.onBackground)
-                        Box(contentAlignment = Alignment.Center) {
-                            Box(modifier = Modifier.size(35.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer,
-                                RoundedCornerShape(100)
-                            )) {
+            ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.onSecondaryContainer).height(290.dp)
+                            .padding(horizontal = 16.dp)
+                        , horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            "Test - Podcast",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.W600
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Box {
+                            Slider(
+                                onValueChange = {
+                                    satsPerMinute.value = it
+                                }, value = satsPerMinute.value, colors = SliderDefaults.colors(
+                                    activeTrackColor = MaterialTheme.colorScheme.inverseSurface,
+                                    thumbColor = MaterialTheme.colorScheme.inverseSurface, inactiveTrackColor = Color(0xFF4D829CB9),
+                                )
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).offset(y = 35.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    "00:00:00",
+                                    color = MaterialTheme.colorScheme.inverseSurface,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.W600
+                                )
+                                Text(
+                                    "00:00:00",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.W600
+                                )
 
                             }
-                            Image(painter = imageResource(Res.drawable.ic_boost_green), contentDescription = null, modifier = Modifier.clip(
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PlaybackSpeed()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(modifier = Modifier.fillMaxWidth().padding(end = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painter = imageResource(Res.drawable.ic_share_podcast), contentDescription = null, modifier = Modifier.size(45.dp), tint = MaterialTheme.colorScheme.onBackground)
+                            Icon(painter = imageResource(Res.drawable.ic_podcast_back_15), contentDescription = null, modifier = Modifier.size(40.dp),tint = MaterialTheme.colorScheme.onBackground)
+                            IconButton(onClick = {}, modifier = Modifier.size(58.dp).background(MaterialTheme.colorScheme.inverseSurface,
                                 RoundedCornerShape(100)
-                            ).background(Color.Transparent, RoundedCornerShape(100)).size(30.dp))
+                            )){
+                                Icon(Icons.Default.PlayArrow, tint = MaterialTheme.colorScheme.tertiary, contentDescription = null, modifier = Modifier.size(30.dp))
+                            }
+                            Icon(painter = imageResource(Res.drawable.ic_podcast_forward_30), contentDescription = null, modifier = Modifier.size(40.dp),tint = MaterialTheme.colorScheme.onBackground)
+                            Box(contentAlignment = Alignment.Center) {
+                                Box(modifier = Modifier.size(33.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer,
+                                    RoundedCornerShape(100)
+                                )) {
+
+                                }
+                                Image(painter = imageResource(Res.drawable.ic_boost_green), contentDescription = null, modifier = Modifier.clip(
+                                    RoundedCornerShape(100)
+                                ).background(Color.Transparent, RoundedCornerShape(100)).size(31.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Row (modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)){
+                            Text("EPISODES", fontWeight = FontWeight.W600, color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("12", fontWeight = FontWeight.W600, color = MaterialTheme.colorScheme.secondary, fontSize = 14.sp)
                         }
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Row (modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)){
-                        Text("EPISODES", fontWeight = FontWeight.W600, color = MaterialTheme.colorScheme.onBackground)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("12", fontWeight = FontWeight.W600, color = MaterialTheme.colorScheme.secondary)
-                    }
                 }
-            }
         }
         items(count = 100) {
 
-            Column(modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)) {
-                Row (modifier = Modifier.padding(16.dp)){
+            Column(modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer).padding(vertical = 16.dp, horizontal = 24.dp)) {
+                Row ( horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
                     PhotoUrlImage(
                         photoUrl = PhotoUrl("https://picsum.photos/seed/picsum/200/300"),
                         modifier = Modifier
-//                            .graphicsLayer {
-//                                scrolledY += lazyListState.firstVisibleItemScrollOffset - previousOffset
-//                                translationY = scrolledY * 0.5f
-//                                previousOffset = lazyListState.firstVisibleItemScrollOffset
-//                            }
-                            .size(80.dp),
+                            .size(40.dp),
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text("This is test title", fontSize = 16.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary )
+                    Text("This is test title", fontSize = 14.sp, color = MaterialTheme.colorScheme.tertiary )
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(onClick = {}){
+                        Icon(Icons.Default.CloudDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground)
+                    }
                 }
-                Divider()
+                Spacer(modifier = Modifier.height(12.dp))
+                Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f), thickness = 0.3.dp, modifier =Modifier.padding(start = 16.dp))
             }
         }
     }
 }
+
+@Composable
+fun PlaybackSpeed(){
+    Card(backgroundColor =androidx.compose.material3.MaterialTheme.colorScheme.onBackground, shape = RoundedCornerShape(4.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(2.dp)) {
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("1x", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.height(8.dp).width(16.dp).background(Color(0xff2F60CE),
+                    RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
+                ))
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary,modifier = Modifier.height(8.dp).width(16.dp).background(Color(0xff2F60CE),
+                    RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp)
+                ))
+            }
+        }
+    }
+}
+
+private fun Modifier.bottomElevation(): Modifier = this.then(Modifier.drawWithContent {
+    val paddingPx = 8.dp.toPx()
+    clipRect(
+        left = 0f,
+        top = 0f,
+        right = size.width,
+        bottom = size.height + paddingPx
+    ) {
+        this@drawWithContent.drawContent()
+    }
+})
