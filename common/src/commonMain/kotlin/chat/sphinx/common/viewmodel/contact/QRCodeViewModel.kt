@@ -17,7 +17,10 @@ import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.launch
 import theme.primary_green
 
-class QRCodeViewModel(private var qrText: String) {
+class QRCodeViewModel(
+    private val title: String,
+    private var qrText: String
+) {
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -30,7 +33,7 @@ class QRCodeViewModel(private var qrText: String) {
 
     var contactQRCodeState: ContactQRCodeState by mutableStateOf(initialState())
 
-    private fun initialState(): ContactQRCodeState = ContactQRCodeState(pubKey = qrText)
+    private fun initialState(): ContactQRCodeState = ContactQRCodeState(viewTitle = title, string = qrText)
 
     private inline fun setContactState(update: ContactQRCodeState.() -> ContactQRCodeState) {
         contactQRCodeState = contactQRCodeState.update()

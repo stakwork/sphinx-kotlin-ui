@@ -63,7 +63,7 @@ fun ChatRow(
             if (dashboardChat is DashboardChat.Inactive.Invite) {
                 dashboardChat.invite?.let { invite ->
                     if (invite.status.isReady() || invite.status.isDelivered()) {
-                        dashboardViewModel.toggleQRWindow(true, invite.inviteString.value)
+                        dashboardViewModel.toggleQRWindow(true, "INVITE CODE", invite.inviteString.value)
                     } else if (invite.status.isPaymentPending()) {
                         chatListViewModel.payForInvite(invite)
                     } else if (invite.status.isExpired()) {

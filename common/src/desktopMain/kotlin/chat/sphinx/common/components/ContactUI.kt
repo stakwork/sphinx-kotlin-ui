@@ -335,7 +335,7 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
                     )
                     if(editMode) {
                         IconButton(onClick = {
-                            dashboardViewModel.toggleQRWindow(true, viewModel.getNodeDescriptor()?.value ?: "")
+                            dashboardViewModel.toggleQRWindow(true, "PUBLIC KEY", viewModel.getNodeDescriptor()?.value ?: "")
                         }
                         ) {
                             Icon(

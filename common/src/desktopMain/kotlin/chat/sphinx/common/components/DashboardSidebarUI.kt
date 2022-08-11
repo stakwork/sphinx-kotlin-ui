@@ -192,8 +192,8 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
 
             val qrWindowState by dashboardViewModel.qrWindowStateFlow.collectAsState()
             if (qrWindowState.first) {
-                qrWindowState.second?.let { qrCodeString ->
-                    QRDetail(dashboardViewModel, QRCodeViewModel(qrCodeString))
+                qrWindowState.second?.let { titleAndValue ->
+                    QRDetail(dashboardViewModel, QRCodeViewModel(titleAndValue.first, titleAndValue.second))
                 }
             }
 

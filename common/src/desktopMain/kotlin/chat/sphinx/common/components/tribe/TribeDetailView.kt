@@ -258,7 +258,7 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                     DropdownMenuItem(
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
-                            dashboardViewModel.toggleQRWindow(true, viewModel.tribeDetailState.shareTribeUrl)
+                            dashboardViewModel.toggleQRWindow(true, "TRIBE JOIN LINK", viewModel.tribeDetailState.shareTribeUrl)
                             showOptionMenu.value = false
                         }
                     ) {

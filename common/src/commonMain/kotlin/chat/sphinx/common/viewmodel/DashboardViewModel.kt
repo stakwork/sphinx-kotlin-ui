@@ -60,15 +60,25 @@ class DashboardViewModel: WindowFocusListener {
         _tribeDetailWindowStateFlow.value = Pair(open, chatId)
     }
 
-    private val _qrWindowStateFlow: MutableStateFlow<Pair<Boolean, String?>> by lazy {
+    private val _qrWindowStateFlow: MutableStateFlow<Pair<Boolean, Pair<String, String>?>> by lazy {
         MutableStateFlow(Pair(false, null))
     }
 
-    val qrWindowStateFlow: StateFlow<Pair<Boolean, String?>>
+    val qrWindowStateFlow: StateFlow<Pair<Boolean, Pair<String, String>?>>
         get() = _qrWindowStateFlow.asStateFlow()
 
-    fun toggleQRWindow(open: Boolean, value: String? = null) {
-        _qrWindowStateFlow.value = Pair(open, value)
+    fun toggleQRWindow(
+        open: Boolean,
+        title: String? = null,
+        value: String? = null
+    ) {
+        title?.let { nnTitle ->
+            value?.let { nnValue ->
+                _qrWindowStateFlow.value = Pair(open, Pair(nnTitle, nnValue))
+                return
+            }
+        }
+        _qrWindowStateFlow.value = Pair(open, null)
     }
 
     private val _profileStateFlow: MutableStateFlow<Boolean> by lazy {
