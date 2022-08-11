@@ -8,4 +8,5 @@ data class InviteFriendState(
     val welcomeMessage: String = "",
     val nodePrice: String = "0",
     var nodePriceStatus: LoadResponse<Any, ResponseError>? = null,
+    var createInviteStatus: LoadResponse<Any, ResponseError>? = null,
     )

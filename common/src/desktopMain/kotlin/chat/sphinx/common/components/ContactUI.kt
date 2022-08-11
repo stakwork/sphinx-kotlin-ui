@@ -3,6 +3,7 @@ package chat.sphinx.common.components
 import CommonButton
 import Roboto
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
@@ -45,7 +46,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             onCloseRequest = {
                 dashboardViewModel.toggleContactWindow(false, null)
             },
-            title = "",
+            title = "Contact UI",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(420, 620)
@@ -55,7 +56,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
 
             when (screenState) {
                 is ContactScreenState.Choose -> AddContact(dashboardViewModel)
-                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx(dashboardViewModel)
                 is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null)
                 is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
             }
@@ -95,9 +96,9 @@ fun AddContact(dashboardViewModel: DashboardViewModel) {
 }
 
 @Composable
-fun AddNewContactOnSphinx() {
+fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
 
-    val viewModel = remember { InviteFriendViewModel() }
+    val viewModel = remember { InviteFriendViewModel(dashboardViewModel) }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -203,11 +204,11 @@ fun AddNewContactOnSphinx() {
                     }
                 }
                 Button(
-                    onClick = {
-                    },
+                    onClick = {viewModel.createNewInvite()},
                     modifier = Modifier.clip(CircleShape)
                         .wrapContentWidth()
                         .height(50.dp),
+                    enabled = viewModel.inviteFriendState.nickname.isNotEmpty(),
 
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
@@ -219,6 +220,25 @@ fun AddNewContactOnSphinx() {
                         color = Color.White,
                         fontFamily = Roboto
                     )
+                }
+            }
+            Column (
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            )
+            {
+                if (viewModel.inviteFriendState.createInviteStatus is LoadResponse.Loading) {
+                    CircularProgressIndicator(
+                        Modifier.size(40.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    if (viewModel.inviteFriendState.createInviteStatus is Response.Error){
+                        viewModel.toast("There was an error, please try later")
+                    }
                 }
             }
         }
