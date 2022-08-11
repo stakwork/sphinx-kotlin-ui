@@ -69,6 +69,8 @@ kotlin {
                 api(compose.desktop.common)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 api(compose.desktop.components.splitPane)
+
+                implementation(project(":javafx-web-view"))
             }
         }
         val desktopTest by getting

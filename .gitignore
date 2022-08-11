@@ -57,5 +57,6 @@ Pipfile
 desktop/sphinx.db-wal
 desktop/sphinx.db-shm
 desktop/sphinx.db-journal
+/desktop/jcef-bundle/
 dev.db
 *.hprof

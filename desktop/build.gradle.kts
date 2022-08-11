@@ -6,10 +6,19 @@ import java.util.*
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.0.1"
+    id("org.openjfx.javafxplugin") version "0.0.10"
 }
 
 group = "chat.sphinx"
 version = "1.0"
+
+javafx {
+    version = "18.0.2"
+    modules = listOf(
+        "javafx.swing",
+        "javafx.web"
+    )
+}
 
 repositories {
     mavenCentral()

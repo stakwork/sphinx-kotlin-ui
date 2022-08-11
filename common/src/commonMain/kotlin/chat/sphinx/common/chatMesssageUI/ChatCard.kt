@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.CustomDivider
 import chat.sphinx.common.components.MessageFile
 import chat.sphinx.common.components.MessageMediaImage
+import chat.sphinx.common.components.browser.SphinxWebView
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
@@ -197,6 +198,18 @@ fun MessageTextLabel(
             fontSize = 13.sp,
             color = badge_red
         )
+    } else if (chatMessage.message.type.isBotRes()) {
+        chatMessage.message.retrieveBotResponseHtmlString()?.let { html ->
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .height(100.dp)
+            ) {
+                SphinxWebView(
+                    html
+                )
+            }
+
+        }
     } else if (chatMessage.message.isPaidTextMessage) {
 
         if (!chatMessage.message.isPaidPendingMessage || chatMessage.isSent) {
