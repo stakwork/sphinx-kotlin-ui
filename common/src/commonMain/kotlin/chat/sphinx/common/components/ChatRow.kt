@@ -30,7 +30,13 @@ import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.ChatMuted
 import androidx.compose.ui.text.font.FontWeight
 import chat.sphinx.common.Res
+import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.platform.imageResource
+import chat.sphinx.wrapper.invite.isDelivered
+import chat.sphinx.wrapper.invite.isExpired
+import chat.sphinx.wrapper.invite.isPaymentPending
+import chat.sphinx.wrapper.invite.isReady
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.util.getInitials
 import theme.primary_green
@@ -39,7 +45,9 @@ import theme.primary_green
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun ChatRow(
-    dashboardChat: DashboardChat
+    dashboardChat: DashboardChat,
+    chatListViewModel: ChatListViewModel,
+    dashboardViewModel: DashboardViewModel
 ) {
     val today00: DateTime by lazy {
         DateTime.getToday00()
@@ -51,6 +59,19 @@ fun ChatRow(
 
     Row(
         modifier = Modifier.clickable {
+            if (dashboardChat is DashboardChat.Inactive.Invite) {
+                dashboardChat.invite?.let { invite ->
+                    if (invite.status.isReady() || invite.status.isDelivered()) {
+                        dashboardViewModel.toggleQRWindow(true, "INVITE CODE", invite.inviteString.value)
+                    } else if (invite.status.isPaymentPending()) {
+                        chatListViewModel.payForInvite(invite)
+                    } else if (invite.status.isExpired()) {
+                        chatListViewModel.deleteInvite(invite)
+                    }
+                }
+                return@clickable
+            }
+
             ChatDetailState.screenState(
                 when (dashboardChat) {
                     is DashboardChat.Active.Conversation -> {
@@ -75,23 +96,6 @@ fun ChatRow(
                     else -> ChatDetailData.EmptyChatDetailData
                 }
             )
-
-            if (dashboardChat is DashboardChat.Inactive.Invite) {
-//                dashboardChat.invite?.let { invite ->
-//                    if (invite.status.isReady() || invite.status.isDelivered()) {
-//                        chatListViewModel.dashboardNavigator.toQRCodeDetail(
-//                            invite.inviteString.value,
-//                            binding.root.context.getString(
-//                                R.string.invite_qr_code_header_name
-//                            )
-//                        )
-//                    } else if (invite.status.isPaymentPending()) {
-//                        chatListViewModel.payForInvite(invite)
-//                    } else if (invite.status.isExpired()) {
-//                        chatListViewModel.deleteInvite(invite)
-//                    }
-//                }
-            }
         }.height(62.dp).background(androidx.compose.material3.MaterialTheme.colorScheme.background)
     ) {
         Row(modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp)) {
@@ -163,19 +167,21 @@ fun ChatRow(
                                     color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                                 )
                             }
-                            (dashboardChat as? DashboardChat.Inactive.Invite)?.getInvitePrice()?.let {
-                                if (it.value > 0) {
-                                    Text(
-                                        modifier = Modifier
-                                            .background(color = primary_green, shape = RoundedCornerShape(5.dp))
-                                            .padding(4.dp, 2.dp),
-                                        text = "${it.asFormattedString(' ')}",
-                                        fontSize = 12.sp,
-                                        fontFamily = Roboto,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 1,
-                                        color = Color.White
-                                    )
+                            (dashboardChat as? DashboardChat.Inactive.Invite)?.let { dashboardChat ->
+                                dashboardChat.getInvitePrice()?.let { invitePrice ->
+                                    if (dashboardChat.invite.status.isPaymentPending() && invitePrice.value > 0) {
+                                        Text(
+                                            modifier = Modifier
+                                                .background(color = primary_green, shape = RoundedCornerShape(5.dp))
+                                                .padding(4.dp, 2.dp),
+                                            text = "${invitePrice.asFormattedString(' ')}",
+                                            fontSize = 12.sp,
+                                            fontFamily = Roboto,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            color = Color.White
+                                        )
+                                    }
                                 }
                             }
                         }

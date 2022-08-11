@@ -3,11 +3,13 @@ package chat.sphinx.common.components
 import CommonButton
 import Roboto
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,10 +25,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.contact.EditContactViewModel
+import chat.sphinx.common.viewmodel.contact.InviteFriendViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -45,7 +49,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             onCloseRequest = {
                 dashboardViewModel.toggleContactWindow(false, null)
             },
-            title = "",
+            title = "Add New Friend",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(420, 620)
@@ -55,10 +59,11 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
 
             when (screenState) {
                 is ContactScreenState.Choose -> AddContact(dashboardViewModel)
-                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx(dashboardViewModel)
                 is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null, screenState.pubKey)
                 is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
             }
+            DesktopSphinxToast("Add New Friend")
         }
     }
 }
@@ -95,10 +100,9 @@ fun AddContact(dashboardViewModel: DashboardViewModel) {
 }
 
 @Composable
-fun AddNewContactOnSphinx() {
+fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
 
-    var nicknameText by remember { mutableStateOf("") }
-    var includeMessageText by remember { mutableStateOf("") }
+    val viewModel = remember { InviteFriendViewModel(dashboardViewModel) }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -120,8 +124,8 @@ fun AddNewContactOnSphinx() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
-                value = nicknameText,
-                onValueChange = { nicknameText = it },
+                value = viewModel.inviteFriendState.nickname,
+                onValueChange = { viewModel.onNicknameChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -132,7 +136,8 @@ fun AddNewContactOnSphinx() {
                 singleLine = true,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = light_divider,
-                    unfocusedBorderColor = light_divider
+                    unfocusedBorderColor = light_divider,
+                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -145,8 +150,8 @@ fun AddNewContactOnSphinx() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
-                value = includeMessageText,
-                onValueChange = { includeMessageText = it },
+                value = viewModel.inviteFriendState.welcomeMessage,
+                onValueChange = { viewModel.onWelcomeMessageChange(it) },
                 modifier = Modifier.fillMaxWidth().height(108.dp),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -155,12 +160,15 @@ fun AddNewContactOnSphinx() {
                 ),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = light_divider,
-                    unfocusedBorderColor = light_divider
+                    unfocusedBorderColor = light_divider,
+                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background
                 ),
                 placeholder = {
                     Text(
+                        modifier = Modifier.fillMaxWidth(),
                         text = "Welcome to Sphinx!",
-                        color = Color.Gray,
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center
                     )
                 }
             )
@@ -171,44 +179,69 @@ fun AddNewContactOnSphinx() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column {
-                    Text(
-                        text = "ESTIMATED COST",
-                        fontSize = 12.sp,
-                        fontFamily = Roboto,
-                        color = Color.Gray,
-                    )
-                    Row(modifier = Modifier.padding(top = 4.dp)) {
+                    viewModel.inviteFriendState.nodePrice?.let { nodePrice ->
                         Text(
-                            text = "2 000",
-                            fontSize = 20.sp,
-                            fontFamily = Roboto,
-                            color = Color.White,
+                            text = "ESTIMATED COST",
+                            fontSize = 10.sp,
+                            fontFamily = SphinxFonts.montserratFamily,
+                            fontWeight = FontWeight.Normal,
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                         )
-                        Text(
-                            text = "sat",
-                            fontSize = 20.sp,
-                            fontFamily = Roboto,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
+                        Box {
+                            Row(modifier = Modifier.padding(top = 4.dp)) {
+                                Text(
+                                    text = nodePrice,
+                                    fontSize = 20.sp,
+                                    fontFamily = Roboto,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                )
+                                Text(
+                                    text = "sat",
+                                    fontSize = 20.sp,
+                                    fontFamily = Roboto,
+                                    fontWeight = FontWeight.Normal,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                    modifier = Modifier.padding(start = 4.dp)
+                                )
+                            }
+                        }
                     }
                 }
                 Button(
-                    onClick = {
-                    },
+                    onClick = {viewModel.createNewInvite()},
                     modifier = Modifier.clip(CircleShape)
                         .wrapContentWidth()
                         .height(50.dp),
-
+                    enabled = viewModel.inviteFriendState.nickname.isNotEmpty(),
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
+                        disabledBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
                     )
                 )
                 {
                     Text(
                         text = "Create Invitation",
-                        color = Color.White,
+                        color = if (viewModel.inviteFriendState.nickname.isNotEmpty()) {
+                            Color.White
+                        } else {
+                            Color.White.copy(0.5f)
+                        },
                         fontFamily = Roboto
+                    )
+                }
+            }
+            Column (
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            )
+            {
+                if (viewModel.inviteFriendState.createInviteStatus is LoadResponse.Loading) {
+                    CircularProgressIndicator(
+                        Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
                     )
                 }
             }
@@ -309,11 +342,11 @@ fun ContactForm(
                     )
                     if(editMode) {
                         IconButton(onClick = {
-                            dashboardViewModel.toggleQRWindow(true)
+                            dashboardViewModel.toggleQRWindow(true, "PUBLIC KEY", viewModel.getNodeDescriptor()?.value ?: "")
                         }
                         ) {
                             Icon(
-                                Icons.Default.QrCodeScanner,
+                                Icons.Default.QrCode,
                                 contentDescription = "",
                                 tint = Color.White,
                                 modifier = Modifier.size(30.dp),
@@ -427,9 +460,6 @@ fun ContactForm(
 
     if (viewModel.contactState.status is Response.Success) {
         dashboardViewModel.toggleContactWindow(false, null)
-    }
-    if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
-        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.contactState.lightningNodePubKey, null))
     }
 }
 
