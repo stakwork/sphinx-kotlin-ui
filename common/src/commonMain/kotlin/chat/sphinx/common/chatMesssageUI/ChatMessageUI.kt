@@ -22,13 +22,15 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.utils.containLinks
 
 @Composable
 fun ChatMessageUI(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    dashboardViewModel: DashboardViewModel
 ) {
     print("rebuilding ${chatMessage.message.id}")
 

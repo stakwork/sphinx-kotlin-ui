@@ -648,15 +648,19 @@ abstract class ChatViewModel(
 
     fun tribeLinkClicked(link: TribeJoinLink?) {
         scope.launch(dispatchers.mainImmediate) {
-            link?.tribeUUID?.toChatUUID()?.let { chatUUID ->
-                chatRepository.getChatByUUID(chatUUID).firstOrNull()?.let { chat ->
-                    getDashboardChatFor(null, chat)?.let { dashboardChat ->
-                        ChatDetailState.screenState(
-                            ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
-                                chat.id,
-                                dashboardChat
+            link?.let {
+                it.tribeUUID?.toChatUUID()?.let { chatUUID ->
+                    chatRepository.getChatByUUID(chatUUID).firstOrNull()?.let { chat ->
+                        getDashboardChatFor(null, chat)?.let { dashboardChat ->
+                            ChatDetailState.screenState(
+                                ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
+                                    chat.id,
+                                    dashboardChat
+                                )
                             )
-                        )
+                        }
+                    } ?: run {
+                        dashboardViewModel.toggleJoinTribeWindow(true, it)
                     }
                 }
             }

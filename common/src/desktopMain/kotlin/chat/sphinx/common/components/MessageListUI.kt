@@ -13,13 +13,15 @@ import chat.sphinx.common.chatMesssageUI.ChatMessageUI
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import kotlinx.coroutines.launch
 
 
 @Composable
 fun MessageListUI(
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    dashboardViewModel: DashboardViewModel
 ) {
     chatViewModel.screenInit()
 
@@ -45,7 +47,8 @@ fun MessageListUI(
                     ChatMessagesList(
                         items,
                         listState,
-                        chatViewModel
+                        chatViewModel,
+                        dashboardViewModel
                     )
 
                     VerticalScrollbar(
@@ -63,7 +66,8 @@ fun MessageListUI(
 fun ChatMessagesList(
     items: SnapshotStateList<ChatMessage>,
     listState: LazyListState,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    dashboardViewModel: DashboardViewModel
 ) {
     val scope = rememberCoroutineScope()
 
@@ -86,7 +90,8 @@ fun ChatMessagesList(
 
             ChatMessageUI(
                 item,
-                chatViewModel
+                chatViewModel,
+                dashboardViewModel
             )
         }
     }

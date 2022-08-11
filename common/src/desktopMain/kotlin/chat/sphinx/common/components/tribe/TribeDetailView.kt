@@ -158,7 +158,7 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
         ){
             if (viewModel.tribeDetailState.updateResponse is LoadResponse.Loading) {
                 CircularProgressIndicator(
-                    Modifier.padding(20.dp).size(40.dp),
+                    Modifier.padding(20.dp).size(20.dp),
                     color = Color.White,
                     strokeWidth = 2.dp
                 )
