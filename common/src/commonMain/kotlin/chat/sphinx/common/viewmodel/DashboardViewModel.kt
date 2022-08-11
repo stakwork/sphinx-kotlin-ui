@@ -13,6 +13,7 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
+import chat.sphinx.wrapper.tribe.TribeJoinLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -79,6 +80,17 @@ class DashboardViewModel: WindowFocusListener {
 
     fun toggleProfileWindow(open: Boolean) {
         _profileStateFlow.value = open
+    }
+
+    private val _joinTribeStateFlow: MutableStateFlow<Pair<Boolean, TribeJoinLink?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
+    val joinTribeStateFlow: StateFlow<Pair<Boolean, TribeJoinLink?>>
+        get() = _joinTribeStateFlow.asStateFlow()
+
+    fun toggleJoinTribeWindow(open: Boolean, tribeJoinLink: TribeJoinLink?) {
+        _joinTribeStateFlow.value = Pair(open, tribeJoinLink )
     }
 
     private val _backUpWindowStateFlow: MutableStateFlow<Boolean> by lazy {

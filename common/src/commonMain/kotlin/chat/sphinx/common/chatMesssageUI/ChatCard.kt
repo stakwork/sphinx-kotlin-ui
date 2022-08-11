@@ -30,6 +30,7 @@ import chat.sphinx.common.components.CustomDivider
 import chat.sphinx.common.components.MessageFile
 import chat.sphinx.common.components.MessageMediaImage
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.toAnnotatedString
@@ -42,12 +43,15 @@ import chat.sphinx.wrapper.message.isSphinxCallLink
 import chat.sphinx.wrapper.message.media.isPdf
 import chat.sphinx.wrapper.message.media.isUnknown
 import chat.sphinx.wrapper.message.retrieveTextToShow
+import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
+import chat.sphinx.wrapper.tribe.toTribeJoinLink
 
 @Composable
 fun ChatCard(
     chatMessage: ChatMessage,
     chatViewModel: ChatViewModel,
-    modifier: Modifier? = null,
+    dashboardViewModel: DashboardViewModel,
+    modifier: Modifier? = null
 ) {
     val receiverCorner =
         RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
@@ -102,7 +106,7 @@ fun ChatCard(
 //                    }
                     }
                     Column {
-                        MessageTextLabel(chatMessage, chatViewModel)
+                        MessageTextLabel(chatMessage, chatViewModel, dashboardViewModel)
                         FailedContainer(chatMessage)
 
                         BoostedFooter(
@@ -136,7 +140,8 @@ fun ChatCard(
 @Composable
 fun MessageTextLabel(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    dashboardViewModel: DashboardViewModel
 ) {
     val uriHandler = LocalUriHandler.current
     val topPadding = if (chatMessage.message.isPaidMessage && chatMessage.isSent) 44.dp else 12.dp
@@ -166,7 +171,12 @@ fun MessageTextLabel(
                     ).firstOrNull()?.let { annotation ->
                         when (annotation.tag) {
                             LinkTag.WebURL.name -> {
-                                uriHandler.openUri(annotation.item)
+                                if (annotation.item.isValidTribeJoinLink) {
+                                    dashboardViewModel.toggleJoinTribeWindow(true, annotation.item.toTribeJoinLink())
+                                }
+                                else {
+                                    uriHandler.openUri(annotation.item)
+                                }
                             }
                             LinkTag.BitcoinAddress.name -> {
                                 val bitcoinUriScheme =

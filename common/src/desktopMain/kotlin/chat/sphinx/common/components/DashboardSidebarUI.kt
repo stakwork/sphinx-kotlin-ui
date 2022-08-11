@@ -190,18 +190,16 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 }
             }
 
-//            val joinTribeWindowState by dashboardViewModel.joinTribeStateFlow.collectAsState()
-//            if (joinTribeWindowState.first){
-//                joinTribeWindowState.second?.let { joinTribeLink ->
-//                    JoinTribeView(dashboardViewModel, joinTribeLink)
-//                }
-//            }
-
             val qrWindowState by dashboardViewModel.qrWindowStateFlow.collectAsState()
-            if (qrWindowState.first){
+            if (qrWindowState.first) {
                 qrWindowState.second?.let { qrCodeString ->
                     QRDetail(dashboardViewModel, QRCodeViewModel(qrCodeString))
                 }
+            }
+
+            val joinTribeWindowState by dashboardViewModel.joinTribeStateFlow.collectAsState()
+            if (joinTribeWindowState.first){
+                JoinTribeView(dashboardViewModel, joinTribeWindowState.second)
             }
         }
     }

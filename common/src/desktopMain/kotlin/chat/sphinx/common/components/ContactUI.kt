@@ -3,6 +3,7 @@ package chat.sphinx.common.components
 import CommonButton
 import Roboto
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
@@ -28,6 +29,7 @@ import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.contact.EditContactViewModel
+import chat.sphinx.common.viewmodel.contact.InviteFriendViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -45,7 +47,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             onCloseRequest = {
                 dashboardViewModel.toggleContactWindow(false, null)
             },
-            title = "",
+            title = "Contact UI",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(420, 620)
@@ -55,7 +57,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
 
             when (screenState) {
                 is ContactScreenState.Choose -> AddContact(dashboardViewModel)
-                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx()
+                is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx(dashboardViewModel)
                 is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null)
                 is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
             }
@@ -95,10 +97,9 @@ fun AddContact(dashboardViewModel: DashboardViewModel) {
 }
 
 @Composable
-fun AddNewContactOnSphinx() {
+fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
 
-    var nicknameText by remember { mutableStateOf("") }
-    var includeMessageText by remember { mutableStateOf("") }
+    val viewModel = remember { InviteFriendViewModel(dashboardViewModel) }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -120,8 +121,8 @@ fun AddNewContactOnSphinx() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
-                value = nicknameText,
-                onValueChange = { nicknameText = it },
+                value = viewModel.inviteFriendState.nickname,
+                onValueChange = { viewModel.onNicknameChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -145,8 +146,8 @@ fun AddNewContactOnSphinx() {
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
-                value = includeMessageText,
-                onValueChange = { includeMessageText = it },
+                value = viewModel.inviteFriendState.welcomeMessage,
+                onValueChange = { viewModel.onWelcomeMessageChange(it) },
                 modifier = Modifier.fillMaxWidth().height(108.dp),
                 textStyle = TextStyle(
                     textAlign = TextAlign.Center,
@@ -177,28 +178,38 @@ fun AddNewContactOnSphinx() {
                         fontFamily = Roboto,
                         color = Color.Gray,
                     )
-                    Row(modifier = Modifier.padding(top = 4.dp)) {
-                        Text(
-                            text = "2 000",
-                            fontSize = 20.sp,
-                            fontFamily = Roboto,
+                    if (viewModel.inviteFriendState.nodePriceStatus is LoadResponse.Loading) {
+                        CircularProgressIndicator(
+                            Modifier.size(32.dp).padding(top = 8.dp),
                             color = Color.White,
+                            strokeWidth = 2.dp,
                         )
-                        Text(
-                            text = "sat",
-                            fontSize = 20.sp,
-                            fontFamily = Roboto,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
+                    } else {
+                        Box() {
+                            Row(modifier = Modifier.padding(top = 4.dp)) {
+                                Text(
+                                    text = viewModel.inviteFriendState.nodePrice,
+                                    fontSize = 20.sp,
+                                    fontFamily = Roboto,
+                                    color = Color.White,
+                                )
+                                Text(
+                                    text = "sat",
+                                    fontSize = 20.sp,
+                                    fontFamily = Roboto,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(start = 4.dp)
+                                )
+                            }
+                        }
                     }
                 }
                 Button(
-                    onClick = {
-                    },
+                    onClick = {viewModel.createNewInvite()},
                     modifier = Modifier.clip(CircleShape)
                         .wrapContentWidth()
                         .height(50.dp),
+                    enabled = viewModel.inviteFriendState.nickname.isNotEmpty(),
 
                     colors = ButtonDefaults.buttonColors(
                         backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
@@ -210,6 +221,25 @@ fun AddNewContactOnSphinx() {
                         color = Color.White,
                         fontFamily = Roboto
                     )
+                }
+            }
+            Column (
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
+            )
+            {
+                if (viewModel.inviteFriendState.createInviteStatus is LoadResponse.Loading) {
+                    CircularProgressIndicator(
+                        Modifier.size(40.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    if (viewModel.inviteFriendState.createInviteStatus is Response.Error){
+                        viewModel.toast("There was an error, please try later")
+                    }
                 }
             }
         }
