@@ -103,13 +103,13 @@ fun CollapsingEffectScreen() {
                             "Podcast: sats per minute",
                             color = MaterialTheme.colorScheme.tertiary,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.W600
+                            fontWeight = FontWeight.W600,fontFamily = Roboto
                         )
                         Text(
                             "20",
                             color = MaterialTheme.colorScheme.tertiary,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.W600
+                            fontWeight = FontWeight.W600,fontFamily = Roboto
                         )
 
                     }
@@ -157,7 +157,7 @@ fun CollapsingEffectScreen() {
                             "Test - Podcast",
                             color = MaterialTheme.colorScheme.tertiary,
                             fontSize = 22.sp,
-                            fontWeight = FontWeight.W600
+                            fontFamily = Roboto
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Box {
@@ -183,7 +183,7 @@ fun CollapsingEffectScreen() {
                                     "00:00:00",
                                     color = MaterialTheme.colorScheme.onBackground,
                                     fontSize = 14.sp,
-                                    fontWeight = FontWeight.W400
+                                    fontWeight = FontWeight.W400,fontFamily = Roboto
                                 )
 
                             }
@@ -235,7 +235,7 @@ fun CollapsingEffectScreen() {
                                 .size(40.dp),
                         )
                         Spacer(modifier = Modifier.width(16.dp))
-                        Text("This is test title", fontSize = 14.sp, color = MaterialTheme.colorScheme.tertiary )
+                        Text("This is test title", fontSize = 14.sp, color = MaterialTheme.colorScheme.tertiary,fontFamily = Roboto )
                         Spacer(modifier = Modifier.weight(1f))
                         IconButton(onClick = {}){
                             Icon(Icons.Default.CloudDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground,)
@@ -259,7 +259,7 @@ fun PlaybackSpeed(){
     Card(backgroundColor =androidx.compose.material3.MaterialTheme.colorScheme.onBackground, shape = RoundedCornerShape(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(2.dp)) {
             Spacer(modifier = Modifier.width(4.dp))
-            Text("1x", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+            Text("1x", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp,fontFamily = Roboto)
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.height(8.dp).width(16.dp).background(Color(0xff2F60CE),
@@ -272,15 +272,3 @@ fun PlaybackSpeed(){
         }
     }
 }
-
-private fun Modifier.bottomElevation(): Modifier = this.then(Modifier.drawWithContent {
-    val paddingPx = 8.dp.toPx()
-    clipRect(
-        left = 0f,
-        top = 0f,
-        right = size.width,
-        bottom = size.height + paddingPx
-    ) {
-        this@drawWithContent.drawContent()
-    }
-})
