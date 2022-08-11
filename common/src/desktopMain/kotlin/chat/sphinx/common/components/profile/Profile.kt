@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.MaterialTheme
@@ -340,11 +341,11 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                         cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                     )
                     IconButton(onClick = {
-                        dashboardViewModel.toggleQRWindow(true)
+                        dashboardViewModel.toggleQRWindow(true, viewModel.getNodeDescriptor()?.value ?: "")
                     }
                     ) {
                         Icon(
-                            Icons.Default.QrCodeScanner,
+                            Icons.Default.QrCode,
                             contentDescription = "",
                             tint = Color.White,
                             modifier = Modifier.size(30.dp),
@@ -451,9 +452,6 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
 
     if (dashboardViewModel.backUpWindowStateFlow.collectAsState().value) {
         BackupKeys(dashboardViewModel)
-    }
-    if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
-        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.profileState.nodePubKey, null))
     }
 
     if (viewModel.profileState.status is Response.Success){

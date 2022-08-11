@@ -27,7 +27,8 @@ import utils.AnimatedContainer
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun ChatListUI(
-    chatListViewModel: ChatListViewModel
+    chatListViewModel: ChatListViewModel,
+    dashboardViewModel: DashboardViewModel
 ) {
     val listState = rememberLazyListState()
 
@@ -42,7 +43,8 @@ fun ChatListUI(
                     items(chatListData.dashboardChats) { dashboardChat ->
                         ChatRow(
                             dashboardChat,
-                            chatListViewModel
+                            chatListViewModel,
+                            dashboardViewModel
                         )
                     }
                 }

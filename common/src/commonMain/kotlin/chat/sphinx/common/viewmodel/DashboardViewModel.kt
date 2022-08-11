@@ -59,15 +59,15 @@ class DashboardViewModel: WindowFocusListener {
         _tribeDetailWindowStateFlow.value = Pair(open, chatId)
     }
 
-    private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {
-        MutableStateFlow(false)
+    private val _qrWindowStateFlow: MutableStateFlow<Pair<Boolean, String?>> by lazy {
+        MutableStateFlow(Pair(false, null))
     }
 
-    val qrWindowStateFlow: StateFlow<Boolean>
+    val qrWindowStateFlow: StateFlow<Pair<Boolean, String?>>
         get() = _qrWindowStateFlow.asStateFlow()
 
-    fun toggleQRWindow(open: Boolean) {
-        _qrWindowStateFlow.value = open
+    fun toggleQRWindow(open: Boolean, value: String? = null) {
+        _qrWindowStateFlow.value = Pair(open, value)
     }
 
     private val _profileStateFlow: MutableStateFlow<Boolean> by lazy {
@@ -137,7 +137,7 @@ class DashboardViewModel: WindowFocusListener {
 
     override fun windowGainedFocus(p0: WindowEvent?) {
         if (DashboardScreenState.screenState() == DashboardScreenType.Unlocked) {
-            networkRefresh()
+//            networkRefresh()
             connectSocket()
         }
     }

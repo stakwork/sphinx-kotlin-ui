@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -302,11 +303,11 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
                     )
                     if(editMode) {
                         IconButton(onClick = {
-                            dashboardViewModel.toggleQRWindow(true)
+                            dashboardViewModel.toggleQRWindow(true, viewModel.getNodeDescriptor()?.value ?: "")
                         }
                         ) {
                             Icon(
-                                Icons.Default.QrCodeScanner,
+                                Icons.Default.QrCode,
                                 contentDescription = "",
                                 tint = Color.White,
                                 modifier = Modifier.size(30.dp),
@@ -420,9 +421,6 @@ fun ContactForm(dashboardViewModel: DashboardViewModel, contactId: ContactId?) {
 
     if (viewModel.contactState.status is Response.Success) {
         dashboardViewModel.toggleContactWindow(false, null)
-    }
-    if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
-        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.contactState.lightningNodePubKey, null))
     }
 }
 

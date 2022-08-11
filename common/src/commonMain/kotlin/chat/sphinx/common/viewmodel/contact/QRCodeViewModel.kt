@@ -17,7 +17,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.launch
 import theme.primary_green
 
-class QRCodeViewModel(private var qrText: String, title: String?) {
+class QRCodeViewModel(private var qrText: String) {
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers

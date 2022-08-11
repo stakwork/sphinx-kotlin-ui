@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import chat.sphinx.common.state.ChatListData
 import chat.sphinx.wrapper.*
 import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
@@ -28,7 +29,32 @@ import chat.sphinx.wrapper.invite.Invite as InviteWrapper
  *  - [Inactive]: A contact without a conversation yet, or an Invite
  * */
 sealed class DashboardChat {
-    // TODO: Override equals...
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        (other as? DashboardChat)?.let {
+            if (this is Inactive.Invite && other is Inactive.Invite) {
+                return (
+                        this.getMessageText() == other.getMessageText() &&
+                        this.chatName == other.chatName &&
+                        this.invite?.status == other.invite?.status
+                )
+            }
+
+            return (
+                    this.getMessageText() == other.getMessageText() &&
+                    this.chatName == other.chatName &&
+                    this.photoUrl?.value == other.photoUrl?.value &&
+                    this.isEncrypted() == other.isEncrypted()
+            )
+        }
+
+        return false
+    }
+
     abstract val chatName: String?
     abstract val photoUrl: PhotoUrl?
     abstract val sortBy: Long
@@ -54,6 +80,10 @@ sealed class DashboardChat {
 
         open val owner: Contact? = null
 
+        override fun getDisplayTime(today00: DateTime): String {
+            return message?.date?.chatTimeFormat(today00) ?: ""
+        }
+
         override val sortBy: Long
             get() {
                 val lastContentSeenDate = chat.contentSeenAt?.time
@@ -64,10 +94,6 @@ sealed class DashboardChat {
                 }
                 return lastMessageActionDate
             }
-
-        override fun getDisplayTime(today00: DateTime): String {
-            return message?.date?.chatTimeFormat(today00) ?: ""
-        }
 
         fun isMessageSenderSelf(message: Message): Boolean =
             message.sender == chat.contactIds.firstOrNull()
@@ -354,7 +380,7 @@ sealed class DashboardChat {
 
         class Invite(
             val contact: Contact,
-            val invite: InviteWrapper?,
+            val invite: InviteWrapper,
             override val color: Int?,
         ): Inactive() {
 
