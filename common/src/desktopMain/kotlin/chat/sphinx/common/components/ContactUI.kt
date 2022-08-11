@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -47,7 +48,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
             onCloseRequest = {
                 dashboardViewModel.toggleContactWindow(false, null)
             },
-            title = "Contact UI",
+            title = "Add New Friend",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(420, 620)
@@ -61,6 +62,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
                 is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null)
                 is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
             }
+            DesktopSphinxToast("Add New Friend")
         }
     }
 }
@@ -133,7 +135,8 @@ fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
                 singleLine = true,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = light_divider,
-                    unfocusedBorderColor = light_divider
+                    unfocusedBorderColor = light_divider,
+                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -156,12 +159,15 @@ fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
                 ),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = light_divider,
-                    unfocusedBorderColor = light_divider
+                    unfocusedBorderColor = light_divider,
+                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background
                 ),
                 placeholder = {
                     Text(
+                        modifier = Modifier.fillMaxWidth(),
                         text = "Welcome to Sphinx!",
-                        color = Color.Gray,
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center
                     )
                 }
             )
@@ -172,32 +178,29 @@ fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column {
-                    Text(
-                        text = "ESTIMATED COST",
-                        fontSize = 12.sp,
-                        fontFamily = Roboto,
-                        color = Color.Gray,
-                    )
-                    if (viewModel.inviteFriendState.nodePriceStatus is LoadResponse.Loading) {
-                        CircularProgressIndicator(
-                            Modifier.size(32.dp).padding(top = 8.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp,
+                    viewModel.inviteFriendState.nodePrice?.let { nodePrice ->
+                        Text(
+                            text = "ESTIMATED COST",
+                            fontSize = 10.sp,
+                            fontFamily = SphinxFonts.montserratFamily,
+                            fontWeight = FontWeight.Normal,
+                            color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                         )
-                    } else {
-                        Box() {
+                        Box {
                             Row(modifier = Modifier.padding(top = 4.dp)) {
                                 Text(
-                                    text = viewModel.inviteFriendState.nodePrice,
+                                    text = nodePrice,
                                     fontSize = 20.sp,
                                     fontFamily = Roboto,
+                                    fontWeight = FontWeight.Bold,
                                     color = Color.White,
                                 )
                                 Text(
                                     text = "sat",
                                     fontSize = 20.sp,
                                     fontFamily = Roboto,
-                                    color = Color.Gray,
+                                    fontWeight = FontWeight.Normal,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier.padding(start = 4.dp)
                                 )
                             }
@@ -210,15 +213,19 @@ fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
                         .wrapContentWidth()
                         .height(50.dp),
                     enabled = viewModel.inviteFriendState.nickname.isNotEmpty(),
-
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer
+                        backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer,
+                        disabledBackgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer.copy(0.5f),
                     )
                 )
                 {
                     Text(
                         text = "Create Invitation",
-                        color = Color.White,
+                        color = if (viewModel.inviteFriendState.nickname.isNotEmpty()) {
+                            Color.White
+                        } else {
+                            Color.White.copy(0.5f)
+                        },
                         fontFamily = Roboto
                     )
                 }
@@ -231,15 +238,10 @@ fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
             {
                 if (viewModel.inviteFriendState.createInviteStatus is LoadResponse.Loading) {
                     CircularProgressIndicator(
-                        Modifier.size(40.dp),
+                        Modifier.size(20.dp),
                         color = Color.White,
                         strokeWidth = 2.dp
                     )
-                }
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    if (viewModel.inviteFriendState.createInviteStatus is Response.Error){
-                        viewModel.toast("There was an error, please try later")
-                    }
                 }
             }
         }

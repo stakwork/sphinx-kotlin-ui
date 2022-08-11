@@ -13,13 +13,17 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.lightning.asFormattedString
+import chat.sphinx.wrapper.lightning.toSat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import theme.primary_green
 import theme.primary_red
 
-class InviteFriendViewModel(val dashboardViewModel: DashboardViewModel) {
+class InviteFriendViewModel(
+    val dashboardViewModel: DashboardViewModel
+) {
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -41,12 +45,6 @@ class InviteFriendViewModel(val dashboardViewModel: DashboardViewModel) {
     }
 
     private fun getNodePrice() {
-
-        setInviteFriendState {
-            copy(
-                nodePriceStatus = LoadResponse.Loading
-            )
-        }
         scope.launch(dispatchers.mainImmediate) {
             networkQueryInvite.getLowestNodePrice().collect { loadResponse ->
                 when (loadResponse) {
@@ -54,8 +52,7 @@ class InviteFriendViewModel(val dashboardViewModel: DashboardViewModel) {
                         loadResponse.value.response?.price?.let { price ->
                             setInviteFriendState {
                                 copy(
-                                    nodePrice = price.toString(),
-                                    nodePriceStatus = loadResponse
+                                    nodePrice = price.toLong().toSat()?.asFormattedString(' '),
                                 )
                             }
                         }
@@ -86,14 +83,17 @@ class InviteFriendViewModel(val dashboardViewModel: DashboardViewModel) {
             }
 
             contactRepository.createNewInvite(nickname, message).collect { loadResponse ->
+
+                setInviteFriendState {
+                    copy(
+                        createInviteStatus = loadResponse
+                    )
+                }
+
                 when(loadResponse){
                     is LoadResponse.Loading -> {}
                     is Response.Error -> {
-                        setInviteFriendState {
-                            copy(
-                                createInviteStatus = loadResponse
-                            )
-                        }
+                        toast("There was an error, please try later")
                     }
                     is Response.Success -> {
                         dashboardViewModel.toggleContactWindow(false, null)
@@ -120,7 +120,7 @@ class InviteFriendViewModel(val dashboardViewModel: DashboardViewModel) {
         }
     }
 
-    fun toast(
+    private fun toast(
         message: String,
         color: Color = primary_red,
         delay: Long = 2000L
