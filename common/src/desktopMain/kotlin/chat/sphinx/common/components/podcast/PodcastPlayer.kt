@@ -1,5 +1,6 @@
 package chat.sphinx.common.components.podcast
 
+import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -36,6 +37,7 @@ import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.platform.imageResource
+import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.util.getInitials
@@ -154,7 +156,7 @@ fun CollapsingEffectScreen() {
                         Text(
                             "Test - Podcast",
                             color = MaterialTheme.colorScheme.tertiary,
-                            fontSize = 24.sp,
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.W600
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -174,21 +176,21 @@ fun CollapsingEffectScreen() {
                                 Text(
                                     "00:00:00",
                                     color = MaterialTheme.colorScheme.inverseSurface,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.W600
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.W400, fontFamily = Roboto
                                 )
                                 Text(
                                     "00:00:00",
                                     color = MaterialTheme.colorScheme.onBackground,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.W600
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.W400
                                 )
 
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         PlaybackSpeed()
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                         Row(modifier = Modifier.fillMaxWidth().padding(end = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Icon(painter = imageResource(Res.drawable.ic_share_podcast), contentDescription = null, modifier = Modifier.size(45.dp), tint = MaterialTheme.colorScheme.onBackground)
                             Icon(painter = imageResource(Res.drawable.ic_podcast_back_15), contentDescription = null, modifier = Modifier.size(40.dp),tint = MaterialTheme.colorScheme.onBackground)
@@ -211,31 +213,42 @@ fun CollapsingEffectScreen() {
                         }
                         Spacer(modifier = Modifier.height(24.dp))
                         Row (modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp)){
-                            Text("EPISODES", fontWeight = FontWeight.W600, color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
+                            Text("EPISODES", fontWeight = FontWeight.W400, color = MaterialTheme.colorScheme.onBackground, fontSize = 13.sp, fontFamily = SphinxFonts.montserratFamily)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("12", fontWeight = FontWeight.W600, color = MaterialTheme.colorScheme.secondary, fontSize = 14.sp)
+                            Text("12", fontWeight = FontWeight.W400, color = MaterialTheme.colorScheme.secondary,fontSize = 13.sp, fontFamily = SphinxFonts.montserratFamily)
                         }
                     }
                 }
         }
         items(count = 100) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.width(16.dp))
+                // Below Icon is used for playing the podcast
+//                Icon(Icons.Default.PlayArrow, tint = MaterialTheme.colorScheme.inverseSurface, contentDescription = null, modifier = Modifier.size(30.dp))
+                Column(modifier = Modifier.background(MaterialTheme.colorScheme.onSecondaryContainer).padding(vertical = 16.dp)) {
+                    Row ( horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
 
-            Column(modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer).padding(vertical = 16.dp, horizontal = 24.dp)) {
-                Row ( horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically){
-                    PhotoUrlImage(
-                        photoUrl = PhotoUrl("https://picsum.photos/seed/picsum/200/300"),
-                        modifier = Modifier
-                            .size(40.dp),
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text("This is test title", fontSize = 14.sp, color = MaterialTheme.colorScheme.tertiary )
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = {}){
-                        Icon(Icons.Default.CloudDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        PhotoUrlImage(
+                            photoUrl = PhotoUrl("https://picsum.photos/seed/picsum/200/300"),
+                            modifier = Modifier
+                                .size(40.dp),
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("This is test title", fontSize = 14.sp, color = MaterialTheme.colorScheme.tertiary )
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(onClick = {}){
+                            Icon(Icons.Default.CloudDownload, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground,)
+                        }
+                        // Below Icon is used for showing the progress of download
+//                    CircularProgressIndicator(modifier = Modifier.size(25.dp), color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary, strokeWidth = 2.dp)
+                        Spacer(modifier = Modifier.width(16.dp))
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f), thickness = 0.3.dp, modifier =Modifier.padding(start = 8.dp, end = 38.dp))
+
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f), thickness = 0.3.dp, modifier =Modifier.padding(start = 16.dp))
+
             }
         }
     }
