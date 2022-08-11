@@ -5,6 +5,8 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
@@ -20,9 +22,11 @@ import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
+import chat.sphinx.components.browser.WebAppBrowserWindow
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
+import chat.sphinx.utils.toUrlOrNull
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
 import theme.LocalSpacing
@@ -30,6 +34,7 @@ import theme.Spacing
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
 import java.awt.event.WindowStateListener
+import java.net.URL
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -38,6 +43,7 @@ fun main() = application {
 
     val sphinxStore = remember { SphinxStore() }
     val sphinxState = sphinxStore.state
+
 
 //    val rememberSphinxTray = remember {
 //        DesktopSphinxNotificationManager.sphinxTrayState
@@ -87,6 +93,12 @@ fun main() = application {
         }
         ScreenType.DashboardScreen -> {
 
+            WebAppBrowserWindow(
+                getPreferredWindowSize(
+                    600,
+                    600
+                )
+            )
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Sphinx",

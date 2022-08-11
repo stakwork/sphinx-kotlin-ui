@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
@@ -26,71 +27,73 @@ import javafx.scene.Scene
 import javafx.scene.web.WebView
 import netscape.javascript.JSObject
 import java.awt.BorderLayout
-import java.net.URL
 import javax.swing.JPanel
 
 @Composable
 fun WebAppBrowserWindow(
-    startURL: URL,
-    windowTitle: String,
     windowSize: DpSize,
     onCloseRequest: (() -> Unit)? = null,
 ) {
-    // Required to make sure the JavaFx event loop doesn't finish (can happen when java fx panels in app are shown/hidden)
-    val finishListener = object : PlatformImpl.FinishListener {
-        override fun idle(implicitExit: Boolean) {}
-        override fun exitCalled() {}
-    }
-    PlatformImpl.addListener(finishListener)
+    key(SphinxFeedUrlViewer.tribeAppUrl.value) {
+        SphinxFeedUrlViewer.tribeAppUrl.value?.let { tribeFeedUrlPair ->
 
-    Window(
-        title = windowTitle,
-        resizable = false,
-        state = WindowState(
-            placement = WindowPlacement.Floating,
-            size = windowSize
-        ),
-        onCloseRequest = {
-            PlatformImpl.removeListener(finishListener)
-            onCloseRequest?.invoke()
-        },
-        content = {
-            val jfxPanel = remember { JFXPanel() }
-            var jsObject = remember<JSObject?> { null }
-
-            Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
-
-                ComposeJFXPanel(
-                    composeWindow = window,
-                    jfxPanel = jfxPanel,
-                    onCreate = {
-                        Platform.runLater {
-                            val root = WebView()
-                            val engine = root.engine
-                            val scene = Scene(root)
-                            engine.loadWorker.stateProperty().addListener { _, _, newState ->
-                                if (newState === Worker.State.SUCCEEDED) {
-                                    jsObject = root.engine.executeScript("window") as JSObject
-                                    // execute other javascript / setup js callbacks fields etc..
-                                }
-                            }
-                            engine.loadWorker.exceptionProperty().addListener { _, _, newError ->
-                                println("page load error : $newError")
-                            }
-                            jfxPanel.scene = scene
-                            engine.load(startURL.toString()) // can be a html document from resources ..
-                            engine.setOnError { error -> println("onError : $error") }
-                        }
-                    }, onDestroy = {
-                        Platform.runLater {
-                            jsObject?.let { jsObj ->
-                                // clean up code for more complex implementations i.e. removing javascript callbacks etc..
-                            }
-                        }
-                    })
+            // Required to make sure the JavaFx event loop doesn't finish (can happen when java fx panels in app are shown/hidden)
+            val finishListener = object : PlatformImpl.FinishListener {
+                override fun idle(implicitExit: Boolean) {}
+                override fun exitCalled() {}
             }
-        })
+            PlatformImpl.addListener(finishListener)
 
+            Window(
+                title = tribeFeedUrlPair.first,
+                resizable = false,
+                state = WindowState(
+                    placement = WindowPlacement.Floating,
+                    size = windowSize
+                ),
+                onCloseRequest = {
+                    PlatformImpl.removeListener(finishListener)
+                    onCloseRequest?.invoke()
+                    SphinxFeedUrlViewer.tribeAppUrl.value = null
+                },
+                content = {
+                    val jfxPanel = remember { JFXPanel() }
+                    var jsObject = remember<JSObject?> { null }
+
+                    Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+
+                        ComposeJFXPanel(
+                            composeWindow = window,
+                            jfxPanel = jfxPanel,
+                            onCreate = {
+                                Platform.runLater {
+                                    val root = WebView()
+                                    val engine = root.engine
+                                    val scene = Scene(root)
+                                    engine.loadWorker.stateProperty().addListener { _, _, newState ->
+                                        if (newState === Worker.State.SUCCEEDED) {
+                                            jsObject = root.engine.executeScript("window") as JSObject
+                                            // execute other javascript / setup js callbacks fields etc..
+                                        }
+                                    }
+                                    engine.loadWorker.exceptionProperty().addListener { _, _, newError ->
+                                        println("page load error : $newError")
+                                    }
+                                    jfxPanel.scene = scene
+                                    engine.load(tribeFeedUrlPair.second.toString()) // can be a html document from resources ..
+                                    engine.setOnError { error -> println("onError : $error") }
+                                }
+                            }, onDestroy = {
+                                Platform.runLater {
+                                    jsObject?.let { jsObj ->
+                                        // clean up code for more complex implementations i.e. removing javascript callbacks etc..
+                                    }
+                                }
+                            })
+                    }
+                })
+        }
+    }
 }
 
 @Composable

@@ -3,6 +3,7 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import chat.sphinx.common.handleSphinxTribeData
 import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.concepts.network.query.lightning.model.route.isRouteAvailable
 import chat.sphinx.response.LoadResponse
@@ -39,18 +40,11 @@ class ChatTribeViewModel(
 //                    MoreMenuOptionsViewState.NotOwnTribe
 //                }
 
-                chatRepository.updateTribeInfo(chat)?.let { _ ->
-
-//                    _feedDataStateFlow.value = TribeFeedData.Result.FeedData(
-//                        tribeData.host,
-//                        tribeData.feedUrl,
-//                        tribeData.chatUUID,
-//                        tribeData.feedType,
-//                        chat.metaData,
-//                    )
-
-                } ?: run {
-//                    _feedDataStateFlow.value = TribeFeedData.Result.NoFeed
+                chatRepository.updateTribeInfo(chat)?.let { tribeData ->
+                    handleSphinxTribeData(
+                        chat.name?.value ?: "Tribe",
+                        tribeData
+                    )
                 }
 
             } ?: run {
