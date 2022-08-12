@@ -49,7 +49,8 @@ sealed class DashboardChat {
                     this.getMessageText() == other.getMessageText() &&
                     this.chatName == other.chatName &&
                     this.photoUrl?.value == other.photoUrl?.value &&
-                    this.isEncrypted() == other.isEncrypted()
+                    this.isEncrypted() == other.isEncrypted() &&
+                    this.hasUnseenMessages() == other.hasUnseenMessages()
             )
         }
 
