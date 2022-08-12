@@ -3,12 +3,14 @@ package chat.sphinx.common.state
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import chat.sphinx.common.models.DashboardChat
+import java.util.*
 
 abstract class ChatListData {
     class EmptyChatListData : ChatListData()
 
     class PopulatedChatListData(
-        val dashboardChats: List<DashboardChat>
+        val dashboardChats: List<DashboardChat>,
+        val selectedDashboardId: String?,
     ) : ChatListData() {
 
         override fun hashCode(): Int {
@@ -21,7 +23,12 @@ abstract class ChatListData {
             if (javaClass != other?.javaClass) return false
 
             (other as? PopulatedChatListData)?.let {
-                if (dashboardChats != other.dashboardChats) return false
+                if (
+                    dashboardChats != other.dashboardChats ||
+                    selectedDashboardId != other.selectedDashboardId
+                ) {
+                    return false
+                }
             }
 
             return true

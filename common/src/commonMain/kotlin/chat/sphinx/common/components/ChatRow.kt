@@ -39,6 +39,7 @@ import chat.sphinx.wrapper.invite.isPaymentPending
 import chat.sphinx.wrapper.invite.isReady
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.util.getInitials
+import theme.badge_red
 import theme.primary_green
 
 
@@ -46,6 +47,7 @@ import theme.primary_green
 @Composable
 fun ChatRow(
     dashboardChat: DashboardChat,
+    selected: Boolean,
     chatListViewModel: ChatListViewModel,
     dashboardViewModel: DashboardViewModel
 ) {
@@ -58,45 +60,31 @@ fun ChatRow(
     }
 
     Row(
-        modifier = Modifier.clickable {
-            if (dashboardChat is DashboardChat.Inactive.Invite) {
-                dashboardChat.invite?.let { invite ->
-                    if (invite.status.isReady() || invite.status.isDelivered()) {
-                        dashboardViewModel.toggleQRWindow(true, "INVITE CODE", invite.inviteString.value)
-                    } else if (invite.status.isPaymentPending()) {
-                        chatListViewModel.payForInvite(invite)
-                    } else if (invite.status.isExpired()) {
-                        chatListViewModel.deleteInvite(invite)
+        modifier = Modifier
+            .clickable {
+                if (dashboardChat is DashboardChat.Inactive.Invite) {
+                    dashboardChat.invite?.let { invite ->
+                        if (invite.status.isReady() || invite.status.isDelivered()) {
+                            dashboardViewModel.toggleQRWindow(true, "INVITE CODE", invite.inviteString.value)
+                        } else if (invite.status.isPaymentPending()) {
+                            chatListViewModel.payForInvite(invite)
+                        } else if (invite.status.isExpired()) {
+                            chatListViewModel.deleteInvite(invite)
+                        }
                     }
+                    return@clickable
                 }
-                return@clickable
-            }
 
-            ChatDetailState.screenState(
-                when (dashboardChat) {
-                    is DashboardChat.Active.Conversation -> {
-                        ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
-                            dashboardChat.chat.id,
-                            dashboardChat.contact.id,
-                            dashboardChat
-                        )
-                    }
-                    is DashboardChat.Active.GroupOrTribe -> {
-                        ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
-                            dashboardChat.chat.id,
-                            dashboardChat
-                        )
-                    }
-                    is DashboardChat.Inactive.Conversation -> {
-                        ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
-                            dashboardChat.contact.id,
-                            dashboardChat
-                        )
-                    }
-                    else -> ChatDetailData.EmptyChatDetailData
+                chatListViewModel.chatRowSelected(dashboardChat)
+            }
+            .height(62.dp)
+            .background(
+                if (selected) {
+                    androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    androidx.compose.material3.MaterialTheme.colorScheme.background
                 }
             )
-        }.height(62.dp).background(androidx.compose.material3.MaterialTheme.colorScheme.background)
     ) {
         Row(modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp)) {
             Box(modifier = Modifier.size(46.dp)) {

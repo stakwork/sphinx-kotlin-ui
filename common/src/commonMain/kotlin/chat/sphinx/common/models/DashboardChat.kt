@@ -21,6 +21,7 @@ import theme.primary_green
 import theme.sphinx_orange
 import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 import chat.sphinx.wrapper.invite.Invite as InviteWrapper
 
 /**
@@ -59,6 +60,7 @@ sealed class DashboardChat {
     abstract val photoUrl: PhotoUrl?
     abstract val sortBy: Long
     abstract val color: Int?
+    abstract val dashboardChatId: String?
 
     abstract val unseenMessageFlow: Flow<Long?>?
 
@@ -81,6 +83,9 @@ sealed class DashboardChat {
         abstract val message: Message?
 
         open val owner: Contact? = null
+
+        override val dashboardChatId: String?
+            get() = "chat-${chat.id}"
 
         override fun getDisplayTime(today00: DateTime): String {
             return message?.date?.chatTimeFormat(today00) ?: ""
@@ -349,12 +354,17 @@ sealed class DashboardChat {
      * */
     sealed class Inactive: DashboardChat() {
 
+        abstract val contact: Contact
+
+        override val dashboardChatId: String?
+            get() = "contact-${contact.id}"
+
         override fun getDisplayTime(today00: DateTime): String {
             return ""
         }
 
         class Conversation(
-            val contact: Contact,
+            override val contact: Contact,
             override val color: Int?,
         ): Inactive() {
 
@@ -393,7 +403,7 @@ sealed class DashboardChat {
         }
 
         class Invite(
-            val contact: Contact,
+            override val contact: Contact,
             val invite: InviteWrapper,
             override val color: Int?,
         ): Inactive() {

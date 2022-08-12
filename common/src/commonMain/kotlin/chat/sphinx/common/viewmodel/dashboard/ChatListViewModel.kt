@@ -5,6 +5,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.common.state.ChatDetailData
+import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.di.container.SphinxContainer
@@ -175,10 +177,13 @@ class ChatListViewModel {
     fun filterChats(filter: String) {
         searchText.value = filter
 
+        val currentChatListState = ChatListState.screenState()
+
         if (filter.isEmpty()) {
             ChatListState.screenState(
                 ChatListData.PopulatedChatListData(
-                    dashboardChats
+                    dashboardChats,
+                    (currentChatListState as? ChatListData.PopulatedChatListData)?.selectedDashboardId
                 )
             )
         } else {
@@ -188,10 +193,47 @@ class ChatListViewModel {
 
             ChatListState.screenState(
                 ChatListData.PopulatedChatListData(
-                    filteredChats
+                    filteredChats,
+                    (currentChatListState as? ChatListData.PopulatedChatListData)?.selectedDashboardId
                 )
             )
         }
+    }
+
+    fun chatRowSelected(dashboardChat: DashboardChat) {
+        (ChatListState.screenState() as? ChatListData.PopulatedChatListData)?.let { currentState ->
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    currentState.dashboardChats,
+                    dashboardChat.dashboardChatId
+                )
+            )
+        }
+
+        ChatDetailState.screenState(
+            when (dashboardChat) {
+                is DashboardChat.Active.Conversation -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
+                        dashboardChat.chat.id,
+                        dashboardChat.contact.id,
+                        dashboardChat
+                    )
+                }
+                is DashboardChat.Active.GroupOrTribe -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
+                        dashboardChat.chat.id,
+                        dashboardChat
+                    )
+                }
+                is DashboardChat.Inactive.Conversation -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
+                        dashboardChat.contact.id,
+                        dashboardChat
+                    )
+                }
+                else -> ChatDetailData.EmptyChatDetailData
+            }
+        )
     }
 
     private suspend fun updateChatListContacts(contacts: List<Contact>) {

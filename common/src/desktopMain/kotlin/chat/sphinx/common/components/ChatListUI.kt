@@ -32,9 +32,10 @@ fun ChatListUI(
                 ) {
                     items(chatListData.dashboardChats) { dashboardChat ->
                         ChatRow(
-                            dashboardChat,
-                            chatListViewModel,
-                            dashboardViewModel
+                            dashboardChat = dashboardChat,
+                            selected = dashboardChat.dashboardChatId == chatListData.selectedDashboardId,
+                            chatListViewModel = chatListViewModel,
+                            dashboardViewModel = dashboardViewModel
                         )
                     }
                 }
