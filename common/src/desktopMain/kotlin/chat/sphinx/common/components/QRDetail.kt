@@ -57,7 +57,7 @@ fun QRDetail(
                 modifier = Modifier.fillMaxSize()
                     .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
                     .clickable {
-                        clipboardManager.setText(viewModel.contactQRCodeState.pubKey.toAnnotatedString())
+                        clipboardManager.setText(viewModel.contactQRCodeState.string.toAnnotatedString())
                         viewModel.toast("Code copied to clipboard")
                     }
             ) {
@@ -69,7 +69,7 @@ fun QRDetail(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "PUBLIC KEY",
+                        text = viewModel.contactQRCodeState.viewTitle.uppercase(),
                         fontFamily = SphinxFonts.montserratFamily,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -125,7 +125,7 @@ fun QRDetail(
 
                     Text(
                         modifier = Modifier.fillMaxWidth().padding(20.dp),
-                        text = viewModel.contactQRCodeState.pubKey,
+                        text = viewModel.contactQRCodeState.string,
                         maxLines = 2,
                         fontFamily = SphinxFonts.montserratFamily,
                         color = Color.Gray,

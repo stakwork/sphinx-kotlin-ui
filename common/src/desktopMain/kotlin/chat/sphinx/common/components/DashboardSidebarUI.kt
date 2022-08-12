@@ -16,9 +16,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.profile.Profile
+import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -166,7 +168,10 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 }
             )
 
-            ChatListUI(chatListViewModel)
+            ChatListUI(
+                chatListViewModel,
+                dashboardViewModel
+            )
 
             val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
             if (addContactWindowState.first) {
@@ -177,10 +182,25 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             if (profileWindowState) {
                 Profile(dashboardViewModel)
             }
+
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
             if (tribeWindowState.first) {
                 tribeWindowState.second?.let { chatId ->
                     TribeDetailView(dashboardViewModel, chatId)
+                }
+            }
+
+            val qrWindowState by dashboardViewModel.qrWindowStateFlow.collectAsState()
+            if (qrWindowState.first) {
+                qrWindowState.second?.let { titleAndValue ->
+                    QRDetail(dashboardViewModel, QRCodeViewModel(titleAndValue.first, titleAndValue.second))
+                }
+            }
+
+            val joinTribeWindowState by dashboardViewModel.joinTribeStateFlow.collectAsState()
+            if (joinTribeWindowState.first){
+                joinTribeWindowState.second?.let { joinTribeLink ->
+                    JoinTribeView(dashboardViewModel, joinTribeLink)
                 }
             }
         }

@@ -1,9 +1,8 @@
 package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.ContactScreenState
-import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.common.state.DashboardScreenState
-import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
+import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -13,6 +12,7 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
+import chat.sphinx.wrapper.tribe.TribeJoinLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -59,15 +59,25 @@ class DashboardViewModel: WindowFocusListener {
         _tribeDetailWindowStateFlow.value = Pair(open, chatId)
     }
 
-    private val _qrWindowStateFlow: MutableStateFlow<Boolean> by lazy {
-        MutableStateFlow(false)
+    private val _qrWindowStateFlow: MutableStateFlow<Pair<Boolean, Pair<String, String>?>> by lazy {
+        MutableStateFlow(Pair(false, null))
     }
 
-    val qrWindowStateFlow: StateFlow<Boolean>
+    val qrWindowStateFlow: StateFlow<Pair<Boolean, Pair<String, String>?>>
         get() = _qrWindowStateFlow.asStateFlow()
 
-    fun toggleQRWindow(open: Boolean) {
-        _qrWindowStateFlow.value = open
+    fun toggleQRWindow(
+        open: Boolean,
+        title: String? = null,
+        value: String? = null
+    ) {
+        title?.let { nnTitle ->
+            value?.let { nnValue ->
+                _qrWindowStateFlow.value = Pair(open, Pair(nnTitle, nnValue))
+                return
+            }
+        }
+        _qrWindowStateFlow.value = Pair(open, null)
     }
 
     private val _profileStateFlow: MutableStateFlow<Boolean> by lazy {
@@ -79,6 +89,17 @@ class DashboardViewModel: WindowFocusListener {
 
     fun toggleProfileWindow(open: Boolean) {
         _profileStateFlow.value = open
+    }
+
+    private val _joinTribeStateFlow: MutableStateFlow<Pair<Boolean, TribeJoinLink?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
+    val joinTribeStateFlow: StateFlow<Pair<Boolean, TribeJoinLink?>>
+        get() = _joinTribeStateFlow.asStateFlow()
+
+    fun toggleJoinTribeWindow(open: Boolean, tribeJoinLink: TribeJoinLink? = null) {
+        _joinTribeStateFlow.value = Pair(open, tribeJoinLink)
     }
 
     private val _backUpWindowStateFlow: MutableStateFlow<Boolean> by lazy {

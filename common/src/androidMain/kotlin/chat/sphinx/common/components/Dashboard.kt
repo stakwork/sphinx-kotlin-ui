@@ -11,6 +11,6 @@ actual fun Dashboard(
     dashboardViewModel: DashboardViewModel
 ) {
     Text(
-        text = "Hello Word"
+        text = "Dashboard"
     )
 }

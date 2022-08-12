@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import chat.sphinx.common.state.ChatListData
 import chat.sphinx.wrapper.*
 import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
@@ -20,6 +21,7 @@ import theme.primary_green
 import theme.sphinx_orange
 import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 import chat.sphinx.wrapper.invite.Invite as InviteWrapper
 
 /**
@@ -28,11 +30,38 @@ import chat.sphinx.wrapper.invite.Invite as InviteWrapper
  *  - [Inactive]: A contact without a conversation yet, or an Invite
  * */
 sealed class DashboardChat {
-    // TODO: Override equals...
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        (other as? DashboardChat)?.let {
+            if (this is Inactive.Invite && other is Inactive.Invite) {
+                return (
+                        this.getMessageText() == other.getMessageText() &&
+                        this.chatName == other.chatName &&
+                        this.invite?.status == other.invite?.status
+                )
+            }
+
+            return (
+                    this.getMessageText() == other.getMessageText() &&
+                    this.chatName == other.chatName &&
+                    this.photoUrl?.value == other.photoUrl?.value &&
+                    this.isEncrypted() == other.isEncrypted() &&
+                    this.hasUnseenMessages() == other.hasUnseenMessages()
+            )
+        }
+
+        return false
+    }
+
     abstract val chatName: String?
     abstract val photoUrl: PhotoUrl?
     abstract val sortBy: Long
     abstract val color: Int?
+    abstract val dashboardChatId: String?
 
     abstract val unseenMessageFlow: Flow<Long?>?
 
@@ -47,12 +76,21 @@ sealed class DashboardChat {
 
     abstract fun isTribe(): Boolean
 
+    abstract fun getChatOrNull(): Chat?
+
     sealed class Active: DashboardChat() {
 
         abstract val chat: Chat
         abstract val message: Message?
 
         open val owner: Contact? = null
+
+        override val dashboardChatId: String?
+            get() = "chat-${chat.id}"
+
+        override fun getDisplayTime(today00: DateTime): String {
+            return message?.date?.chatTimeFormat(today00) ?: ""
+        }
 
         override val sortBy: Long
             get() {
@@ -64,10 +102,6 @@ sealed class DashboardChat {
                 }
                 return lastMessageActionDate
             }
-
-        override fun getDisplayTime(today00: DateTime): String {
-            return message?.date?.chatTimeFormat(today00) ?: ""
-        }
 
         fun isMessageSenderSelf(message: Message): Boolean =
             message.sender == chat.contactIds.firstOrNull()
@@ -244,7 +278,7 @@ sealed class DashboardChat {
             override val message: Message?,
             val contact: Contact,
             override val color: Int?,
-            override val unseenMessageFlow: Flow<Long?>,
+            override val unseenMessageFlow: Flow<Long?>?,
         ): Active() {
 
             init {
@@ -275,6 +309,10 @@ sealed class DashboardChat {
             override fun isTribe(): Boolean {
                 return chat.isTribe()
             }
+
+            override fun getChatOrNull(): Chat? {
+                return chat
+            }
         }
 
         class GroupOrTribe(
@@ -282,7 +320,7 @@ sealed class DashboardChat {
             override val message: Message?,
             override val owner: Contact?,
             override val color: Int?,
-            override val unseenMessageFlow: Flow<Long?>,
+            override val unseenMessageFlow: Flow<Long?>?,
         ): Active() {
 
             override val chatName: String?
@@ -304,6 +342,10 @@ sealed class DashboardChat {
             override fun isTribe(): Boolean {
                 return chat.isTribe()
             }
+
+            override fun getChatOrNull(): Chat? {
+                return chat
+            }
         }
     }
 
@@ -313,12 +355,17 @@ sealed class DashboardChat {
      * */
     sealed class Inactive: DashboardChat() {
 
+        abstract val contact: Contact
+
+        override val dashboardChatId: String?
+            get() = "contact-${contact.id}"
+
         override fun getDisplayTime(today00: DateTime): String {
             return ""
         }
 
         class Conversation(
-            val contact: Contact,
+            override val contact: Contact,
             override val color: Int?,
         ): Inactive() {
 
@@ -350,11 +397,15 @@ sealed class DashboardChat {
             override fun isTribe(): Boolean {
                 return false
             }
+
+            override fun getChatOrNull(): Chat? {
+                return null
+            }
         }
 
         class Invite(
-            val contact: Contact,
-            val invite: InviteWrapper?,
+            override val contact: Contact,
+            val invite: InviteWrapper,
             override val color: Int?,
         ): Inactive() {
 
@@ -455,6 +506,10 @@ sealed class DashboardChat {
 
             override fun isTribe(): Boolean {
                 return false
+            }
+
+            override fun getChatOrNull(): Chat? {
+                return null
             }
         }
     }

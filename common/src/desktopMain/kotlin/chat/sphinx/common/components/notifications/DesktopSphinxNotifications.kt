@@ -195,6 +195,8 @@ fun DesktopSphinxNotifications(
     }
 
     if (notifications.isNotEmpty() && dashboardWindow.isActive) {
-        notifications.clear()
+        LaunchedEffect("NotificationClear") {
+            notifications.clear()
+        }
     }
 }

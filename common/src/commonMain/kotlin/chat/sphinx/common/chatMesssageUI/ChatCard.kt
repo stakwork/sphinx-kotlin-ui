@@ -14,12 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -31,9 +33,13 @@ import chat.sphinx.common.components.MessageFile
 import chat.sphinx.common.components.MessageMediaImage
 import chat.sphinx.common.components.browser.SphinxWebView
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
+import chat.sphinx.utils.linkify.SphinxLinkify
 import chat.sphinx.utils.toAnnotatedString
+import chat.sphinx.wrapper.lightning.toLightningNodePubKey
+import chat.sphinx.wrapper.lightning.toVirtualLightningNodeAddress
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.isImage
 import theme.badge_red
@@ -43,17 +49,23 @@ import chat.sphinx.wrapper.message.isSphinxCallLink
 import chat.sphinx.wrapper.message.media.isPdf
 import chat.sphinx.wrapper.message.media.isUnknown
 import chat.sphinx.wrapper.message.retrieveTextToShow
+import chat.sphinx.wrapper.tribe.toTribeJoinLink
+import kotlinx.coroutines.launch
+import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
+import chat.sphinx.wrapper.tribe.toTribeJoinLink
 
 @Composable
 fun ChatCard(
     chatMessage: ChatMessage,
     chatViewModel: ChatViewModel,
-    modifier: Modifier? = null,
+    modifier: Modifier? = null
 ) {
     val receiverCorner =
         RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
     val senderCorner =
         RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+
+    val uriHandler = LocalUriHandler.current
 
     Card(
         backgroundColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary,
@@ -103,7 +115,7 @@ fun ChatCard(
 //                    }
                     }
                     Column {
-                        MessageTextLabel(chatMessage, chatViewModel)
+                        MessageTextLabel(chatMessage, chatViewModel, uriHandler)
                         FailedContainer(chatMessage)
 
                         BoostedFooter(
@@ -112,6 +124,8 @@ fun ChatCard(
                                 maxOf(rowWidth, 200.dp)
                             ).padding(12.dp, 0.dp, 12.dp, 12.dp)
                         )
+
+                        LinkPreviews(chatMessage, chatViewModel, uriHandler)
 
                         ReceivedPaidMessageButton(
                             chatMessage,
@@ -137,9 +151,10 @@ fun ChatCard(
 @Composable
 fun MessageTextLabel(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    uriHandler: UriHandler
 ) {
-    val uriHandler = LocalUriHandler.current
+
     val topPadding = if (chatMessage.message.isPaidMessage && chatMessage.isSent) 44.dp else 12.dp
 
     if (chatMessage.message.retrieveTextToShow() != null) {
@@ -170,12 +185,20 @@ fun MessageTextLabel(
                                 uriHandler.openUri(annotation.item)
                             }
                             LinkTag.BitcoinAddress.name -> {
-                                val bitcoinUriScheme =
-                                    if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
-                                val bitcoinURI =
-                                    "$bitcoinUriScheme${annotation.item}"
+                                val bitcoinUriScheme = if (annotation.item.startsWith("bitcoin:")) "bitcoin:" else ""
+                                val bitcoinURI = "$bitcoinUriScheme${annotation.item}"
 
                                 uriHandler.openUri(bitcoinURI)
+                            }
+                            LinkTag.LightningNodePublicKey.name, LinkTag.VirtualNodePublicKey.name -> {
+                                chatViewModel.contactLinkClicked(
+                                    annotation.item.toLightningNodePubKey() ?: annotation.item.toVirtualLightningNodeAddress()
+                                )
+                            }
+                            LinkTag.JoinTribeLink.name -> {
+                                chatViewModel.tribeLinkClicked(
+                                    annotation.item.toTribeJoinLink()
+                                )
                             }
                         }
                     }
@@ -240,6 +263,55 @@ fun MessageTextLabel(
             fontStyle = FontStyle.Italic,
             color = MaterialTheme.colorScheme.tertiary
         )
+    }
+}
+
+@Composable
+fun LinkPreviews(
+    chatMessage: ChatMessage,
+    chatViewModel: ChatViewModel,
+    uriHandler: UriHandler
+) {
+    val links = SphinxLinkify.gatherLinks(
+        text = chatMessage.message.retrieveTextToShow() ?: "",
+        mask = SphinxLinkify.ALL
+    )
+
+    links.firstOrNull()?.let { link ->
+        var linkPreview: MutableState<ChatMessage.LinkPreview?> = rememberSaveable { mutableStateOf(null) }
+
+        LaunchedEffect(link.url) {
+            if (linkPreview.value == null) {
+                linkPreview.value = chatMessage.retrieveLinkPreview(link)
+            }
+        }
+
+        when (linkPreview.value) {
+            is ChatMessage.LinkPreview.ContactPreview -> {
+                (linkPreview.value as? ChatMessage.LinkPreview.ContactPreview)?.let { contactLinkPreview ->
+                    if (contactLinkPreview.showBanner) {
+                        NewContactPreview(chatMessage, contactLinkPreview, chatViewModel)
+                    } else {
+                        ExistingContactPreview(contactLinkPreview, chatViewModel)
+                    }
+                }
+            }
+            is ChatMessage.LinkPreview.TribeLinkPreview -> {
+                (linkPreview.value as? ChatMessage.LinkPreview.TribeLinkPreview)?.let { tribeLinkPreview ->
+                    if (tribeLinkPreview.showBanner) {
+                        NewTribePreview(chatMessage, tribeLinkPreview, chatViewModel)
+                    } else {
+                        ExistingTribePreview(tribeLinkPreview, chatViewModel)
+                    }
+                }
+            }
+            is ChatMessage.LinkPreview.HttpUrlPreview -> {
+                (linkPreview.value as? ChatMessage.LinkPreview.HttpUrlPreview)?.let { webLinkPreview ->
+                    URLPreview(webLinkPreview, chatViewModel, uriHandler)
+                }
+            }
+            else -> {}
+        }
     }
 }
 

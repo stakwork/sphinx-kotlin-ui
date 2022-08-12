@@ -31,3 +31,11 @@ fun String.toAnnotatedString(): AnnotatedString {
         }
     }.toAnnotatedString()
 }
+
+fun String.containLinks(): Boolean {
+    val links = SphinxLinkify.gatherLinks(
+        text = this,
+        mask = SphinxLinkify.ALL
+    )
+    return links.isNotEmpty()
+}

@@ -64,6 +64,12 @@ object SphinxLinkify {
     const val BITCOIN_ADDRESS: Int = 0x32
 
     /**
+     * Bit field indicating that a [TribeJoinLink] should be matched in methods that
+     * take an options mask
+     */
+    const val TRIBE_LINK: Int = 0x64
+
+    /**
      * Bit mask indicating that all available patterns should be matched in
      * methods that take an options mask
      *
@@ -71,7 +77,7 @@ object SphinxLinkify {
      * Use [android.view.textclassifier.TextClassifier.generateLinks]
      * instead and avoid it even when targeting API levels where no alternative is available.
      */
-    const val ALL: Int = WEB_URLS or EMAIL_ADDRESSES or PHONE_NUMBERS or LIGHTNING_NODE_PUBLIC_KEY or VIRTUAL_NODE_ADDRESS or BITCOIN_ADDRESS
+    const val ALL: Int = WEB_URLS or EMAIL_ADDRESSES or PHONE_NUMBERS or LIGHTNING_NODE_PUBLIC_KEY or VIRTUAL_NODE_ADDRESS or BITCOIN_ADDRESS or TRIBE_LINK
 
     private val EMPTY_STRING = arrayOfNulls<String>(0)
     private val COMPARATOR: Comparator<LinkSpec> = object : Comparator<LinkSpec> {
@@ -126,6 +132,12 @@ object SphinxLinkify {
         if (mask and BITCOIN_ADDRESS != 0) {
             gatherLinks(
                 links, text, SphinxPatterns.BITCOIN_BIP21_URI, arrayOf("bitcoin:"),
+                null,
+            )
+        }
+        if (mask and TRIBE_LINK != 0) {
+            gatherLinks(
+                links, text, SphinxPatterns.JOIN_TRIBE_LINK, arrayOf(),
                 null,
             )
         }
@@ -234,7 +246,7 @@ object SphinxLinkify {
     object SphinxPatterns {
         // TODO: Have the regex for a Bitcoin address and a Bitcoin txid
         val AUTOLINK_WEB_URL: Pattern = Pattern.compile(
-            "(${TribeJoinLink.REGEX}|${PatternsCompat.AUTOLINK_WEB_URL.pattern()})"
+            "(${PatternsCompat.AUTOLINK_WEB_URL.pattern()})"
         )
 
         val LIGHTNING_NODE_PUBLIC_KEY: Pattern = Pattern.compile(
@@ -245,12 +257,21 @@ object SphinxLinkify {
             VirtualLightningNodeAddress.REGEX
         )
 
+        val JOIN_TRIBE_LINK: Pattern = Pattern.compile(
+            TribeJoinLink.REGEX
+        )
+
         val LINK_PREVIEWS: Pattern = Pattern.compile(
-            "(${TribeJoinLink.REGEX}|${PatternsCompat.AUTOLINK_WEB_URL.pattern()}|${LightningNodePubKey.REGEX}|${VirtualLightningNodeAddress.REGEX})"
+            "(" +
+                    "${TribeJoinLink.REGEX}|" +
+                    "${PatternsCompat.AUTOLINK_WEB_URL.pattern()}|" +
+                    "${LightningNodePubKey.REGEX}|" +
+                    "${VirtualLightningNodeAddress.REGEX}|" +
+                    "${TribeJoinLink.REGEX})"
         )
             
         val COPYABLE_LINKS: Pattern = Pattern.compile(
-            "(${TribeJoinLink.REGEX}|${PatternsCompat.AUTOLINK_WEB_URL.pattern()}|${LightningNodePubKey.REGEX}|${VirtualLightningNodeAddress.REGEX})"
+            "(${TribeJoinLink.REGEX}|${PatternsCompat.AUTOLINK_WEB_URL.pattern()}|${LightningNodePubKey.REGEX}|${VirtualLightningNodeAddress.REGEX}|${TribeJoinLink.REGEX})"
         )
 
 
@@ -273,11 +294,8 @@ object SphinxLinkify {
                 VIRTUAL_NODE_ADDRESS -> {
                     LinkTag.VirtualNodePublicKey
                 }
-                LINK_PREVIEWS -> {
-                    LinkTag.LinkPreview
-                }
-                COPYABLE_LINKS -> {
-                    LinkTag.CopyableLink
+                JOIN_TRIBE_LINK -> {
+                    LinkTag.JoinTribeLink
                 }
                 PatternsCompat.AUTOLINK_EMAIL_ADDRESS -> {
                     LinkTag.Email

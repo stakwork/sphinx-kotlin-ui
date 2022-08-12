@@ -5,6 +5,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.models.DashboardChat
+import chat.sphinx.common.state.ChatDetailData
+import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.di.container.SphinxContainer
@@ -17,6 +19,7 @@ import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.contact.*
 import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.invite.Invite
+import chat.sphinx.wrapper.lightning.NodeBalance
 import chat.sphinx.wrapper.message.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -24,27 +27,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import theme.badge_red
+import theme.primary_green
 import utils.getRandomColorRes
-
-/**
- * Sorts and filters the provided list.
- *
- * @param [dashboardChats] if `null` uses the current, already sorted list.
- * @param [filter] the type of filtering to apply to the list. See [ChatFilter].
- * */
-suspend fun ArrayList<DashboardChat>.updateDashboardChats(
-    lock: Mutex,
-    dispatchers: SphinxDispatchers
-) {
-    lock.withLock {
-        val sortedDashboardChats = withContext(dispatchers.default) {
-            this@updateDashboardChats.sortedByDescending { it.sortBy }
-        }
-
-        this@updateDashboardChats.clear()
-        this@updateDashboardChats.addAll(sortedDashboardChats)
-    }
-}
 
 @Suppress("NOTHING_TO_INLINE")
 private inline fun List<DashboardChat>.filterDashboardChats(
@@ -75,6 +60,9 @@ class ChatListViewModel {
     private val accountOwnerStateFlow: StateFlow<Contact?>
         get() = _accountOwnerStateFlow.asStateFlow()
 
+    private suspend fun getAccountBalance(): StateFlow<NodeBalance?> =
+        repositoryDashboard.getAccountBalanceStateFlow()
+
     var searchText: MutableState<String> = mutableStateOf("")
 
     private var contactsCollectionInitialized: Boolean = false
@@ -85,10 +73,9 @@ class ChatListViewModel {
 
     init {
         scope.launch(dispatchers.mainImmediate) {
-            repositoryDashboard.getAllNotBlockedContacts.distinctUntilChanged()
-                .collect { contacts ->
-                    updateChatListContacts(contacts)
-                }
+            repositoryDashboard.getAllNotBlockedContacts.distinctUntilChanged().collect { contacts ->
+                updateChatListContacts(contacts)
+            }
         }
 
         scope.launch(dispatchers.mainImmediate) {
@@ -150,15 +137,15 @@ class ChatListViewModel {
 
                                         contact.inviteId?.let { inviteId ->
                                             contactInvite = withContext(dispatchers.io) {
-                                                repositoryDashboard.getInviteById(inviteId)
-                                                    .firstOrNull()
+                                                repositoryDashboard.getInviteById(inviteId).firstOrNull()
                                             }
                                         }
+
                                         if (contactInvite != null) {
                                             newList.add(
                                                 DashboardChat.Inactive.Invite(
                                                     contact,
-                                                    contactInvite,
+                                                    contactInvite!!,
                                                     getColorFor(contact, null)
                                                 )
                                             )
@@ -173,11 +160,7 @@ class ChatListViewModel {
                             }
                         }
                     }
-                    newList.updateDashboardChats(
-                        updateDashboardChatLock,
-                        dispatchers
-                    )
-                    dashboardChats = newList
+                    dashboardChats = ArrayList(newList.sortedByDescending { it.sortBy })
                     filterChats(searchText.value)
                 }
             }
@@ -194,10 +177,13 @@ class ChatListViewModel {
     fun filterChats(filter: String) {
         searchText.value = filter
 
+        val currentChatListState = ChatListState.screenState()
+
         if (filter.isEmpty()) {
             ChatListState.screenState(
                 ChatListData.PopulatedChatListData(
-                    dashboardChats
+                    dashboardChats,
+                    (currentChatListState as? ChatListData.PopulatedChatListData)?.selectedDashboardId
                 )
             )
         } else {
@@ -207,10 +193,47 @@ class ChatListViewModel {
 
             ChatListState.screenState(
                 ChatListData.PopulatedChatListData(
-                    filteredChats
+                    filteredChats,
+                    (currentChatListState as? ChatListData.PopulatedChatListData)?.selectedDashboardId
                 )
             )
         }
+    }
+
+    fun chatRowSelected(dashboardChat: DashboardChat) {
+        (ChatListState.screenState() as? ChatListData.PopulatedChatListData)?.let { currentState ->
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    currentState.dashboardChats,
+                    dashboardChat.dashboardChatId
+                )
+            )
+        }
+
+        ChatDetailState.screenState(
+            when (dashboardChat) {
+                is DashboardChat.Active.Conversation -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
+                        dashboardChat.chat.id,
+                        dashboardChat.contact.id,
+                        dashboardChat
+                    )
+                }
+                is DashboardChat.Active.GroupOrTribe -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
+                        dashboardChat.chat.id,
+                        dashboardChat
+                    )
+                }
+                is DashboardChat.Inactive.Conversation -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
+                        dashboardChat.contact.id,
+                        dashboardChat
+                    )
+                }
+                else -> ChatDetailData.EmptyChatDetailData
+            }
+        )
     }
 
     private suspend fun updateChatListContacts(contacts: List<Contact>) {
@@ -306,7 +329,11 @@ class ChatListViewModel {
                             }
                             if (contactInvite != null) {
                                 currentChats.add(
-                                    DashboardChat.Inactive.Invite(contact, contactInvite, getColorFor(contact, null))
+                                    DashboardChat.Inactive.Invite(
+                                        contact,
+                                        contactInvite!!,
+                                        getColorFor(contact, null)
+                                    )
                                 )
                                 continue
                             }
@@ -352,11 +379,7 @@ class ChatListViewModel {
                 }
 
                 if (updateChatViewState) {
-                    ArrayList(currentChats).updateDashboardChats(
-                        updateDashboardChatLock,
-                        dispatchers
-                    )
-                    dashboardChats = ArrayList(currentChats)
+                    dashboardChats = ArrayList(currentChats.sortedByDescending { it.sortBy })
                     filterChats(searchText.value)
 
                     repositoryDashboard.updatedContactIds = mutableListOf()
@@ -366,32 +389,64 @@ class ChatListViewModel {
     }
 
     fun payForInvite(invite: Invite) {
-//        getAccountBalance().firstOrNull()?.let { balance ->
-//            if (balance.balance.value < (invite.price?.value ?: 0)) {
-//                submitSideEffect(
-//                    ChatListSideEffect.Notify(app.getString(R.string.pay_invite_balance_too_low))
-//                )
-//                return
-//            }
-//        }
+        scope.launch(dispatchers.mainImmediate) {
+            getAccountBalance().firstOrNull()?.let { balance ->
+                if (balance.balance.value < (invite.price?.value ?: 0)) {
+                    toast("Can't pay invite. Balance is too low", badge_red)
+                    return@launch
+                }
+            }
 
-//        submitSideEffect(
-//            ChatListSideEffect.AlertConfirmPayInvite(invite.price?.value ?: 0) {
+            confirm(
+                "Pay Invite",
+                "Are you sure you want to pay for this invite?"
+            ) {
                 scope.launch(dispatchers.mainImmediate) {
                     repositoryDashboard.payForInvite(invite)
                 }
-//            }
-//        )
+            }
+        }
     }
 
     fun deleteInvite(invite: Invite) {
-//        submitSideEffect(
-//            ChatListSideEffect.AlertConfirmDeleteInvite() {
-                scope.launch(dispatchers.mainImmediate) {
-                    repositoryDashboard.deleteInvite(invite)
-                }
-//            }
-//        )
+        confirm(
+            "Delete Invite",
+            "Are you sure you want to delete this invite?"
+        ) {
+            scope.launch(dispatchers.mainImmediate) {
+                repositoryDashboard.deleteInvite(invite)
+            }
+        }
+    }
+
+    private fun toast(
+        message: String,
+        color: Color = primary_green,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(
+                "Sphinx",
+                message,
+                color.value,
+                delay
+            )
+        }
+    }
+
+    private fun confirm(
+        title: String,
+        message: String,
+        callback: () -> Unit
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.confirmAlert(
+                "Sphinx",
+                title,
+                message,
+                callback
+            )
+        }
     }
 
     @ColorInt

@@ -43,11 +43,14 @@ import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.onKeyUp
 import chat.sphinx.wrapper.chat.isMuted
+import chat.sphinx.wrapper.chat.isPending
+import chat.sphinx.wrapper.chat.isPrivateTribe
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
@@ -98,13 +101,13 @@ actual fun Dashboard(
 
                     chatViewModel = when (chatDetailState) {
                         is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
-                            ChatContactViewModel(null, chatDetailState.contactId!!)
+                            ChatContactViewModel(null, chatDetailState.contactId!!, dashboardViewModel)
                         }
                         is ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail -> {
-                            ChatContactViewModel(chatDetailState.chatId!!, chatDetailState.contactId!!)
+                            ChatContactViewModel(chatDetailState.chatId!!, chatDetailState.contactId!!, dashboardViewModel)
                         }
                         is ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail -> {
-                            ChatTribeViewModel(chatDetailState.chatId!!)
+                            ChatTribeViewModel(chatDetailState.chatId!!, dashboardViewModel)
                         }
                         else -> {
                             null
@@ -116,7 +119,7 @@ actual fun Dashboard(
                         topBar = {
                             SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel) },
                         bottomBar = {
-                            SphinxChatDetailBottomAppBar(chatViewModel)
+                            SphinxChatDetailBottomAppBar(dashboardChat, chatViewModel)
                         }
                     ) { paddingValues ->
                         Column(
@@ -128,7 +131,7 @@ actual fun Dashboard(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             chatViewModel?.let { chatViewModel ->
-                                MessageListUI(chatViewModel)
+                                MessageListUI(chatViewModel, dashboardViewModel)
                             }
                         }
                         AttachmentPreview(
@@ -332,6 +335,7 @@ fun SphinxChatDetailTopAppBar(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SphinxChatDetailBottomAppBar(
+    dashboardChat: DashboardChat?,
     chatViewModel: ChatViewModel?
 ) {
     val scope = rememberCoroutineScope()
@@ -427,7 +431,8 @@ fun SphinxChatDetailBottomAppBar(
                                 }
                             },
                             value = chatViewModel?.editMessageState?.messageText?.value ?: "",
-                            cursorBrush = primary_blue
+                            cursorBrush = primary_blue,
+                            enabled = !(dashboardChat?.getChatOrNull()?.isPrivateTribe() == true && dashboardChat?.getChatOrNull()?.status?.isPending() == true)
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                     }

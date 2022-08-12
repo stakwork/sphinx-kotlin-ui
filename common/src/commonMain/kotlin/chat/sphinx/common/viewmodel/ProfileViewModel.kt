@@ -12,6 +12,9 @@ import chat.sphinx.utils.ServersUrlsHelper
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.toPrivatePhoto
+import chat.sphinx.wrapper.lightning.LightningNodeDescriptor
+import chat.sphinx.wrapper.lightning.VirtualLightningNodeAddress
+import chat.sphinx.wrapper.lightning.toLightningNodePubKey
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +42,15 @@ class ProfileViewModel {
 
     private inline fun setProfileState(update: ProfileState.() -> ProfileState) {
         profileState = profileState.update()
+    }
+
+    fun getNodeDescriptor(): LightningNodeDescriptor? {
+        profileState.routeHint?.let {
+            if (it.isNotEmpty()) {
+                return VirtualLightningNodeAddress("${profileState.nodePubKey}:${it}")
+            }
+        }
+        return profileState.nodePubKey.toLightningNodePubKey()
     }
 
     private fun loadProfile() {

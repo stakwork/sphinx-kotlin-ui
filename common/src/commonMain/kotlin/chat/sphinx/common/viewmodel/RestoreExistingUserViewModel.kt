@@ -101,6 +101,7 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
                         }
 
                         val relayUrl = relayDataHandler.formatRelayUrl(decryptedCode.relayUrl)
+                        SphinxContainer.networkModule.networkClient.setTorRequired(relayUrl.isOnionAddress)
 
                         var transportKey: RsaPublicKey? = null
 

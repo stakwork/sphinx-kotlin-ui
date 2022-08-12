@@ -158,7 +158,7 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
         ){
             if (viewModel.tribeDetailState.updateResponse is LoadResponse.Loading) {
                 CircularProgressIndicator(
-                    Modifier.padding(20.dp).size(40.dp),
+                    Modifier.padding(20.dp).size(20.dp),
                     color = Color.White,
                     strokeWidth = 2.dp
                 )
@@ -258,7 +258,7 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                     DropdownMenuItem(
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
-                            dashboardViewModel.toggleQRWindow(true)
+                            dashboardViewModel.toggleQRWindow(true, "TRIBE JOIN LINK", viewModel.tribeDetailState.shareTribeUrl)
                             showOptionMenu.value = false
                         }
                     ) {
@@ -312,9 +312,6 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
             }
             Spacer(modifier = Modifier.height(2.dp))
         }
-    }
-    if (dashboardViewModel.qrWindowStateFlow.collectAsState().value){
-        QRDetail(dashboardViewModel, QRCodeViewModel(viewModel.tribeDetailState.shareTribeUrl, null))
     }
 }
 

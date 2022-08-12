@@ -1,10 +1,16 @@
 package chat.sphinx.common.viewmodel.chat
 
+import androidx.annotation.ColorInt
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
+import chat.sphinx.concepts.link_preview.model.TribePreviewName
+import chat.sphinx.concepts.link_preview.model.toPreviewImageUrlOrNull
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
@@ -15,22 +21,23 @@ import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
+import chat.sphinx.utils.linkify.LinkSpec
+import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.PhotoUrl
-import chat.sphinx.wrapper.chat.Chat
-import chat.sphinx.wrapper.chat.ChatName
-import chat.sphinx.wrapper.chat.isTribe
+import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
-import chat.sphinx.wrapper.lightning.Sat
-import chat.sphinx.wrapper.lightning.toSat
+import chat.sphinx.wrapper.lightning.*
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.MessageMedia
 import chat.sphinx.wrapper.message.media.toFileName
+import chat.sphinx.wrapper.tribe.TribeJoinLink
+import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -60,7 +67,8 @@ suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
 }
 
 abstract class ChatViewModel(
-    val chatId: ChatId?
+    val chatId: ChatId?,
+    val dashboardViewModel: DashboardViewModel
 ) {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -73,6 +81,7 @@ abstract class ChatViewModel(
     val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
+    private val linkPreviewHandler =  SphinxContainer.networkModule.linkPreviewHandler
 
     val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
 
@@ -119,6 +128,19 @@ abstract class ChatViewModel(
         }
     }
 
+    private var screenInit: Boolean = false
+    fun screenInit() {
+        if (screenInit) {
+            return
+        } else {
+            screenInit = true
+        }
+
+        scope.launch(dispatchers.mainImmediate) {
+            checkChatStatus()
+        }
+    }
+
     fun cancelMessagesJob() {
         messagesLoadJob?.cancel()
     }
@@ -138,6 +160,14 @@ abstract class ChatViewModel(
             MessageListState.screenState(
                 MessageListData.EmptyMessageListData
             )
+        }
+    }
+
+    private suspend fun checkChatStatus() {
+        getChat()?.let{ chat ->
+            if (chat.isPrivateTribe() && chat.status.isPending()) {
+                toast("Waiting for admin approval", delay = 3000L)
+            }
         }
     }
 
@@ -189,12 +219,14 @@ abstract class ChatViewModel(
                     ) {
                         deleteMessage(message)
                     }
-                }
+                },
+                previewProvider = { handleLinkPreview(it) },
             )
         }
 
         MessageListState.screenState(
             MessageListData.PopulatedMessageListData(
+                chat.id,
                 chatMessages
             )
         )
@@ -371,9 +403,6 @@ abstract class ChatViewModel(
         }
     }
 
-    fun isReplying(): Boolean {
-        return editMessageState.replyToMessage.value != null
-    }
     fun onMessageFileChanged(filepath: Path) {
         editMessageState.attachmentInfo.value = AttachmentInfo(
             filePath = filepath,
@@ -519,6 +548,195 @@ abstract class ChatViewModel(
         repositoryMedia.downloadMediaIfApplicable(message, sent)
     }
 
+    private suspend fun handleLinkPreview(link: LinkSpec): ChatMessage.LinkPreview? {
+        var preview: ChatMessage.LinkPreview? = null
+
+        scope.launch(dispatchers.mainImmediate) {
+            // TODO: Implement
+            Exhaustive@
+            when (link.tag) {
+                LinkTag.LightningNodePublicKey.name, LinkTag.VirtualNodePublicKey.name -> {
+                    (link.url.toLightningNodePubKey() ?: link.url.toVirtualLightningNodeAddress())?.let { nodeDescriptor ->
+                        ((nodeDescriptor as? LightningNodePubKey) ?: (nodeDescriptor as? VirtualLightningNodeAddress)?.getPubKey())?.let { pubKey ->
+                            val existingContact: Contact? = contactRepository.getContactByPubKey(pubKey).firstOrNull()
+
+                            if (existingContact != null) {
+                                preview = ChatMessage.LinkPreview.ContactPreview(
+                                    alias = existingContact.alias,
+                                    photoUrl = existingContact.photoUrl,
+                                    showBanner = false,
+                                    lightningNodeDescriptor = nodeDescriptor
+                                )
+                            } else {
+                                preview = ChatMessage.LinkPreview.ContactPreview(
+                                    alias = null,
+                                    photoUrl = null,
+                                    showBanner = true,
+                                    lightningNodeDescriptor = nodeDescriptor
+                                )
+                            }
+                        }
+                    }
+                }
+                LinkTag.JoinTribeLink.name -> {
+                    link.url.toTribeJoinLink()?.let { tribeJoinLink ->
+                        try {
+                            val uuid = ChatUUID(tribeJoinLink.tribeUUID)
+
+                            val thisChat = getChat()
+                            if (thisChat?.uuid == uuid) {
+
+                                preview = ChatMessage.LinkPreview.TribeLinkPreview(
+                                    name = TribePreviewName(thisChat.name?.value ?: ""),
+                                    description = null,
+                                    imageUrl = thisChat.photoUrl?.toPreviewImageUrlOrNull(),
+                                    showBanner = true,
+                                    joinLink = tribeJoinLink
+                                )
+
+                            } else {
+                                val existingChat = chatRepository.getChatByUUID(uuid).firstOrNull()
+                                if (existingChat != null) {
+
+                                    preview = ChatMessage.LinkPreview.TribeLinkPreview(
+                                        name = TribePreviewName(existingChat.name?.value ?: ""),
+                                        description = null,
+                                        imageUrl = existingChat.photoUrl?.toPreviewImageUrlOrNull(),
+                                        showBanner = false,
+                                        joinLink = tribeJoinLink,
+                                    )
+
+                                } else {
+
+                                    val tribePreview = linkPreviewHandler.retrieveTribeLinkPreview(tribeJoinLink)
+
+                                    if (tribePreview != null) {
+                                        preview = ChatMessage.LinkPreview.TribeLinkPreview(
+                                            name = tribePreview.name,
+                                            description = tribePreview.description,
+                                            imageUrl = tribePreview.imageUrl,
+                                            showBanner = true,
+                                            joinLink = tribeJoinLink,
+                                        )
+                                    } // else do nothing
+                                }
+                            }
+                        } catch (_: Exception) {
+                            // no - op
+                        }
+                    }
+                }
+                LinkTag.WebURL.name -> {
+                    val htmlPreview = linkPreviewHandler.retrieveHtmlPreview(link.url)
+
+                    if (htmlPreview != null) {
+                        preview = ChatMessage.LinkPreview.HttpUrlPreview(
+                            title = htmlPreview.title,
+                            domainHost = htmlPreview.domainHost,
+                            description = htmlPreview.description,
+                            imageUrl = htmlPreview.imageUrl,
+                            favIconUrl = htmlPreview.favIconUrl,
+                            url = link.url
+                        )
+                    }
+                }
+            }
+        }.join()
+
+        return preview
+    }
+
+    fun tribeLinkClicked(link: TribeJoinLink?) {
+        scope.launch(dispatchers.mainImmediate) {
+            link?.let {
+                it.tribeUUID?.toChatUUID()?.let { chatUUID ->
+                    chatRepository.getChatByUUID(chatUUID).firstOrNull()?.let { chat ->
+                        getDashboardChatFor(null, chat)?.let { dashboardChat ->
+                            ChatDetailState.screenState(
+                                ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
+                                    chat.id,
+                                    dashboardChat
+                                )
+                            )
+                        }
+                    } ?: run {
+                        dashboardViewModel.toggleJoinTribeWindow(true, it)
+                    }
+                }
+            }
+        }
+    }
+
+    fun contactLinkClicked(link: LightningNodeDescriptor?) {
+        scope.launch(dispatchers.mainImmediate) {
+            ((link as? LightningNodePubKey) ?: (link as? VirtualLightningNodeAddress)?.getPubKey())?.let { publicKey ->
+                contactRepository.getContactByPubKey(publicKey).firstOrNull()?.let { contact ->
+                    val chat = repositoryDashboard.getConversationByContactIdFlow(contact.id).firstOrNull()
+                    chat?.let {
+                        getDashboardChatFor(contact, chat)?.let { dashboardChat ->
+                            ChatDetailState.screenState(
+                                ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
+                                    chat?.id,
+                                    contact.id,
+                                    dashboardChat
+                                )
+                            )
+                        }
+                    } ?: run {
+                        getDashboardChatFor(contact, null)?.let { dashboardChat ->
+                            ChatDetailState.screenState(
+                                ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
+                                    contact.id,
+                                    dashboardChat
+                                )
+                            )
+                        }
+                    }
+                } ?: run {
+                    dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx(link))
+                }
+            }
+        }
+    }
+
+    private suspend fun getDashboardChatFor(contact: Contact?, chat: Chat?): DashboardChat? {
+        chat?.let { nnChat ->
+            val message: Message? = nnChat.latestMessageId?.let {
+                repositoryDashboard.getMessageById(it).firstOrNull()
+            }
+
+            val owner = getOwner()
+            val color = getColorFor(contact, chat)
+            val unseenMessagesFlow = repositoryDashboard.getUnseenMessagesByChatId(chat.id)
+
+            if (nnChat.isTribe()) {
+                return DashboardChat.Active.GroupOrTribe(
+                    chat,
+                    message,
+                    owner,
+                    color,
+                    unseenMessagesFlow
+                )
+            } else {
+                contact?.let { nnContact ->
+                    return DashboardChat.Active.Conversation(
+                        chat,
+                        message,
+                        nnContact,
+                        color,
+                        unseenMessagesFlow
+                    )
+                }
+            }
+        } ?: contact?.let { nnContact ->
+            return DashboardChat.Inactive.Conversation(
+                nnContact,
+                getColorFor(nnContact, null),
+            )
+        }
+        return null
+    }
+
     fun toast(
         message: String,
         color: Color = primary_green,
@@ -547,5 +765,19 @@ abstract class ChatViewModel(
                 callback
             )
         }
+    }
+
+    @ColorInt
+    suspend fun getColorFor(
+        contact: Contact?,
+        chat: Chat?
+    ): Int? {
+        (contact?.getColorKey() ?: chat?.getColorKey())?.let { colorKey ->
+            return colorsHelper.getColorIntForKey(
+                colorKey,
+                Integer.toHexString(getRandomColorRes().hashCode())
+            )
+        }
+        return null
     }
 }

@@ -10,6 +10,7 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.ContactAlias
 import chat.sphinx.wrapper.contact.toContactAlias
+import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.lightning.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -28,6 +29,16 @@ class AddContactViewModel() : ContactViewModel() {
 
     private inline fun setContactState(update: ContactState.() -> ContactState) {
         contactState = contactState.update()
+    }
+
+    private var dataAutoFilled = false
+    fun fillPubKey(pubKey: String?) {
+        pubKey?.let { nnPubKey ->
+            if (!dataAutoFilled) {
+                dataAutoFilled = true
+                onAddressTextChanged(nnPubKey)
+            }
+        }
     }
 
     private fun checkValidInput() {

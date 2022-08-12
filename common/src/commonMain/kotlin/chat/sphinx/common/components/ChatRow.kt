@@ -28,13 +28,18 @@ import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.ChatMuted
-
 import androidx.compose.ui.text.font.FontWeight
 import chat.sphinx.common.Res
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.platform.imageResource
+import chat.sphinx.wrapper.invite.isDelivered
+import chat.sphinx.wrapper.invite.isExpired
+import chat.sphinx.wrapper.invite.isPaymentPending
+import chat.sphinx.wrapper.invite.isReady
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.util.getInitials
+import theme.badge_red
 import theme.primary_green
 
 
@@ -42,7 +47,9 @@ import theme.primary_green
 @Composable
 fun ChatRow(
     dashboardChat: DashboardChat,
-    chatListViewModel: ChatListViewModel
+    selected: Boolean,
+    chatListViewModel: ChatListViewModel,
+    dashboardViewModel: DashboardViewModel
 ) {
     val today00: DateTime by lazy {
         DateTime.getToday00()
@@ -53,49 +60,31 @@ fun ChatRow(
     }
 
     Row(
-        modifier = Modifier.clickable {
-            ChatDetailState.screenState(
-                when (dashboardChat) {
-                    is DashboardChat.Active.Conversation -> {
-                        ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
-                            dashboardChat.chat.id,
-                            dashboardChat.contact.id,
-                            dashboardChat
-                        )
+        modifier = Modifier
+            .clickable {
+                if (dashboardChat is DashboardChat.Inactive.Invite) {
+                    dashboardChat.invite?.let { invite ->
+                        if (invite.status.isReady() || invite.status.isDelivered()) {
+                            dashboardViewModel.toggleQRWindow(true, "INVITE CODE", invite.inviteString.value)
+                        } else if (invite.status.isPaymentPending()) {
+                            chatListViewModel.payForInvite(invite)
+                        } else if (invite.status.isExpired()) {
+                            chatListViewModel.deleteInvite(invite)
+                        }
                     }
-                    is DashboardChat.Active.GroupOrTribe -> {
-                        ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
-                            dashboardChat.chat.id,
-                            dashboardChat
-                        )
-                    }
-                    is DashboardChat.Inactive.Conversation -> {
-                        ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
-                            dashboardChat.contact.id,
-                            dashboardChat
-                        )
-                    }
-                    else -> ChatDetailData.EmptyChatDetailData
+                    return@clickable
+                }
+
+                chatListViewModel.chatRowSelected(dashboardChat)
+            }
+            .height(62.dp)
+            .background(
+                if (selected) {
+                    androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                } else {
+                    androidx.compose.material3.MaterialTheme.colorScheme.background
                 }
             )
-
-            if (dashboardChat is DashboardChat.Inactive.Invite) {
-//                dashboardChat.invite?.let { invite ->
-//                    if (invite.status.isReady() || invite.status.isDelivered()) {
-//                        chatListViewModel.dashboardNavigator.toQRCodeDetail(
-//                            invite.inviteString.value,
-//                            binding.root.context.getString(
-//                                R.string.invite_qr_code_header_name
-//                            )
-//                        )
-//                    } else if (invite.status.isPaymentPending()) {
-//                        chatListViewModel.payForInvite(invite)
-//                    } else if (invite.status.isExpired()) {
-//                        chatListViewModel.deleteInvite(invite)
-//                    }
-//                }
-            }
-        }.height(62.dp).background(androidx.compose.material3.MaterialTheme.colorScheme.background)
     ) {
         Row(modifier = Modifier.padding(start = 12.dp, top = 8.dp, bottom = 8.dp, end = 12.dp)) {
             Box(modifier = Modifier.size(46.dp)) {
@@ -166,19 +155,21 @@ fun ChatRow(
                                     color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                                 )
                             }
-                            (dashboardChat as? DashboardChat.Inactive.Invite)?.getInvitePrice()?.let {
-                                if (it.value > 0) {
-                                    Text(
-                                        modifier = Modifier
-                                            .background(color = primary_green, shape = RoundedCornerShape(5.dp))
-                                            .padding(4.dp, 2.dp),
-                                        text = "${it.asFormattedString(' ')}",
-                                        fontSize = 12.sp,
-                                        fontFamily = Roboto,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 1,
-                                        color = Color.White
-                                    )
+                            (dashboardChat as? DashboardChat.Inactive.Invite)?.let { dashboardChat ->
+                                dashboardChat.getInvitePrice()?.let { invitePrice ->
+                                    if (dashboardChat.invite.status.isPaymentPending() && invitePrice.value > 0) {
+                                        Text(
+                                            modifier = Modifier
+                                                .background(color = primary_green, shape = RoundedCornerShape(5.dp))
+                                                .padding(4.dp, 2.dp),
+                                            text = "${invitePrice.asFormattedString(' ')}",
+                                            fontSize = 12.sp,
+                                            fontFamily = Roboto,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            color = Color.White
+                                        )
+                                    }
                                 }
                             }
                         }

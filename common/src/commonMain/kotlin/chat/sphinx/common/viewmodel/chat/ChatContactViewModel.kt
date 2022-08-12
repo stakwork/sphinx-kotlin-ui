@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.EditMessageState
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.concepts.network.query.lightning.model.route.RouteSuccessProbabilityDto
 import chat.sphinx.concepts.network.query.lightning.model.route.isRouteAvailable
 import chat.sphinx.response.LoadResponse
@@ -23,9 +24,11 @@ import kotlinx.coroutines.flow.*
 
 class ChatContactViewModel(
     chatId: ChatId?,
-    val contactId: ContactId
+    val contactId: ContactId,
+    dashboardViewModel: DashboardViewModel
 ): ChatViewModel(
-    chatId
+    chatId,
+    dashboardViewModel
 ) {
     override val chatSharedFlow: SharedFlow<Chat?> = flow {
         chatId?.let { chatId ->

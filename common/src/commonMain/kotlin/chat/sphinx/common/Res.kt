@@ -18,11 +18,13 @@ object Res {
         const val ic_giphy =  "drawable/ic_giphy_logo_1.xml"
         const val ic_boost_green =  "drawable/ic_boost_green.xml"
         const val ic_boost_gray =  "drawable/ic_boost_gray.xml"
+        const val ic_add_contact =  "drawable/ic_add_contact.xml"
         const val ic_sent =  "drawable/ic_sent.xml"
         const val ic_received =  "drawable/ic_received.xml"
         const val ic_coin =  "drawable/ic_coin.xml"
         const val ic_qr_code =  "drawable/ic_qr_code.xml"
         const val ic_received_image_not_available =  "drawable/received_image_not_available.xml"
+        const val ic_tribe_place_holder = "drawable/ic_tribe_place_holder.xml"
         const val paid_image_blurred_placeholder =  "drawable/paid_image_blurred_placeholder.png"
         const val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"
 
