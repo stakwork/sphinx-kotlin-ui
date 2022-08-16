@@ -27,6 +27,7 @@ kotlin {
     }
     sourceSets {
         val paging_version = "3.1.0"
+        val klockVersion = "2.5.1"
 
         val commonMain by getting {
             dependencies {
@@ -38,6 +39,7 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.material3)
                 api(project(":sphinx-kotlin-core"))
+                implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
                 implementation("com.alialbaali.kamel:kamel-image:0.3.0")
                 implementation("com.google.zxing:core:3.5.0")
                 implementation("com.russhwolf:multiplatform-settings:0.8.1")

@@ -41,6 +41,7 @@ import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.ResetPinViewModel
+import chat.sphinx.common.viewmodel.TransactionsViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.PinExportKeysViewModel
 import chat.sphinx.platform.imageResource
@@ -58,6 +59,8 @@ import utils.deduceMediaType
 
 @Composable
 fun Profile(dashboardViewModel: DashboardViewModel) {
+
+    TransactionsViewModel()
 
     val viewModel = remember { ProfileViewModel() }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
