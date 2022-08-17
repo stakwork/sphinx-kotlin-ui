@@ -93,12 +93,12 @@ fun main() = application {
         }
         ScreenType.DashboardScreen -> {
 
-            WebAppBrowserWindow(
-                getPreferredWindowSize(
-                    600,
-                    600
-                )
-            )
+//            WebAppBrowserWindow(
+//                getPreferredWindowSize(
+//                    600,
+//                    600
+//                )
+//            )
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Sphinx",

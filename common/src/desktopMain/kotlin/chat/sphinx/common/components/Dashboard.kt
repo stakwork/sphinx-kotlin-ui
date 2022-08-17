@@ -44,9 +44,12 @@ import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
+import chat.sphinx.components.browser.SphinxFeedUrlViewer
+import chat.sphinx.components.browser.WebAppBrowserWindow
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.utils.onKeyUp
 import chat.sphinx.wrapper.chat.isMuted
 import chat.sphinx.wrapper.chat.isPending
@@ -199,6 +202,7 @@ fun SphinxChatDetailTopAppBar(
     chatViewModel: ChatViewModel?,
     dashboardViewModel: DashboardViewModel?
 ) {
+    val openWebView= remember { mutableStateOf(false) }
     if (dashboardChat == null) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -305,6 +309,14 @@ fun SphinxChatDetailTopAppBar(
             )
         },
         actions = {
+
+            if(SphinxFeedUrlViewer.tribeAppUrl.value?.second?.run { this.toString().isNotEmpty() } == true){
+                IconButton(onClick = {
+                    openWebView.value=openWebView.value.not()
+                }){
+                    Icon(Icons.Default.Apps,tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, contentDescription = "Apps")
+                }
+            }
             IconButton(onClick = {
                 chatViewModel?.toggleChatMuted()
             }) {
@@ -330,6 +342,16 @@ fun SphinxChatDetailTopAppBar(
             }
         }
     )
+    if(openWebView.value){
+                    WebAppBrowserWindow(
+                getPreferredWindowSize(
+                    600,
+                    600
+                ), onCloseRequest = {
+                    openWebView.value=false
+                        }
+            )
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
