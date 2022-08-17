@@ -9,9 +9,11 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.NorthEast
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.SouthWest
@@ -43,12 +45,19 @@ fun TransactionsUI(dashboardViewModel: DashboardViewModel) {
     var isOpen by remember { mutableStateOf(true) }
     val listState = rememberLazyListState()
 
-    val viewModel = remember { TransactionsViewModel()}
+    val viewModel = remember { TransactionsViewModel() }
     val transactionsList = viewModel.transactionsListStateFlow.collectAsState().value
+    val loading = viewModel.loading.collectAsState().value
+
+    val endOfListReached by remember {
+        derivedStateOf {
+            listState.isScrolledToEnd()
+        }
+    }
 
     if (isOpen) {
         Window(
-            onCloseRequest = {dashboardViewModel.toggleTransactionsWindow(false)},
+            onCloseRequest = { dashboardViewModel.toggleTransactionsWindow(false) },
             title = "Transactions",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
@@ -59,21 +68,40 @@ fun TransactionsUI(dashboardViewModel: DashboardViewModel) {
                 Box(
                     modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
                 ) {
-                    LazyColumn(
-                        state = listState,
-                        contentPadding = PaddingValues(top = 1.dp)
-                    ) {
-                        items(transactionsList) { transaction ->
-                            TransactionRow(transaction)
+                    if (viewModel.firstResponse) {
+                        LazyColumn(
+                            state = listState,
+                            contentPadding = PaddingValues(top = 1.dp)
+                        ) {
+                            items(transactionsList) { transaction ->
+                                transaction?.let {
+                                    TransactionRow(transaction)
+                                }
+                            }
+                            if (loading) {
+                                item { loadingRow() }
+                            }
                         }
+                        VerticalScrollbar(
+                            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                            adapter = rememberScrollbarAdapter(scrollState = listState)
+                        )
                     }
-                    VerticalScrollbar(
-                        modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                        adapter = rememberScrollbarAdapter(scrollState = listState)
+                    if (endOfListReached && loading) {
+                        viewModel.loadMoreTransactions()
+                    }
+                }
+            }
+            if (!viewModel.firstResponse) {
+                Box(
+                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        Modifier.size(40.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
                     )
-                    if(listState.isScrolledToEnd() && !viewModel.loading) {
-                        println("Aaaaaaaaaaaaaa")
-                    }
                 }
             }
         }
@@ -83,36 +111,35 @@ fun TransactionsUI(dashboardViewModel: DashboardViewModel) {
 @Composable
 fun TransactionRow(transaction: TransactionState) {
 
-    val background = if(transaction.transactionType is TransactionType.Incoming){
+    val background = if (transaction.transactionType is TransactionType.Incoming) {
         MaterialTheme.colorScheme.onSecondaryContainer
     } else {
         MaterialTheme.colorScheme.background
     }
 
-    val imageVector = if(transaction.transactionType is TransactionType.Incoming) {
-        Icons.Default.NorthEast
-    } else {
+    val imageVector = if (transaction.transactionType is TransactionType.Incoming) {
         Icons.Default.SouthWest
+    } else {
+        Icons.Default.NorthEast
     }
 
-    val iconColor = if(transaction.transactionType is TransactionType.Incoming) {
+    val iconColor = if (transaction.transactionType is TransactionType.Incoming) {
         primary_blue
     } else {
         primary_red
     }
 
-    val textColor = if(transaction.transactionType is TransactionType.Incoming) {
+    val textColor = if (transaction.transactionType is TransactionType.Incoming) {
         primary_blue
     } else {
         Color.Gray
     }
 
-    val dividerColor = if(transaction.transactionType is TransactionType.Incoming) {
+    val dividerColor = if (transaction.transactionType is TransactionType.Incoming) {
         MaterialTheme.colorScheme.onSurfaceVariant
     } else {
         Color.DarkGray
     }
-
 
     Box(
         modifier = Modifier.fillMaxWidth().height(80.dp).background(background),
@@ -175,7 +202,6 @@ fun TransactionRow(transaction: TransactionState) {
                     fontFamily = Roboto,
                     color = Color.LightGray,
                     modifier = Modifier.padding(end = 12.dp)
-
                 )
             }
         }
@@ -188,5 +214,20 @@ fun TransactionRow(transaction: TransactionState) {
     }
 }
 
-fun LazyListState.isScrolledToEnd(): Boolean = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
+@Composable
+fun loadingRow() {
+    Row(
+        modifier = Modifier.fillMaxWidth().height(80.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(
+            Modifier.size(30.dp),
+            color = Color.White,
+            strokeWidth = 2.dp
+        )
+    }
+}
+
+fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 

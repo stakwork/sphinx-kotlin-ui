@@ -38,24 +38,24 @@ class TransactionsViewModel {
     private val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
     private val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
 
-    private val accountOwnerStateFlow: StateFlow<Contact?>
-        get() = contactRepository.accountOwner
-
     private var page: Int = 0
-    var loading: Boolean = false
     private val itemsPerPage: Int = 50
+    var firstResponse = false
 
 
-    private val _transactionsListStateFlow: MutableStateFlow<List<TransactionState>> by lazy {
-        MutableStateFlow(listOf(TransactionState()))
+    val loading: MutableStateFlow<Boolean> = MutableStateFlow(true)
+
+    private val _transactionsListStateFlow: MutableStateFlow<List<TransactionState?>> by lazy {
+        MutableStateFlow(listOf(null))
     }
 
-    val transactionsListStateFlow: StateFlow<List<TransactionState>>
+    val transactionsListStateFlow: StateFlow<List<TransactionState?>>
         get() = _transactionsListStateFlow.asStateFlow()
 
     private fun setTransactionsListStateFlow(list: List<TransactionState>) {
         _transactionsListStateFlow.value += list
     }
+
     init {
         scope.launch(dispatchers.mainImmediate) {
             loadTransactions(
@@ -93,30 +93,25 @@ class TransactionsViewModel {
             offset = page * itemsPerPage,
             limit = itemsPerPage
         ).collect() { loadResponse ->
-            val firstPage = (page == 0)
-
             when (loadResponse) {
                 is LoadResponse.Loading -> {
-                    loading = true
-
+                    loading.value = true
                 }
                 is Response.Error -> {
-                    loading = false
+                    loading.value = false
                 }
                 is Response.Success -> {
-                    loading = false
+                    loading.value = false
                     generateTransactionsStateList(loadResponse.value, owner)
                 }
             }
         }
     }
 
-
     private suspend fun generateTransactionsStateList(
         transactions: List<TransactionDto>,
         owner: Contact
     ) {
-
         val transactionsList = mutableListOf<TransactionState>()
 
         var chatsIdsMap: MutableMap<ChatId, ArrayList<Long>> = LinkedHashMap(transactions.size)
@@ -196,13 +191,14 @@ class TransactionsViewModel {
 
         for (transaction in transactions) {
             val senderId = contactIdsMap[transaction.id]
-            val senderAlias: String? = contactAliasMap[transaction.id]?.value ?: contactsMap[senderId?.value]?.alias?.value
+            val senderAlias: String? =
+                contactAliasMap[transaction.id]?.value ?: contactsMap[senderId?.value]?.alias?.value
 
             val transactionAmount = transaction.amount.toString()
             val date = transaction.date.toDateTime().value
             val transactionDate = DateTime.getFormateeemmddhmma().format(date)
 
-            if (transaction.sender == owner.id.value){
+            if (transaction.sender == owner.id.value) {
                 transactionsList.add(
                     TransactionState(
                         amount = transactionAmount,
@@ -211,8 +207,7 @@ class TransactionsViewModel {
                         transactionType = TransactionType.Outgoing
                     )
                 )
-            }
-            else {
+            } else {
                 transactionsList.add(
                     TransactionState(
                         amount = transactionAmount,
@@ -222,35 +217,26 @@ class TransactionsViewModel {
                     )
                 )
             }
-
         }
 
         setTransactionsListStateFlow(transactionsList)
+        firstResponse = true
     }
 
     fun loadMoreTransactions() {
-        if (loading) {
+        if (loading.value) {
             return
         }
-
-        loading = true
+        loading.value = true
         page += 1
 
-//        scope.launch(dispatchers.mainImmediate) {
-//            loadTransactions(
-//                getOwner()
-//            )
-//        }
-        var list = mutableListOf<TransactionState>()
-
-        for (i in 0..50){
-            list.add(TransactionState("20", "Agosto 23", "Pepe", TransactionType.Incoming))
+        scope.launch(dispatchers.mainImmediate) {
+            loadTransactions(
+                getOwner()
+            )
         }
-        setTransactionsListStateFlow(list)
-
-        loading = false
+        loading.value = false
     }
-
 
 }
 

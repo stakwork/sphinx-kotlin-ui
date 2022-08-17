@@ -8,9 +8,7 @@ data class TransactionState(
     val date: String = "",
     val senderReceiverName: String = "",
     val transactionType: TransactionType? = null,
-    val loadTransactionsStatus: LoadResponse<Any, ResponseError>? = null
 )
-
 sealed class TransactionType() {
 
     object Outgoing: TransactionType()
