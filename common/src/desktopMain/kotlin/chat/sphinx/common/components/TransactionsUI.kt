@@ -28,6 +28,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.state.TransactionState
 import chat.sphinx.common.state.TransactionType
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.TransactionsViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
@@ -38,7 +39,7 @@ import kotlinx.coroutines.flow.collect
 
 
 @Composable
-fun TransactionsUI() {
+fun TransactionsUI(dashboardViewModel: DashboardViewModel) {
     var isOpen by remember { mutableStateOf(true) }
     val listState = rememberLazyListState()
 
@@ -47,7 +48,7 @@ fun TransactionsUI() {
 
     if (isOpen) {
         Window(
-            onCloseRequest = {},
+            onCloseRequest = {dashboardViewModel.toggleTransactionsWindow(false)},
             title = "Transactions",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
@@ -70,6 +71,9 @@ fun TransactionsUI() {
                         modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                         adapter = rememberScrollbarAdapter(scrollState = listState)
                     )
+                    if(listState.isScrolledToEnd() && !viewModel.loading) {
+                        println("Aaaaaaaaaaaaaa")
+                    }
                 }
             }
         }
@@ -184,5 +188,5 @@ fun TransactionRow(transaction: TransactionState) {
     }
 }
 
-//fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
+fun LazyListState.isScrolledToEnd(): Boolean = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
 

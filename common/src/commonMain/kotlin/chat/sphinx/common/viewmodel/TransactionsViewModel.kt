@@ -42,7 +42,7 @@ class TransactionsViewModel {
         get() = contactRepository.accountOwner
 
     private var page: Int = 0
-    private var loading: Boolean = false
+    var loading: Boolean = false
     private val itemsPerPage: Int = 50
 
 
@@ -54,7 +54,7 @@ class TransactionsViewModel {
         get() = _transactionsListStateFlow.asStateFlow()
 
     private fun setTransactionsListStateFlow(list: List<TransactionState>) {
-        _transactionsListStateFlow.value = list
+        _transactionsListStateFlow.value += list
     }
     init {
         scope.launch(dispatchers.mainImmediate) {
@@ -96,9 +96,15 @@ class TransactionsViewModel {
             val firstPage = (page == 0)
 
             when (loadResponse) {
-                is LoadResponse.Loading -> {}
-                is Response.Error -> {}
+                is LoadResponse.Loading -> {
+                    loading = true
+
+                }
+                is Response.Error -> {
+                    loading = false
+                }
                 is Response.Success -> {
+                    loading = false
                     generateTransactionsStateList(loadResponse.value, owner)
                 }
             }
@@ -219,13 +225,7 @@ class TransactionsViewModel {
 
         }
 
-        var list = mutableListOf<TransactionState>()
-
-        for (i in 0..50){
-            list.add(TransactionState("20", "Agosto 23", "Pepe", TransactionType.Incoming))
-        }
-
-        setTransactionsListStateFlow(list)
+        setTransactionsListStateFlow(transactionsList)
     }
 
     fun loadMoreTransactions() {
@@ -236,11 +236,17 @@ class TransactionsViewModel {
         loading = true
         page += 1
 
-        scope.launch(dispatchers.mainImmediate) {
-            loadTransactions(
-                getOwner()
-            )
+//        scope.launch(dispatchers.mainImmediate) {
+//            loadTransactions(
+//                getOwner()
+//            )
+//        }
+        var list = mutableListOf<TransactionState>()
+
+        for (i in 0..50){
+            list.add(TransactionState("20", "Agosto 23", "Pepe", TransactionType.Incoming))
         }
+        setTransactionsListStateFlow(list)
 
         loading = false
     }

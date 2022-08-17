@@ -183,6 +183,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 Profile(dashboardViewModel)
             }
 
+            val transactionsWindowState by dashboardViewModel.transactionsStateFlow.collectAsState()
+            if (transactionsWindowState) {
+                TransactionsUI(dashboardViewModel)
+            }
+
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
             if (tribeWindowState.first) {
                 tribeWindowState.second?.let { chatId ->

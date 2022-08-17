@@ -106,6 +106,7 @@ fun main() = application {
                         when (DashboardScreenState.screenState()) {
                             DashboardScreenType.Unlocked ->{
                                 Item("Profile", onClick = {dashboardViewModel.toggleProfileWindow(true)})
+                                Item("Transactions", onClick = {dashboardViewModel.toggleTransactionsWindow(true)})
                             }
                             else -> {}
                         }

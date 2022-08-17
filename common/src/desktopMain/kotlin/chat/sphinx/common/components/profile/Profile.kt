@@ -61,9 +61,6 @@ import utils.deduceMediaType
 @Composable
 fun Profile(dashboardViewModel: DashboardViewModel) {
 
-    TransactionsViewModel()
-    TransactionsUI()
-
     val viewModel = remember { ProfileViewModel() }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
     var isOpen by remember { mutableStateOf(true) }

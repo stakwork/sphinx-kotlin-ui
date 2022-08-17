@@ -1,10 +1,14 @@
 package chat.sphinx.common.state
 
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.ResponseError
+
 data class TransactionState(
     val amount: String = "",
     val date: String = "",
     val senderReceiverName: String = "",
-    val transactionType: TransactionType? = null
+    val transactionType: TransactionType? = null,
+    val loadTransactionsStatus: LoadResponse<Any, ResponseError>? = null
 )
 
 sealed class TransactionType() {
