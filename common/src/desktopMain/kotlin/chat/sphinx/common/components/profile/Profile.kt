@@ -33,6 +33,7 @@ import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.QRDetail
+import chat.sphinx.common.components.TransactionsUI
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.components.pin.ChangePin
@@ -61,6 +62,7 @@ import utils.deduceMediaType
 fun Profile(dashboardViewModel: DashboardViewModel) {
 
     TransactionsViewModel()
+    TransactionsUI()
 
     val viewModel = remember { ProfileViewModel() }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)

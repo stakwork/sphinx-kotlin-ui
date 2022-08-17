@@ -63,30 +63,28 @@ fun main() = application {
 //    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
-            TransactionsUI()
-
-//            Window(
-//                onCloseRequest = ::exitApplication,
-//                title = "Sphinx",
-//                state = WindowState(
-//                    position = WindowPosition.Aligned(Alignment.Center),
-//                    size = getPreferredWindowSize(800, 500)
-//                ),
-//                undecorated = true,
-//                icon = sphinxIcon,
-//            ) {
-//                AppTheme {
-//                    SphinxSplash()
-//                    LaunchedEffect(windowState) {
-//                        delay(1000L)
-//                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-//                            ContentState.onContentReady(ScreenType.DashboardScreen)
-//                        } else {
-//                            ContentState.onContentReady(ScreenType.LandingScreen)
-//                        }
-//                    }
-//                }
-//            }
+            Window(
+                onCloseRequest = ::exitApplication,
+                title = "Sphinx",
+                state = WindowState(
+                    position = WindowPosition.Aligned(Alignment.Center),
+                    size = getPreferredWindowSize(800, 500)
+                ),
+                undecorated = true,
+                icon = sphinxIcon,
+            ) {
+                AppTheme {
+                    SphinxSplash()
+                    LaunchedEffect(windowState) {
+                        delay(1000L)
+                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+                            ContentState.onContentReady(ScreenType.DashboardScreen)
+                        } else {
+                            ContentState.onContentReady(ScreenType.LandingScreen)
+                        }
+                    }
+                }
+            }
         }
         ScreenType.DashboardScreen -> {
 

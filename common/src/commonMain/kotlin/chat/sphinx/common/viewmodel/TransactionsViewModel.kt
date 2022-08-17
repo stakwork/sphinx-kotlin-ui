@@ -1,7 +1,7 @@
 package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.TransactionType
-import chat.sphinx.common.state.TransactionsState
+import chat.sphinx.common.state.TransactionState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.network.query.message.NetworkQueryMessage
 import chat.sphinx.concepts.network.query.message.model.TransactionDto
@@ -12,7 +12,6 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.chat.isTribeNotOwnedByAccount
-import chat.sphinx.wrapper.chatTimeFormat
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
@@ -21,10 +20,11 @@ import chat.sphinx.wrapper.message.SenderAlias
 import chat.sphinx.wrapper.message.toMessageUUID
 import chat.sphinx.wrapper.toDateTime
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 
@@ -33,7 +33,6 @@ class TransactionsViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val sphinxNotificationManager = createSphinxNotificationManager()
-    private val networkQueryChat: NetworkQueryChat = SphinxContainer.networkModule.networkQueryChat
     private val networkQueryMessage: NetworkQueryMessage = SphinxContainer.networkModule.networkQueryMessage
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
@@ -46,6 +45,17 @@ class TransactionsViewModel {
     private var loading: Boolean = false
     private val itemsPerPage: Int = 50
 
+
+    private val _transactionsListStateFlow: MutableStateFlow<List<TransactionState>> by lazy {
+        MutableStateFlow(listOf(TransactionState()))
+    }
+
+    val transactionsListStateFlow: StateFlow<List<TransactionState>>
+        get() = _transactionsListStateFlow.asStateFlow()
+
+    private fun setTransactionsListStateFlow(list: List<TransactionState>) {
+        _transactionsListStateFlow.value = list
+    }
     init {
         scope.launch(dispatchers.mainImmediate) {
             loadTransactions(
@@ -93,17 +103,15 @@ class TransactionsViewModel {
                 }
             }
         }
-
-
     }
 
 
     private suspend fun generateTransactionsStateList(
         transactions: List<TransactionDto>,
         owner: Contact
-    ): List<TransactionsState> {
+    ) {
 
-        val transactionsList = mutableListOf<TransactionsState>()
+        val transactionsList = mutableListOf<TransactionState>()
 
         var chatsIdsMap: MutableMap<ChatId, ArrayList<Long>> = LinkedHashMap(transactions.size)
         var originalMessageUUIDsMap: MutableMap<MessageUUID, Long> = LinkedHashMap(transactions.size)
@@ -190,7 +198,7 @@ class TransactionsViewModel {
 
             if (transaction.sender == owner.id.value){
                 transactionsList.add(
-                    TransactionsState(
+                    TransactionState(
                         amount = transactionAmount,
                         date = transactionDate,
                         senderReceiverName = senderAlias ?: "-",
@@ -200,7 +208,7 @@ class TransactionsViewModel {
             }
             else {
                 transactionsList.add(
-                    TransactionsState(
+                    TransactionState(
                         amount = transactionAmount,
                         date = transactionDate,
                         senderReceiverName = senderAlias ?: "-",
@@ -210,6 +218,33 @@ class TransactionsViewModel {
             }
 
         }
-        return transactionsList
+
+        var list = mutableListOf<TransactionState>()
+
+        for (i in 0..50){
+            list.add(TransactionState("20", "Agosto 23", "Pepe", TransactionType.Incoming))
+        }
+
+        setTransactionsListStateFlow(list)
     }
+
+    fun loadMoreTransactions() {
+        if (loading) {
+            return
+        }
+
+        loading = true
+        page += 1
+
+        scope.launch(dispatchers.mainImmediate) {
+            loadTransactions(
+                getOwner()
+            )
+        }
+
+        loading = false
+    }
+
+
 }
+

@@ -1,6 +1,6 @@
 package chat.sphinx.common.state
 
-data class TransactionsState(
+data class TransactionState(
     val amount: String = "",
     val date: String = "",
     val senderReceiverName: String = "",
