@@ -115,8 +115,8 @@ fun main() = application {
                     Menu("Sphinx") {
                         Item("About", icon = sphinxIcon, onClick = { })
                         when (DashboardScreenState.screenState()) {
-                            DashboardScreenType.Unlocked ->{
-                                Item("Profile", onClick = {dashboardViewModel.toggleProfileWindow(true)})
+                            DashboardScreenType.Unlocked -> {
+                                Item("Profile", onClick = { dashboardViewModel.toggleProfileWindow(true) })
                             }
                             else -> {}
                         }
@@ -141,7 +141,7 @@ fun main() = application {
                     )
                 }
 
-                CompositionLocalProvider(LocalSpacing provides Spacing()){
+                CompositionLocalProvider(LocalSpacing provides Spacing()) {
                     if (ContentState.sendFilePickerDialog.isAwaiting) {
                         FilePickerDialog(
                             window,
