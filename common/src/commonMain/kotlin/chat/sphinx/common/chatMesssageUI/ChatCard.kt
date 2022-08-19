@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.CustomDivider
 import chat.sphinx.common.components.MessageFile
 import chat.sphinx.common.components.MessageMediaImage
+import chat.sphinx.common.components.MessageVideo
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -47,6 +48,7 @@ import chat.sphinx.wrapper.message.MessageType
 import chat.sphinx.wrapper.message.isSphinxCallLink
 import chat.sphinx.wrapper.message.media.isPdf
 import chat.sphinx.wrapper.message.media.isUnknown
+import chat.sphinx.wrapper.message.media.isVideo
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import kotlinx.coroutines.launch
@@ -102,6 +104,11 @@ fun ChatCard(
                             )
                         } else if (media.mediaType.isUnknown || media.mediaType.isPdf) {
                             MessageFile(
+                                chatMessage = chatMessage,
+                                chatViewModel = chatViewModel,
+                            )
+                        } else if (media.mediaType.isVideo) {
+                            MessageVideo(
                                 chatMessage = chatMessage,
                                 chatViewModel = chatViewModel,
                             )
