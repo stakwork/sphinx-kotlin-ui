@@ -25,9 +25,9 @@ import javafx.event.Event
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.web.WebEngine
+import javafx.scene.web.WebEvent
 import javafx.scene.web.WebView
 import netscape.javascript.JSObject
-import utils.getRandomString
 import java.awt.BorderLayout
 import javax.swing.JPanel
 
@@ -43,8 +43,14 @@ public val sphinxHandler: SphinxHandler = SphinxHandler()
 @Composable
 fun WebAppBrowserWindow(
     windowSize: DpSize,
+    onReceive: (String, HandleResponse) -> Unit,
     onCloseRequest: (() -> Unit)? = null,
-) {
+): HandleResponse {
+    val callback = object : HandleResponse {
+        override fun handle(query: String) {
+            println("send query is $query")
+        }
+    }
     val openAuthorizeDialog = remember { mutableStateOf(false) }
     key(SphinxFeedUrlViewer.tribeAppUrl.value) {
         SphinxFeedUrlViewer.tribeAppUrl.value?.let { tribeFeedUrlPair ->
@@ -98,10 +104,8 @@ fun WebAppBrowserWindow(
                                                 }
                                             }
                                             engine.onAlert = EventHandler { ev ->
-                                                if (ev.data.contains("AUTHORIZE") && ev.data.contains("pubkey").not()) {
-                                                    openAuthorizeDialog.value = true
-                                                }
-                                                println(ev.data)
+
+                                                onReceive(ev.data, callback)
                                             }
                                             engine.loadWorker.exceptionProperty().addListener { _, _, newError ->
                                                 println("page load error : $newError")
@@ -129,7 +133,13 @@ fun WebAppBrowserWindow(
                 })
         }
     }
+    return callback
 
+
+}
+
+interface HandleResponse {
+    fun handle(query: String)
 }
 
 class Bridge {
@@ -210,8 +220,8 @@ fun openAlertDialog(engine: WebEngine?, onSubmit: ((String) -> Unit)) {
                             openDialog.value = false
                             onSubmit(text.value)
                             Platform.runLater {
-                                val randomString = getRandomString(16)
-                                engine?.executeScript("window.postMessage(\'{\"application\":\"Sphinx\",\"budget\":${text.value},\"type\":\"AUTHORIZE\",\"password\":\"$randomString\",\"pubkey\":\"$032e704939c319b79c52f4eb7d5cfa73b0dea311fd76f464c658cb4d6a9118c9f4\"}\')")
+//                                val randomString = getRandomString(16)
+//                                engine?.executeScript("window.postMessage(\'{\"application\":\"Sphinx\",\"budget\":${text.value},\"type\":\"AUTHORIZE\",\"password\":\"$randomString\",\"pubkey\":\"$032e704939c319b79c52f4eb7d5cfa73b0dea311fd76f464c658cb4d6a9118c9f4\"}\')")
                             }
 
                         }
@@ -223,4 +233,3 @@ fun openAlertDialog(engine: WebEngine?, onSubmit: ((String) -> Unit)) {
         )
     }
 }
-

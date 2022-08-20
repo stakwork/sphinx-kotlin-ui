@@ -107,7 +107,11 @@ actual fun Dashboard(
                             ChatContactViewModel(null, chatDetailState.contactId!!, dashboardViewModel)
                         }
                         is ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail -> {
-                            ChatContactViewModel(chatDetailState.chatId!!, chatDetailState.contactId!!, dashboardViewModel)
+                            ChatContactViewModel(
+                                chatDetailState.chatId!!,
+                                chatDetailState.contactId!!,
+                                dashboardViewModel
+                            )
                         }
                         is ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail -> {
                             ChatTribeViewModel(chatDetailState.chatId!!, dashboardViewModel)
@@ -120,7 +124,8 @@ actual fun Dashboard(
                     Scaffold(
                         scaffoldState = scaffoldState,
                         topBar = {
-                            SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel) },
+                            SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel)
+                        },
                         bottomBar = {
                             SphinxChatDetailBottomAppBar(dashboardChat, chatViewModel)
                         }
@@ -202,7 +207,7 @@ fun SphinxChatDetailTopAppBar(
     chatViewModel: ChatViewModel?,
     dashboardViewModel: DashboardViewModel?
 ) {
-    val openWebView= remember { mutableStateOf(false) }
+    val openWebView = remember { mutableStateOf(false) }
     if (dashboardChat == null) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -283,7 +288,12 @@ fun SphinxChatDetailTopAppBar(
                         if (nnChat.isTribe()) {
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Price per message: ${nnChat.pricePerMessage?.asFormattedString(' ', false) ?: 0} - Amount to stake: ${nnChat.escrowAmount?.asFormattedString(' ', false) ?: 0}",
+                                text = "Price per message: ${
+                                    nnChat.pricePerMessage?.asFormattedString(
+                                        ' ',
+                                        false
+                                    ) ?: 0
+                                } - Amount to stake: ${nnChat.escrowAmount?.asFormattedString(' ', false) ?: 0}",
                                 fontSize = 11.sp,
                                 color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                             )
@@ -310,11 +320,15 @@ fun SphinxChatDetailTopAppBar(
         },
         actions = {
 
-            if(SphinxFeedUrlViewer.tribeAppUrl.value?.second?.run { this.toString().isNotEmpty() } == true){
+            if (SphinxFeedUrlViewer.tribeAppUrl.value?.second?.run { this.toString().isNotEmpty() } == true) {
                 IconButton(onClick = {
-                    openWebView.value=openWebView.value.not()
-                }){
-                    Icon(Icons.Default.Apps,tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground, contentDescription = "Apps")
+                    openWebView.value = openWebView.value.not()
+                }) {
+                    Icon(
+                        Icons.Default.Apps,
+                        tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                        contentDescription = "Apps"
+                    )
                 }
             }
             IconButton(onClick = {
@@ -342,15 +356,22 @@ fun SphinxChatDetailTopAppBar(
             }
         }
     )
-    if(openWebView.value){
-                    WebAppBrowserWindow(
-                getPreferredWindowSize(
-                    600,
-                    600
-                ), onCloseRequest = {
-                    openWebView.value=false
-                        }
-            )
+
+    if (openWebView.value) {
+        WebAppBrowserWindow(
+            getPreferredWindowSize(
+                600,
+                600
+            ), onCloseRequest = {
+                openWebView.value = false
+            }, onReceive = { ev, callback ->
+                if (ev.contains("AUTHORIZE") && ev.contains("pubkey").not()) {
+//                                openAuthorizeDialog.value = true\
+                    callback.handle("send data")
+                }
+                println(ev)
+            }
+        )
     }
 }
 
@@ -454,7 +475,8 @@ fun SphinxChatDetailBottomAppBar(
                             },
                             value = chatViewModel?.editMessageState?.messageText?.value ?: "",
                             cursorBrush = primary_blue,
-                            enabled = !(dashboardChat?.getChatOrNull()?.isPrivateTribe() == true && dashboardChat?.getChatOrNull()?.status?.isPending() == true)
+                            enabled = !(dashboardChat?.getChatOrNull()
+                                ?.isPrivateTribe() == true && dashboardChat?.getChatOrNull()?.status?.isPending() == true)
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                     }
@@ -618,7 +640,10 @@ fun RestoreProgressUI(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .background(SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant), RoundedCornerShape(10.dp))
+                .background(
+                    SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant),
+                    RoundedCornerShape(10.dp)
+                )
                 .width(300.dp),
         ) {
             Spacer(modifier = Modifier.height(32.dp))
