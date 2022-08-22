@@ -365,8 +365,13 @@ fun SphinxChatDetailTopAppBar(
             ), onCloseRequest = {
                 openWebView.value = false
             }, onReceive = { ev, callback ->
+                //TODO parse EV and convert it to JSON object or something
+                //TODO switch case over EV types
+
                 if (ev.contains("AUTHORIZE") && ev.contains("pubkey").not()) {
 //                                openAuthorizeDialog.value = true\
+                    //TODO if authorize, open the alert dialog and have money
+                    //TODO then generate password and use callback
                     callback.handle("send data")
                 }
                 println(ev)
@@ -374,6 +379,50 @@ fun SphinxChatDetailTopAppBar(
         )
     }
 }
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun openAlertDialog(onSubmit: ((String) -> Unit)) {
+    val openDialog = remember { mutableStateOf(true) }
+    var text = remember { mutableStateOf("") }
+
+    if (openDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                openDialog.value = false
+            },
+            title = {
+                Text(text = "Title")
+            },
+            text = {
+                Column() {
+                    TextField(
+                        value = text.value, onValueChange = {
+                            text.value = it
+                        }
+                    )
+                }
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier.padding(all = 8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            openDialog.value = false
+                            onSubmit(text.value)
+                        }
+                    ) {
+                        Text("Dismiss")
+                    }
+                }
+            }
+        )
+    }
+}
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

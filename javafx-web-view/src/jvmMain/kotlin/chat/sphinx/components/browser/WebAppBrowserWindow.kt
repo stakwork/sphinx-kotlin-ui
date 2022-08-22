@@ -46,11 +46,6 @@ fun WebAppBrowserWindow(
     onReceive: (String, HandleResponse) -> Unit,
     onCloseRequest: (() -> Unit)? = null,
 ): HandleResponse {
-    val callback = object : HandleResponse {
-        override fun handle(query: String) {
-            println("send query is $query")
-        }
-    }
     val openAuthorizeDialog = remember { mutableStateOf(false) }
     key(SphinxFeedUrlViewer.tribeAppUrl.value) {
         SphinxFeedUrlViewer.tribeAppUrl.value?.let { tribeFeedUrlPair ->
@@ -100,12 +95,18 @@ fun WebAppBrowserWindow(
                                                     // execute other javascript / setup js callbacks fields etc..
                                                     jsObject = engine.executeScript("window") as JSObject
                                                     jsObject?.setMember("java", Bridge())
-                                                    engine.executeScript("window.addEventListener('message', (event) => {alert(JSON.stringify(event.data))})")
-                                                }
-                                            }
-                                            engine.onAlert = EventHandler { ev ->
 
-                                                onReceive(ev.data, callback)
+                                                    engine.executeScript("window.addEventListener('message', (event) => {alert(JSON.stringify(event.data))})")
+
+                                                    engine.onAlert = EventHandler { ev ->
+                                                        val callback = object : HandleResponse {
+                                                            override fun handle(query: String) {
+                                                                println("send query is $query")
+                                                            }
+                                                        }
+                                                        onReceive(ev.data, callback)
+                                                    }
+                                                }
                                             }
                                             engine.loadWorker.exceptionProperty().addListener { _, _, newError ->
                                                 println("page load error : $newError")
@@ -183,53 +184,5 @@ fun ComposeJFXPanel(
             onDestroy()
             composeWindow.remove(jPanel)
         }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun openAlertDialog(engine: WebEngine?, onSubmit: ((String) -> Unit)) {
-    val openDialog = remember { mutableStateOf(true) }
-    var text = remember { mutableStateOf("") }
-
-    if (openDialog.value) {
-        AlertDialog(
-            onDismissRequest = {
-                openDialog.value = false
-            },
-            title = {
-                Text(text = "Title")
-            },
-            text = {
-                Column() {
-                    TextField(
-                        value = text.value, onValueChange = {
-                            text.value = it
-                        }
-                    )
-                }
-            },
-            buttons = {
-                Row(
-                    modifier = Modifier.padding(all = 8.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            openDialog.value = false
-                            onSubmit(text.value)
-                            Platform.runLater {
-//                                val randomString = getRandomString(16)
-//                                engine?.executeScript("window.postMessage(\'{\"application\":\"Sphinx\",\"budget\":${text.value},\"type\":\"AUTHORIZE\",\"password\":\"$randomString\",\"pubkey\":\"$032e704939c319b79c52f4eb7d5cfa73b0dea311fd76f464c658cb4d6a9118c9f4\"}\')")
-                            }
-
-                        }
-                    ) {
-                        Text("Dismiss")
-                    }
-                }
-            }
-        )
     }
 }
