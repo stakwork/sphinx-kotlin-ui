@@ -32,7 +32,7 @@ import java.awt.BorderLayout
 import javax.swing.JPanel
 
 public class SphinxHandler {
-    public fun handle(dat: Event) {
+    public fun handle(dat: String) {
         println("message received in java land")
         println(dat)
     }
@@ -45,7 +45,7 @@ fun WebAppBrowserWindow(
     windowSize: DpSize,
     onReceive: (String, HandleResponse) -> Unit,
     onCloseRequest: (() -> Unit)? = null,
-): HandleResponse {
+) {
     val openAuthorizeDialog = remember { mutableStateOf(false) }
     key(SphinxFeedUrlViewer.tribeAppUrl.value) {
         SphinxFeedUrlViewer.tribeAppUrl.value?.let { tribeFeedUrlPair ->
@@ -90,20 +90,18 @@ fun WebAppBrowserWindow(
                                         engine.value?.let { engine ->
                                             engine.loadWorker.stateProperty().addListener { _, _, newState ->
                                                 if (newState === Worker.State.SUCCEEDED) {
+                                                    //Using bridge here
                                                     val win = root.engine.executeScript("window") as JSObject
                                                     win.setMember("sphinxApp", sphinxHandler)
-                                                    // execute other javascript / setup js callbacks fields etc..
-                                                    jsObject = engine.executeScript("window") as JSObject
-                                                    jsObject?.setMember("java", Bridge())
+                                                    engine.executeScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
 
-                                                    engine.executeScript("window.addEventListener('message', (event) => {alert(JSON.stringify(event.data))})")
-
-                                                    engine.onAlert = EventHandler { ev ->
-                                                        val callback = object : HandleResponse {
-                                                            override fun handle(query: String) {
-                                                                println("send query is $query")
-                                                            }
+                                                    val callback = object : HandleResponse {
+                                                        override fun handle(query: String) {
+                                                            println("send query is $query")
                                                         }
+                                                    }
+                                                    engine.executeScript("window.addEventListener('message', (event) => {alert(JSON.stringify(event.data))})")
+                                                    engine.onAlert = EventHandler { ev ->
                                                         onReceive(ev.data, callback)
                                                     }
                                                 }
@@ -127,27 +125,13 @@ fun WebAppBrowserWindow(
                                     }
                                 })
                         }
-                    if (openAuthorizeDialog.value)
-                        openAlertDialog(engine.value) {
-                            openAuthorizeDialog.value = false
-                        }
                 })
         }
     }
-    return callback
-
-
 }
 
 interface HandleResponse {
     fun handle(query: String)
-}
-
-class Bridge {
-    fun handleMessage(data: String) {
-        println("this is test $data")
-//        println(any)
-    }
 }
 
 @Composable
