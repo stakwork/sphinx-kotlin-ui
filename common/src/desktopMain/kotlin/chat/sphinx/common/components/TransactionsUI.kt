@@ -1,6 +1,7 @@
 package chat.sphinx.common.components
 
 import Roboto
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,21 +24,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.Res
 import chat.sphinx.common.state.TransactionState
 import chat.sphinx.common.state.TransactionType
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.TransactionsViewModel
+import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.Delay
-import theme.primary_blue
-import theme.primary_red
 import kotlinx.coroutines.flow.collect
+import theme.*
 
 
 @Composable
@@ -46,8 +50,7 @@ fun TransactionsUI(dashboardViewModel: DashboardViewModel) {
     val listState = rememberLazyListState()
 
     val viewModel = remember { TransactionsViewModel() }
-    val transactionsList = viewModel.transactionsListStateFlow.collectAsState().value
-    val loading = viewModel.loading.collectAsState().value
+    val viewState = viewModel.transactionViewState
 
     val endOfListReached by remember {
         derivedStateOf {
@@ -61,47 +64,46 @@ fun TransactionsUI(dashboardViewModel: DashboardViewModel) {
             title = "Transactions",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
-                size = getPreferredWindowSize(420, 620)
+                size = getPreferredWindowSize(420, 700)
             )
         ) {
             AppTheme {
-                Box(
-                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-                ) {
-                    if (viewModel.firstResponse) {
+                if (viewState.loadingTransactions) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            Modifier.size(40.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+                    ) {
                         LazyColumn(
                             state = listState,
                             contentPadding = PaddingValues(top = 1.dp)
                         ) {
-                            items(transactionsList) { transaction ->
+                            items(viewState.transactionsList) { transaction ->
                                 transaction?.let {
                                     TransactionRow(transaction)
                                 }
                             }
-                            if (loading) {
-                                item { loadingRow() }
+                            if (viewState.loadingMore) {
+                                item { LoadingRow() }
                             }
                         }
                         VerticalScrollbar(
                             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                             adapter = rememberScrollbarAdapter(scrollState = listState)
                         )
+                        if (endOfListReached) {
+                            viewModel.loadMoreTransactions()
+                        }
                     }
-                    if (endOfListReached && loading) {
-                        viewModel.loadMoreTransactions()
-                    }
-                }
-            }
-            if (!viewModel.firstResponse) {
-                Box(
-                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        Modifier.size(40.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
                 }
             }
         }
@@ -117,28 +119,28 @@ fun TransactionRow(transaction: TransactionState) {
         MaterialTheme.colorScheme.background
     }
 
-    val imageVector = if (transaction.transactionType is TransactionType.Incoming) {
-        Icons.Default.SouthWest
+    val arrowImage = if (transaction.transactionType is TransactionType.Incoming) {
+        imageResource(Res.drawable.ic_transaction_payment_received)
     } else {
-        Icons.Default.NorthEast
+        imageResource(Res.drawable.ic_transaction_payment_sent)
     }
 
     val iconColor = if (transaction.transactionType is TransactionType.Incoming) {
-        primary_blue
+        MaterialTheme.colorScheme.inverseSurface
     } else {
-        primary_red
+        secondary_red
     }
 
     val textColor = if (transaction.transactionType is TransactionType.Incoming) {
-        primary_blue
+        MaterialTheme.colorScheme.inverseSurface
     } else {
-        Color.Gray
+        wash_out_received
     }
 
     val dividerColor = if (transaction.transactionType is TransactionType.Incoming) {
         MaterialTheme.colorScheme.onSurfaceVariant
     } else {
-        Color.DarkGray
+        light_divider
     }
 
     Box(
@@ -148,21 +150,28 @@ fun TransactionRow(transaction: TransactionState) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Icon(
-                imageVector = imageVector,
-                contentDescription = "Outgoing",
-                tint = iconColor,
-                modifier = Modifier.padding(start = 18.dp),
-            )
-            Spacer(modifier = Modifier.width(32.dp))
-
-            Icon(
-                Icons.Default.Receipt,
-                contentDescription = "Receipt",
-                tint = textColor,
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-
+            Box(
+                modifier = Modifier.width(60.dp).fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = arrowImage,
+                    contentDescription = "Arrow",
+                    modifier = Modifier.size(12.dp),
+                    colorFilter = ColorFilter.tint(color = iconColor)
+                )
+            }
+            Box(
+                modifier = Modifier.width(45.dp).fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = imageResource(Res.drawable.ic_transaction_item),
+                    contentDescription = "Receipt",
+                    modifier = Modifier.size(17.dp),
+                    colorFilter = ColorFilter.tint(color = textColor)
+                )
+            }
             Text(
                 text = transaction.senderReceiverName,
                 maxLines = 1,
@@ -182,6 +191,7 @@ fun TransactionRow(transaction: TransactionState) {
                         fontSize = 14.sp,
                         maxLines = 1,
                         fontFamily = Roboto,
+                        fontWeight = FontWeight.Medium,
                         color = Color.White,
                     )
                     Text(
@@ -200,7 +210,8 @@ fun TransactionRow(transaction: TransactionState) {
                     fontSize = 10.sp,
                     maxLines = 1,
                     fontFamily = Roboto,
-                    color = Color.LightGray,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(end = 12.dp)
                 )
             }
@@ -215,16 +226,24 @@ fun TransactionRow(transaction: TransactionState) {
 }
 
 @Composable
-fun loadingRow() {
+fun LoadingRow() {
     Row(
         modifier = Modifier.fillMaxWidth().height(80.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
-            Modifier.size(30.dp),
-            color = Color.White,
+            Modifier.size(25.dp),
+            color = MaterialTheme.colorScheme.onBackground,
             strokeWidth = 2.dp
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "Loading more...",
+            fontSize = 15.sp,
+            maxLines = 1,
+            fontFamily = Roboto,
+            color = MaterialTheme.colorScheme.onBackground,
         )
     }
 }

@@ -73,6 +73,7 @@ val primary_blue = Color(0xFF618AFF)
 val wash_out_received = Color(0xFF556171)
 val wash_out_send = Color(0xFF829CB9)
 val sphinx_action_menu = Color(0xFF909BAA)
+val secondary_red = Color(0xFFFF8F80)
 
 
 val randomColor1 = Color(0xFF7077FF)

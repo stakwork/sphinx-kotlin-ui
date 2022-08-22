@@ -14,12 +14,14 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatAlias
 import chat.sphinx.wrapper.chat.isTribeOwnedByAccount
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.eeemmddhmma
+import chat.sphinx.wrapper.localDateTimeString
 import chat.sphinx.wrapper.meme_server.PublicAttachmentInfo
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
@@ -59,12 +61,13 @@ class TribeDetailViewModel(
                         currentChat = chat
                         val tribeOwner = chat.isTribeOwnedByAccount(owner.nodePubKey)
                         val shareTribeUrl = "sphinx.chat://?action=tribe&uuid=${chat.uuid.value}&host=${chat.host?.value}"
+                        val createdAtDate = chat.createdAt.localDateTimeString(DateTime.getFormateeemmddhmma())
 
                         setTribeDetailState {
                             copy(
                                 tribeName = chat.name?.value ?: "",
                                 tribePhotoUrl = chat.photoUrl,
-                                createDate = "Created on ${chat.createdAt.eeemmddhmma()}",
+                                createDate = "Created on $createdAtDate",
                                 tribeConfigurations = "Price per message: ${chat.pricePerMessage?.value ?: 0L} sat" + " - Amount to stake: ${chat.escrowAmount?.value ?: 0L} sat ",
                                 userAlias = chat.myAlias?.value ?: owner.alias?.value ?: "",
                                 userPicture = null,
