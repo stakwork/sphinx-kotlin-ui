@@ -29,6 +29,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.chat.AttachmentPreview
 import chat.sphinx.common.components.menu.ChatAction
@@ -37,9 +40,13 @@ import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
+import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+
+import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
+import chat.sphinx.components.browser.HandleScript
 import chat.sphinx.components.browser.SphinxFeedUrlViewer
 import chat.sphinx.components.browser.WebAppBrowserWindow
 import chat.sphinx.platform.imageResource
@@ -66,7 +73,10 @@ import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
 import theme.primary_blue
 import utils.AnimatedContainer
+import utils.getRandomString
 import java.awt.Cursor
+import kotlinx.serialization.*
+import kotlinx.serialization.json.*
 
 @OptIn(ExperimentalComposeUiApi::class)
 private fun Modifier.cursorForHorizontalResize(): Modifier =
@@ -83,7 +93,7 @@ actual fun Dashboard(
 ) {
     val splitterState = rememberSplitPaneState()
     var chatViewModel: ChatViewModel? = null
-
+//        val profileViewModel = ProfileViewModel()
     when (DashboardScreenState.screenState()) {
         DashboardScreenType.Unlocked -> {
 
@@ -206,9 +216,12 @@ actual fun Dashboard(
 fun SphinxChatDetailTopAppBar(
     dashboardChat: DashboardChat?,
     chatViewModel: ChatViewModel?,
-    dashboardViewModel: DashboardViewModel?
+    dashboardViewModel: DashboardViewModel?,
 ) {
     val openWebView = remember { mutableStateOf(false) }
+    var webBrowserCallback = remember { mutableStateOf<HandleScript?>(null) }
+    val openAuthorizeDialog = remember { mutableStateOf(false) }
+
     if (dashboardChat == null) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -367,17 +380,44 @@ fun SphinxChatDetailTopAppBar(
             ), onCloseRequest = {
                 openWebView.value = false
             }, onReceive = { jsonRequest, executionCallback ->
-                val request: WebRequest = Json.decodeFromString<WebRequest> (jsonRequest)
-                when(request.type) {
-                    "AUTHORIZE" -> {
-                        if (jsonRequest.contains("pubkey").not()) {
-                            executionCallback.runScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
+                try {
+                    val request: WebRequest = Json.decodeFromString(jsonRequest)
+                    webBrowserCallback.value=executionCallback
+                    when(request.type) {
+                        "AUTHORIZE" -> {
+                            if (jsonRequest.contains("pubkey").not()) {
+                                openAuthorizeDialog.value=true
+//                            executionCallback.runScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
+                            }
                         }
+
                     }
+                }catch (e:Exception){
+                    println(e.message)
                 }
             }
         )
     }
+    if (openAuthorizeDialog.value)
+        Window(
+            onCloseRequest = {},
+            title = "Sphinx",
+            state = WindowState(
+                position = WindowPosition.Aligned(Alignment.Center),
+                size = getPreferredWindowSize(300, 200)
+            ),
+        ) {
+            openAlertDialog { amount ->
+                val authoriseDataModel by lazy {
+                    AuthoriseDataModel(
+                        amount = amount,
+                        password = getRandomString(16),
+                        nodePubKey = ""
+                    )
+                }
+                webBrowserCallback.value?.runScript(authoriseDataModel.toJSScript())
+            }
+        }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -720,3 +760,6 @@ fun RestoreProgressUI(
         }
     }
 }
+data class AuthoriseDataModel(val password:String,val nodePubKey:String?,val amount:String?)
+
+fun AuthoriseDataModel.toJSScript()="window.postMessage({\"application\":\"Sphinx\",\"budget\":$amount,\"type\":\"AUTHORIZE\",\"password\":\"$password\",\"pubkey\":\"$nodePubKey\"})"
