@@ -46,59 +46,68 @@ fun MessageVideo(
 
     val topPadding = if (chatMessage.message.isPaidMessage && chatMessage.isSent) 44.dp else 12.dp
 
-    LaunchedEffect(url) {
-        if (localFilepath.value == null) {
-            url?.let { mediaURL ->
-                try {
-                    urlAndMessageMedia.second?.retrieveRemoteMediaInputStream(
-                        mediaURL,
-                        chatViewModel.memeServerTokenHandler,
-                        chatViewModel.memeInputStreamHandler
-                    )?.let { videoInputStream ->
-                        mediaCacheHandler.createVideoFile("mp4").let { videoFilepath ->
-                            videoFilepath.toFile().outputStream().use { fileOutputStream ->
-                                videoInputStream.copyTo(fileOutputStream)
+//    LaunchedEffect(url) {
+//        if (localFilepath.value == null) {
+//            url?.let { mediaURL ->
+//                try {
+//                    urlAndMessageMedia.second?.retrieveRemoteMediaInputStream(
+//                        mediaURL,
+//                        chatViewModel.memeServerTokenHandler,
+//                        chatViewModel.memeInputStreamHandler
+//                    )?.let { videoInputStream ->
+//                        mediaCacheHandler.createVideoFile("mp4").let { videoFilepath ->
+//                            videoFilepath.toFile().outputStream().use { fileOutputStream ->
+//                                videoInputStream.copyTo(fileOutputStream)
+//                                chatViewModel.messageRepository.messageMediaUpdateLocalFile(
+//                                    message,
+//                                    videoFilepath
+//                                )
+//                                localFilepath.value = videoFilepath
+//                            }
+//                        }
+//                    }
+//                } catch (e: Exception) {
+//                    videoLoadError.value = true
+//                }
+//            }
+//        }
+//    }
 
-                                chatViewModel.messageRepository.messageMediaUpdateLocalFile(
-                                    message,
-                                    videoFilepath
-                                )
-                                localFilepath.value = videoFilepath
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    videoLoadError.value = true
-                }
-            }
-        }
-    }
-
-    if (message.isPaidPendingMessage) {
+    if (message.isPaidPendingMessage && chatMessage.isReceived) {
         PaidVideoOverlay()
     } else {
-        Box(
-            modifier = Modifier.height(250.dp).width(250.dp),
-            contentAlignment = Alignment.Center
-        )
-        {
-            Surface(
-                color = Color.Black.copy(alpha = 0.6f),
-                modifier = Modifier.fillMaxSize()
+
+        if (localFilepath.value != null) {
+            Box(
+                modifier = Modifier.height(250.dp).width(250.dp),
+                contentAlignment = Alignment.Center
             )
             {
-                Image(
-                    painter = imageResource(Res.drawable.landing_page_image),
-                    contentDescription = "",
+                Surface(
+                    color = Color.Black.copy(alpha = 0.6f),
+                    modifier = Modifier.fillMaxSize()
+                )
+                {
+                    Image(
+                        painter = imageResource(Res.drawable.landing_page_image),
+                        contentDescription = "",
+                    )
+                }
+                Icon(
+                    Icons.Default.PlayCircle,
+                    contentDescription = "Play Button",
+                    tint = Color.White,
+                    modifier = Modifier.size(80.dp)
                 )
             }
-            Icon(
-                Icons.Default.PlayCircle,
-                contentDescription = "Play Button",
-                tint = Color.White,
-                modifier = Modifier.size(80.dp)
+        } else if (videoLoadError.value) {
+            Image(
+                painter = imageResource(Res.drawable.ic_received_image_not_available),
+                contentDescription = "",
+                modifier = Modifier.aspectRatio(1f)
             )
         }
+
     }
 }
 
