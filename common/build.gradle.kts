@@ -69,6 +69,7 @@ kotlin {
                 api(compose.desktop.common)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 api(compose.desktop.components.splitPane)
+                implementation("uk.co.caprica:vlcj:4.7.0")
             }
         }
         val desktopTest by getting

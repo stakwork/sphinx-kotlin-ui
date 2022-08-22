@@ -68,7 +68,7 @@ fun MessageMediaImage(
     if (
         message.isPaidPendingMessage && isReceived
     ) {
-        PaidImageOverlay(modifier, isReplyView)
+        PaidVideoOverlay(modifier, isReplyView)
     } else {
         LaunchedEffect(url) {
             if (localFilepath.value == null) {
@@ -105,7 +105,7 @@ fun MessageMediaImage(
                     fullScreenImageState.value = localFilepath.value
                 },
                 effect = {
-                    ImageLoadingView(modifier)
+                    VideoLoadingView(modifier)
                 },
                 contentScale = contentScale
             )
@@ -123,13 +123,13 @@ fun MessageMediaImage(
                 modifier = Modifier.size(29.dp).padding(2.dp)
             )
         } else {
-            ImageLoadingView(modifier)
+            VideoLoadingView(modifier)
         }
     }
 }
 
 @Composable
-fun ImageLoadingView(
+fun VideoLoadingView(
     modifier: Modifier,
 ) {
     Box(
@@ -149,7 +149,7 @@ fun ImageLoadingView(
 }
 
 @Composable
-fun PaidImageOverlay(
+fun PaidVideoOverlay(
     modifier: Modifier,
     isReplyView: Boolean = false
 ) {
