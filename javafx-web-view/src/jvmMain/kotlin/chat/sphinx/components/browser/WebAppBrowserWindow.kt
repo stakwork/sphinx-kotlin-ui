@@ -92,12 +92,14 @@ fun WebAppBrowserWindow(
                                                     val callback = object : HandleScript {
                                                         override fun runScript(query: String) {
                                                             Platform.runLater {
+                                                                println("query to execute $query")
                                                                 engine.executeScript(query)
                                                             }
                                                         }
                                                     }
                                                     engine.executeScript(initialScript)
                                                     engine.onAlert = EventHandler { ev ->
+                                                        println("data received ${ev.data}")
                                                         onReceive(ev.data, callback)
                                                     }
                                                 }

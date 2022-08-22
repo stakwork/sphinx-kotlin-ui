@@ -380,20 +380,15 @@ fun SphinxChatDetailTopAppBar(
             ), onCloseRequest = {
                 openWebView.value = false
             }, onReceive = { jsonRequest, executionCallback ->
-                try {
-                    val request: WebRequest = Json.decodeFromString(jsonRequest)
-                    webBrowserCallback.value=executionCallback
-                    when(request.type) {
-                        "AUTHORIZE" -> {
-                            if (jsonRequest.contains("pubkey").not()) {
-                                openAuthorizeDialog.value=true
-//                            executionCallback.runScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
-                            }
+                val request: WebRequest = Json.decodeFromString(jsonRequest)
+                webBrowserCallback.value=executionCallback
+                when(request.type) {
+                    "AUTHORIZE" -> {
+                        if (jsonRequest.contains("pubkey").not()) {
+                            openAuthorizeDialog.value=true
                         }
-
                     }
-                }catch (e:Exception){
-                    println(e.message)
+
                 }
             }
         )
