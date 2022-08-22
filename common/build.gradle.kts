@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.0.1"
+    kotlin("plugin.serialization") version "1.6.10"
 
 }
 
@@ -42,6 +43,7 @@ kotlin {
                 implementation("com.google.zxing:core:3.5.0")
                 implementation("com.russhwolf:multiplatform-settings:0.8.1")
                 implementation("org.cryptonode.jncryptor:jncryptor:1.2.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
 //                implementation ("com.google.accompanist:accompanist-pager:0.23.1")
 //                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
 //                implementation ("com.google.accompanist:accompanist-flowlayout:0.24.12-rc")

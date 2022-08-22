@@ -2,7 +2,6 @@ package chat.sphinx.components.browser
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
@@ -12,7 +11,6 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
@@ -21,20 +19,17 @@ import com.sun.javafx.application.PlatformImpl
 import javafx.application.Platform
 import javafx.concurrent.Worker
 import javafx.embed.swing.JFXPanel
-import javafx.event.Event
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.web.WebEngine
-import javafx.scene.web.WebEvent
 import javafx.scene.web.WebView
 import netscape.javascript.JSObject
 import java.awt.BorderLayout
 import javax.swing.JPanel
 
 public class SphinxHandler {
-    public fun handle(dat: String) {
-        println("message received in java land")
-        println(dat)
+    public fun handle(message: String) {
+        println("message received through bridge $message")
     }
 }
 
@@ -42,8 +37,9 @@ public val sphinxHandler: SphinxHandler = SphinxHandler()
 
 @Composable
 fun WebAppBrowserWindow(
+    initialScript: String,
     windowSize: DpSize,
-    onReceive: (String, HandleResponse) -> Unit,
+    onReceive: (String, HandleScript) -> Unit,
     onCloseRequest: (() -> Unit)? = null,
 ) {
     val openAuthorizeDialog = remember { mutableStateOf(false) }
@@ -79,10 +75,7 @@ fun WebAppBrowserWindow(
                                 composeWindow = window,
                                 jfxPanel = jfxPanel,
                                 onCreate = {
-                                    println("I am testing 123232131312")
                                     Platform.runLater {
-
-                                        println("I am testing finally main method   ")
                                         val root = WebView()
                                         engine.value = root.engine
 //                                    engine.userAgent = "Sphinx"
@@ -91,16 +84,17 @@ fun WebAppBrowserWindow(
                                             engine.loadWorker.stateProperty().addListener { _, _, newState ->
                                                 if (newState === Worker.State.SUCCEEDED) {
                                                     //Using bridge here
-                                                    val win = root.engine.executeScript("window") as JSObject
-                                                    win.setMember("sphinxApp", sphinxHandler)
-                                                    engine.executeScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
+//                                                    val win = root.engine.executeScript("window") as JSObject
+//                                                    win.setMember("sphinxApp", sphinxHandler)
+//                                                    engine.executeScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
 
-                                                    val callback = object : HandleResponse {
-                                                        override fun handle(query: String) {
-                                                            println("send query is $query")
+                                                    val callback = object : HandleScript {
+                                                        override fun runScript(script: String) {
+                                                            println("script to run is $script")
+                                                            engine.executeScript(script)
                                                         }
                                                     }
-                                                    engine.executeScript("window.addEventListener('message', (event) => {alert(JSON.stringify(event.data))})")
+                                                    engine.executeScript(initialScript)
                                                     engine.onAlert = EventHandler { ev ->
                                                         onReceive(ev.data, callback)
                                                     }
@@ -110,14 +104,12 @@ fun WebAppBrowserWindow(
                                                 println("page load error : $newError")
                                             }
                                             jfxPanel.scene = scene
-                                            println("I am reached here")
                                             engine.load("https://temp-sphinx-rahul.web.app/") // can be a html document from resources ..
                                             engine.setOnError { error -> println("onError : $error") }
                                         }
                                     }
                                 }, onDestroy = {
                                     Platform.runLater {
-                                        println("I am being destroyed")
                                         jsObject?.let { jsObj ->
                                             // clean up code for more complex implementations i.e. removing javascript callbacks etc..
                                             jsObj.removeMember("java")
@@ -130,8 +122,8 @@ fun WebAppBrowserWindow(
     }
 }
 
-interface HandleResponse {
-    fun handle(query: String)
+interface HandleScript {
+    fun runScript(query: String)
 }
 
 @Composable

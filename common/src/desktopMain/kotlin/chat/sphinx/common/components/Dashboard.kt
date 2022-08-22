@@ -33,9 +33,6 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.chat.AttachmentPreview
 import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.components.tribe.JoinTribeView
-import chat.sphinx.common.components.tribe.TribeDetailView
-import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -43,7 +40,6 @@ import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.components.browser.SphinxFeedUrlViewer
 import chat.sphinx.components.browser.WebAppBrowserWindow
 import chat.sphinx.platform.imageResource
@@ -63,6 +59,8 @@ import theme.place_holder_text
 import theme.primary_green
 import theme.sphinx_orange
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
@@ -73,6 +71,9 @@ import java.awt.Cursor
 @OptIn(ExperimentalComposeUiApi::class)
 private fun Modifier.cursorForHorizontalResize(): Modifier =
     pointerHoverIcon(PointerIcon(Cursor(Cursor.E_RESIZE_CURSOR)))
+
+@kotlinx.serialization.Serializable
+class WebRequest(val application:String,val type:String)
 
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
@@ -359,22 +360,21 @@ fun SphinxChatDetailTopAppBar(
 
     if (openWebView.value) {
         WebAppBrowserWindow(
+            "window.addEventListener('message', (event) => {alert(JSON.stringify(event.data))})",
             getPreferredWindowSize(
                 600,
                 600
             ), onCloseRequest = {
                 openWebView.value = false
-            }, onReceive = { ev, callback ->
-                //TODO parse EV and convert it to JSON object or something
-                //TODO switch case over EV types
-
-                if (ev.contains("AUTHORIZE") && ev.contains("pubkey").not()) {
-//                                openAuthorizeDialog.value = true\
-                    //TODO if authorize, open the alert dialog and have money
-                    //TODO then generate password and use callback
-                    callback.handle("send data")
+            }, onReceive = { jsonRequest, executionCallback ->
+                val request: WebRequest = Json.decodeFromString<WebRequest> (jsonRequest)
+                when(request.type) {
+                    "AUTHORIZE" -> {
+                        if (jsonRequest.contains("pubkey").not()) {
+                            executionCallback.runScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
+                        }
+                    }
                 }
-                println(ev)
             }
         )
     }
