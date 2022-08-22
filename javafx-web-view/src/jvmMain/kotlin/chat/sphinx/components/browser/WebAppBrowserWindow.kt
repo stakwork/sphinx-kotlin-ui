@@ -55,10 +55,10 @@ fun WebAppBrowserWindow(
             Window(
                 title = tribeFeedUrlPair.first,
                 resizable = false,
-                state = WindowState(
-                    placement = WindowPlacement.Floating,
-                    size = windowSize
-                ),
+//                state = WindowState(
+//                    placement = WindowPlacement.Floating,
+//                    size = windowSize
+//                ),
                 onCloseRequest = {
                     PlatformImpl.removeListener(finishListener)
                     onCloseRequest?.invoke()
@@ -88,10 +88,12 @@ fun WebAppBrowserWindow(
 //                                                    win.setMember("sphinxApp", sphinxHandler)
 //                                                    engine.executeScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
 
+
                                                     val callback = object : HandleScript {
-                                                        override fun runScript(script: String) {
-                                                            println("script to run is $script")
-                                                            engine.executeScript(script)
+                                                        override fun runScript(query: String) {
+                                                            Platform.runLater {
+                                                                engine.executeScript(query)
+                                                            }
                                                         }
                                                     }
                                                     engine.executeScript(initialScript)
@@ -124,6 +126,7 @@ fun WebAppBrowserWindow(
 
 interface HandleScript {
     fun runScript(query: String)
+
 }
 
 @Composable
@@ -162,3 +165,4 @@ fun ComposeJFXPanel(
         }
     }
 }
+
