@@ -33,6 +33,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.browser.AuthorizeBrowserDialog
 import chat.sphinx.common.components.chat.AttachmentPreview
 import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
@@ -83,7 +84,7 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
     pointerHoverIcon(PointerIcon(Cursor(Cursor.E_RESIZE_CURSOR)))
 
 @kotlinx.serialization.Serializable
-class WebRequest(val application:String,val type:String)
+class WebRequest(val application: String, val type: String)
 
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
@@ -381,11 +382,11 @@ fun SphinxChatDetailTopAppBar(
                 openWebView.value = false
             }, onReceive = { jsonRequest, executionCallback ->
                 val request: WebRequest = Json.decodeFromString(jsonRequest)
-                webBrowserCallback.value=executionCallback
-                when(request.type) {
+                webBrowserCallback.value = executionCallback
+                when (request.type) {
                     "AUTHORIZE" -> {
                         if (jsonRequest.contains("pubkey").not()) {
-                            openAuthorizeDialog.value=true
+                            openAuthorizeDialog.value = true
                         }
                     }
 
@@ -402,15 +403,20 @@ fun SphinxChatDetailTopAppBar(
                 size = getPreferredWindowSize(300, 200)
             ),
         ) {
-            openAlertDialog { amount ->
+            AuthorizeBrowserDialog(onClose = {
+                openAuthorizeDialog.value = false
+            }) { amount ->
                 val authoriseDataModel by lazy {
                     AuthoriseDataModel(
                         amount = amount,
                         password = getRandomString(16),
-                        nodePubKey = ""
+                        nodePubKey = null
                     )
                 }
-                webBrowserCallback.value?.runScript(authoriseDataModel.toJSScript())
+                chatViewModel?.scope?.launch {
+                    val nodePubKey = chatViewModel.getContact()?.nodePubKey?.value
+                    webBrowserCallback.value?.runScript(authoriseDataModel.copy(nodePubKey = nodePubKey).toJSScript())
+                }
             }
         }
 }
@@ -755,6 +761,8 @@ fun RestoreProgressUI(
         }
     }
 }
-data class AuthoriseDataModel(val password:String,val nodePubKey:String?,val amount:String?)
 
-fun AuthoriseDataModel.toJSScript()="window.postMessage({\"application\":\"Sphinx\",\"budget\":$amount,\"type\":\"AUTHORIZE\",\"password\":\"$password\",\"pubkey\":\"$nodePubKey\"})"
+data class AuthoriseDataModel(val password: String, val nodePubKey: String?, val amount: String?)
+
+fun AuthoriseDataModel.toJSScript() =
+    "window.postMessage({\"application\":\"Sphinx\",\"budget\":$amount,\"type\":\"AUTHORIZE\",\"password\":\"$password\",\"pubkey\":\"$nodePubKey\"})"
