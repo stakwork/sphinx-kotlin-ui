@@ -29,6 +29,7 @@ class ChatMessage(
     val boostMessage: () -> Unit,
     val flagMessage: () -> Unit,
     val deleteMessage: () -> Unit,
+    val isSeparator: Boolean = false,
     private val previewProvider: suspend (link: LinkSpec) -> LinkPreview?,
 ) {
 

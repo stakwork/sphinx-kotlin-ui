@@ -199,22 +199,20 @@ abstract class ChatViewModel(
             val previousMessage: Message? = if (index > 0) messages[index - 1] else null
             val nextMessage: Message? = if (index < messages.size - 1) messages[index + 1] else null
 
-            if(previousMessage == null || message.date.isDifferentDayThan(previousMessage.date)){
+            if (previousMessage == null || message.date.isDifferentDayThan(previousMessage.date)) {
                 ChatMessage(
                     chat,
                     contact,
                     message,
                     colors,
-                    accountOwner = {owner},
-                    boostMessage = {
-                        boostMessage(chat, message.uuid)
-                    },
+                    isSeparator = true,
+                    accountOwner = { owner },
+                    boostMessage = {},
                     flagMessage = {},
                     deleteMessage = {},
                     previewProvider = { handleLinkPreview(it) },
                 )
             } else {
-
                 ChatMessage(
                     chat,
                     contact,
