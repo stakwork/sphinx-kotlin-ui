@@ -17,11 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.MessageMediaImage
+import chat.sphinx.common.components.MessageVideo
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.chat.isTribe
+import chat.sphinx.wrapper.message.media.isImage
+import chat.sphinx.wrapper.message.media.isVideo
 import chat.sphinx.wrapper.util.getInitials
 import utils.conditional
 
@@ -112,17 +115,23 @@ fun DirectPaymentUI(
                 )
             }
         }
-        chatMessage.message.messageMedia?.let {
+        chatMessage.message.messageMedia?.let { media ->
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
             ) {
-
-                MessageMediaImage(
-                    chatMessage,
-                    chatViewModel = chatViewModel,
-                    modifier = Modifier.wrapContentHeight().fillMaxWidth()
-                )
-
+                if (media.mediaType.isImage) {
+                    MessageMediaImage(
+                        chatMessage,
+                        chatViewModel = chatViewModel,
+                        modifier = Modifier.wrapContentHeight().fillMaxWidth()
+                    )
+                }
+                else if (media.mediaType.isVideo) {
+                    MessageVideo(
+                        chatMessage,
+                        chatViewModel
+                    )
+                }
             }
         }
         if (chatMessage.message.messageMedia == null)

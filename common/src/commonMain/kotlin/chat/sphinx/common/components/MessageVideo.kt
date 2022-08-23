@@ -44,55 +44,51 @@ fun MessageVideo(
     val url = urlAndMessageMedia?.first
     val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
 
-    val topPadding = if (chatMessage.message.isPaidMessage && chatMessage.isSent) 44.dp else 12.dp
-
-//    LaunchedEffect(url) {
-//        if (localFilepath.value == null) {
-//            url?.let { mediaURL ->
-//                try {
-//                    urlAndMessageMedia.second?.retrieveRemoteMediaInputStream(
-//                        mediaURL,
-//                        chatViewModel.memeServerTokenHandler,
-//                        chatViewModel.memeInputStreamHandler
-//                    )?.let { videoInputStream ->
-//                        mediaCacheHandler.createVideoFile("mp4").let { videoFilepath ->
-//                            videoFilepath.toFile().outputStream().use { fileOutputStream ->
-//                                videoInputStream.copyTo(fileOutputStream)
-//                                chatViewModel.messageRepository.messageMediaUpdateLocalFile(
-//                                    message,
-//                                    videoFilepath
-//                                )
-//                                localFilepath.value = videoFilepath
-//                            }
-//                        }
-//                    }
-//                } catch (e: Exception) {
-//                    videoLoadError.value = true
-//                }
-//            }
-//        }
-//    }
 
     if (message.isPaidPendingMessage && chatMessage.isReceived) {
         PaidVideoOverlay()
     } else {
-
+        LaunchedEffect(url) {
+            if (localFilepath.value == null) {
+                url?.let { mediaURL ->
+                    try {
+                        urlAndMessageMedia.second?.retrieveRemoteMediaInputStream(
+                            mediaURL,
+                            chatViewModel.memeServerTokenHandler,
+                            chatViewModel.memeInputStreamHandler
+                        )?.let { videoInputStream ->
+                            mediaCacheHandler.createVideoFile("mp4").let { videoFilepath ->
+                                videoFilepath.toFile().outputStream().use { fileOutputStream ->
+                                    videoInputStream.copyTo(fileOutputStream)
+                                    chatViewModel.messageRepository.messageMediaUpdateLocalFile(
+                                        message,
+                                        videoFilepath
+                                    )
+                                    localFilepath.value = videoFilepath
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        videoLoadError.value = true
+                    }
+                }
+            }
+        }
         if (localFilepath.value != null) {
             Box(
-                modifier = Modifier.height(250.dp).width(250.dp),
+                modifier = Modifier.height(250.dp).fillMaxWidth(),
                 contentAlignment = Alignment.Center
             )
             {
+                Image(
+                    painter = imageResource(Res.drawable.existing_user_image),
+                    contentDescription = "",
+                )
                 Surface(
-                    color = Color.Black.copy(alpha = 0.6f),
+                    color = Color.Black.copy(alpha = 0.5f),
                     modifier = Modifier.fillMaxSize()
                 )
-                {
-                    Image(
-                        painter = imageResource(Res.drawable.landing_page_image),
-                        contentDescription = "",
-                    )
-                }
+                {}
                 Icon(
                     Icons.Default.PlayCircle,
                     contentDescription = "Play Button",
@@ -106,8 +102,10 @@ fun MessageVideo(
                 contentDescription = "",
                 modifier = Modifier.aspectRatio(1f)
             )
+        } else
+        {
+           VideoLoadingView()
         }
-
     }
 }
 
