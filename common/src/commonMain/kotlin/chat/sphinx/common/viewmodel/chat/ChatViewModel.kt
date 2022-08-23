@@ -192,27 +192,16 @@ abstract class ChatViewModel(
             )
         }
 
-        val chatMessages = messages.withIndex().reversed().map { (index, message) ->
+        val chatMessages: MutableList<ChatMessage> = mutableListOf()
+
+        messages.withIndex().reversed().forEach { (index, message) ->
 
             val colors = getColorsMapFor(message, contactColorInt, tribeAdmin)
 
             val previousMessage: Message? = if (index > 0) messages[index - 1] else null
-            val nextMessage: Message? = if (index < messages.size - 1) messages[index + 1] else null
+//            val nextMessage: Message? = if (index < messages.size - 1) messages[index + 1] else null
 
-            if (previousMessage == null || message.date.isDifferentDayThan(previousMessage.date)) {
-                ChatMessage(
-                    chat,
-                    contact,
-                    message,
-                    colors,
-                    isSeparator = true,
-                    accountOwner = { owner },
-                    boostMessage = {},
-                    flagMessage = {},
-                    deleteMessage = {},
-                    previewProvider = { handleLinkPreview(it) },
-                )
-            } else {
+            chatMessages.add(
                 ChatMessage(
                     chat,
                     contact,
@@ -240,7 +229,23 @@ abstract class ChatViewModel(
                     },
                     previewProvider = { handleLinkPreview(it) },
                 )
+            )
 
+            if (previousMessage == null || message.date.isDifferentDayThan(previousMessage.date)) {
+                chatMessages.add(
+                    ChatMessage(
+                        chat,
+                        contact,
+                        message,
+                        colors,
+                        isSeparator = true,
+                        accountOwner = { owner },
+                        boostMessage = {},
+                        flagMessage = {},
+                        deleteMessage = {},
+                        previewProvider = { handleLinkPreview(it) },
+                    )
+                )
             }
         }
 

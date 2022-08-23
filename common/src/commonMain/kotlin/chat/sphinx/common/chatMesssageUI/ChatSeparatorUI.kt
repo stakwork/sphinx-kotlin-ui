@@ -4,30 +4,21 @@ import Roboto
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.wrapper.DateTime
-import chat.sphinx.wrapper.before
+import chat.sphinx.wrapper.separatorTimeFormat
 
 @Composable
 fun DateSeparator(
-    chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel
+    chatMessage: ChatMessage
 ) {
-    val dateMessage = chatMessage.message.date
-    val date = when {
-        DateTime.getToday00().before(dateMessage) -> {
-            "Today"
-        }
-        else -> {
-            DateTime.getFormatMMMEEEdd().format(dateMessage.value)
-        }
-    }
+    val dateMessage = chatMessage.message.date.separatorTimeFormat()
 
     Column(modifier = Modifier.padding(8.dp)) {
         Row(
@@ -36,17 +27,18 @@ fun DateSeparator(
         ) {
             Divider(
                 modifier = Modifier.weight(1f),
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 modifier = Modifier.padding(start = 24.dp, end = 24.dp),
-                color = Color.Gray,
-                text = date,
-                fontFamily = Roboto
+                color = MaterialTheme.colorScheme.onBackground,
+                text = dateMessage,
+                fontFamily = Roboto,
+                fontSize = 11.sp
             )
             Divider(
                 modifier = Modifier.weight(1f),
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }

@@ -86,14 +86,14 @@ fun ChatMessagesList(
             }
         }
 
-        itemsIndexed(items, key = { index, item -> item.message.id }){ index, item ->
+        itemsIndexed(
+            items,
+            key = { _, item -> "${item.message.id}-${item.isSeparator}" }
+        ){ index, item ->
             print("index is $index with value ${item.message.messageContent?.value}")
 
             if (item.isSeparator) {
-                DateSeparator(
-                    item,
-                    chatViewModel
-                )
+                DateSeparator(item)
             } else {
                 ChatMessageUI(
                     item,
