@@ -2,6 +2,7 @@ package chat.sphinx.common.components
 
 import Roboto
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -19,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.wrapper.message.isPaidMessage
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -28,8 +28,11 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.viewmodel.chat.retrieveRemoteMediaInputStream
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
+import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.message.isPaidPendingMessage
 import chat.sphinx.wrapper.message.retrieveUrlAndMessageMedia
+import kotlinx.coroutines.launch
+import theme.primary_blue
 
 
 @Composable
@@ -43,7 +46,6 @@ fun MessageVideo(
     val urlAndMessageMedia = message.retrieveUrlAndMessageMedia()
     val url = urlAndMessageMedia?.first
     val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
-
 
     if (message.isPaidPendingMessage && chatMessage.isReceived) {
         PaidVideoOverlay()
@@ -93,7 +95,9 @@ fun MessageVideo(
                     Icons.Default.PlayCircle,
                     contentDescription = "Play Button",
                     tint = Color.White,
-                    modifier = Modifier.size(80.dp)
+                    modifier = Modifier.size(80.dp).clickable {
+                        toast("Video Player not implemented yet, please save the video")
+                    }
                 )
             }
         } else if (videoLoadError.value) {
@@ -107,6 +111,7 @@ fun MessageVideo(
            VideoLoadingView()
         }
     }
+
 }
 
 @Composable
@@ -158,5 +163,23 @@ fun PaidVideoOverlay() {
                 color = MaterialTheme.colorScheme.tertiary
             )
         }
+    }
+}
+fun toast(
+    message: String,
+    color: Color = primary_blue,
+    delay: Long = 3000L
+) {
+    val scope = SphinxContainer.appModule.applicationScope
+    val dispatchers = SphinxContainer.appModule.dispatchers
+    val sphinxNotificationManager = createSphinxNotificationManager()
+
+    scope.launch(dispatchers.mainImmediate) {
+        sphinxNotificationManager.toast(
+            "Sphinx",
+            message,
+            color.value,
+            delay
+        )
     }
 }
