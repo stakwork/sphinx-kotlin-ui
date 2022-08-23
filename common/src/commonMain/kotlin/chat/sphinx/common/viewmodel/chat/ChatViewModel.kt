@@ -31,6 +31,7 @@ import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
+import chat.sphinx.wrapper.isDifferentDayThan
 import chat.sphinx.wrapper.lightning.*
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
@@ -191,37 +192,58 @@ abstract class ChatViewModel(
             )
         }
 
-        val chatMessages = messages.reversed().map { message ->
+        val chatMessages = messages.withIndex().reversed().map { (index, message) ->
 
             val colors = getColorsMapFor(message, contactColorInt, tribeAdmin)
 
-            ChatMessage(
-                chat,
-                contact,
-                message,
-                colors,
-                accountOwner = { owner },
-                boostMessage = {
-                    boostMessage(chat, message.uuid)
-                },
-                flagMessage = {
-                    confirm(
-                        "Confirm Flagging message",
-                        "Are you sure you want to flag this message? This action can not be undone"
-                    ) {
-                        flagMessage(chat, message)
-                    }
-                },
-                deleteMessage = {
-                    confirm(
-                        "Confirm Deleting message",
-                        "Are you sure you want to delete this message? This action can not be undone"
-                    ) {
-                        deleteMessage(message)
-                    }
-                },
-                previewProvider = { handleLinkPreview(it) },
-            )
+            val previousMessage: Message? = if (index > 0) messages[index - 1] else null
+            val nextMessage: Message? = if (index < messages.size - 1) messages[index + 1] else null
+
+            if(previousMessage == null || message.date.isDifferentDayThan(previousMessage.date)){
+                ChatMessage(
+                    chat,
+                    contact,
+                    message,
+                    colors,
+                    accountOwner = {owner},
+                    boostMessage = {
+                        boostMessage(chat, message.uuid)
+                    },
+                    flagMessage = {},
+                    deleteMessage = {},
+                    previewProvider = { handleLinkPreview(it) },
+                )
+            } else {
+
+                ChatMessage(
+                    chat,
+                    contact,
+                    message,
+                    colors,
+                    accountOwner = { owner },
+                    boostMessage = {
+                        boostMessage(chat, message.uuid)
+                    },
+                    flagMessage = {
+                        confirm(
+                            "Confirm Flagging message",
+                            "Are you sure you want to flag this message? This action can not be undone"
+                        ) {
+                            flagMessage(chat, message)
+                        }
+                    },
+                    deleteMessage = {
+                        confirm(
+                            "Confirm Deleting message",
+                            "Are you sure you want to delete this message? This action can not be undone"
+                        ) {
+                            deleteMessage(message)
+                        }
+                    },
+                    previewProvider = { handleLinkPreview(it) },
+                )
+
+            }
         }
 
         MessageListState.screenState(
