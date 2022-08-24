@@ -81,7 +81,13 @@ fun ChatMessageUI(
                     verticalArrangement = Arrangement.Top,
                 ) {
                     if (chatMessage.message.type.isGroupAction()) {
-                        TribeHeaderMessage(chatMessage)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TribeHeaderMessage(chatMessage)
+                        }
                     } else {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
