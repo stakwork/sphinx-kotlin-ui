@@ -10,6 +10,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
@@ -33,12 +35,14 @@ import chat.sphinx.wrapper.message.isPaidPendingMessage
 import chat.sphinx.wrapper.message.retrieveUrlAndMessageMedia
 import kotlinx.coroutines.launch
 import theme.primary_blue
+import theme.primary_green
 
 
 @Composable
 fun MessageVideo(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    modifier: Modifier = Modifier,
 ){
     val message = chatMessage.message
     val localFilepath = rememberSaveable { mutableStateOf(message.messageMedia?.localFile) }
@@ -48,7 +52,7 @@ fun MessageVideo(
     val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
 
     if (message.isPaidPendingMessage && chatMessage.isReceived) {
-        PaidVideoOverlay()
+        PaidVideoOverlay(modifier)
     } else {
         LaunchedEffect(url) {
             if (localFilepath.value == null) {
@@ -83,20 +87,20 @@ fun MessageVideo(
             )
             {
                 Image(
-                    painter = imageResource(Res.drawable.existing_user_image),
+                    painter = imageResource(Res.drawable.ic_video_place_holder),
                     contentDescription = "",
+                    contentScale = ContentScale.Crop
                 )
                 Surface(
                     color = Color.Black.copy(alpha = 0.5f),
                     modifier = Modifier.fillMaxSize()
-                )
-                {}
+                ) {}
                 Icon(
-                    Icons.Default.PlayCircle,
+                    Icons.Default.PlayCircleOutline,
                     contentDescription = "Play Button",
                     tint = Color.White,
                     modifier = Modifier.size(80.dp).clickable {
-                        toast("Video Player not implemented yet, please save the video")
+                        toast("Video Player not implemented yet, save the file to watch the video")
                     }
                 )
             }
@@ -106,19 +110,18 @@ fun MessageVideo(
                 contentDescription = "",
                 modifier = Modifier.aspectRatio(1f)
             )
-        } else
-        {
-           VideoLoadingView()
+        } else {
+           VideoLoadingView(modifier)
         }
     }
-
 }
 
 @Composable
 fun VideoLoadingView(
+    modifier: Modifier,
 ) {
     Box(
-        modifier = Modifier.height(250.dp).width(250.dp),
+        modifier = modifier.aspectRatio(1f),
         contentAlignment = Alignment.Center
     ){
         Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -134,15 +137,17 @@ fun VideoLoadingView(
 }
 
 @Composable
-fun PaidVideoOverlay() {
+fun PaidVideoOverlay(
+    modifier: Modifier,
+) {
     Box(
-        modifier = Modifier.height(250.dp).width(250.dp),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Image(
             painter = imageResource(Res.drawable.paid_image_blurred_placeholder),
             contentDescription = "",
-            modifier = Modifier.height(250.dp).width(250.dp)
+            modifier = modifier.fillMaxWidth().aspectRatio(1f)
         )
         Column(
             verticalArrangement = Arrangement.Center,
@@ -167,7 +172,7 @@ fun PaidVideoOverlay() {
 }
 fun toast(
     message: String,
-    color: Color = primary_blue,
+    color: Color = primary_green,
     delay: Long = 3000L
 ) {
     val scope = SphinxContainer.appModule.applicationScope

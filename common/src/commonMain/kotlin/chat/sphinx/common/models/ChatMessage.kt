@@ -58,6 +58,20 @@ class ChatMessage(
         colors[message.id.value]
     }
 
+    val isUnsupportedType: Boolean by lazy {
+        message.type.isInvoice() || message.type.isInvoicePayment()
+    }
+
+    val unsupportedTypeLabel: String by lazy {
+        if (message.type.isInvoice()) {
+            "Invoice"
+        } else if (message.type.isInvoicePayment()) {
+            "Invoice Payment"
+        } else {
+            ""
+        }
+    }
+
     val boostsLayoutState: BoostLayoutState? by lazy {
         if (message == null) {
             null

@@ -20,7 +20,7 @@ fun DateSeparator(
 ) {
     val dateMessage = chatMessage.message.date.separatorTimeFormat()
 
-    Column(modifier = Modifier.padding(8.dp)) {
+    Column(modifier = Modifier.padding(12.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -30,7 +30,7 @@ fun DateSeparator(
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp),
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp),
                 color = MaterialTheme.colorScheme.onBackground,
                 text = dateMessage,
                 fontFamily = Roboto,

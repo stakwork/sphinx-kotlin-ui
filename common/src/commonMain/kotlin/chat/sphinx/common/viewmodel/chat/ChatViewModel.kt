@@ -199,7 +199,6 @@ abstract class ChatViewModel(
             val colors = getColorsMapFor(message, contactColorInt, tribeAdmin)
 
             val previousMessage: Message? = if (index > 0) messages[index - 1] else null
-//            val nextMessage: Message? = if (index < messages.size - 1) messages[index + 1] else null
 
             chatMessages.add(
                 ChatMessage(
