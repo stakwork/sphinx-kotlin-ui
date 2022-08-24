@@ -86,7 +86,7 @@ fun ChatMessageUI(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            TribeHeaderMessage(chatMessage)
+                            MemberRequestHeaderMessage()
                         }
                     } else {
                         Row(
