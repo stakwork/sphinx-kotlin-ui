@@ -14,6 +14,11 @@ import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.dashboard.ContactId
+import chat.sphinx.wrapper.message.MessageId
+import chat.sphinx.wrapper.message.MessageType
+import chat.sphinx.wrapper.message.isMemberApprove
+import chat.sphinx.wrapper.message.isMemberReject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -82,6 +87,37 @@ class ChatTribeViewModel(
                 }
             }
         }
+    }
+
+    override suspend fun processMemberRequest(contactId: ContactId, messageId: MessageId, type: MessageType) {
+
+        scope.launch(dispatchers.mainImmediate) {
+//            val errorMessage = if (type.isMemberApprove()){
+//                "Failed to approve member"
+//            } else {
+//                "Failed to reject member"
+//            }
+
+            if (type.isMemberApprove() || type.isMemberReject()) {
+                when(messageRepository.processMemberRequest(contactId, messageId, type)) {
+                    is LoadResponse.Loading -> {}
+                    is Response.Success -> {}
+                    is Response.Error -> {}
+                }
+            }
+        }.join()
+    }
+
+    override suspend fun deleteTribe() {
+        scope.launch(dispatchers.mainImmediate){
+            getChat()?.let { chat ->
+                when (chatRepository.exitAndDeleteTribe(chat)) {
+                    is Response.Error -> {}
+                    is Response.Success -> {}
+                }
+            }
+        }.join()
+
     }
 
     override var editMessageState: EditMessageState by mutableStateOf(initialState())

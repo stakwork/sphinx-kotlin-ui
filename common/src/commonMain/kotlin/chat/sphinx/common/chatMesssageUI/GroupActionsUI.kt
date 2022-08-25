@@ -20,11 +20,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.wrapper.message.MessageType
+import kotlinx.coroutines.launch
 import theme.light_divider
 import theme.primary_green
 import theme.primary_red
 
+val scope = SphinxContainer.appModule.applicationScope
+val dispatchers = SphinxContainer.appModule.dispatchers
 @Composable
 fun TribeHeaderMessage(chatMessage: ChatMessage) {
     // If any joined tribe will show below text
@@ -50,9 +55,11 @@ fun TribeHeaderMessage(chatMessage: ChatMessage) {
 }
 
 @Composable
-fun MemberRequestMessage(subjectName: String, requestType: MessageType) {
+fun MemberRequestMessage(chatMessage: ChatMessage, viewModel: ChatViewModel, requestType: MessageType) {
 
-    val request = when (requestType) {
+    val subjectName = chatMessage.message.senderAlias?.value ?: ""
+
+    val requestText = when (requestType) {
         is MessageType.GroupAction.MemberRequest -> {
             "$subjectName wants to\n join the tribe"
         }
@@ -79,13 +86,21 @@ fun MemberRequestMessage(subjectName: String, requestType: MessageType) {
                 modifier = Modifier.padding(10.dp)
             ) {
                 Text(
-                    text = request,
+                    text = requestText,
                     fontSize = 10.sp,
                     fontFamily = Roboto,
                     textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.tertiary
                 )
                 IconButton(
-                    onClick = {},
+                    onClick = {
+                        scope.launch(dispatchers.mainImmediate) {
+                            viewModel.processMemberRequest(
+                                chatMessage.message.sender,
+                                chatMessage.message.id,
+                                MessageType.GroupAction.MemberApprove
+                            )
+                        }
+                    },
                     modifier = Modifier
                         .padding(start = 8.dp)
                         .clip(CircleShape)
@@ -110,7 +125,15 @@ fun MemberRequestMessage(subjectName: String, requestType: MessageType) {
                     }
                 }
                 IconButton(
-                    onClick = {},
+                    onClick = {
+                        scope.launch(dispatchers.mainImmediate) {
+                            viewModel.processMemberRequest(
+                                chatMessage.message.sender,
+                                chatMessage.message.id,
+                                MessageType.GroupAction.MemberReject
+                            )
+                        }
+                    },
                     modifier = Modifier
                         .padding(start = 6.dp)
                         .clip(CircleShape)
@@ -138,7 +161,13 @@ fun MemberRequestMessage(subjectName: String, requestType: MessageType) {
 }
 
 @Composable
-fun DeclinedTribeRequestMessage() {
+fun KickOrDeclinedMemberMessage(viewModel: ChatViewModel, requestType: MessageType ) {
+
+    val requestText = if( requestType is MessageType.GroupAction.MemberReject) {
+        "The admin\n declined your request"
+    } else {
+        "The admin has removed you from this tribe"
+    }
 
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Card(
@@ -152,13 +181,17 @@ fun DeclinedTribeRequestMessage() {
                 modifier = Modifier.padding(10.dp)
             ) {
                 Text(
-                    text = "The admin\n declined your request",
+                    text = requestText,
                     fontSize = 10.sp,
                     fontFamily = Roboto,
                     textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.tertiary
                 )
                 IconButton(
-                    onClick = {},
+                    onClick = {
+                        scope.launch(dispatchers.mainImmediate) {
+                            viewModel.deleteTribe()
+                        }
+                    },
                     modifier = Modifier
                         .padding(start = 8.dp)
                         .clip(RoundedCornerShape(4.dp))

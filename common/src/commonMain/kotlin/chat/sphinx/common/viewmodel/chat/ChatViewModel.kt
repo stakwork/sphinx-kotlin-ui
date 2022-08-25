@@ -263,6 +263,14 @@ abstract class ChatViewModel(
             onNewMessageCallback?.invoke()
         }
     }
+    open suspend fun processMemberRequest(
+        contactId: ContactId,
+        messageId: MessageId,
+        type: MessageType,
+    ) {}
+
+    open suspend fun deleteTribe() {}
+
 
     private suspend fun getColorsMapFor(
         message: Message,
@@ -396,7 +404,7 @@ abstract class ChatViewModel(
 
     abstract val chatSharedFlow: SharedFlow<Chat?>
 
-    private suspend fun getChat(): Chat? {
+    suspend fun getChat(): Chat? {
         return chatId?.let { chatRepository.getChatById(it) }
     }
 

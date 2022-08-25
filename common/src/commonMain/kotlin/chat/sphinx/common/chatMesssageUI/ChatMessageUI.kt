@@ -88,24 +88,21 @@ fun ChatMessageUI(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             val requestType = chatMessage.message.type
-                            val senderAlias = chatMessage.message.senderAlias?.value ?: ""
 
-                            if (chatMessage.isAdmin) {
-                                if (
-                                    requestType == MessageType.GroupAction.MemberRequest ||
-                                    requestType == MessageType.GroupAction.MemberApprove ||
-                                    requestType == MessageType.GroupAction.MemberReject
-                                ) {
-                                    MemberRequestMessage(senderAlias, requestType)
-                                }
+                            if (
+                                chatMessage.isAdmin && requestType is MessageType.GroupAction.MemberRequest ||
+                                chatMessage.isAdmin && requestType is MessageType.GroupAction.MemberApprove ||
+                                chatMessage.isAdmin && requestType is MessageType.GroupAction.MemberReject
+                            ) {
+                                MemberRequestMessage(chatMessage, chatViewModel, requestType)
                             }
-                            else if (requestType is MessageType.GroupAction.MemberReject) {
-                                DeclinedTribeRequestMessage()
-                            }
-                            else {
+                            else if (requestType is MessageType.GroupAction.MemberReject ||
+                                requestType is MessageType.GroupAction.Kick
+                            ) {
+                                KickOrDeclinedMemberMessage(chatViewModel, requestType)
+                            } else {
                                 TribeHeaderMessage(chatMessage)
                             }
-
                         }
                     } else {
                         Row(
