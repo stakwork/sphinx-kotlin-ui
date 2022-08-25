@@ -47,16 +47,17 @@ fun ChatMessageUI(
                     if (chatMessage.groupActionLabelText.isNullOrEmpty().not()) 1.0f else 0.8f
                 ),
             ) {
+
                 /**
                  * Show [ImageProfile] at the starting of chat message if
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
                 val showProfilePic = (
-                    chatMessage.groupActionLabelText.isNullOrEmpty() &&
-                    chatMessage.isReceived &&
-                    chatMessage.isDeleted.not() &&
-                    chatMessage.isFlagged.not()
-                )
+                        chatMessage.message.type.isGroupAction().not() &&
+                        chatMessage.isReceived &&
+                        chatMessage.isDeleted.not() &&
+                        chatMessage.isFlagged.not()
+                        )
 
                 Box(modifier = Modifier.width(42.dp)) {
                     if (showProfilePic) {
@@ -86,7 +87,25 @@ fun ChatMessageUI(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            MemberRequestHeaderMessage()
+                            val requestType = chatMessage.message.type
+                            val senderAlias = chatMessage.message.senderAlias?.value ?: ""
+
+                            if (chatMessage.isAdmin) {
+                                if (
+                                    requestType == MessageType.GroupAction.MemberRequest ||
+                                    requestType == MessageType.GroupAction.MemberApprove ||
+                                    requestType == MessageType.GroupAction.MemberReject
+                                ) {
+                                    MemberRequestMessage(senderAlias, requestType)
+                                }
+                            }
+                            else if (requestType is MessageType.GroupAction.MemberReject) {
+                                DeclinedTribeRequestMessage()
+                            }
+                            else {
+                                TribeHeaderMessage(chatMessage)
+                            }
+
                         }
                     } else {
                         Row(

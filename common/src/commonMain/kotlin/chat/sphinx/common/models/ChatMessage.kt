@@ -49,6 +49,10 @@ class ChatMessage(
         senderAlias
     }
 
+    val isAdmin: Boolean by lazy {
+        chat.ownerPubKey == accountOwner().nodePubKey
+    }
+
     val replyToMessageTextPreview: String by lazy {
         val messageMediaText = if (message.messageMedia != null) "attachment" else ""
         message.retrieveTextToShow() ?: messageMediaText
