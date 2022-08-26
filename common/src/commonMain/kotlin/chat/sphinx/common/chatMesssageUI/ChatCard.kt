@@ -28,9 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import chat.sphinx.common.components.CustomDivider
-import chat.sphinx.common.components.MessageFile
-import chat.sphinx.common.components.MessageMediaImage
+import chat.sphinx.common.components.*
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -47,11 +45,13 @@ import chat.sphinx.wrapper.message.MessageType
 import chat.sphinx.wrapper.message.isSphinxCallLink
 import chat.sphinx.wrapper.message.media.isPdf
 import chat.sphinx.wrapper.message.media.isUnknown
+import chat.sphinx.wrapper.message.media.isVideo
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import kotlinx.coroutines.launch
 import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
+import theme.sphinx_orange
 
 @Composable
 fun ChatCard(
@@ -93,6 +93,9 @@ fun ChatCard(
                         Spacer(modifier = Modifier.height(4.dp))
                         CustomDivider(color = light_divider, modifier = Modifier.width(rowWidth))
                     }
+                    chatMessage.message.feedBoost?.let { feedBoost ->
+                        PodcastBoost(feedBoost)
+                    }
                     chatMessage.message.messageMedia?.let { media ->
                         if (media.mediaType.isImage) {
                             MessageMediaImage(
@@ -104,6 +107,12 @@ fun ChatCard(
                             MessageFile(
                                 chatMessage = chatMessage,
                                 chatViewModel = chatViewModel,
+                            )
+                        } else if (media.mediaType.isVideo) {
+                            MessageVideo(
+                                chatMessage = chatMessage,
+                                chatViewModel = chatViewModel,
+                                modifier = Modifier.wrapContentHeight().fillMaxWidth()
                             )
                         }
 //                    } else if (media.mediaType.isAudio) {
@@ -153,11 +162,11 @@ fun MessageTextLabel(
     chatViewModel: ChatViewModel,
     uriHandler: UriHandler
 ) {
-
-    val topPadding = if (chatMessage.message.isPaidMessage && chatMessage.isSent) 44.dp else 12.dp
+    val topPadding = if (chatMessage.message.isPaidTextMessage && chatMessage.isSent) 44.dp else 12.dp
 
     if (chatMessage.message.retrieveTextToShow() != null) {
-        val messageText = chatMessage.message.retrieveTextToShow()!!
+
+        val messageText = chatMessage.message.retrieveTextToShow()?.trim() ?: ""
 
         Row(
             modifier = Modifier
@@ -219,6 +228,18 @@ fun MessageTextLabel(
             fontFamily = Roboto,
             fontSize = 13.sp,
             color = badge_red
+        )
+    } else if (chatMessage.isUnsupportedType) {
+        Text(
+            modifier = Modifier
+                .wrapContentWidth(if (chatMessage.isSent) Alignment.End else Alignment.Start)
+                .padding(12.dp),
+            text = "Unsupported Message Type: ${chatMessage.unsupportedTypeLabel}",
+            fontWeight = FontWeight.W300,
+            fontFamily = Roboto,
+            fontStyle = FontStyle.Italic,
+            fontSize = 13.sp,
+            color = sphinx_orange
         )
     } else if (chatMessage.message.isPaidTextMessage) {
 

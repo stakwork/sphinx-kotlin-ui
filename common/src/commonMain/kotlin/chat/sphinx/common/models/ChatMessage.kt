@@ -29,6 +29,7 @@ class ChatMessage(
     val boostMessage: () -> Unit,
     val flagMessage: () -> Unit,
     val deleteMessage: () -> Unit,
+    val isSeparator: Boolean = false,
     private val previewProvider: suspend (link: LinkSpec) -> LinkPreview?,
 ) {
 
@@ -55,6 +56,20 @@ class ChatMessage(
 
     val replyToMessageColor: Int? by lazy {
         colors[message.id.value]
+    }
+
+    val isUnsupportedType: Boolean by lazy {
+        message.type.isInvoice() || message.type.isInvoicePayment()
+    }
+
+    val unsupportedTypeLabel: String by lazy {
+        if (message.type.isInvoice()) {
+            "Invoice"
+        } else if (message.type.isInvoicePayment()) {
+            "Invoice Payment"
+        } else {
+            ""
+        }
     }
 
     val boostsLayoutState: BoostLayoutState? by lazy {

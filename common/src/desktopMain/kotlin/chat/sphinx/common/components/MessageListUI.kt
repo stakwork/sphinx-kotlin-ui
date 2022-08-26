@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.chatMesssageUI.ChatMessageUI
+import chat.sphinx.common.chatMesssageUI.DateSeparator
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
@@ -85,14 +86,21 @@ fun ChatMessagesList(
             }
         }
 
-        itemsIndexed(items, key = { index, item -> item.message.id }){ index, item ->
+        itemsIndexed(
+            items,
+            key = { _, item -> "${item.message.id}-${item.isSeparator}" }
+        ){ index, item ->
             print("index is $index with value ${item.message.messageContent?.value}")
 
-            ChatMessageUI(
-                item,
-                chatViewModel,
-                dashboardViewModel
-            )
+            if (item.isSeparator) {
+                DateSeparator(item)
+            } else {
+                ChatMessageUI(
+                    item,
+                    chatViewModel,
+                    dashboardViewModel
+                )
+            }
         }
     }
 }
