@@ -111,7 +111,7 @@ fun DesktopSphinxNotifications(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Transparent)
+                    .background(Color.Transparent.copy(alpha = 0.0f))
             )
             {
                 Column(
@@ -121,7 +121,7 @@ fun DesktopSphinxNotifications(
                             end = 50.dp
                         )
                         .fillMaxWidth()
-                        .background(Color.Transparent)
+                        .background(Color.Transparent.copy(alpha = 0.0f))
                 ) {
                     notifications.forEach { notification ->
                         key(notification.key) {
