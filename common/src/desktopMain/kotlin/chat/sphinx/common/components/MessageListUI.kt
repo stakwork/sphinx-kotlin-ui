@@ -97,8 +97,7 @@ fun ChatMessagesList(
             } else {
                 ChatMessageUI(
                     item,
-                    chatViewModel,
-                    dashboardViewModel
+                    chatViewModel
                 )
             }
         }
