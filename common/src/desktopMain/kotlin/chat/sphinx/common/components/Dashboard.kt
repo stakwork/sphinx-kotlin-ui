@@ -41,18 +41,18 @@ import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
-import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 
-import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.components.browser.HandleScript
 import chat.sphinx.components.browser.SphinxFeedUrlViewer
 import chat.sphinx.components.browser.WebAppBrowserWindow
+import chat.sphinx.concepts.network.query.chat.model.LSATDto
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.utils.SphinxJson
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.utils.onKeyUp
 import chat.sphinx.wrapper.chat.isMuted
@@ -63,6 +63,8 @@ import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.util.getInitials
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import theme.place_holder_text
 import theme.primary_green
 import theme.sphinx_orange
@@ -76,15 +78,14 @@ import theme.primary_blue
 import utils.AnimatedContainer
 import utils.getRandomString
 import java.awt.Cursor
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
+import kotlinx.coroutines.flow.collect
 
 @OptIn(ExperimentalComposeUiApi::class)
 private fun Modifier.cursorForHorizontalResize(): Modifier =
     pointerHoverIcon(PointerIcon(Cursor(Cursor.E_RESIZE_CURSOR)))
 
 @kotlinx.serialization.Serializable
-class WebRequest(val application: String, val type: String)
+class WebRequest(val type: String)
 
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
@@ -212,6 +213,8 @@ actual fun Dashboard(
         }
     }
 }
+
+
 
 @Composable
 fun SphinxChatDetailTopAppBar(
@@ -381,13 +384,18 @@ fun SphinxChatDetailTopAppBar(
             ), onCloseRequest = {
                 openWebView.value = false
             }, onReceive = { jsonRequest, executionCallback ->
-                val request: WebRequest = Json.decodeFromString(jsonRequest)
+                val request: WebRequest =
+                    Json { ignoreUnknownKeys = true }.decodeFromString(WebRequest.serializer(), jsonRequest)
                 webBrowserCallback.value = executionCallback
                 when (request.type) {
                     "AUTHORIZE" -> {
                         if (jsonRequest.contains("pubkey").not()) {
                             openAuthorizeDialog.value = true
                         }
+                    }
+                    "LSAT" -> {
+                        val dto: LSATDto = SphinxJson.decodeFromString(jsonRequest)
+                        saveLSAT(dashboardViewModel, dto, executionCallback)
                     }
 
                 }
@@ -415,10 +423,33 @@ fun SphinxChatDetailTopAppBar(
                 }
                 chatViewModel?.scope?.launch {
                     val nodePubKey = chatViewModel.getContact()?.nodePubKey?.value
+                    dashboardViewModel?.networkQueryChat
                     webBrowserCallback.value?.runScript(authoriseDataModel.copy(nodePubKey = nodePubKey).toJSScript())
                 }
             }
         }
+}
+
+fun saveLSAT(dashboardViewModel: DashboardViewModel?, dto: LSATDto, executionCallback: HandleScript) {
+
+    CoroutineScope(Dispatchers.IO).launch {
+        dashboardViewModel?.networkQueryChat?.payLSAT(dto.apply { })?.collect {
+            when (it) {
+                LoadResponse.Loading -> {}
+                is Response.Error -> {}
+                is Response.Success -> {
+                    val model = LSATDataModel(getRandomString(16), "50", it.value.lsat)
+                    executionCallback.runScript(model.toJSScript())
+                }
+                else -> {
+
+                }
+            }
+
+        }
+    }
+    // create request body
+    // payLsat function to execute api call
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -766,3 +797,9 @@ data class AuthoriseDataModel(val password: String, val nodePubKey: String?, val
 
 fun AuthoriseDataModel.toJSScript() =
     "window.postMessage({\"application\":\"Sphinx\",\"budget\":$amount,\"type\":\"AUTHORIZE\",\"password\":\"$password\",\"pubkey\":\"$nodePubKey\"})"
+
+
+class LSATDataModel(val password: String, val budget: String, val lsat: String)
+
+fun LSATDataModel.toJSScript() =
+    "window.postMessage({\"password\":\"$password\",\"type\":\"LSAT\",\"budget\":$budget,\"application\":\"Sphinx\",\"success\":true,\"lsat\":\"$lsat\"})"

@@ -3,6 +3,7 @@ package chat.sphinx.common.viewmodel
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenState
 import chat.sphinx.common.state.DashboardScreenType
+import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -22,13 +23,14 @@ import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
 import kotlinx.coroutines.flow.collect
 
-class DashboardViewModel: WindowFocusListener {
+class DashboardViewModel : WindowFocusListener {
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val viewModelScope = SphinxContainer.appModule.applicationScope
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
+    val networkQueryChat: NetworkQueryChat = SphinxContainer.networkModule.networkQueryChat
 
     private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
         MutableStateFlow(null)
@@ -163,7 +165,7 @@ class DashboardViewModel: WindowFocusListener {
         }
     }
 
-    override fun windowLostFocus(p0: WindowEvent?) { }
+    override fun windowLostFocus(p0: WindowEvent?) {}
 
     private val _networkStateFlow: MutableStateFlow<LoadResponse<Boolean, ResponseError>> by lazy {
         MutableStateFlow(LoadResponse.Loading)
