@@ -3,6 +3,8 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import chat.sphinx.common.state.ChatDetailData
+import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.concepts.network.query.lightning.model.route.isRouteAvailable
@@ -21,6 +23,7 @@ import chat.sphinx.wrapper.message.isMemberApprove
 import chat.sphinx.wrapper.message.isMemberReject
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import theme.primary_red
 
 class ChatTribeViewModel(
     chatId: ChatId,
@@ -90,19 +93,20 @@ class ChatTribeViewModel(
     }
 
     override suspend fun processMemberRequest(contactId: ContactId, messageId: MessageId, type: MessageType) {
-
         scope.launch(dispatchers.mainImmediate) {
-//            val errorMessage = if (type.isMemberApprove()){
-//                "Failed to approve member"
-//            } else {
-//                "Failed to reject member"
-//            }
+            val errorMessage = if (type.isMemberApprove()){
+                "Failed to approve member"
+            } else {
+                "Failed to reject member"
+            }
 
             if (type.isMemberApprove() || type.isMemberReject()) {
                 when(messageRepository.processMemberRequest(contactId, messageId, type)) {
                     is LoadResponse.Loading -> {}
                     is Response.Success -> {}
-                    is Response.Error -> {}
+                    is Response.Error -> {
+                        toast(errorMessage, primary_red)
+                    }
                 }
             }
         }.join()
@@ -112,12 +116,14 @@ class ChatTribeViewModel(
         scope.launch(dispatchers.mainImmediate){
             getChat()?.let { chat ->
                 when (chatRepository.exitAndDeleteTribe(chat)) {
-                    is Response.Error -> {}
                     is Response.Success -> {}
+                    is Response.Error -> {
+                        toast("Failed to delete tribe", primary_red)
+                    }
                 }
             }
+            ChatDetailState.screenState(ChatDetailData.EmptyChatDetailData)
         }.join()
-
     }
 
     override var editMessageState: EditMessageState by mutableStateOf(initialState())

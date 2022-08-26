@@ -271,7 +271,6 @@ abstract class ChatViewModel(
 
     open suspend fun deleteTribe() {}
 
-
     private suspend fun getColorsMapFor(
         message: Message,
         contactColor: Int?,

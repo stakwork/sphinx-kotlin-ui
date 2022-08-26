@@ -29,8 +29,7 @@ import chat.sphinx.utils.containLinks
 @Composable
 fun ChatMessageUI(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel,
-    dashboardViewModel: DashboardViewModel
+    chatViewModel: ChatViewModel
 ) {
     print("rebuilding ${chatMessage.message.id}")
 
@@ -44,7 +43,7 @@ fun ChatMessageUI(
             Row(
                 verticalAlignment = Alignment.Top,
                 modifier = Modifier.fillMaxWidth(
-                    if (chatMessage.groupActionLabelText.isNullOrEmpty().not()) 1.0f else 0.8f
+                    if (chatMessage.message.type.isGroupAction()) 1.0f else 0.8f
                 ),
             ) {
 
@@ -53,14 +52,14 @@ fun ChatMessageUI(
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
                 val showProfilePic = (
-                        chatMessage.message.type.isGroupAction().not() &&
-                        chatMessage.isReceived &&
-                        chatMessage.isDeleted.not() &&
-                        chatMessage.isFlagged.not()
-                        )
+                    chatMessage.message.type.isGroupAction().not() &&
+                    chatMessage.isReceived &&
+                    chatMessage.isDeleted.not() &&
+                    chatMessage.isFlagged.not()
+                )
 
-                Box(modifier = Modifier.width(42.dp)) {
-                    if (showProfilePic) {
+                if (showProfilePic) {
+                    Box(modifier = Modifier.width(42.dp)) {
                         ImageProfile(
                             chatMessage,
                             Modifier.clickable {
@@ -82,28 +81,7 @@ fun ChatMessageUI(
                     verticalArrangement = Arrangement.Top,
                 ) {
                     if (chatMessage.message.type.isGroupAction()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            val requestType = chatMessage.message.type
-
-                            if (
-                                chatMessage.isAdmin && requestType is MessageType.GroupAction.MemberRequest ||
-                                chatMessage.isAdmin && requestType is MessageType.GroupAction.MemberApprove ||
-                                chatMessage.isAdmin && requestType is MessageType.GroupAction.MemberReject
-                            ) {
-                                MemberRequestMessage(chatMessage, chatViewModel, requestType)
-                            }
-                            else if (requestType is MessageType.GroupAction.MemberReject ||
-                                requestType is MessageType.GroupAction.Kick
-                            ) {
-                                KickOrDeclinedMemberMessage(chatViewModel, requestType)
-                            } else {
-                                TribeHeaderMessage(chatMessage)
-                            }
-                        }
+                        GroupActionsUI(chatMessage, chatViewModel)
                     } else {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
