@@ -8,6 +8,7 @@ import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.*
 import androidx.compose.ui.graphics.Color
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.concepts.link_preview.model.*
 import chat.sphinx.utils.linkify.LinkSpec
 import chat.sphinx.wrapper.PhotoUrl
@@ -30,6 +31,7 @@ class ChatMessage(
     val flagMessage: () -> Unit,
     val deleteMessage: () -> Unit,
     val isSeparator: Boolean = false,
+    val background: BubbleBackground,
     private val previewProvider: suspend (link: LinkSpec) -> LinkPreview?,
 ) {
 

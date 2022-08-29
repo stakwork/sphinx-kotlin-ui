@@ -22,6 +22,7 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.utils.containLinks
@@ -52,11 +53,14 @@ fun ChatMessageUI(
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
                 val showProfilePic = (
-                    chatMessage.message.type.isGroupAction().not() &&
-                    chatMessage.isReceived &&
-                    chatMessage.isDeleted.not() &&
-                    chatMessage.isFlagged.not()
-                )
+                        chatMessage.message.type.isGroupAction().not() &&
+                                chatMessage.isReceived &&
+                                chatMessage.isDeleted.not() &&
+                                chatMessage.isFlagged.not() &&
+                                chatMessage.background !is BubbleBackground.Gone &&
+                                chatMessage.background !is BubbleBackground.Middle &&
+                                chatMessage.background !is BubbleBackground.Last
+                        )
 
                 if (showProfilePic) {
                     Box(modifier = Modifier.width(42.dp)) {
