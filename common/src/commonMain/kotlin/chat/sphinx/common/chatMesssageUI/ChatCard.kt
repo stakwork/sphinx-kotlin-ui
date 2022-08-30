@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.*
 import chat.sphinx.common.models.ChatMessage
-import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.linkify.SphinxLinkify
@@ -48,9 +48,6 @@ import chat.sphinx.wrapper.message.media.isUnknown
 import chat.sphinx.wrapper.message.media.isVideo
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
-import kotlinx.coroutines.launch
-import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
-import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import theme.sphinx_orange
 
 @Composable
@@ -59,17 +56,12 @@ fun ChatCard(
     chatViewModel: ChatViewModel,
     modifier: Modifier? = null
 ) {
-    val receiverCorner =
-        RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
-    val senderCorner =
-        RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
-
     val uriHandler = LocalUriHandler.current
 
     Card(
         backgroundColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary,
-        shape = if (chatMessage.isReceived) receiverCorner else senderCorner,
-        modifier = modifier ?: Modifier
+        shape = getBubbleShape(chatMessage),
+        modifier = modifier ?: getCardModifier(chatMessage)
     ) {
         val density = LocalDensity.current
         var rowWidth by remember { mutableStateOf(0.dp) }
@@ -344,6 +336,67 @@ fun FailedContainer(
                 color = Color.Red,
                 textAlign = TextAlign.Start
             )
+        }
+    }
+}
+
+fun getBubbleShape(chatMessage: ChatMessage): RoundedCornerShape {
+
+    if(chatMessage.isReceived){
+        return when(chatMessage.background) {
+            is BubbleBackground.First.Isolated -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+            is BubbleBackground.First.Grouped -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 0.dp)
+            }
+            is BubbleBackground.Middle -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 0.dp)
+            }
+            is BubbleBackground.Last -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+            else -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+        }
+    }
+    else {
+        return when (chatMessage.background) {
+            is BubbleBackground.First.Isolated -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+            is BubbleBackground.First.Grouped -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 0.dp, bottomStart = 10.dp)
+            }
+            is BubbleBackground.Middle -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 0.dp, bottomStart = 10.dp)
+            }
+            is BubbleBackground.Last -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+            else -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+        }
+    }
+}
+
+fun getCardModifier(chatMessage: ChatMessage) : Modifier {
+    if (chatMessage.isReceived){
+        return if(chatMessage.background is BubbleBackground.First.Isolated ||
+            chatMessage.background is BubbleBackground.First.Grouped) {
+            Modifier.padding(0.dp)
+        } else {
+            Modifier.padding(start = 47.dp)
+        }
+    }
+    else {
+        return if(chatMessage.background is BubbleBackground.First.Isolated ||
+            chatMessage.background is BubbleBackground.First.Grouped) {
+            Modifier.padding(0.dp)
+        } else {
+            Modifier.padding(end = 5.dp)
         }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
 import theme.place_holder_text
@@ -25,6 +26,13 @@ import theme.place_holder_text
 fun DisplayConditionalIcons(
     chatMessage: ChatMessage
 ) {
+    if (chatMessage.background is BubbleBackground.Gone ||
+        chatMessage.background is BubbleBackground.Middle ||
+        chatMessage.background is BubbleBackground.Last
+    ) {
+        return
+    }
+
     val color = chatMessage.colors[chatMessage.message.id.value]
 
     if (

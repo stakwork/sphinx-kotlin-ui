@@ -36,7 +36,7 @@ fun ChatMessageUI(
 
     val bubbleColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary
 
-    Column(modifier = Modifier.padding(8.dp)) {
+    Column(modifier = getMessageUIPadding(chatMessage)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start
@@ -126,7 +126,7 @@ fun ChatMessageUI(
                                         ChatOptionMenu(chatMessage, chatViewModel)
                                     }
                                     if (chatMessage.isReceived) {
-                                        BubbleArrow(false, bubbleColor)
+                                        BubbleArrow(false, bubbleColor, chatMessage)
                                     }
 
                                     val messageContainsLinks = (chatMessage.message.retrieveTextToShow()?.containLinks() == true)
@@ -154,7 +154,7 @@ fun ChatMessageUI(
                                         ChatOptionMenu(chatMessage, chatViewModel)
                                     }
                                     if (chatMessage.isSent) {
-                                        BubbleArrow(true, bubbleColor)
+                                        BubbleArrow(true, bubbleColor, chatMessage)
                                     }
                                 }
                             }
@@ -170,7 +170,15 @@ fun ChatMessageUI(
 fun BubbleArrow(
     sent: Boolean,
     color: Color,
+    chatMessage: ChatMessage
 ) {
+    if (chatMessage.background is BubbleBackground.Gone ||
+        chatMessage.background is BubbleBackground.Middle ||
+        chatMessage.background is BubbleBackground.Last
+    ) {
+        return
+    }
+
     val density = LocalDensity.current
     val width = with(density) { 5.dp.roundToPx() }.toFloat()
     val height = with(density) { 7.dp.roundToPx() }.toFloat()
@@ -197,5 +205,13 @@ fun BubbleArrow(
     })
 }
 
+fun getMessageUIPadding(chatMessage: ChatMessage): Modifier {
+    return when (chatMessage.background) {
+        is BubbleBackground.First.Grouped -> Modifier.padding(start = 8.dp, top = 8.dp, bottom = 0.dp, end = 8.dp)
+        is BubbleBackground.Middle -> Modifier.padding(start = 8.dp, top = 2.dp, bottom = 0.dp, end = 8.dp)
+        is BubbleBackground.Last -> Modifier.padding(start = 8.dp, top = 2.dp, bottom = 8.dp, end = 8.dp)
 
+        else -> { return Modifier.padding(8.dp)}
+    }
+}
 

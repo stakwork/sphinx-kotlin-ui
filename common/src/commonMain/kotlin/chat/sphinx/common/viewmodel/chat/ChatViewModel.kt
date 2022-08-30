@@ -21,6 +21,7 @@ import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
+import chat.sphinx.utils.containLinks
 import chat.sphinx.utils.linkify.LinkSpec
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
@@ -250,6 +251,9 @@ abstract class ChatViewModel(
                         message.type.isGroupAction() -> {
                             BubbleBackground.Gone(setSpacingEqual = true)
                         }
+                        message.retrieveTextToShow()?.containLinks() == true -> {
+                            BubbleBackground.First.Isolated
+                        }
                         else -> {
                             groupingDateAndBubbleBackground.second
                         }
@@ -279,6 +283,9 @@ abstract class ChatViewModel(
                             }
                             message.type.isGroupAction() -> {
                                 BubbleBackground.Gone(setSpacingEqual = true)
+                            }
+                            message.retrieveTextToShow()?.containLinks() == true -> {
+                                BubbleBackground.First.Isolated
                             }
                             else -> {
                                 groupingDateAndBubbleBackground.second
