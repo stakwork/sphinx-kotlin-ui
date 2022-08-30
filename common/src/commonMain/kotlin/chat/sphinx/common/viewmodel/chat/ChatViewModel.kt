@@ -196,16 +196,14 @@ abstract class ChatViewModel(
         }
 
         val chatMessages: MutableList<ChatMessage> = mutableListOf()
+        var groupingDate: DateTime? = null
 
-        messages.withIndex().reversed().forEach { (index, message) ->
+        messages.withIndex().forEach { (index, message) ->
 
             val colors = getColorsMapFor(message, contactColorInt, tribeAdmin)
 
             val previousMessage: Message? = if (index > 0) messages[index - 1] else null
             val nextMessage: Message? = if (index < messages.size - 1) messages[index + 1] else null
-            var groupingDate: DateTime? = null
-            val isDeleted = message.status.isDeleted()
-
 
             val groupingDateAndBubbleBackground = getBubbleBackgroundForMessage(
                 message,
@@ -213,6 +211,29 @@ abstract class ChatViewModel(
                 nextMessage,
                 groupingDate
             )
+
+            groupingDate = groupingDateAndBubbleBackground.first
+
+            if (
+                previousMessage == null ||
+                message.date.isDifferentDayThan(previousMessage.date)
+            ) {
+                chatMessages.add(
+                    ChatMessage(
+                        chat,
+                        contact,
+                        message,
+                        colors,
+                        isSeparator = true,
+                        accountOwner = { owner },
+                        boostMessage = {},
+                        flagMessage = {},
+                        deleteMessage = {},
+                        previewProvider = { handleLinkPreview(it) },
+                        background = BubbleBackground.Gone
+                    )
+                )
+            }
 
             chatMessages.add(
                 ChatMessage(
@@ -241,65 +262,15 @@ abstract class ChatViewModel(
                         }
                     },
                     previewProvider = { handleLinkPreview(it) },
-                    background = when {
-                        isDeleted -> {
-                            BubbleBackground.Gone(setSpacingEqual = false)
-                        }
-                        message.type.isInvoicePayment() -> {
-                            BubbleBackground.Gone(setSpacingEqual = false)
-                        }
-                        message.type.isGroupAction() -> {
-                            BubbleBackground.Gone(setSpacingEqual = true)
-                        }
-                        message.retrieveTextToShow()?.containLinks() == true -> {
-                            BubbleBackground.First.Isolated
-                        }
-                        else -> {
-                            groupingDateAndBubbleBackground.second
-                        }
-                    }
+                    background = groupingDateAndBubbleBackground.second
                 )
             )
-
-            if (previousMessage == null || message.date.isDifferentDayThan(previousMessage.date)) {
-                chatMessages.add(
-                    ChatMessage(
-                        chat,
-                        contact,
-                        message,
-                        colors,
-                        isSeparator = true,
-                        accountOwner = { owner },
-                        boostMessage = {},
-                        flagMessage = {},
-                        deleteMessage = {},
-                        previewProvider = { handleLinkPreview(it) },
-                        background = when {
-                            isDeleted -> {
-                                BubbleBackground.Gone(setSpacingEqual = false)
-                            }
-                            message.type.isInvoicePayment() -> {
-                                BubbleBackground.Gone(setSpacingEqual = false)
-                            }
-                            message.type.isGroupAction() -> {
-                                BubbleBackground.Gone(setSpacingEqual = true)
-                            }
-                            message.retrieveTextToShow()?.containLinks() == true -> {
-                                BubbleBackground.First.Isolated
-                            }
-                            else -> {
-                                groupingDateAndBubbleBackground.second
-                            }
-                        }
-                    )
-                )
-            }
         }
 
         MessageListState.screenState(
             MessageListData.PopulatedMessageListData(
                 chat.id,
-                chatMessages
+                chatMessages.reversed()
             )
         )
 
@@ -779,6 +750,7 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     } ?: run {
                         dashboardViewModel.toggleJoinTribeWindow(true, it)
@@ -802,6 +774,7 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     } ?: run {
                         getDashboardChatFor(contact, null)?.let { dashboardChat ->
@@ -811,12 +784,24 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     }
                 } ?: run {
                     dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx(link))
                 }
             }
+        }
+    }
+
+    private fun selectListRowFor(dashboardChat: DashboardChat) {
+        (ChatListState.screenState() as? ChatListData.PopulatedChatListData)?.let { currentState ->
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    currentState.dashboardChats,
+                    dashboardChat.dashboardChatId
+                )
+            )
         }
     }
 

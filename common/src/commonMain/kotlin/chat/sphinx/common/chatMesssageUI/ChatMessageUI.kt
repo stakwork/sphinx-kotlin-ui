@@ -53,32 +53,31 @@ fun ChatMessageUI(
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
                 val showProfilePic = (
-                        chatMessage.message.type.isGroupAction().not() &&
-                                chatMessage.isReceived &&
-                                chatMessage.isDeleted.not() &&
-                                chatMessage.isFlagged.not() &&
-                                chatMessage.background !is BubbleBackground.Gone &&
-                                chatMessage.background !is BubbleBackground.Middle &&
-                                chatMessage.background !is BubbleBackground.Last
-                        )
+                    chatMessage.message.type.isGroupAction().not() &&
+                    chatMessage.isReceived &&
+                    chatMessage.isDeleted.not() &&
+                    chatMessage.isFlagged.not()
+                )
 
                 if (showProfilePic) {
                     Box(modifier = Modifier.width(42.dp)) {
-                        ImageProfile(
-                            chatMessage,
-                            Modifier.clickable {
-                                if (chatMessage.chat.isTribe()) {
-                                    chatViewModel.toggleChatActionsPopup(
-                                        ChatViewModel.ChatActionsMode.SEND_TRIBE,
-                                        PaymentViewModel.PaymentData(
-                                            chatId = chatMessage.chat.id,
-                                            messageUUID = chatMessage.message.uuid
+                        if (chatMessage.background is BubbleBackground.First) {
+                            ImageProfile(
+                                chatMessage,
+                                Modifier.clickable {
+                                    if (chatMessage.chat.isTribe()) {
+                                        chatViewModel.toggleChatActionsPopup(
+                                            ChatViewModel.ChatActionsMode.SEND_TRIBE,
+                                            PaymentViewModel.PaymentData(
+                                                chatId = chatMessage.chat.id,
+                                                messageUUID = chatMessage.message.uuid
+                                            )
                                         )
-                                    )
+                                    }
                                 }
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(12.dp).background(color = Color.Red))
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
                     }
                 }
                 Column(
@@ -172,43 +171,40 @@ fun BubbleArrow(
     color: Color,
     chatMessage: ChatMessage
 ) {
-    if (chatMessage.background is BubbleBackground.Gone ||
-        chatMessage.background is BubbleBackground.Middle ||
-        chatMessage.background is BubbleBackground.Last
-    ) {
-        return
-    }
-
     val density = LocalDensity.current
     val width = with(density) { 5.dp.roundToPx() }.toFloat()
     val height = with(density) { 7.dp.roundToPx() }.toFloat()
 
-    Canvas(modifier = Modifier.width(5.dp).height(7.dp), onDraw = {
-        drawPath(
-            color = color,
-            path = if (sent) {
-                Path().apply {
-                    moveTo(0f, 0f)
-                    lineTo(width, 0f)
-                    lineTo(0f, height)
-                    lineTo(0f, 0f)
-                }
-            } else {
-                Path().apply {
-                    moveTo(0f, 0f)
-                    lineTo(width, 0f)
-                    lineTo(width, height)
-                    lineTo(0f, 0f)
-                }
-            }
-        )
-    })
+    Box(modifier = Modifier.width(5.dp).height(7.dp)) {
+        if (chatMessage.background is BubbleBackground.First) {
+            Canvas(modifier = Modifier.fillMaxSize(), onDraw = {
+                drawPath(
+                    color = color,
+                    path = if (sent) {
+                        Path().apply {
+                            moveTo(0f, 0f)
+                            lineTo(width, 0f)
+                            lineTo(0f, height)
+                            lineTo(0f, 0f)
+                        }
+                    } else {
+                        Path().apply {
+                            moveTo(0f, 0f)
+                            lineTo(width, 0f)
+                            lineTo(width, height)
+                            lineTo(0f, 0f)
+                        }
+                    }
+                )
+            })
+        }
+    }
 }
 
 fun getMessageUIPadding(chatMessage: ChatMessage): Modifier {
     return when (chatMessage.background) {
-        is BubbleBackground.First.Grouped -> Modifier.padding(start = 8.dp, top = 8.dp, bottom = 0.dp, end = 8.dp)
-        is BubbleBackground.Middle -> Modifier.padding(start = 8.dp, top = 2.dp, bottom = 0.dp, end = 8.dp)
+        is BubbleBackground.First.Grouped -> Modifier.padding(start = 8.dp, top = 8.dp, bottom = 2.dp, end = 8.dp)
+        is BubbleBackground.Middle -> Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp, end = 8.dp)
         is BubbleBackground.Last -> Modifier.padding(start = 8.dp, top = 2.dp, bottom = 8.dp, end = 8.dp)
 
         else -> { return Modifier.padding(8.dp)}

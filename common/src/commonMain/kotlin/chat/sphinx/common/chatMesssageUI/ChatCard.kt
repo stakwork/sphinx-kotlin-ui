@@ -1,6 +1,7 @@
 package chat.sphinx.common.chatMesssageUI
 
 import Roboto
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -61,7 +62,7 @@ fun ChatCard(
     Card(
         backgroundColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary,
         shape = getBubbleShape(chatMessage),
-        modifier = modifier ?: getCardModifier(chatMessage)
+        modifier = modifier ?: Modifier
     ) {
         val density = LocalDensity.current
         var rowWidth by remember { mutableStateOf(0.dp) }
@@ -210,17 +211,6 @@ fun MessageTextLabel(
             //
             //                                }
         }
-    } else if (chatMessage.message.messageDecryptionError) {
-        Text(
-            modifier = Modifier
-                .wrapContentWidth(if (chatMessage.isSent) Alignment.End else Alignment.Start)
-                .padding(12.dp),
-            text = "DECRYPTION ERROR",
-            fontWeight = FontWeight.W300,
-            fontFamily = Roboto,
-            fontSize = 13.sp,
-            color = badge_red
-        )
     } else if (chatMessage.isUnsupportedType) {
         Text(
             modifier = Modifier
@@ -232,6 +222,17 @@ fun MessageTextLabel(
             fontStyle = FontStyle.Italic,
             fontSize = 13.sp,
             color = sphinx_orange
+        )
+    } else if (chatMessage.message.messageDecryptionError) {
+        Text(
+            modifier = Modifier
+                .wrapContentWidth(if (chatMessage.isSent) Alignment.End else Alignment.Start)
+                .padding(12.dp),
+            text = "DECRYPTION ERROR",
+            fontWeight = FontWeight.W300,
+            fontFamily = Roboto,
+            fontSize = 13.sp,
+            color = badge_red
         )
     } else if (chatMessage.message.isPaidTextMessage) {
 
@@ -341,9 +342,8 @@ fun FailedContainer(
 }
 
 fun getBubbleShape(chatMessage: ChatMessage): RoundedCornerShape {
-
-    if(chatMessage.isReceived){
-        return when(chatMessage.background) {
+    if (chatMessage.isReceived) {
+        return when (chatMessage.background) {
             is BubbleBackground.First.Isolated -> {
                 RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
             }
@@ -360,8 +360,7 @@ fun getBubbleShape(chatMessage: ChatMessage): RoundedCornerShape {
                 RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
             }
         }
-    }
-    else {
+    } else {
         return when (chatMessage.background) {
             is BubbleBackground.First.Isolated -> {
                 RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
@@ -378,25 +377,6 @@ fun getBubbleShape(chatMessage: ChatMessage): RoundedCornerShape {
             else -> {
                 RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
             }
-        }
-    }
-}
-
-fun getCardModifier(chatMessage: ChatMessage) : Modifier {
-    if (chatMessage.isReceived){
-        return if(chatMessage.background is BubbleBackground.First.Isolated ||
-            chatMessage.background is BubbleBackground.First.Grouped) {
-            Modifier.padding(0.dp)
-        } else {
-            Modifier.padding(start = 47.dp)
-        }
-    }
-    else {
-        return if(chatMessage.background is BubbleBackground.First.Isolated ||
-            chatMessage.background is BubbleBackground.First.Grouped) {
-            Modifier.padding(0.dp)
-        } else {
-            Modifier.padding(end = 5.dp)
         }
     }
 }
