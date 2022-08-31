@@ -60,6 +60,7 @@ fun ChatAction(
 
                 when (state.first) {
                     ChatViewModel.ChatActionsMode.MENU -> {
+                        paymentViewModel.resetChatPaymentState()
                         ChatActionMenu(chatViewModel)
                     }
                     ChatViewModel.ChatActionsMode.SEND_AMOUNT -> {
@@ -68,6 +69,7 @@ fun ChatAction(
                         )
                     }
                     ChatViewModel.ChatActionsMode.SEND_TRIBE -> {
+                        paymentViewModel.resetChatPaymentState()
                         SendTribePaymentPopUp(
                             chatViewModel, paymentViewModel
                         )

@@ -75,6 +75,10 @@ class PaymentViewModel(
         chatPaymentState = chatPaymentState.update()
     }
 
+    fun resetChatPaymentState() {
+        chatPaymentState = initialState()
+    }
+
     fun onMessageChanged(text: String) {
         setChatPaymentState {
             copy(
