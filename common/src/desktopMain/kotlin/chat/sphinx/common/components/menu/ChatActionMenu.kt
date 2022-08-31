@@ -39,7 +39,8 @@ fun ChatAction(
     modifier: Modifier = Modifier
 ) {
     chatViewModel?.let {
-        val paymentViewModel = remember { PaymentViewModel(chatViewModel) }
+        val key = (chatViewModel as? ChatContactViewModel)?.contactId ?: chatViewModel.chatId
+        val paymentViewModel = remember(key) { PaymentViewModel(chatViewModel) }
 
         chatViewModel?.chatActionsStateFlow?.collectAsState()?.value?.let { state ->
             Box(
@@ -55,13 +56,10 @@ fun ChatAction(
                     .fillMaxSize()
                     .background(color = Color.Black.copy(0.4f))
             ) {
-                state.second?.let { paymentData ->
-                    paymentViewModel.setPaymentData(paymentData)
-                }
+                paymentViewModel.setPaymentData(state.second)
 
                 when (state.first) {
                     ChatViewModel.ChatActionsMode.MENU -> {
-                        paymentViewModel.resetChatPaymentState()
                         ChatActionMenu(chatViewModel)
                     }
                     ChatViewModel.ChatActionsMode.SEND_AMOUNT -> {
@@ -70,7 +68,6 @@ fun ChatAction(
                         )
                     }
                     ChatViewModel.ChatActionsMode.SEND_TRIBE -> {
-                        paymentViewModel.resetChatPaymentState()
                         SendTribePaymentPopUp(
                             chatViewModel, paymentViewModel
                         )

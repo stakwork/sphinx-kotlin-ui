@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.ChatPaymentState
+import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.concepts.repository.message.model.SendPayment
 import chat.sphinx.di.container.SphinxContainer
@@ -34,7 +35,7 @@ class PaymentViewModel(
 
     private var paymentData: PaymentData? = null
 
-    fun setPaymentData(paymentData: PaymentData) {
+    fun setPaymentData(paymentData: PaymentData?) {
         this.paymentData = paymentData
     }
 
@@ -46,7 +47,7 @@ class PaymentViewModel(
         SEND, RECEIVE
     }
 
-    class PaymentData(
+    data class PaymentData(
         val chatId: ChatId? = null,
         val contactId: ContactId? = null,
         val messageUUID: MessageUUID? = null
@@ -72,10 +73,6 @@ class PaymentViewModel(
 
     private inline fun setChatPaymentState(update: ChatPaymentState.() -> ChatPaymentState) {
         chatPaymentState = chatPaymentState.update()
-    }
-
-    fun resetChatPaymentState() {
-        chatPaymentState = initialState()
     }
 
     fun onMessageChanged(text: String) {
@@ -113,7 +110,10 @@ class PaymentViewModel(
             } else if (paymentData?.contactId != null) {
                 chatViewModel.toggleChatActionsPopup(
                     ChatViewModel.ChatActionsMode.SEND_TEMPLATE,
-                    paymentData
+                    PaymentData(
+                        paymentData?.chatId,
+                        paymentData?.contactId
+                    )
                 )
 //                sendContactPayment()
             }
