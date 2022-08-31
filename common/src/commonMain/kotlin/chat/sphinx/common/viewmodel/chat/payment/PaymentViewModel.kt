@@ -177,4 +177,5 @@ class PaymentViewModel(
         delay(500L)
         chatViewModel.hideChatActionsPopup()
     }
+
 }

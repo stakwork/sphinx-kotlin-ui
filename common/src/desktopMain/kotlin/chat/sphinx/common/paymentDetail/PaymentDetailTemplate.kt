@@ -32,14 +32,16 @@ fun PaymentDetailTemplate(
     chatViewModel: ChatViewModel,
     viewModel: PaymentViewModel
 ) {
-    Box(modifier = Modifier
-        .width(400.dp)
-        .height(550.dp)
-        .background(
-            color = MaterialTheme.colorScheme.background,
-            shape = RoundedCornerShape(10.dp)
-        )
-        .clickable {},
+    Box(
+        modifier = Modifier
+            .width(400.dp)
+            .height(550.dp)
+            .background(
+                color = MaterialTheme.colorScheme.background,
+                shape = RoundedCornerShape(10.dp)
+            ).clickable {
+
+            },
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -55,27 +57,36 @@ fun PaymentDetailTemplate(
             ) {
                 Icon(
                     Icons.Default.ArrowBack,
-                    contentDescription = "Close",
-                    tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp).clickable {
-//                        onDismiss()
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(16.dp).clickable {
+                        chatViewModel.toggleChatActionsPopup(
+                            ChatViewModel.ChatActionsMode.SEND_AMOUNT, viewModel.getPaymentData()
+                        )
                     }
                 )
                 Icon(
                     Icons.Default.Close,
                     contentDescription = "Close",
                     tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp).clickable {
-//                        onDismiss()
+                        chatViewModel.hideChatActionsPopup()
                     }
                 )
             }
             Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                Text("100", color = MaterialTheme.colorScheme.tertiary, fontSize = 40.sp)
+                Text(
+                    text = viewModel.chatPaymentState.amount?.toString() ?: "" ,
+                    color = MaterialTheme.colorScheme.tertiary, fontSize = 40.sp
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Sat", color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Tes Message", color = MaterialTheme.colorScheme.tertiary, fontSize = 14.sp)
+            Text(text = viewModel.chatPaymentState.message,
+                color = MaterialTheme.colorScheme.tertiary, fontSize = 14.sp
+            )
             Spacer(modifier = Modifier.height(24.dp))
+
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 state = rememberLazyListState()
@@ -91,6 +102,7 @@ fun PaymentDetailTemplate(
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
+
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 state = rememberLazyListState()

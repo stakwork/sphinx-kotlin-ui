@@ -153,7 +153,8 @@ fun ChatActionMenu(
                     .fillMaxWidth()
                     .height(55.dp)
                     .clickable(
-                        onClick = {
+                        onClick =
+                        {
                             chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.REQUEST)
                         },
                         indication = null,
