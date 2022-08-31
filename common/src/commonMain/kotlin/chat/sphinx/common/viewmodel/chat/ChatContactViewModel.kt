@@ -152,4 +152,8 @@ class ChatContactViewModel(
         contactId = contactId,
     )
 
+    override fun getUniqueKey(): String {
+        return "CONTACT-$contactId"
+    }
+
 }

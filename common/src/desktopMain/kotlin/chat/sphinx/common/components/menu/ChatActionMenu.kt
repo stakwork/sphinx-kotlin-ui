@@ -39,8 +39,7 @@ fun ChatAction(
     modifier: Modifier = Modifier
 ) {
     chatViewModel?.let {
-        val key = (chatViewModel as? ChatContactViewModel)?.contactId ?: chatViewModel.chatId
-        val paymentViewModel = remember(key) { PaymentViewModel(chatViewModel) }
+        val paymentViewModel = remember(chatViewModel.getUniqueKey()) { PaymentViewModel(chatViewModel) }
 
         chatViewModel?.chatActionsStateFlow?.collectAsState()?.value?.let { state ->
             Box(
