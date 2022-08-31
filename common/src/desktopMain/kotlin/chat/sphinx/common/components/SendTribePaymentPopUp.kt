@@ -36,7 +36,8 @@ fun SendTribePaymentPopUp(
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(10.dp)
-            ),
+            )
+            .clickable {},
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -84,8 +85,8 @@ fun SendTribePaymentPopUp(
                     chatViewModel.toggleChatActionsPopup(
                         ChatViewModel.ChatActionsMode.SEND_AMOUNT,
                         PaymentViewModel.PaymentData(
-                            chatId = paymentViewModel.paymentData.chatId,
-                            messageUUID = paymentViewModel.paymentData.messageUUID
+                            chatId = paymentViewModel.getPaymentData()?.chatId,
+                            messageUUID = paymentViewModel.getPaymentData()?.messageUUID
                         )
                     )
                 },

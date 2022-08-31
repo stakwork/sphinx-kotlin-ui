@@ -41,7 +41,8 @@ fun SendReceiveAmountPopup(
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(10.dp)
-            ),
+            )
+            .clickable {},
         contentAlignment = Alignment.Center,
     ) {
         Column(
