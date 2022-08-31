@@ -1,11 +1,8 @@
 package chat.sphinx.common.chatMesssageUI
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -14,21 +11,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.MessageMediaImage
-import chat.sphinx.common.components.MessageVideo
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.message.media.isImage
-import chat.sphinx.wrapper.message.media.isVideo
 import chat.sphinx.wrapper.util.getInitials
-import theme.wash_out_received
 import theme.wash_out_send
 import utils.conditional
 
@@ -47,16 +40,16 @@ fun DirectPaymentUI(
     ) {
         Row(
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start,
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 8.dp, end = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (chatMessage.chat.isTribe()) {
                 val recipientColor = chatMessage.colors[-chatMessage.message.id.value]
 
-                Box(modifier = Modifier.weight(1f).padding(start = 8.dp, end = 8.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
                     PhotoUrlImage(
                         photoUrl = chatMessage.message.recipientPic,
-                        modifier = Modifier.size(25.dp).clip(CircleShape),
+                        modifier = Modifier.size(36.dp).clip(CircleShape),
                         color = if (recipientColor != null) Color(recipientColor) else null,
                         firstNameLetter = chatMessage.message.recipientAlias?.value?.getInitials(),
                         fontSize = 9
@@ -99,9 +92,22 @@ fun DirectPaymentUI(
             }
 
         }
+        chatMessage.message.messageMedia?.let { media ->
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(start = 12.dp, end = 12.dp, bottom = 16.dp)
+            ) {
+                if (media.mediaType.isImage) {
+                    MessageMediaImage(
+                        chatMessage,
+                        chatViewModel = chatViewModel,
+                        modifier = Modifier.wrapContentHeight().fillMaxWidth()
+                    )
+                }
+            }
+        }
         if (chatMessage.message.messageContentDecrypted?.value?.isEmpty()?.not() == true) {
             Box(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 12.dp, end = 12.dp),
+                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 16.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Text(
@@ -110,22 +116,5 @@ fun DirectPaymentUI(
                 )
             }
         }
-        chatMessage.message.messageMedia?.let { media ->
-            Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(8.dp)
-            ) {
-                if (media.mediaType.isImage) {
-                    MessageMediaImage(
-                        chatMessage,
-                        chatViewModel = chatViewModel,
-                        modifier = Modifier.wrapContentHeight().fillMaxWidth()
-                    )
-                } else if (media.mediaType.isVideo) {
-                    MessageVideo(chatMessage, chatViewModel)
-                }
-            }
-        }
-        if (chatMessage.message.messageMedia == null)
-            Spacer(modifier = Modifier.height(16.dp))
     }
 }
