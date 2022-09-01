@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.ChatPaymentState
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
+import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
 import chat.sphinx.concepts.repository.message.model.SendPayment
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -14,12 +16,17 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.lightning.Sat
+import chat.sphinx.wrapper.meme_server.AuthenticationToken
 import chat.sphinx.wrapper.message.Message
 import chat.sphinx.wrapper.message.MessageUUID
+import chat.sphinx.wrapper.message.media.MessageMedia
+import chat.sphinx.wrapper.message.media.token.MediaHost
+import chat.sphinx.wrapper.payment.PaymentTemplate
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.InputStream
 
 class PaymentViewModel(
     val chatViewModel: ChatViewModel,
@@ -30,6 +37,9 @@ class PaymentViewModel(
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
+
+    private val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
+    private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
 
     private val sendPaymentBuilder = SendPayment.Builder()
 
@@ -176,5 +186,35 @@ class PaymentViewModel(
 
         delay(500L)
         chatViewModel.hideChatActionsPopup()
+    }
+
+    suspend fun retrieveTemplateMediaInputStream(
+        paymentTemplate: PaymentTemplate
+    ): InputStream? {
+
+        paymentTemplate.localFile?.let {
+            return it.inputStream()
+        }
+
+        val token = AuthenticationToken(paymentTemplate.token)
+
+        paymentTemplate?.getTemplateUrl(MediaHost.DEFAULT.value)?.let { url ->
+            memeInputStreamHandler.retrieveMediaInputStream(
+                url,
+                token,
+                null
+            )?.first
+        }?.let { inputStream ->
+            mediaCacheHandler.createImageFile("jpg").let { imageFilepath ->
+                imageFilepath.toFile().outputStream().use { fileOutputStream ->
+                    inputStream.copyTo(fileOutputStream)
+
+                    paymentTemplate.localFile = imageFilepath.toFile()
+                }
+            }
+
+            return inputStream
+        }
+        return null
     }
 }
