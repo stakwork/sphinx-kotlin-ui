@@ -20,12 +20,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
+import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.wrapper.PhotoUrl
 import okio.Path.Companion.toOkioPath
 
@@ -43,39 +47,62 @@ fun PaymentDetailTemplate(
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(10.dp)
-            ).clickable {
-
-            },
+            ).clickable {},
         contentAlignment = Alignment.Center
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.background(MaterialTheme.colorScheme.background).height(550.dp).width(400.dp)
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("")
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth().height(85.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(16.dp).clickable {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .padding(10.dp)
+                        .clickable {
                         chatViewModel.toggleChatActionsPopup(
                             ChatViewModel.ChatActionsMode.SEND_AMOUNT, viewModel.getPaymentData()
                         )
-                    }
+                    },
+                    contentAlignment = Alignment.Center
+                    ) {
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Text(
+                    text = "PAYMENT TEMPLATE",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = SphinxFonts.montserratFamily,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
                 )
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Close",
-                    tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp).clickable {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .padding(10.dp)
+                        .clickable {
                         chatViewModel.hideChatActionsPopup()
-                    }
-                )
+                    },
+                    contentAlignment = Alignment.Center
+
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
             }
             Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -91,27 +118,16 @@ fun PaymentDetailTemplate(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            val testList by viewModel.paymentTemplateList.collectAsState()
+            val templateList by viewModel.paymentTemplateList.collectAsState()
 
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                state = rememberLazyListState()
-            ) {
-                item {
-                    Spacer(modifier = Modifier.width(100.dp))
-                }
-                testList?.size?.let {
-                    items(it) { index ->
-                        testList?.get(index)?.localFile?.toOkioPath()?.let { path ->
-                            PhotoFileImage(
-                                photoFilepath = path,
-                                modifier = Modifier.height(250.dp).width(200.dp).padding(12.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                            )
-                        }
-                    }
-                }
+
+            if(!templateList.isNullOrEmpty()) {
+                PhotoFileImage(
+                    photoFilepath = templateList!![2].localFile?.toOkioPath()!!,
+                    modifier = Modifier . height (250.dp).width(200.dp)
+                )
             }
+
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyRow(
@@ -121,13 +137,19 @@ fun PaymentDetailTemplate(
                 item {
                     Spacer(modifier = Modifier.width(100.dp))
                 }
-                items(10) {
-                    PhotoUrlImage(
-                        PhotoUrl("https://picsum.photos/200/300"), modifier = Modifier
-                            .size(60.dp).padding(8.dp)
-                            .clip(CircleShape)
-                    )
+                templateList?.size?.let {
+                    items(it) { index ->
+                        templateList?.get(index)?.localFile?.toOkioPath()?.let { path ->
+                            PhotoFileImage(
+                                photoFilepath = path,
+                                modifier = Modifier
+                                    .size(60.dp).padding(8.dp)
+                                    .clip(CircleShape)
+                            )
+                        }
+                    }
                 }
+
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
