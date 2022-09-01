@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -94,11 +93,17 @@ fun PaymentDetailTemplate(
                 item {
                     Spacer(modifier = Modifier.width(100.dp))
                 }
-                items(10) {
-                    PhotoUrlImage(
-                        photoUrl = PhotoUrl("https://source.unsplash.com/random/200x200?sig=1"),
-                        modifier = Modifier.height(250.dp).width(200.dp).padding(12.dp).clip(RoundedCornerShape(8.dp))
-                    )
+
+                val testList = viewModel.paymentTemplateState.templateList
+
+                testList?.let {templateList ->
+                    items(testList.size) {index ->
+                        PhotoUrlImage(
+                            photoUrl = PhotoUrl(templateList[index]),
+                            modifier = Modifier.height(250.dp).width(200.dp).padding(12.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
