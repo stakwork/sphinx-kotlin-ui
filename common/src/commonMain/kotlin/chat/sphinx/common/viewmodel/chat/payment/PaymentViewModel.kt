@@ -4,9 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.ChatPaymentState
-import chat.sphinx.common.state.ContactState
-import chat.sphinx.common.state.PaymentTemplateState
-import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.concepts.repository.message.model.SendPayment
 import chat.sphinx.di.container.SphinxContainer
@@ -25,7 +22,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.io.InputStream
 
 class PaymentViewModel(
     val chatViewModel: ChatViewModel,
@@ -187,61 +183,49 @@ class PaymentViewModel(
         chatViewModel.hideChatActionsPopup()
     }
 
-    var paymentTemplateState: PaymentTemplateState by mutableStateOf((paymentTemplateInitialState()))
-
-    private fun paymentTemplateInitialState(): PaymentTemplateState = PaymentTemplateState()
-
-    private inline fun setPaymentTemplateState(update: PaymentTemplateState.() -> PaymentTemplateState) {
-        paymentTemplateState = paymentTemplateState.update()
+    init {
+        scope.launch(dispatchers.mainImmediate) {
+            loadTemplateImages()
+        }
     }
 
+    private val _paymentTemplateList: MutableStateFlow<List<PaymentTemplate>?> by lazy {
+        MutableStateFlow(listOf())
+    }
+
+    val paymentTemplateList: StateFlow<List<PaymentTemplate>?>
+        get() = _paymentTemplateList.asStateFlow()
+
+
     private var loadTemplateImagesJob: Job? = null
-    fun loadTemplateImages() {
+    private fun loadTemplateImages() {
         if (loadTemplateImagesJob?.isActive == true) {
             return
         }
 
         loadTemplateImagesJob = scope.launch(dispatchers.mainImmediate) {
             when (val response = messageRepository.getPaymentTemplates()) {
-                is Response.Error -> {
-                }
+                is Response.Error -> {}
                 is Response.Success -> {
-                    getPaymentTemplateUrlList(response.value)
+                    _paymentTemplateList.value = setLocalFilePaymentTemplate(response.value)
                 }
             }
         }
     }
 
-    private fun getPaymentTemplateUrlList(templateList: List<PaymentTemplate>): List<String> {
-        var list = arrayListOf<String>()
-
+    private suspend fun setLocalFilePaymentTemplate(templateList: List<PaymentTemplate>): List<PaymentTemplate> {
         templateList.forEach { template ->
-            list.add(template.getTemplateUrl(MediaHost.DEFAULT.value))
+            retrieveTemplateMediaInputStream(template)
         }
-        setPaymentTemplateState {
-            copy(
-                templateList = list
-            )
-        }
-
-        return list
-
-    }
-    init {
-        loadTemplateImages()
+        return templateList
     }
 
-    suspend fun retrieveTemplateMediaInputStream(
+    private suspend fun retrieveTemplateMediaInputStream(
         paymentTemplate: PaymentTemplate
-    ): InputStream? {
-
-        paymentTemplate.localFile?.let {
-            return it.inputStream()
-        }
-
+    ) {
         val token = AuthenticationToken(paymentTemplate.token)
 
-        paymentTemplate?.getTemplateUrl(MediaHost.DEFAULT.value)?.let { url ->
+        paymentTemplate.getTemplateUrl(MediaHost.DEFAULT.value).let { url ->
             memeInputStreamHandler.retrieveMediaInputStream(
                 url,
                 token,
@@ -255,9 +239,6 @@ class PaymentViewModel(
                     paymentTemplate.localFile = imageFilepath.toFile()
                 }
             }
-
-            return inputStream
         }
-        return null
     }
 }

@@ -15,15 +15,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.PhotoUrl
+import okio.Path.Companion.toOkioPath
+
 
 
 @Composable
@@ -86,6 +91,8 @@ fun PaymentDetailTemplate(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
+            val testList by viewModel.paymentTemplateList.collectAsState()
+
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 state = rememberLazyListState()
@@ -93,16 +100,15 @@ fun PaymentDetailTemplate(
                 item {
                     Spacer(modifier = Modifier.width(100.dp))
                 }
-
-                val testList = viewModel.paymentTemplateState.templateList
-
-                testList?.let {templateList ->
-                    items(testList.size) {index ->
-                        PhotoUrlImage(
-                            photoUrl = PhotoUrl(templateList[index]),
-                            modifier = Modifier.height(250.dp).width(200.dp).padding(12.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        )
+                testList?.size?.let {
+                    items(it) { index ->
+                        testList?.get(index)?.localFile?.toOkioPath()?.let { path ->
+                            PhotoFileImage(
+                                photoFilepath = path,
+                                modifier = Modifier.height(250.dp).width(200.dp).padding(12.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                        }
                     }
                 }
             }
