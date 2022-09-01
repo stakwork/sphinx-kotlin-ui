@@ -36,8 +36,6 @@ class PaymentViewModel(
         SEND, RECEIVE
     }
 
-    //Comment to test gitbot
-
     class PaymentData(
         val chatId: ChatId? = null,
         val contactId: ContactId? = null,
