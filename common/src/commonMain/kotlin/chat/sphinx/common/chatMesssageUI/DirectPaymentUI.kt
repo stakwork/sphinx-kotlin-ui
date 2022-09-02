@@ -92,9 +92,11 @@ fun DirectPaymentUI(
             }
 
         }
+        val paymentContainsText = chatMessage.message.messageContentDecrypted?.value?.isEmpty()?.not() == true
+
         chatMessage.message.messageMedia?.let { media ->
             Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(start = 12.dp, end = 12.dp, bottom = 16.dp)
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = if (paymentContainsText) 16.dp else 0.dp)
             ) {
                 if (media.mediaType.isImage) {
                     MessageMediaImage(
@@ -105,7 +107,7 @@ fun DirectPaymentUI(
                 }
             }
         }
-        if (chatMessage.message.messageContentDecrypted?.value?.isEmpty()?.not() == true) {
+        if (paymentContainsText) {
             Box(
                 modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, bottom = 16.dp),
                 contentAlignment = Alignment.CenterStart
