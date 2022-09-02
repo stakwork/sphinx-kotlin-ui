@@ -188,7 +188,9 @@ fun PaymentDetailTemplate(
             verticalArrangement = Arrangement.Bottom
         ) {
             Button(
-                onClick = {},
+                onClick = {
+                          viewModel.sendContactPayment()
+                },
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondaryContainer),
                 modifier = Modifier.fillMaxWidth(0.5f).height(50.dp)

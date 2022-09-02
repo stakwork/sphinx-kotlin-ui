@@ -124,12 +124,16 @@ class PaymentViewModel(
                         paymentData?.contactId
                     )
                 )
-//                sendContactPayment()
             }
         }
     }
 
-    private suspend fun sendContactPayment() {
+    private var sendContactPaymentJob: Job? = null
+    fun sendContactPayment() {
+        if (sendContactPaymentJob?.isActive == true) {
+            return
+        }
+
         if ((chatPaymentState.amount ?: 0) <= 0) return
 
         sendPaymentBuilder.setAmount(chatPaymentState.amount ?: 0)
@@ -239,6 +243,11 @@ class PaymentViewModel(
                     paymentTemplate.localFile = imageFilepath.toFile()
                 }
             }
+        }
+    }
+    fun selectTemplate(position: Int) {
+        paymentTemplateList.value?.getOrNull(position)?.let { template ->
+            sendPaymentBuilder.setPaymentTemplate(template)
         }
     }
 }
