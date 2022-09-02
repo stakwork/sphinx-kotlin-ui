@@ -21,16 +21,19 @@ import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
+import chat.sphinx.utils.containLinks
 import chat.sphinx.utils.linkify.LinkSpec
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.utils.toAnnotatedString
+import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
+import chat.sphinx.wrapper.getMinutesDifferenceWithDateTime
 import chat.sphinx.wrapper.isDifferentDayThan
 import chat.sphinx.wrapper.lightning.*
 import chat.sphinx.wrapper.message.*
@@ -193,12 +196,44 @@ abstract class ChatViewModel(
         }
 
         val chatMessages: MutableList<ChatMessage> = mutableListOf()
+        var groupingDate: DateTime? = null
 
-        messages.withIndex().reversed().forEach { (index, message) ->
+        messages.withIndex().forEach { (index, message) ->
 
             val colors = getColorsMapFor(message, contactColorInt, tribeAdmin)
 
             val previousMessage: Message? = if (index > 0) messages[index - 1] else null
+            val nextMessage: Message? = if (index < messages.size - 1) messages[index + 1] else null
+
+            val groupingDateAndBubbleBackground = getBubbleBackgroundForMessage(
+                message,
+                previousMessage,
+                nextMessage,
+                groupingDate
+            )
+
+            groupingDate = groupingDateAndBubbleBackground.first
+
+            if (
+                previousMessage == null ||
+                message.date.isDifferentDayThan(previousMessage.date)
+            ) {
+                chatMessages.add(
+                    ChatMessage(
+                        chat,
+                        contact,
+                        message,
+                        colors,
+                        isSeparator = true,
+                        accountOwner = { owner },
+                        boostMessage = {},
+                        flagMessage = {},
+                        deleteMessage = {},
+                        previewProvider = { handleLinkPreview(it) },
+                        background = BubbleBackground.Gone
+                    )
+                )
+            }
 
             chatMessages.add(
                 ChatMessage(
@@ -227,31 +262,15 @@ abstract class ChatViewModel(
                         }
                     },
                     previewProvider = { handleLinkPreview(it) },
+                    background = groupingDateAndBubbleBackground.second
                 )
             )
-
-            if (previousMessage == null || message.date.isDifferentDayThan(previousMessage.date)) {
-                chatMessages.add(
-                    ChatMessage(
-                        chat,
-                        contact,
-                        message,
-                        colors,
-                        isSeparator = true,
-                        accountOwner = { owner },
-                        boostMessage = {},
-                        flagMessage = {},
-                        deleteMessage = {},
-                        previewProvider = { handleLinkPreview(it) },
-                    )
-                )
-            }
         }
 
         MessageListState.screenState(
             MessageListData.PopulatedMessageListData(
                 chat.id,
-                chatMessages
+                chatMessages.reversed()
             )
         )
 
@@ -261,6 +280,48 @@ abstract class ChatViewModel(
             delay(200L)
             onNewMessageCallback?.invoke()
         }
+    }
+
+    private fun getBubbleBackgroundForMessage(
+        message: Message,
+        previousMessage: Message?,
+        nextMessage: Message?,
+        groupingDate: DateTime?,
+    ): Pair<DateTime?, BubbleBackground> {
+
+        val groupingMinutesLimit = 5.0
+        var date = groupingDate ?: message.date
+
+        val shouldAvoidGroupingWithPrevious = (previousMessage?.shouldAvoidGrouping() ?: true) || message.shouldAvoidGrouping()
+        val isGroupedBySenderWithPrevious = previousMessage?.hasSameSenderThanMessage(message) ?: false
+        val isGroupedByDateWithPrevious = message.date.getMinutesDifferenceWithDateTime(date) < groupingMinutesLimit
+
+        val groupedWithPrevious = (!shouldAvoidGroupingWithPrevious && isGroupedBySenderWithPrevious && isGroupedByDateWithPrevious)
+
+        date = if (groupedWithPrevious) date else message.date
+
+        val shouldAvoidGroupingWithNext = (nextMessage?.shouldAvoidGrouping() ?: true) || message.shouldAvoidGrouping()
+        val isGroupedBySenderWithNext = nextMessage?.hasSameSenderThanMessage(message) ?: false
+        val isGroupedByDateWithNext = if (nextMessage != null) nextMessage.date.getMinutesDifferenceWithDateTime(date) < groupingMinutesLimit else false
+
+        val groupedWithNext = (!shouldAvoidGroupingWithNext && isGroupedBySenderWithNext && isGroupedByDateWithNext)
+
+        when {
+            (!groupedWithPrevious && !groupedWithNext) -> {
+                return Pair(date, BubbleBackground.First.Isolated)
+            }
+            (groupedWithPrevious && !groupedWithNext) -> {
+                return Pair(date, BubbleBackground.Last)
+            }
+            (!groupedWithPrevious && groupedWithNext) -> {
+                return Pair(date, BubbleBackground.First.Grouped)
+            }
+            (groupedWithPrevious && groupedWithNext) -> {
+                return Pair(date, BubbleBackground.Middle)
+            }
+        }
+
+        return Pair(date, BubbleBackground.First.Isolated)
     }
     open suspend fun processMemberRequest(
         contactId: ContactId,
@@ -689,6 +750,7 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     } ?: run {
                         dashboardViewModel.toggleJoinTribeWindow(true, it)
@@ -712,6 +774,7 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     } ?: run {
                         getDashboardChatFor(contact, null)?.let { dashboardChat ->
@@ -721,12 +784,24 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     }
                 } ?: run {
                     dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx(link))
                 }
             }
+        }
+    }
+
+    private fun selectListRowFor(dashboardChat: DashboardChat) {
+        (ChatListState.screenState() as? ChatListData.PopulatedChatListData)?.let { currentState ->
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    currentState.dashboardChats,
+                    dashboardChat.dashboardChatId
+                )
+            )
         }
     }
 

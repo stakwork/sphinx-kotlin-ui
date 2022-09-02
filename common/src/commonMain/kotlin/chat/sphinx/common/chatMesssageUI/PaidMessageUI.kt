@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
@@ -51,7 +52,14 @@ fun ReceivedPaidMessageButton(
                 chatViewModel.payAttachment(chatMessage.message)
             },
             backgroundColor = backgroundColor,
-            shape = RoundedCornerShape(topEnd = 0.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp),
+            shape = when (chatMessage.background) {
+                is BubbleBackground.First.Grouped, BubbleBackground.Middle -> {
+                    RoundedCornerShape(topEnd = 0.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 0.dp)
+                }
+                else -> {
+                    RoundedCornerShape(topEnd = 0.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+                }
+            }
         ) {
             val amount = chatMessage.message.messageMedia?.price?.asFormattedString(' ', appendUnit = true) ?: "0 sat"
 
