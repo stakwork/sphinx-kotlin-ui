@@ -1,5 +1,6 @@
 package chat.sphinx.common.paymentDetail
 
+import Roboto
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -33,8 +34,6 @@ import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.wrapper.PhotoUrl
 import okio.Path.Companion.toOkioPath
 
-
-
 @Composable
 fun PaymentDetailTemplate(
     chatViewModel: ChatViewModel,
@@ -42,8 +41,8 @@ fun PaymentDetailTemplate(
 ) {
     Box(
         modifier = Modifier
-            .width(400.dp)
-            .height(550.dp)
+            .width(440.dp)
+            .height(580.dp)
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(10.dp)
@@ -55,7 +54,7 @@ fun PaymentDetailTemplate(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().height(85.dp),
+                modifier = Modifier.fillMaxWidth().height(80.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -64,12 +63,12 @@ fun PaymentDetailTemplate(
                         .size(80.dp)
                         .padding(10.dp)
                         .clickable {
-                        chatViewModel.toggleChatActionsPopup(
-                            ChatViewModel.ChatActionsMode.SEND_AMOUNT, viewModel.getPaymentData()
-                        )
-                    },
+                            chatViewModel.toggleChatActionsPopup(
+                                ChatViewModel.ChatActionsMode.SEND_AMOUNT, viewModel.getPaymentData()
+                            )
+                        },
                     contentAlignment = Alignment.Center
-                    ) {
+                ) {
                     Icon(
                         Icons.Default.ArrowBack,
                         contentDescription = "Back",
@@ -90,8 +89,8 @@ fun PaymentDetailTemplate(
                         .size(80.dp)
                         .padding(10.dp)
                         .clickable {
-                        chatViewModel.hideChatActionsPopup()
-                    },
+                            chatViewModel.hideChatActionsPopup()
+                        },
                     contentAlignment = Alignment.Center
 
                 ) {
@@ -102,65 +101,100 @@ fun PaymentDetailTemplate(
                         modifier = Modifier.size(18.dp)
                     )
                 }
-
             }
-            Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = viewModel.chatPaymentState.amount?.toString() ?: "" ,
-                    color = MaterialTheme.colorScheme.tertiary, fontSize = 40.sp
+                    text = viewModel.chatPaymentState.amount?.toString() ?: "",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    fontSize = 40.sp,
+                    textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Sat", color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp)
+                Text(
+                    "sats",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontFamily = Roboto,
+                    fontWeight = FontWeight.Light,
+                    fontSize = 20.sp,
+                )
+
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = viewModel.chatPaymentState.message,
-                color = MaterialTheme.colorScheme.tertiary, fontSize = 14.sp
-            )
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (viewModel.chatPaymentState.message.isEmpty()) {
+                    Text(
+                        text = "No message",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp
+                    )
+                } else {
+                    Text(
+                        text = viewModel.chatPaymentState.message,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontSize = 14.sp
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(24.dp))
 
             val templateList by viewModel.paymentTemplateList.collectAsState()
 
-
-            if(!templateList.isNullOrEmpty()) {
-                PhotoFileImage(
-                    photoFilepath = templateList!![2].localFile?.toOkioPath()!!,
-                    modifier = Modifier . height (250.dp).width(200.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                state = rememberLazyListState()
+            Box(
+                modifier = Modifier.fillMaxWidth().height(260.dp),
+                contentAlignment = Alignment.Center
             ) {
-                item {
-                    Spacer(modifier = Modifier.width(100.dp))
+                if (!templateList.isNullOrEmpty()) {
+                    PhotoFileImage(
+                        photoFilepath = templateList!![2].localFile?.toOkioPath()!!,
+                        modifier = Modifier.height(250.dp).width(200.dp)
+                    )
                 }
-                templateList?.size?.let {
-                    items(it) { index ->
-                        templateList?.get(index)?.localFile?.toOkioPath()?.let { path ->
-                            PhotoFileImage(
-                                photoFilepath = path,
-                                modifier = Modifier
-                                    .size(60.dp).padding(8.dp)
-                                    .clip(CircleShape)
-                            )
+            }
+            Box(
+                modifier = Modifier.fillMaxWidth().height(70.dp).padding(start = 100.dp)
+            ) {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = rememberLazyListState()
+                ) {
+                    item {
+                    }
+                    templateList?.size?.let {
+                        items(it) { index ->
+                            templateList?.get(index)?.localFile?.toOkioPath()?.let { path ->
+                                PhotoFileImage(
+                                    photoFilepath = path,
+                                    modifier = Modifier
+                                        .size(60.dp).padding(8.dp)
+                                        .clip(CircleShape)
+                                )
+                            }
                         }
                     }
                 }
-
             }
             Spacer(modifier = Modifier.height(16.dp))
+        }
+        Column(
+            modifier = Modifier.fillMaxSize().padding(bottom = 18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
+        ) {
             Button(
                 onClick = {},
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colorScheme.secondaryContainer),
                 modifier = Modifier.fillMaxWidth(0.5f).height(50.dp)
             ) {
-                Text("CONFIRM", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                Text("Confirm", color = MaterialTheme.colorScheme.tertiary, fontSize = 16.sp)
             }
-
         }
     }
 }

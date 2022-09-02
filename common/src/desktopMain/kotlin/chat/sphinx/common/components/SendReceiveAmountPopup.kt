@@ -134,7 +134,7 @@ fun SendReceiveAmountPopup(
                         ) {
                             Text(
                                 "sats",
-                                color = MaterialTheme.colorScheme.tertiary,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 fontFamily = Roboto,
                                 fontWeight = FontWeight.Light,
                                 fontSize = 20.sp
