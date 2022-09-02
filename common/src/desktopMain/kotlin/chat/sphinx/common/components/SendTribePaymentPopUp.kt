@@ -2,6 +2,7 @@ package chat.sphinx.common.components
 
 import Roboto
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +38,11 @@ fun SendTribePaymentPopUp(
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(10.dp)
+            )
+            .clickable(
+                onClick = {},
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
             ),
         contentAlignment = Alignment.Center,
     ) {
@@ -84,8 +91,8 @@ fun SendTribePaymentPopUp(
                     chatViewModel.toggleChatActionsPopup(
                         ChatViewModel.ChatActionsMode.SEND_AMOUNT,
                         PaymentViewModel.PaymentData(
-                            chatId = paymentViewModel.paymentData.chatId,
-                            messageUUID = paymentViewModel.paymentData.messageUUID
+                            chatId = paymentViewModel.getPaymentData()?.chatId,
+                            messageUUID = paymentViewModel.getPaymentData()?.messageUUID
                         )
                     )
                 },

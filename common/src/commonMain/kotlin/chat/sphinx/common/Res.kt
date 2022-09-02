@@ -29,6 +29,7 @@ object Res {
         const val ic_tribe_place_holder = "drawable/ic_tribe_place_holder.xml"
         const val ic_transaction_payment_received = "drawable/ic_transaction_payment_received.xml"
         const val ic_transaction_payment_sent = "drawable/ic_transaction_payment_sent.xml"
+        const val ic_template_no_image = "drawable/ic_template_no_image.xml"
         const val ic_transaction_item = "drawable/ic_transaction_item.xml"
         const val paid_image_blurred_placeholder =  "drawable/paid_image_blurred_placeholder.png"
         const val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"

@@ -131,4 +131,8 @@ class ChatTribeViewModel(
     override fun initialState(): EditMessageState = EditMessageState(
         chatId = chatId
     )
+
+    override fun getUniqueKey(): String {
+        return "TRIBE-$chatId"
+    }
 }

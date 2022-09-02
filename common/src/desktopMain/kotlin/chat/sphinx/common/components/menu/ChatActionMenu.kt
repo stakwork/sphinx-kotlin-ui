@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.*
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.SendReceiveAmountPopup
 import chat.sphinx.common.components.SendTribePaymentPopUp
+import chat.sphinx.common.paymentDetail.PaymentDetailTemplate
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -38,6 +39,8 @@ fun ChatAction(
     modifier: Modifier = Modifier
 ) {
     chatViewModel?.let {
+        val paymentViewModel = remember(chatViewModel.getUniqueKey()) { PaymentViewModel(chatViewModel) }
+
         chatViewModel?.chatActionsStateFlow?.collectAsState()?.value?.let { state ->
             Box(
                 contentAlignment = Alignment.Center,
@@ -52,23 +55,23 @@ fun ChatAction(
                     .fillMaxSize()
                     .background(color = Color.Black.copy(0.4f))
             ) {
+                paymentViewModel.setPaymentData(state.second)
+
                 when (state.first) {
                     ChatViewModel.ChatActionsMode.MENU -> {
+                        paymentViewModel.resetChatPaymentState()
                         ChatActionMenu(chatViewModel)
                     }
                     ChatViewModel.ChatActionsMode.SEND_AMOUNT -> {
-                        state.second?.let { paymentData ->
-                            SendReceiveAmountPopup(
-                                chatViewModel, PaymentViewModel(chatViewModel, paymentData)
-                            )
-                        }
+                        SendReceiveAmountPopup(
+                            chatViewModel, paymentViewModel
+                        )
                     }
                     ChatViewModel.ChatActionsMode.SEND_TRIBE -> {
-                        state.second?.let { paymentData ->
-                            SendTribePaymentPopUp(
-                                chatViewModel, PaymentViewModel(chatViewModel, paymentData)
-                            )
-                        }
+                        paymentViewModel.resetChatPaymentState()
+                        SendTribePaymentPopUp(
+                            chatViewModel, paymentViewModel
+                        )
                     }
                     ChatViewModel.ChatActionsMode.REQUEST -> {
                         //TODO implement request payment
@@ -77,7 +80,9 @@ fun ChatAction(
 //                        )
                     }
                     ChatViewModel.ChatActionsMode.SEND_TEMPLATE -> {
-                        //TODO implement payment template
+                        PaymentDetailTemplate(
+                            chatViewModel, paymentViewModel
+                        )
                     }
                 }
             }
@@ -98,6 +103,10 @@ fun ChatActionMenu(
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(10.dp)
+            ).clickable(
+                onClick = {},
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
             )
     ) {
         Column(
@@ -148,7 +157,8 @@ fun ChatActionMenu(
                     .fillMaxWidth()
                     .height(55.dp)
                     .clickable(
-                        onClick = {
+                        onClick =
+                        {
                             chatViewModel.toggleChatActionsPopup(ChatViewModel.ChatActionsMode.REQUEST)
                         },
                         indication = null,

@@ -479,6 +479,8 @@ abstract class ChatViewModel(
 
     abstract fun initialState(): EditMessageState
 
+    abstract fun getUniqueKey() : String
+
     private inline fun setEditMessageState(update: EditMessageState.() -> EditMessageState) {
         editMessageState = editMessageState.update()
     }
