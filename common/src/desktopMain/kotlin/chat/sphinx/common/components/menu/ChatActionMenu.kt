@@ -103,7 +103,11 @@ fun ChatActionMenu(
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(10.dp)
-            ).clickable {}
+            ).clickable(
+                onClick = {},
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            )
     ) {
         Column(
             verticalArrangement = Arrangement.Center,

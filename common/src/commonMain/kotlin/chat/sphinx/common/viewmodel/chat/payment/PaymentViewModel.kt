@@ -3,10 +3,12 @@ package chat.sphinx.common.viewmodel.chat.payment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.state.ChatPaymentState
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.concepts.repository.message.model.SendPayment
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.logger.LogType
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
@@ -22,6 +24,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import theme.badge_red
+import theme.primary_green
 
 class PaymentViewModel(
     val chatViewModel: ChatViewModel,
@@ -35,6 +39,7 @@ class PaymentViewModel(
 
     private val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
+    private val sphinxLogger = SphinxContainer.appModule.sphinxLogger
 
     private val sendPaymentBuilder = SendPayment.Builder()
 
@@ -107,6 +112,10 @@ class PaymentViewModel(
         }
     }
 
+    fun isTribePayment() : Boolean {
+        return (paymentData?.chatId != null && paymentData?.messageUUID != null)
+    }
+
     private var sendPaymentJob: Job? = null
     fun sendPayment() {
         if (sendPaymentJob?.isActive == true) {
@@ -114,7 +123,7 @@ class PaymentViewModel(
         }
 
         sendPaymentJob = scope.launch(dispatchers.mainImmediate) {
-            if (paymentData?.chatId != null && paymentData?.messageUUID != null) {
+            if (isTribePayment()) {
                 sendTribeDirectPayment()
             } else if (paymentData?.contactId != null) {
                 chatViewModel.toggleChatActionsPopup(
@@ -157,6 +166,7 @@ class PaymentViewModel(
                             status = response
                         )
                     }
+                    toast("There was an error sending the payment. Please try again later.", badge_red)
                 }
                 is Response.Success -> {
                     chatViewModel.hideChatActionsPopup()
@@ -201,6 +211,14 @@ class PaymentViewModel(
         get() = _paymentTemplateList.asStateFlow()
 
 
+    private val _selectedTemplate: MutableStateFlow<PaymentTemplate?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    val selectedTemplate: StateFlow<PaymentTemplate?>
+        get() = _selectedTemplate.asStateFlow()
+
+
     private var loadTemplateImagesJob: Job? = null
     private fun loadTemplateImages() {
         if (loadTemplateImagesJob?.isActive == true) {
@@ -211,7 +229,9 @@ class PaymentViewModel(
             when (val response = messageRepository.getPaymentTemplates()) {
                 is Response.Error -> {}
                 is Response.Success -> {
-                    _paymentTemplateList.value = setLocalFilePaymentTemplate(response.value)
+                    val templates = setLocalFilePaymentTemplate(response.value)
+                    _paymentTemplateList.value = templates
+                    _selectedTemplate.value = if (templates.isNotEmpty()) templates.first() else null
                 }
             }
         }
@@ -245,9 +265,26 @@ class PaymentViewModel(
             }
         }
     }
-    fun selectTemplate(position: Int) {
-        paymentTemplateList.value?.getOrNull(position)?.let { template ->
-            sendPaymentBuilder.setPaymentTemplate(template)
+    fun selectTemplate(
+        position: Int
+    ) {
+        val template = paymentTemplateList.value?.getOrNull(position)
+        _selectedTemplate.value = template
+        sendPaymentBuilder.setPaymentTemplate(template)
+    }
+
+    fun toast(
+        message: String,
+        color: Color = primary_green,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(
+                "Sphinx",
+                message,
+                color.value,
+                delay
+            )
         }
     }
 }
