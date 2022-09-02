@@ -4,6 +4,7 @@ package chat.sphinx.common.components
 import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -101,9 +102,15 @@ fun MessageMediaImage(
         if (localFilepath.value != null) {
             PhotoFileImage(
                 localFilepath.value!!,
-                modifier = modifier.clickable {
-                    fullScreenImageState.value = localFilepath.value
-                },
+                modifier = modifier.clickable(
+                    onClick = {
+                        if (message.type.isAttachment()) {
+                            fullScreenImageState.value = localFilepath.value
+                        }
+                    },
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ),
                 effect = {
                     ImageLoadingView(modifier)
                 },
