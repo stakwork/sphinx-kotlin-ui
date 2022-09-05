@@ -44,7 +44,7 @@ fun NewUserScreen(
                 .fillMaxHeight()
                 .weight(1f)
                 .background(MaterialTheme.colorScheme.secondary)
-        ) { RightPortionNewUser() }
+        ) { LeftPortionNewUser() }
 
         Box(
             contentAlignment = Alignment.Center,
@@ -53,7 +53,7 @@ fun NewUserScreen(
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            LeftPortionNewUser(newUserStore)
+            RightPortionNewUser(newUserStore)
         }
     }
 
@@ -63,7 +63,7 @@ fun NewUserScreen(
 }
 
 @Composable
-fun RightPortionNewUser() {
+fun LeftPortionNewUser() {
     Box() {
         AnimatedContainer(fromTopToBottom = 20) {
             Image(
@@ -92,7 +92,7 @@ fun RightPortionNewUser() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun LeftPortionNewUser(newUserStore: NewUserStore) {
+fun RightPortionNewUser(newUserStore: NewUserStore) {
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
