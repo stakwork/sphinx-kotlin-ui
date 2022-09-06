@@ -1,0 +1,100 @@
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import chat.sphinx.common.Res
+import chat.sphinx.platform.imageResource
+import theme.lightning_network_point
+import theme.lightning_network_point_alpha
+import theme.md_theme_dark_onBackground
+
+@Composable
+fun OnBoardLightningScreen(){
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = imageResource(Res.drawable.lightning_network),
+                contentDescription = "Lightning Network",
+                modifier = Modifier.fillMaxSize().padding(end = 40.dp),
+                contentScale = ContentScale.Fit
+            )
+            Canvas(modifier = Modifier.size(12.dp),
+                onDraw = {
+                drawCircle(color = lightning_network_point)
+                }
+            )
+
+            val targetAlphaState = remember { mutableStateOf(0f) }
+            val targetRadiusState = remember { mutableStateOf(0f) }
+
+            val animatedAlphaState = animateFloatAsState(
+                targetValue = targetAlphaState.value,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1200),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+            val animatedRadiusState = animateFloatAsState(
+                targetValue = targetRadiusState.value,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1200),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+                Canvas(modifier = Modifier.size(12.dp), onDraw = {
+                drawCircle(
+                    color = lightning_network_point_alpha,
+                    radius = animatedRadiusState.value,
+                    alpha = animatedAlphaState.value
+                )
+                    targetAlphaState.value = 1f
+                    targetRadiusState.value = 40f
+            })
+        }
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+        modifier = Modifier.fillMaxSize().padding(top = 80.dp)
+    ) {
+        Text(
+            text = "You are now on the\n" +
+                    " lightning network!",
+            fontSize = 30.sp,
+            maxLines = 2,
+            color = Color.White,
+            fontFamily = Roboto,
+            fontWeight = FontWeight.Light,
+        )
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom,
+        modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
+    ) {
+        Box(modifier = Modifier.height(48.dp).width(259.dp)){
+            CommonButton(text = "Continue", true, endIcon = Icons.Default.ArrowForward){}
+        }
+    }
+}

@@ -83,7 +83,7 @@ fun main() = application {
                     }
                 }
                 AppTheme(useDarkTheme = true) {
-                    OnBoardMessageScreen()
+                    OnBoardLightningScreen()
                 }
             }
 //            Window(

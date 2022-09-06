@@ -75,6 +75,8 @@ val wash_out_send = Color(0xFF829CB9)
 val sphinx_action_menu = Color(0xFF909BAA)
 val secondary_red = Color(0xFFFF8F80)
 val template_circle_background = Color(0x1Affffff)
+val lightning_network_point = Color(0xFF49C998)
+val lightning_network_point_alpha = Color(0x4D49C998)
 
 
 val randomColor1 = Color(0xFF7077FF)
