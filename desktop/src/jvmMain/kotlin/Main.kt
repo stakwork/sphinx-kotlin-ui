@@ -12,12 +12,10 @@ import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.components.LandingScreen
 import chat.sphinx.common.components.TransactionsUI
 import chat.sphinx.common.components.WelcomeScreen
-import chat.sphinx.common.components.landing.ConnectingDialog
 import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.chat.FilePickerDialog
 import chat.sphinx.common.components.chat.FilePickerMode
-import chat.sphinx.common.components.landing.NewUserScreen
-import chat.sphinx.common.components.landing.OnBoardMessageScreen
+import chat.sphinx.common.components.landing.*
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
@@ -30,6 +28,7 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import theme.LocalSpacing
 import theme.Spacing
 import java.awt.event.WindowEvent
@@ -83,9 +82,12 @@ fun main() = application {
                     }
                 }
                 AppTheme(useDarkTheme = true) {
-                    OnBoardLightningScreen()
+//                    OnBoardMessageScreen()
+                    OnBoardSignUpScreen()
+//                    OnBoardLightningScreen(true)
                 }
             }
+
 //            Window(
 //                onCloseRequest = ::exitApplication,
 //                title = "Sphinx",
@@ -110,7 +112,6 @@ fun main() = application {
 //            }
         }
         ScreenType.DashboardScreen -> {
-
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Sphinx",

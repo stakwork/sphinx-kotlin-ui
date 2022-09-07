@@ -18,13 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.state.LandingScreenState
+import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.platform.imageResource
 import theme.lightning_network_point
 import theme.lightning_network_point_alpha
 import theme.md_theme_dark_onBackground
 
 @Composable
-fun OnBoardLightningScreen(){
+fun OnBoardLightningScreen(isWelcome: Boolean){
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -36,8 +38,11 @@ fun OnBoardLightningScreen(){
             Image(
                 painter = imageResource(Res.drawable.lightning_network),
                 contentDescription = "Lightning Network",
-                modifier = Modifier.fillMaxSize().padding(end = 40.dp),
-                contentScale = ContentScale.Fit
+                modifier = Modifier.fillMaxSize().padding(
+                    end = if(isWelcome) 40.dp else 0.dp
+                ),
+                contentScale = if(isWelcome) ContentScale.Fit else ContentScale.FillHeight,
+                alpha = 0.55f
             )
             Canvas(modifier = Modifier.size(12.dp),
                 onDraw = {
@@ -88,13 +93,17 @@ fun OnBoardLightningScreen(){
             fontWeight = FontWeight.Light,
         )
     }
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom,
-        modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
-    ) {
-        Box(modifier = Modifier.height(48.dp).width(259.dp)){
-            CommonButton(text = "Continue", true, endIcon = Icons.Default.ArrowForward){}
+    if (isWelcome) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom,
+            modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
+        ) {
+            Box(modifier = Modifier.height(48.dp).width(259.dp)) {
+                CommonButton(text = "Continue", true, endIcon = Icons.Default.ArrowForward) {
+                    LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
+                }
+            }
         }
     }
 }

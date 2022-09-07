@@ -1,5 +1,6 @@
 package chat.sphinx.common.components
 
+import OnBoardLightningScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.ui.Modifier
@@ -46,6 +47,16 @@ fun LandingScreen() {
             LandingScreenType.RestoreExistingUserSuccess -> {
                 WelcomeScreen()
             }
+            LandingScreenType.OnBoardMessage -> {
+                OnBoardMessageScreen()
+            }
+            LandingScreenType.OnBoardLightning -> {
+                OnBoardLightningScreen(isWelcome = true)
+            }
+            LandingScreenType.OnBoardSignUp -> {
+                OnBoardSignUpScreen()
+            }
+
         }
     }
 
