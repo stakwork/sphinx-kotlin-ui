@@ -85,6 +85,7 @@ fun main() = application {
 //                    OnBoardMessageScreen()
                     OnBoardSignUpScreen()
 //                    OnBoardLightningScreen(true)
+//                        NewUserScreen(NewUserStore())
                 }
             }
 
