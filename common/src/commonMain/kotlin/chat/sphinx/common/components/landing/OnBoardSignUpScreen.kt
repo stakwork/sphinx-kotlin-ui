@@ -26,13 +26,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.utils.SphinxFonts
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.*
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.platform.imageResource
@@ -62,13 +61,13 @@ fun OnBoardSignUpScreen() {
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            ProfileImage()
+            EndScreen()
         }
     }
 }
 
 @Composable
-fun SignUpScreen() {
+fun SetUpScreen() {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top
@@ -140,6 +139,8 @@ fun SignUpScreen() {
     }
 }
 
+
+
 @Composable
 fun ProfileImage() {
     Column(
@@ -173,6 +174,62 @@ fun ProfileImage() {
         Spacer(modifier = Modifier.height(18.dp))
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
             CommonButton(text = "Skip", true, endIcon = Icons.Default.ArrowForward) {
+            }
+        }
+    }
+}
+
+@Composable
+fun EndScreen(){
+    Column(
+        modifier = Modifier.fillMaxSize().padding(top = 132.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+        Text(
+            text = " YOU'RE READY\n" +
+                    "TO USE SPHINX!",
+            color = MaterialTheme.colorScheme.tertiary,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.W600,
+            modifier = Modifier.padding(top = 74.dp),
+            fontFamily = SphinxFonts.montserratFamily
+        )
+        Spacer(modifier = Modifier.height(86.dp))
+
+        Text(
+            text = "You can send messages,",
+            fontSize = 18.sp,
+            color = Color.White,
+            fontFamily = Roboto,
+            fontWeight = FontWeight.Light,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "spend 1000 sats,",
+            fontSize = 18.sp,
+            color = Color.White,
+            fontFamily = Roboto,
+            fontWeight = FontWeight.Light,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "or recieve up to 10 000 sats.",
+            fontSize = 18.sp,
+            color = Color.White,
+            fontFamily = Roboto,
+            fontWeight = FontWeight.Light,
+        )
+
+
+    }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom,
+        modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
+    ) {
+        Box(modifier = Modifier.height(48.dp).width(259.dp)) {
+            CommonButton(text = "Finish", true, endIcon = Icons.Default.ArrowForward) {
+                LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
             }
         }
     }
