@@ -53,7 +53,7 @@ fun OnBoardSignUpScreen() {
                 .background(MaterialTheme.colorScheme.secondary)
 
         ) {
-            OnBoardLightningScreen(false)
+            OnBoardLightningScreen(isWelcome = false, isEndScreen = true)
         }
         Box(
             contentAlignment = Alignment.TopStart,

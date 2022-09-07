@@ -51,7 +51,7 @@ fun LandingScreen() {
                 OnBoardMessageScreen()
             }
             LandingScreenType.OnBoardLightning -> {
-                OnBoardLightningScreen(isWelcome = true)
+                OnBoardLightningScreen(isWelcome = true, isEndScreen = false)
             }
             LandingScreenType.OnBoardSignUp -> {
                 OnBoardSignUpScreen()
