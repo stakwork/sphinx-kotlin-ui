@@ -39,6 +39,7 @@ object Res {
         const val splash_background = "drawable/splash_background.png"
         const val landing_page_image = "drawable/landingpageimage.png"
         const val lightning_network = "drawable/lightning_network.png"
+        const val ending_page_image = "drawable/endingpageimage.png"
 
         const val connection_animation =  "drawable/connecting.gif"
         const val ic_camera =  "drawable/ic_camera.xml"

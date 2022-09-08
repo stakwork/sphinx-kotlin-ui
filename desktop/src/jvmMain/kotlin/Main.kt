@@ -83,9 +83,10 @@ fun main() = application {
                 }
                 AppTheme(useDarkTheme = true) {
 //                    OnBoardMessageScreen()
-                    OnBoardSignUpScreen()
+//                    OnBoardSignUpScreen()
 //                    OnBoardLightningScreen(true)
-//                        NewUserScreen(NewUserStore())
+//                    NewUserScreen(NewUserStore())
+                    OnBoardSphinxOnYourPhone()
                 }
             }
 
