@@ -142,7 +142,7 @@ fun SetUpScreen() {
 
 
 @Composable
-fun ProfileImage() {
+fun ProfileImage(path: Path?) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top
@@ -162,7 +162,7 @@ fun ProfileImage() {
             fontWeight = FontWeight.W400,
         )
         Spacer(modifier = Modifier.height(64.dp))
-        ProfileBox(null)
+        ProfileBox(path)
 
     }
     Column(
@@ -170,10 +170,10 @@ fun ProfileImage() {
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
     ) {
-        UploadImage()
+        UploadImage(path)
         Spacer(modifier = Modifier.height(18.dp))
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-            CommonButton(text = "Skip", true, endIcon = Icons.Default.ArrowForward) {
+            CommonButton(text = if(path == null) "Skip" else "Continue", true, endIcon = Icons.Default.ArrowForward) {
             }
         }
     }
@@ -339,7 +339,7 @@ private fun ProfileBox(path: Path?) {
 }
 
 @Composable
-private fun UploadImage() {
+private fun UploadImage(path: Path?) {
     Box(modifier = Modifier.height(48.dp).width(259.dp)) {
         Card(
             modifier = Modifier.wrapContentSize(),
@@ -347,7 +347,7 @@ private fun UploadImage() {
             border = BorderStroke(1.dp, md_theme_dark_onBackground)
         ) {
             CommonButton(
-                text = "Upload Image",
+                text = if (path == null) "Upload Image" else "Change image",
                 enabled = true,
                 endIcon = Icons.Default.CameraAlt,
                 backgroundColor = MaterialTheme.colorScheme.surface,
