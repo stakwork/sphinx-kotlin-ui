@@ -13,7 +13,8 @@ enum class LandingScreenType {
     Loading,
     OnBoardMessage,
     OnBoardLightning,
-    OnBoardSignUp
+    OnBoardSignUp,
+    OnBoardSphinxOnYourPhone
 }
 
 object LandingScreenState {

@@ -28,6 +28,7 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.wrapper.PhotoUrl
 import theme.md_theme_dark_onBackground
 
@@ -35,7 +36,7 @@ val photoTestUrl =
     PhotoUrl("https://s3-alpha-sig.figma.com/img/fa29/05ee/d4461b47820b024258346c3a5fa45c9d?Expires=1663545600&Signature=FG4Yxg0WAd11Um72xuKVmBmGxdruQZnhKvLG3nJNLYZbEDXtU~B31aLe93tHDoL8Hb4IPnn6LoMZZuusTifSRbnPwNQPPEJ41oMFsej2DnNJsl-Ysf37nUxomSPpJwaLc6soniVL6-JKPxMDg~0DN8aJHamdmmDqMtYsacMkm2lPgne5NzRYxSq9u2opzD4Z-yW8qvrDAHEnNLXkMjfZDQNld~mZxMelr1By8Nt7CYVaOzV-gZAh~kT-oAIiW77jMM78G2iIZni07GWM1NmzlbJwbqY~AH3ktOzo0YTUjuAgFK9T~uLLxA9VXiKSfbLgoPWLhWoSokTfD-bkPTJ8Jw__&Key-Pair-Id=APKAINTVSUGEWH5XD5UA")
 
 @Composable
-fun OnBoardMessageScreen() {
+fun OnBoardMessageScreen(viewModel: SignUpViewModel) {
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -48,7 +49,7 @@ fun OnBoardMessageScreen() {
 
         ) {
             Text(
-                text = "A message from your friend…",
+                text = viewModel.signUpState.messageFromFriend,
                 fontSize = 30.sp,
                 color = md_theme_dark_onBackground,
                 fontFamily = Roboto,
@@ -64,14 +65,14 @@ fun OnBoardMessageScreen() {
         verticalArrangement = Arrangement.Center
     ) {
         PhotoUrlImage(
-            photoUrl = photoTestUrl,
+            photoUrl = viewModel.signUpState.friendPhotoUrl ?: PhotoUrl(""),
             modifier = Modifier
                 .size(112.dp)
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.height(32.dp))
         Text(
-            text = "Tracey Walter",
+            text = viewModel.signUpState.friendName,
             fontSize = 30.sp,
             color = Color.White,
             fontFamily = Roboto,

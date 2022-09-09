@@ -28,13 +28,14 @@ import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.landing.photoTestUrl
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.PhotoUrl
 import theme.lightning_network_point
 import theme.lightning_network_point_alpha
 
 @Composable
-fun OnBoardLightningScreen(isWelcome: Boolean, isEndScreen: Boolean) {
+fun OnBoardLightningScreen(viewModel: SignUpViewModel, isWelcome: Boolean, isEndScreen: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -87,7 +88,8 @@ fun OnBoardLightningScreen(isWelcome: Boolean, isEndScreen: Boolean) {
         }
     }
     if (isEndScreen) {
-        ProfileDialogBox(photoTestUrl)
+        // TODO: Change for PhotoFileImage component and find a default image to show in case there is no image
+        ProfileDialogBox(viewModel,photoTestUrl)
 
     } else {
         Column(
@@ -121,7 +123,7 @@ fun OnBoardLightningScreen(isWelcome: Boolean, isEndScreen: Boolean) {
     }
 }
 @Composable
-private fun ProfileDialogBox(photoUrl: PhotoUrl){
+private fun ProfileDialogBox(viewModel: SignUpViewModel,photoUrl: PhotoUrl){
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.padding(bottom = 200.dp)
@@ -141,7 +143,7 @@ private fun ProfileDialogBox(photoUrl: PhotoUrl){
                         .clip(CircleShape)
                 )
                 Text(
-                    text = "Wayne Michaels",
+                    text = viewModel.signUpState.nickname,
                     fontSize = 20.sp,
                     maxLines = 2,
                     color = Color.Black,

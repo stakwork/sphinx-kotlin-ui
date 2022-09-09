@@ -12,6 +12,7 @@ import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import chat.sphinx.common.viewmodel.NewUserStore
 import chat.sphinx.common.viewmodel.RestoreFromKeystoreStore
+import chat.sphinx.common.viewmodel.SignUpViewModel
 
 
 @Composable
@@ -19,6 +20,7 @@ fun LandingScreen() {
 
     val restoreExistingUserViewModel = remember { RestoreExistingUserViewModel() }
     val restoreFromKeystoreStore = remember { RestoreFromKeystoreStore() }
+    val signUpViewModel = remember { SignUpViewModel() }
     val newUserStore = remember { NewUserStore() }
 
     Surface(
@@ -48,18 +50,18 @@ fun LandingScreen() {
                 WelcomeScreen()
             }
             LandingScreenType.OnBoardMessage -> {
-                OnBoardMessageScreen()
+                OnBoardMessageScreen(signUpViewModel)
             }
             LandingScreenType.OnBoardLightning -> {
-                OnBoardLightningScreen(isWelcome = true, isEndScreen = false)
+                OnBoardLightningScreen(signUpViewModel ,isWelcome = true, isEndScreen = false)
             }
             LandingScreenType.OnBoardSignUp -> {
-                OnBoardSignUpScreen()
+                OnBoardSignUpScreen(signUpViewModel)
             }
-
+            LandingScreenType.OnBoardSphinxOnYourPhone -> {
+                OnBoardSphinxOnYourPhone()
+            }
         }
     }
-
-
 
 }

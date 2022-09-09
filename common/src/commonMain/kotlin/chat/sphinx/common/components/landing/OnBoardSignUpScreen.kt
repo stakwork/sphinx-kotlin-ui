@@ -34,13 +34,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.*
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoFileImage
+import chat.sphinx.common.state.SignUpScreenState
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import okio.Path
 
 import theme.md_theme_dark_onBackground
 
 @Composable
-fun OnBoardSignUpScreen() {
+fun OnBoardSignUpScreen(viewModel: SignUpViewModel) {
     Row(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -52,7 +54,10 @@ fun OnBoardSignUpScreen() {
                 .background(MaterialTheme.colorScheme.secondary)
 
         ) {
-            OnBoardLightningScreen(isWelcome = false, isEndScreen = true)
+            when(viewModel.signUpState.signUpScreenState.value) {
+                is SignUpScreenState.EndScreen -> { OnBoardLightningScreen(viewModel, isWelcome = false, isEndScreen = true) }
+                else -> { OnBoardLightningScreen(viewModel ,isWelcome = false, isEndScreen = false) }
+            }
         }
         Box(
             contentAlignment = Alignment.TopStart,
@@ -61,13 +66,17 @@ fun OnBoardSignUpScreen() {
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            EndScreen()
+            when(viewModel.signUpState.signUpScreenState.value) {
+                is SignUpScreenState.BasicInfo -> { BasicInfoScreen(viewModel) }
+                is SignUpScreenState.ProfileImage -> { ProfileImage(viewModel) }
+                is SignUpScreenState.EndScreen -> { EndScreen(viewModel) }
+            }
         }
     }
 }
 
 @Composable
-fun SetUpScreen() {
+fun BasicInfoScreen(viewModel: SignUpViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top
@@ -92,37 +101,32 @@ fun SetUpScreen() {
                 .padding(start = 77.dp, top = 62.dp, end = 77.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            var nameText by remember { mutableStateOf("") }
-            var setPinText by remember { mutableStateOf("") }
-            var confirmPinText by remember { mutableStateOf("") }
-
-
             Spacer(modifier = Modifier.height(34.dp))
             TextField(
-                value = nameText,
+                value = viewModel.signUpState.nickname,
                 textLabel = "Nickname",
                 modifier = Modifier.fillMaxWidth(),
                 isPin = false
             ) {
-                nameText = it
+                viewModel.onNicknameChanged(it)
             }
             Spacer(modifier = Modifier.height(40.dp))
             TextField(
-                value = setPinText,
+                value = viewModel.signUpState.newPin,
                 textLabel = "Set PIN",
                 modifier = Modifier.fillMaxWidth(),
                 isPin = true
             ) {
-                setPinText = it
+                viewModel.onNewPinChanged(it)
             }
             Spacer(modifier = Modifier.height(40.dp))
             TextField(
-                value = confirmPinText,
+                value = viewModel.signUpState.confirmedPin,
                 textLabel = "Confirm PIN",
                 modifier = Modifier.fillMaxWidth(),
                 isPin = true
             ) {
-                confirmPinText = it
+                viewModel.onConfirmedPinChanged(it)
             }
         }
     }
@@ -132,8 +136,11 @@ fun SetUpScreen() {
         modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
     ) {
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-            CommonButton(text = "Continue", true, endIcon = Icons.Default.ArrowForward) {
-                LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
+            CommonButton(text = "Continue",
+                endIcon = Icons.Default.ArrowForward,
+                enabled = viewModel.signUpState.basicInfoButtonEnabled
+            ) {
+                viewModel.signUpState.signUpScreenState.value = SignUpScreenState.ProfileImage
             }
         }
     }
@@ -142,12 +149,14 @@ fun SetUpScreen() {
 
 
 @Composable
-fun ProfileImage(path: Path?) {
+fun ProfileImage(viewModel: SignUpViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top
     ) {
-        BackButton()
+        BackButton {
+            viewModel.signUpState.signUpScreenState.value = SignUpScreenState.BasicInfo
+        }
     }
     Column(
         modifier = Modifier.fillMaxSize().padding(top = 96.dp),
@@ -155,14 +164,14 @@ fun ProfileImage(path: Path?) {
 
         ) {
         Text(
-            text = "Wayne Michaels",
+            text = viewModel.signUpState.nickname,
             fontSize = 30.sp,
             color = md_theme_dark_onBackground,
             fontFamily = Roboto,
             fontWeight = FontWeight.W400,
         )
         Spacer(modifier = Modifier.height(64.dp))
-        ProfileBox(path)
+        ProfileBox(viewModel.signUpState.userPhotoFile)
 
     }
     Column(
@@ -170,17 +179,20 @@ fun ProfileImage(path: Path?) {
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
     ) {
-        UploadImage(path)
+        UploadImage(viewModel.signUpState.userPhotoFile)
         Spacer(modifier = Modifier.height(18.dp))
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-            CommonButton(text = if(path == null) "Skip" else "Continue", true, endIcon = Icons.Default.ArrowForward) {
+            CommonButton(text = if(viewModel.signUpState.userPhotoFile == null) "Skip" else "Continue",
+                true,
+                endIcon = Icons.Default.ArrowForward) {
+                viewModel.signUpState.signUpScreenState.value = SignUpScreenState.EndScreen
             }
         }
     }
 }
 
 @Composable
-fun EndScreen(){
+fun EndScreen(viewModel: SignUpViewModel){
     Column(
         modifier = Modifier.fillMaxSize().padding(top = 132.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -220,7 +232,6 @@ fun EndScreen(){
             fontWeight = FontWeight.Light,
         )
 
-
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -229,7 +240,7 @@ fun EndScreen(){
     ) {
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
             CommonButton(text = "Finish", true, endIcon = Icons.Default.ArrowForward) {
-                LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
+                LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
             }
         }
     }
@@ -285,12 +296,12 @@ private fun TextField(
 }
 
 @Composable
-private fun BackButton() {
+private fun BackButton(onClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 28.dp, start = 20.dp),
     ) {
         Row(
-            modifier = Modifier.clickable {},
+            modifier = Modifier.clickable { onClick() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = Color.Gray)
