@@ -3,8 +3,10 @@ package chat.sphinx.common.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
+import chat.sphinx.wrapper.invite.toValidInviteStringOrNull
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import okio.Path
@@ -120,6 +122,21 @@ class SignUpViewModel {
     }
 
     fun onSubmitInvitationCode() {
-        LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
+        val code = signupCodeState.invitationCodeText
+
+        if (code.toValidInviteStringOrNull() != null) {
+            //IS AN INVITE
+            LandingScreenState.screenState(LandingScreenType.Loading)
+
+            //START WITH LOGIC
+        }
+
+        val redemptionCode = RedemptionCode.decode(code)
+        if (redemptionCode != null && redemptionCode is RedemptionCode.NodeInvite) {
+            //IS A HOME NODE CONNECT STRING FROM RELAY
+            LandingScreenState.screenState(LandingScreenType.Loading)
+
+            //START WITH LOGIC
+        }
     }
 }
