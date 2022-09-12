@@ -9,9 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -37,10 +34,11 @@ import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.state.LightningScreenState
 import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
+import chat.sphinx.signup.SignupUploadImageButton
+import chat.sphinx.wrapper.lightning.asFormattedString
 import okio.Path
-
 import theme.md_theme_dark_onBackground
-import utils.AnimatedContainer
+import views.BackButton
 
 @Composable
 fun OnBoardSignUpScreen(viewModel: SignUpViewModel) {
@@ -177,18 +175,17 @@ fun ProfileImage(viewModel: SignUpViewModel) {
             fontWeight = FontWeight.W400,
         )
         Spacer(modifier = Modifier.height(64.dp))
-        ProfileBox(viewModel.signupBasicInfoState.userPhotoFile)
-
+        ProfileBox(viewModel.signupBasicInfoState.userPicture?.filePath)
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
     ) {
-        UploadImage(viewModel.signupBasicInfoState.userPhotoFile)
+        SignupUploadImageButton(viewModel)
         Spacer(modifier = Modifier.height(18.dp))
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-            CommonButton(text = if(viewModel.signupBasicInfoState.userPhotoFile == null) "Skip" else "Continue",
+            CommonButton(text = if (viewModel.signupBasicInfoState.userPicture == null) "Skip" else "Continue",
                 true,
                 endIcon = Icons.Default.ArrowForward) {
                 viewModel.navigateTo(LightningScreenState.EndScreen)
@@ -237,7 +234,6 @@ fun EndScreen(viewModel: SignUpViewModel){
             fontFamily = Roboto,
             fontWeight = FontWeight.Light,
         )
-
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -281,7 +277,7 @@ private fun TextField(
             fontWeight = FontWeight.Light
         ),
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+            focusedBorderColor = MaterialTheme.colorScheme.secondary,
             backgroundColor = MaterialTheme.colorScheme.onSurfaceVariant,
             unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
             cursorColor = md_theme_dark_onBackground
@@ -302,29 +298,9 @@ private fun TextField(
 }
 
 @Composable
-private fun BackButton(onClick: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 28.dp, start = 20.dp),
-    ) {
-        Row(
-            modifier = Modifier.clickable { onClick() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Go back", tint = Color.Gray)
-            Spacer(modifier = Modifier.width(14.dp))
-            Text(
-                text = "Back",
-                color = MaterialTheme.colorScheme.tertiary,
-                fontFamily = Roboto
-            )
-        }
-    }
-}
-
-@Composable
 private fun ProfileBox(path: Path?) {
     Box(
-        modifier = Modifier.fillMaxWidth().height(180.dp),
+        modifier = Modifier.size(180.dp),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxWidth(),
@@ -333,8 +309,7 @@ private fun ProfileBox(path: Path?) {
                     md_theme_dark_onBackground, 164f,
                     Offset(size.width / 2, size.height / 2),
                     style = Stroke(
-                        width = 4f,
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                        width = 4f
                     ),
                 )
             })
@@ -342,33 +317,16 @@ private fun ProfileBox(path: Path?) {
             PhotoFileImage(
                 photoFilepath = path,
                 modifier = Modifier.fillMaxSize().padding(12.dp).clip(CircleShape),
-                effect = {}
+                effect = {},
+                contentScale = ContentScale.Crop
             )
         } else {
             Image(
-                modifier = Modifier.padding(12.dp),
+                modifier = Modifier.fillMaxSize().padding(12.dp),
                 painter = imageResource(Res.drawable.profile_avatar),
                 contentDescription = "avatar",
                 contentScale = ContentScale.Inside
             )
-        }
-    }
-}
-
-@Composable
-private fun UploadImage(path: Path?) {
-    Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-        Card(
-            modifier = Modifier.wrapContentSize(),
-            shape = RoundedCornerShape(23.dp),
-            border = BorderStroke(1.dp, md_theme_dark_onBackground)
-        ) {
-            CommonButton(
-                text = if (path == null) "Upload Image" else "Change image",
-                enabled = true,
-                endIcon = Icons.Default.CameraAlt,
-                backgroundColor = MaterialTheme.colorScheme.surface,
-            ) {}
         }
     }
 }

@@ -20,6 +20,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.state.LandingScreenState
+import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
@@ -77,7 +79,9 @@ fun RestoreExistingUserScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxHeight()
             ) {
-                BackButton()
+                BackButton {
+                    LandingScreenState.screenState(LandingScreenType.LandingPage)
+                }
 
                 Column(
                     verticalArrangement = Arrangement.Center,

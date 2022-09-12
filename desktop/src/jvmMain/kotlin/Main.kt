@@ -1,6 +1,7 @@
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.*
@@ -23,6 +24,7 @@ import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
 import theme.LocalSpacing
 import theme.Spacing
+import java.awt.Window
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -31,28 +33,8 @@ fun main() = application {
 
     val sphinxStore = remember { SphinxStore() }
     val sphinxState = sphinxStore.state
+    var currentWindow: MutableState<ComposeWindow?> = remember { mutableStateOf(null) }
 
-//    val rememberSphinxTray = remember {
-//        DesktopSphinxNotificationManager.sphinxTrayState
-//    }
-//    Tray(
-//        state = rememberSphinxTray,
-//        icon = sphinxIcon,
-//        menu = {
-//            Item(
-//                "Send notification",
-//                onClick = {
-//                    rememberSphinxTray.sendNotification(
-//                        Notification("Sphinx Notification", "Message from Sphinx App!")
-//                    )
-//                }
-//            )
-//            Item(
-//                "Exit",
-//                onClick = ::exitApplication
-//            )
-//        }
-//    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
             Window(
@@ -93,6 +75,8 @@ fun main() = application {
                 ),
                 icon = sphinxIcon
             ) {
+                currentWindow.value = window
+
                 val dashboardViewModel = remember { DashboardViewModel() }
                 this.window.addWindowFocusListener(dashboardViewModel)
 
@@ -126,30 +110,6 @@ fun main() = application {
                         icon = sphinxIcon
                     )
                 }
-
-                CompositionLocalProvider(LocalSpacing provides Spacing()){
-                    if (ContentState.sendFilePickerDialog.isAwaiting) {
-                        FilePickerDialog(
-                            window,
-                            "Sphinx File Picker",
-                            FilePickerMode.LOAD_FILE,
-                            onResult = {
-                                ContentState.sendFilePickerDialog.onResult(it)
-                            }
-                        )
-                    }
-                    if (ContentState.saveFilePickerDialog.isAwaiting) {
-                        FilePickerDialog(
-                            window,
-                            "Save File",
-                            FilePickerMode.SAVE_FILE,
-                            onResult = {
-                                ContentState.saveFilePickerDialog.onResult(it)
-                            },
-                            desiredFileName = ContentState.saveFilePickerDialog.desiredFileName
-                        )
-                    }
-                }
             }
         }
         ScreenType.LandingScreen -> {
@@ -162,6 +122,8 @@ fun main() = application {
                 ),
                 icon = sphinxIcon
             ) {
+                currentWindow.value = window
+
                 MenuBar {
                     Menu("Sphinx") {
                         Item("About", icon = sphinxIcon, onClick = { })
@@ -171,6 +133,31 @@ fun main() = application {
                 AppTheme(useDarkTheme = true) {
                     LandingScreen()
                 }
+            }
+        }
+    }
+    currentWindow.value?.let { window ->
+        CompositionLocalProvider(LocalSpacing provides Spacing()){
+            if (ContentState.sendFilePickerDialog.isAwaiting) {
+                FilePickerDialog(
+                    window,
+                    "Pick File",
+                    FilePickerMode.LOAD_FILE,
+                    onResult = {
+                        ContentState.sendFilePickerDialog.onResult(it)
+                    }
+                )
+            }
+            if (ContentState.saveFilePickerDialog.isAwaiting) {
+                FilePickerDialog(
+                    window,
+                    "Save File",
+                    FilePickerMode.SAVE_FILE,
+                    onResult = {
+                        ContentState.saveFilePickerDialog.onResult(it)
+                    },
+                    desiredFileName = ContentState.saveFilePickerDialog.desiredFileName
+                )
             }
         }
     }

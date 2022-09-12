@@ -2,6 +2,7 @@ package chat.sphinx.common.state
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.lightning.NodeBalanceAll
 import chat.sphinx.wrapper.lightning.Sat
@@ -24,7 +25,7 @@ data class SignupBasicInfoState(
     val newPin: String = "",
     val confirmedPin: String = "",
     val basicInfoButtonEnabled: Boolean = false,
-    val userPhotoFile: Path? = null
+    val userPicture: AttachmentInfo? = null,
     val balance: NodeBalanceAll = NodeBalanceAll(Sat(0L), Sat(0L))
 )
 

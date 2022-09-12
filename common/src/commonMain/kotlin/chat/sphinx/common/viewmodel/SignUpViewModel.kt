@@ -4,6 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.*
+import chat.sphinx.concepts.repository.message.model.AttachmentInfo
+import chat.sphinx.wrapper.message.media.MediaType
+import chat.sphinx.wrapper.message.media.toFileName
+import okio.Path
 
 class SignUpViewModel {
 
@@ -77,6 +81,22 @@ class SignUpViewModel {
             )
         }
         checkValidInput()
+    }
+
+    fun onProfilePictureChanged(filepath: Path) {
+        val ext = filepath.toFile().extension
+        val mediaType = MediaType.Image(MediaType.IMAGE + "/$ext")
+
+        setSignupBasicInfoState {
+            copy(
+                userPicture = AttachmentInfo(
+                    filePath = filepath,
+                    mediaType = mediaType,
+                    fileName = filepath.name.toFileName(),
+                    isLocalFile = true
+                )
+            )
+        }
     }
 
     private fun checkValidInput() {
