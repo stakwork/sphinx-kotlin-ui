@@ -10,9 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,8 +24,7 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.landing.photoTestUrl
-import chat.sphinx.common.state.LandingScreenState
-import chat.sphinx.common.state.LandingScreenType
+import chat.sphinx.common.state.LightningScreenState
 import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.PhotoUrl
@@ -35,7 +32,11 @@ import theme.lightning_network_point
 import theme.lightning_network_point_alpha
 
 @Composable
-fun OnBoardLightningScreen(viewModel: SignUpViewModel, isWelcome: Boolean, isEndScreen: Boolean) {
+fun OnBoardLightningScreen(
+    viewModel: SignUpViewModel
+) {
+    val lightningScreenState = viewModel.signupBasicInfoState.lightningScreenState
+
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -48,9 +49,9 @@ fun OnBoardLightningScreen(viewModel: SignUpViewModel, isWelcome: Boolean, isEnd
                 painter = imageResource(Res.drawable.lightning_network),
                 contentDescription = "Lightning Network",
                 modifier = Modifier.fillMaxSize().padding(
-                    end = if (isWelcome) 40.dp else 0.dp
+                    end = if (lightningScreenState is LightningScreenState.Start) 40.dp else 0.dp
                 ),
-                contentScale = if (isWelcome) ContentScale.Fit else ContentScale.FillHeight,
+                contentScale = if (lightningScreenState is LightningScreenState.Start) ContentScale.Fit else ContentScale.FillHeight,
                 alpha = 0.55f
             )
             Canvas(modifier = Modifier.size(12.dp),
@@ -87,10 +88,12 @@ fun OnBoardLightningScreen(viewModel: SignUpViewModel, isWelcome: Boolean, isEnd
             })
         }
     }
-    if (isEndScreen) {
+    if (lightningScreenState is LightningScreenState.EndScreen) {
         // TODO: Change for PhotoFileImage component and find a default image to show in case there is no image
-        ProfileDialogBox(viewModel,photoTestUrl)
-
+        ProfileDialogBox(
+            viewModel,
+            photoTestUrl
+        )
     } else {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -108,7 +111,7 @@ fun OnBoardLightningScreen(viewModel: SignUpViewModel, isWelcome: Boolean, isEnd
             )
         }
     }
-    if (isWelcome) {
+    if (lightningScreenState is LightningScreenState.Start) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom,
@@ -116,7 +119,8 @@ fun OnBoardLightningScreen(viewModel: SignUpViewModel, isWelcome: Boolean, isEnd
         ) {
             Box(modifier = Modifier.height(48.dp).width(259.dp)) {
                 CommonButton(text = "Continue", true, endIcon = Icons.Default.ArrowForward) {
-                    LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
+                    viewModel.navigateTo(LightningScreenState.BasicInfo)
+//                    LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
                 }
             }
         }
@@ -143,7 +147,7 @@ private fun ProfileDialogBox(viewModel: SignUpViewModel,photoUrl: PhotoUrl){
                         .clip(CircleShape)
                 )
                 Text(
-                    text = viewModel.signUpState.nickname,
+                    text = viewModel.signupBasicInfoState.nickname,
                     fontSize = 20.sp,
                     maxLines = 2,
                     color = Color.Black,

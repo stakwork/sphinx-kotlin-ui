@@ -9,10 +9,8 @@ enum class LandingScreenType {
     RestoreExistingUser,
     RestoreExistingUserSuccess,
     ExistingUserPIN,
-    RestoreFromKeystore,
     Loading,
     OnBoardMessage,
-    OnBoardLightning,
     OnBoardSignUp,
     OnBoardSphinxOnYourPhone
 }

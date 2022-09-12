@@ -3,38 +3,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
-import androidx.compose.ui.input.key.isCtrlPressed
-import androidx.compose.ui.input.key.key
 import androidx.compose.ui.window.*
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.components.LandingScreen
-import chat.sphinx.common.components.TransactionsUI
-import chat.sphinx.common.components.WelcomeScreen
-import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.chat.FilePickerDialog
 import chat.sphinx.common.components.chat.FilePickerMode
-import chat.sphinx.common.components.landing.*
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.common.viewmodel.NewUserStore
-import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import theme.LocalSpacing
 import theme.Spacing
-import java.awt.event.WindowEvent
-import java.awt.event.WindowFocusListener
-import java.awt.event.WindowStateListener
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -83,36 +71,17 @@ fun main() = application {
                     }
                 }
                 AppTheme(useDarkTheme = true) {
-//                    OnBoardMessageScreen(SignUpViewModel())
-                    OnBoardSignUpScreen(SignUpViewModel())
-//                    OnBoardLightningScreen(true, false)
-//                    NewUserScreen(NewUserStore())
-//                    OnBoardSphinxOnYourPhone()
+                    SphinxSplash()
+                    LaunchedEffect(windowState) {
+                        delay(1000L)
+                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+                            ContentState.onContentReady(ScreenType.DashboardScreen)
+                        } else {
+                            ContentState.onContentReady(ScreenType.LandingScreen)
+                        }
+                    }
                 }
             }
-
-//            Window(
-//                onCloseRequest = ::exitApplication,
-//                title = "Sphinx",
-//                state = WindowState(
-//                    position = WindowPosition.Aligned(Alignment.Center),
-//                    size = getPreferredWindowSize(800, 500)
-//                ),
-//                undecorated = true,
-//                icon = sphinxIcon,
-//            ) {
-//                AppTheme {
-//                    SphinxSplash()
-//                    LaunchedEffect(windowState) {
-//                        delay(1000L)
-//                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-//                            ContentState.onContentReady(ScreenType.DashboardScreen)
-//                        } else {
-//                            ContentState.onContentReady(ScreenType.LandingScreen)
-//                        }
-//                    }
-//                }
-//            }
         }
         ScreenType.DashboardScreen -> {
             Window(
@@ -183,7 +152,6 @@ fun main() = application {
                 }
             }
         }
-
         ScreenType.LandingScreen -> {
             Window(
                 onCloseRequest = ::exitApplication,

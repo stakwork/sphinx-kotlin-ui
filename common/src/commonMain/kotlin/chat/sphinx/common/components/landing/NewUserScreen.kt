@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
-import chat.sphinx.common.viewmodel.NewUserStore
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.onKeyUp
@@ -33,7 +33,7 @@ import views.BackButton
 
 @Composable
 fun NewUserScreen(
-    newUserStore: NewUserStore,
+    signUpViewModel: SignUpViewModel
 ) {
     Row(
         modifier = Modifier.fillMaxSize()
@@ -53,12 +53,8 @@ fun NewUserScreen(
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            RightPortionNewUser(newUserStore)
+            RightPortionNewUser(signUpViewModel)
         }
-    }
-
-    newUserStore.state.isProcessing?.let {
-
     }
 }
 
@@ -92,7 +88,9 @@ fun LeftPortionNewUser() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun RightPortionNewUser(newUserStore: NewUserStore) {
+fun RightPortionNewUser(
+    signUpViewModel: SignUpViewModel
+) {
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -133,16 +131,16 @@ fun RightPortionNewUser(newUserStore: NewUserStore) {
                                 backgroundColor = MaterialTheme.colorScheme.tertiary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
                             ),
-                            value = newUserStore.state.invitationCodeText,
+                            value = signUpViewModel.signupCodeState.invitationCodeText,
 
                             modifier = Modifier.fillMaxWidth()
                                 .onKeyEvent(
                                     onKeyUp(
                                         Key.Enter,
-                                        newUserStore::onSubmitInvitationCode
+                                        signUpViewModel::onSubmitInvitationCode
                                     )
                                 ),
-                            onValueChange = newUserStore::onInvitationCodeTextChanged,
+                            onValueChange = signUpViewModel::onInvitationCodeTextChanged,
                             singleLine = true,
                             placeholder = { Text(text = "Paste your invitation code") }
                         )
@@ -157,8 +155,8 @@ fun RightPortionNewUser(newUserStore: NewUserStore) {
                 ) {
                     CommonButton(
                         text = "Submit",
-                        enabled = newUserStore.state.invitationCodeText.isNotEmpty(),
-                        callback = newUserStore::onSubmitInvitationCode
+                        enabled = signUpViewModel.signupCodeState.invitationCodeText.isNotEmpty(),
+                        callback = signUpViewModel::onSubmitInvitationCode
                     )
                     Column(
                         horizontalAlignment = Alignment.End,
@@ -166,7 +164,7 @@ fun RightPortionNewUser(newUserStore: NewUserStore) {
                         modifier = Modifier.fillMaxSize().padding(16.dp, 0.dp)
                     ) {
                         val textColor =
-                            if (newUserStore.state.invitationCodeText.isNotEmpty()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
+                            if (signUpViewModel.signupCodeState.invitationCodeText.isNotEmpty()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
                         Icon(
                             Icons.Filled.ArrowForward,
                             "arrow",
@@ -180,7 +178,7 @@ fun RightPortionNewUser(newUserStore: NewUserStore) {
             Box(
                 modifier = Modifier.height(20.dp), contentAlignment = Alignment.Center
             ) {
-                newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
+                signUpViewModel.signupCodeState.errorMessage?.let { invitationCodeErrorMessage ->
                     Text(
                         text = invitationCodeErrorMessage,
                         color = badge_red

@@ -34,12 +34,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.*
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoFileImage
-import chat.sphinx.common.state.SignUpScreenState
+import chat.sphinx.common.state.LightningScreenState
 import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import okio.Path
 
 import theme.md_theme_dark_onBackground
+import utils.AnimatedContainer
 
 @Composable
 fun OnBoardSignUpScreen(viewModel: SignUpViewModel) {
@@ -54,22 +55,27 @@ fun OnBoardSignUpScreen(viewModel: SignUpViewModel) {
                 .background(MaterialTheme.colorScheme.secondary)
 
         ) {
-            when(viewModel.signUpState.signUpScreenState.value) {
-                is SignUpScreenState.EndScreen -> { OnBoardLightningScreen(viewModel, isWelcome = false, isEndScreen = true) }
-                else -> { OnBoardLightningScreen(viewModel ,isWelcome = false, isEndScreen = false) }
-            }
+            OnBoardLightningScreen(viewModel)
         }
-        Box(
-            contentAlignment = Alignment.TopStart,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            when(viewModel.signUpState.signUpScreenState.value) {
-                is SignUpScreenState.BasicInfo -> { BasicInfoScreen(viewModel) }
-                is SignUpScreenState.ProfileImage -> { ProfileImage(viewModel) }
-                is SignUpScreenState.EndScreen -> { EndScreen(viewModel) }
+        if (viewModel.signupBasicInfoState.lightningScreenState !is LightningScreenState.Start) {
+            Box(
+                contentAlignment = Alignment.TopStart,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                when (viewModel.signupBasicInfoState.lightningScreenState) {
+                    is LightningScreenState.BasicInfo -> {
+                        BasicInfoScreen(viewModel)
+                    }
+                    is LightningScreenState.ProfileImage -> {
+                        ProfileImage(viewModel)
+                    }
+                    is LightningScreenState.EndScreen -> {
+                        EndScreen(viewModel)
+                    }
+                }
             }
         }
     }
@@ -103,7 +109,7 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
         ) {
             Spacer(modifier = Modifier.height(34.dp))
             TextField(
-                value = viewModel.signUpState.nickname,
+                value = viewModel.signupBasicInfoState.nickname,
                 textLabel = "Nickname",
                 modifier = Modifier.fillMaxWidth(),
                 isPin = false
@@ -112,7 +118,7 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
             }
             Spacer(modifier = Modifier.height(40.dp))
             TextField(
-                value = viewModel.signUpState.newPin,
+                value = viewModel.signupBasicInfoState.newPin,
                 textLabel = "Set PIN",
                 modifier = Modifier.fillMaxWidth(),
                 isPin = true
@@ -121,7 +127,7 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
             }
             Spacer(modifier = Modifier.height(40.dp))
             TextField(
-                value = viewModel.signUpState.confirmedPin,
+                value = viewModel.signupBasicInfoState.confirmedPin,
                 textLabel = "Confirm PIN",
                 modifier = Modifier.fillMaxWidth(),
                 isPin = true
@@ -138,9 +144,9 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
             CommonButton(text = "Continue",
                 endIcon = Icons.Default.ArrowForward,
-                enabled = viewModel.signUpState.basicInfoButtonEnabled
+                enabled = viewModel.signupBasicInfoState.basicInfoButtonEnabled
             ) {
-                viewModel.signUpState.signUpScreenState.value = SignUpScreenState.ProfileImage
+                viewModel.navigateTo(LightningScreenState.ProfileImage)
             }
         }
     }
@@ -155,7 +161,7 @@ fun ProfileImage(viewModel: SignUpViewModel) {
         verticalArrangement = Arrangement.Top
     ) {
         BackButton {
-            viewModel.signUpState.signUpScreenState.value = SignUpScreenState.BasicInfo
+            viewModel.navigateTo(LightningScreenState.BasicInfo)
         }
     }
     Column(
@@ -164,14 +170,14 @@ fun ProfileImage(viewModel: SignUpViewModel) {
 
         ) {
         Text(
-            text = viewModel.signUpState.nickname,
+            text = viewModel.signupBasicInfoState.nickname,
             fontSize = 30.sp,
             color = md_theme_dark_onBackground,
             fontFamily = Roboto,
             fontWeight = FontWeight.W400,
         )
         Spacer(modifier = Modifier.height(64.dp))
-        ProfileBox(viewModel.signUpState.userPhotoFile)
+        ProfileBox(viewModel.signupBasicInfoState.userPhotoFile)
 
     }
     Column(
@@ -179,13 +185,13 @@ fun ProfileImage(viewModel: SignUpViewModel) {
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
     ) {
-        UploadImage(viewModel.signUpState.userPhotoFile)
+        UploadImage(viewModel.signupBasicInfoState.userPhotoFile)
         Spacer(modifier = Modifier.height(18.dp))
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-            CommonButton(text = if(viewModel.signUpState.userPhotoFile == null) "Skip" else "Continue",
+            CommonButton(text = if(viewModel.signupBasicInfoState.userPhotoFile == null) "Skip" else "Continue",
                 true,
                 endIcon = Icons.Default.ArrowForward) {
-                viewModel.signUpState.signUpScreenState.value = SignUpScreenState.EndScreen
+                viewModel.navigateTo(LightningScreenState.EndScreen)
             }
         }
     }

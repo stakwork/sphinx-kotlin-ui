@@ -9,9 +9,8 @@ import androidx.compose.runtime.remember
 import chat.sphinx.common.components.landing.*
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
+import chat.sphinx.common.state.LightningScreenState
 import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
-import chat.sphinx.common.viewmodel.NewUserStore
-import chat.sphinx.common.viewmodel.RestoreFromKeystoreStore
 import chat.sphinx.common.viewmodel.SignUpViewModel
 
 
@@ -19,9 +18,7 @@ import chat.sphinx.common.viewmodel.SignUpViewModel
 fun LandingScreen() {
 
     val restoreExistingUserViewModel = remember { RestoreExistingUserViewModel() }
-    val restoreFromKeystoreStore = remember { RestoreFromKeystoreStore() }
     val signUpViewModel = remember { SignUpViewModel() }
-    val newUserStore = remember { NewUserStore() }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -32,16 +29,13 @@ fun LandingScreen() {
                 LandingUI()
             }
             LandingScreenType.NewUser -> {
-                NewUserScreen(newUserStore)
+                NewUserScreen(signUpViewModel)
             }
             LandingScreenType.RestoreExistingUser -> {
                 RestoreExistingUserScreen(restoreExistingUserViewModel)
             }
             LandingScreenType.ExistingUserPIN -> {
                 ExistingUserPINScreen(restoreExistingUserViewModel)
-            }
-            LandingScreenType.RestoreFromKeystore -> {
-                RestoreFromKeychainScreen(restoreFromKeystoreStore)
             }
             LandingScreenType.Loading -> {
                 ConnectingDialog()
@@ -51,9 +45,6 @@ fun LandingScreen() {
             }
             LandingScreenType.OnBoardMessage -> {
                 OnBoardMessageScreen(signUpViewModel)
-            }
-            LandingScreenType.OnBoardLightning -> {
-                OnBoardLightningScreen(signUpViewModel ,isWelcome = true, isEndScreen = false)
             }
             LandingScreenType.OnBoardSignUp -> {
                 OnBoardSignUpScreen(signUpViewModel)

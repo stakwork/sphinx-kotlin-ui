@@ -49,7 +49,7 @@ fun OnBoardMessageScreen(viewModel: SignUpViewModel) {
 
         ) {
             Text(
-                text = viewModel.signUpState.messageFromFriend,
+                text = "A message from your friend…",
                 fontSize = 30.sp,
                 color = md_theme_dark_onBackground,
                 fontFamily = Roboto,
@@ -65,14 +65,14 @@ fun OnBoardMessageScreen(viewModel: SignUpViewModel) {
         verticalArrangement = Arrangement.Center
     ) {
         PhotoUrlImage(
-            photoUrl = viewModel.signUpState.friendPhotoUrl ?: PhotoUrl(""),
+            photoUrl = viewModel.signupInviterState.friendPhotoUrl ?: PhotoUrl(""),
             modifier = Modifier
                 .size(112.dp)
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.height(32.dp))
         Text(
-            text = viewModel.signUpState.friendName,
+            text = viewModel.signupInviterState.friendName,
             fontSize = 30.sp,
             color = Color.White,
             fontFamily = Roboto,
@@ -95,7 +95,7 @@ fun OnBoardMessageScreen(viewModel: SignUpViewModel) {
     ) {
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
             CommonButton(text = "Get Started", true, endIcon = Icons.Default.ArrowForward) {
-                LandingScreenState.screenState(LandingScreenType.OnBoardLightning)
+                LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
             }
         }
     }

@@ -3,20 +3,57 @@ package chat.sphinx.common.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import chat.sphinx.common.state.SignUpState
+import chat.sphinx.common.state.*
 
 class SignUpViewModel {
 
-    var signUpState: SignUpState by mutableStateOf(initialSignUpState())
+    //SIGNUP CODE STATE
+    var signupCodeState: SignupCodeState by mutableStateOf(initialSignupCodeState())
 
-    private fun initialSignUpState(): SignUpState = SignUpState()
+    private fun initialSignupCodeState(): SignupCodeState = SignupCodeState()
 
-    private inline fun setSignUpState(update: SignUpState.() -> SignUpState) {
-        signUpState = signUpState.update()
+    private inline fun setSignupCodeState(update: SignupCodeState.() -> SignupCodeState) {
+        signupCodeState = signupCodeState.update()
     }
 
+    fun onInvitationCodeTextChanged(text: String) {
+        setSignupCodeState {
+            copy(
+                invitationCodeText = text,
+                errorMessage = null
+            )
+        }
+    }
+
+    //SIGNUP INVITER INFO STATE
+    var signupInviterState: SignupInviterState by mutableStateOf(initialSignupInviterState())
+
+    private fun initialSignupInviterState(): SignupInviterState = SignupInviterState()
+
+    private inline fun setSignupInviterState(update: SignupInviterState.() -> SignupInviterState) {
+        signupInviterState = signupInviterState.update()
+    }
+
+    //SIGNUP BASIC INFO STATE
+    var signupBasicInfoState: SignupBasicInfoState by mutableStateOf(initialSignupBasicInfoState())
+
+    private fun initialSignupBasicInfoState(): SignupBasicInfoState = SignupBasicInfoState()
+
+    private inline fun setSignupBasicInfoState(update: SignupBasicInfoState.() -> SignupBasicInfoState) {
+        signupBasicInfoState = signupBasicInfoState.update()
+    }
+
+    fun navigateTo(screenState: LightningScreenState) {
+        setSignupBasicInfoState {
+            copy(
+                lightningScreenState = screenState
+            )
+        }
+    }
+
+
     fun onNicknameChanged(nickname: String) {
-        setSignUpState {
+        setSignupBasicInfoState {
             copy(
                 nickname = nickname
             )
@@ -25,7 +62,7 @@ class SignUpViewModel {
     }
 
     fun onNewPinChanged(newPin: String) {
-        setSignUpState {
+        setSignupBasicInfoState {
             copy(
                 newPin = newPin
             )
@@ -34,7 +71,7 @@ class SignUpViewModel {
     }
 
     fun onConfirmedPinChanged(confirmedPin: String) {
-        setSignUpState {
+        setSignupBasicInfoState {
             copy(
                 confirmedPin = confirmedPin
             )
@@ -43,23 +80,26 @@ class SignUpViewModel {
     }
 
     private fun checkValidInput() {
-        signUpState.apply {
+        signupBasicInfoState.apply {
             if (nickname.isNotEmpty() && newPin.length == 6 && confirmedPin.length == 6) {
                 if (newPin == confirmedPin) {
-                    setSignUpState {
+                    setSignupBasicInfoState {
                         copy(
                             basicInfoButtonEnabled = true
                         )
                     }
-                }
-            } else {
-                setSignUpState {
-                    copy(
-                        basicInfoButtonEnabled = false
-                    )
+                    return
                 }
             }
         }
-        return
+        setSignupBasicInfoState {
+            copy(
+                basicInfoButtonEnabled = false
+            )
+        }
+    }
+
+    fun onSubmitInvitationCode() {
+        LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
     }
 }
