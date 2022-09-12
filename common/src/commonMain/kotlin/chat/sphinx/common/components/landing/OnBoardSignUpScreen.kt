@@ -223,7 +223,7 @@ fun EndScreen(viewModel: SignUpViewModel){
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "spend 1000 sats,",
+            text = "spend ${viewModel.signupBasicInfoState.balance.localBalance.asFormattedString(' ', true)},",
             fontSize = 18.sp,
             color = Color.White,
             fontFamily = Roboto,
@@ -231,7 +231,7 @@ fun EndScreen(viewModel: SignUpViewModel){
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "or recieve up to 10 000 sats.",
+            text = "or receive up to ${viewModel.signupBasicInfoState.balance.remoteBalance.asFormattedString(' ', true)}.",
             fontSize = 18.sp,
             color = Color.White,
             fontFamily = Roboto,
