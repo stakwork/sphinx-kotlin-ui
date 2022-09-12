@@ -120,7 +120,6 @@ fun OnBoardLightningScreen(
             Box(modifier = Modifier.height(48.dp).width(259.dp)) {
                 CommonButton(text = "Continue", true, endIcon = Icons.Default.ArrowForward) {
                     viewModel.navigateTo(LightningScreenState.BasicInfo)
-//                    LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
                 }
             }
         }

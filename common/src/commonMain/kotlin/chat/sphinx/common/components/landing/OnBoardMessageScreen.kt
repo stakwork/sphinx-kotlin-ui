@@ -80,7 +80,7 @@ fun OnBoardMessageScreen(viewModel: SignUpViewModel) {
         )
         Spacer(modifier = Modifier.height(11.dp))
         Text(
-            text = "Welcome to Sphinx",
+            text = viewModel.signupInviterState.welcomeMessage,
             fontSize = 22.sp,
             color = md_theme_dark_onBackground,
             fontFamily = Roboto,
