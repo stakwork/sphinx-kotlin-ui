@@ -3,15 +3,48 @@ package chat.sphinx.common.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import chat.sphinx.authentication.model.OnBoardInviterData
+import chat.sphinx.authentication.model.OnBoardStep
+import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
+import chat.sphinx.concepts.network.query.contact.model.GenerateTokenResponse
+import chat.sphinx.concepts.network.query.invite.NetworkQueryInvite
+import chat.sphinx.concepts.network.query.invite.model.RedeemInviteDto
+import chat.sphinx.concepts.network.query.relay_keys.NetworkQueryRelayKeys
+import chat.sphinx.concepts.network.query.relay_keys.model.PostHMacKeyDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
+import chat.sphinx.crypto.common.annotations.RawPasswordAccess
+import chat.sphinx.crypto.common.clazzes.PasswordGenerator
+import chat.sphinx.crypto.common.clazzes.UnencryptedString
+import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.response.LoadResponse
+import chat.sphinx.response.Response
+import chat.sphinx.response.ResponseError
+import chat.sphinx.wrapper.invite.InviteString
 import chat.sphinx.wrapper.invite.toValidInviteStringOrNull
+import chat.sphinx.wrapper.lightning.toLightningNodePubKey
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
+import chat.sphinx.wrapper.relay.*
+import chat.sphinx.wrapper.rsa.RsaPublicKey
+import kotlinx.coroutines.launch
 import okio.Path
+import kotlinx.coroutines.flow.collect
 
 class SignUpViewModel {
+
+    private val networkModule = SphinxContainer.networkModule
+    private val networkQueryInvite: NetworkQueryInvite = networkModule.networkQueryInvite
+    private val networkQueryRelayKeys: NetworkQueryRelayKeys = networkModule.networkQueryRelayKeys
+    private val relayDataHandler = networkModule.relayDataHandler
+    private val networkQueryContact = networkModule.networkQueryContact
+    private val onBoardStepHandler = OnBoardStepHandler()
+    private val rsa = SphinxContainer.authenticationModule.rsa
+    val scope = SphinxContainer.appModule.applicationScope
+    val dispatchers = SphinxContainer.appModule.dispatchers
+
+
 
     //SIGNUP CODE STATE
     var signupCodeState: SignupCodeState by mutableStateOf(initialSignupCodeState())
@@ -138,5 +171,212 @@ class SignUpViewModel {
 
             //START WITH LOGIC
         }
+    }
+
+    private suspend fun redeemInvite(input: InviteString) {
+        networkQueryInvite.redeemInvite(input).collect { loadResponse ->
+            when (loadResponse) {
+                is LoadResponse.Loading -> {}
+                is Response.Error -> {
+                }
+                is Response.Success -> {
+                    val inviteResponse = loadResponse.value.response
+
+                    inviteResponse?.invite?.let { invite ->
+                        getTransportKey(
+                            ip = RelayUrl(inviteResponse.ip),
+                            nodePubKey = inviteResponse.pubkey,
+                            password = null,
+                            redeemInviteDto = invite,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun getTransportKey(
+        ip: RelayUrl,
+        nodePubKey: String?,
+        password: String?,
+        redeemInviteDto: RedeemInviteDto?,
+        token: AuthorizationToken? = null
+    ) {
+        val relayUrl = relayDataHandler.formatRelayUrl(ip)
+        networkModule.networkClient.setTorRequired(relayUrl.isOnionAddress)
+        var transportKey: RsaPublicKey? = null
+
+        networkQueryRelayKeys.getRelayTransportKey(relayUrl).collect { loadResponse ->
+            when (loadResponse) {
+                is LoadResponse.Loading -> {}
+                is Response.Error -> {}
+
+                is Response.Success -> {
+                    transportKey = RsaPublicKey(loadResponse.value.transport_key.toCharArray())
+                }
+            }
+        }
+
+        registerTokenAndStartOnBoard(
+            ip,
+            nodePubKey,
+            password,
+            redeemInviteDto,
+            token,
+            transportKey
+        )
+    }
+
+    private var tokenRetries = 0
+    private suspend fun registerTokenAndStartOnBoard(
+        ip: RelayUrl,
+        nodePubKey: String?,
+        password: String?,
+        redeemInviteDto: RedeemInviteDto?,
+        token: AuthorizationToken? = null,
+        transportKey: RsaPublicKey? = null,
+        transportToken: TransportToken? = null
+    ) {
+
+        @OptIn(RawPasswordAccess::class)
+        val authToken = token ?: AuthorizationToken(
+            PasswordGenerator(passwordLength = 20).password.value.joinToString("")
+        )
+
+        val relayUrl = relayDataHandler.formatRelayUrl(ip)
+        networkModule.networkClient.setTorRequired(relayUrl.isOnionAddress)
+
+        val inviterData: OnBoardInviterData? = redeemInviteDto?.let { dto ->
+            OnBoardInviterData(
+                dto.nickname,
+                dto.pubkey?.toLightningNodePubKey(),
+                dto.route_hint,
+                dto.message,
+                dto.action,
+                dto.pin
+            )
+        }
+
+        val relayTransportToken = transportToken ?: transportKey?.let { transportKey ->
+            relayDataHandler.retrieveRelayTransportToken(
+                authToken,
+                transportKey
+            )
+        } ?: null
+
+        var generateTokenResponse: LoadResponse<GenerateTokenResponse, ResponseError> = Response.Error(
+            ResponseError("generateToken endpoint failed")
+        )
+
+        if (relayTransportToken != null) {
+            networkQueryContact.generateToken(
+                password,
+                nodePubKey,
+                Triple(Pair(authToken, relayTransportToken), null, relayUrl)
+            ).collect { loadResponse ->
+                generateTokenResponse = loadResponse
+            }
+        } else {
+            networkQueryContact.generateToken(
+                relayUrl,
+                authToken,
+                password,
+                nodePubKey
+            ).collect { loadResponse ->
+                generateTokenResponse = loadResponse
+            }
+        }
+
+        when (generateTokenResponse) {
+            is LoadResponse.Loading -> {}
+            is Response.Error -> {
+                if (tokenRetries < 3) {
+                    tokenRetries += 1
+
+                    registerTokenAndStartOnBoard(
+                        ip,
+                        nodePubKey,
+                        password,
+                        redeemInviteDto,
+                        authToken,
+                        transportKey,
+                        relayTransportToken
+                    )
+                } else {
+//                    submitSideEffect(OnBoardConnectingSideEffect.GenerateTokenFailed)
+//                    navigator.popBackStack()
+                }
+            }
+            is Response.Success -> {
+
+                val hMacKey = createHMacKey(
+                    relayData = Triple(Pair(authToken, relayTransportToken), null, relayUrl),
+                    transportKey = transportKey
+                )
+
+                val step1Message: OnBoardStep.Step1_WelcomeMessage? = onBoardStepHandler.persistOnBoardStep1Data(
+                    relayUrl,
+                    authToken,
+                    transportKey,
+                    hMacKey,
+                    inviterData
+                )
+
+                if (step1Message == null) {
+//                    submitSideEffect(OnBoardConnectingSideEffect.GenerateTokenFailed)
+//                    navigator.popBackStack()
+                } else {
+//                    navigator.toOnBoardMessageScreen(step1Message)
+                }
+            }
+        }
+    }
+
+    private suspend fun createHMacKey(
+        relayData: Triple<Pair<AuthorizationToken, TransportToken?>, RequestSignature?, RelayUrl>? = null,
+        transportKey: RsaPublicKey?
+    ): RelayHMacKey? {
+        var hMacKey: RelayHMacKey? = null
+
+        if (transportKey == null) {
+            return hMacKey
+        }
+
+        scope.launch(dispatchers.mainImmediate) {
+
+            @OptIn(RawPasswordAccess::class)
+            val hMacKeyString =
+                PasswordGenerator(passwordLength = 20).password.value.joinToString("")
+
+            val encryptionResponse = rsa.encrypt(
+                transportKey,
+                UnencryptedString(hMacKeyString),
+                formatOutput = false,
+                dispatcher = dispatchers.default,
+            )
+
+            when (encryptionResponse) {
+                is Response.Error -> {
+                }
+                is Response.Success -> {
+                    networkQueryRelayKeys.addRelayHMacKey(
+                        PostHMacKeyDto(encryptionResponse.value.value),
+                        relayData
+                    ).collect { loadResponse ->
+                        when (loadResponse) {
+                            is LoadResponse.Loading -> {
+                            }
+                            is Response.Error -> {}
+                            is Response.Success -> {
+                                hMacKey = RelayHMacKey(hMacKeyString)
+                            }
+                        }
+                    }
+                }
+            }
+
+        }.join()
+
+        return hMacKey
     }
 }
