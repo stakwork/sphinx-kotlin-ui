@@ -8,6 +8,7 @@ import chat.sphinx.authentication.model.OnBoardStep
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
+import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
 import chat.sphinx.concepts.network.query.contact.model.GenerateTokenResponse
 import chat.sphinx.concepts.network.query.invite.NetworkQueryInvite
 import chat.sphinx.concepts.network.query.invite.model.RedeemInviteDto
@@ -28,6 +29,7 @@ import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.relay.*
 import chat.sphinx.wrapper.rsa.RsaPublicKey
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okio.Path
 import kotlinx.coroutines.flow.collect
@@ -156,12 +158,14 @@ class SignUpViewModel {
 
     fun onSubmitInvitationCode() {
         val code = signupCodeState.invitationCodeText
+        val inviteCode = code.toValidInviteStringOrNull()
 
-        if (code.toValidInviteStringOrNull() != null) {
-            //IS AN INVITE
+        if (inviteCode != null) {
             LandingScreenState.screenState(LandingScreenType.Loading)
 
-            //START WITH LOGIC
+            scope.launch(dispatchers.mainImmediate) {
+                redeemInvite(inviteCode)
+            }
         }
 
         val redemptionCode = RedemptionCode.decode(code)
@@ -169,7 +173,14 @@ class SignUpViewModel {
             //IS A HOME NODE CONNECT STRING FROM RELAY
             LandingScreenState.screenState(LandingScreenType.Loading)
 
-            //START WITH LOGIC
+            scope.launch(dispatchers.mainImmediate) {
+                getTransportKey(
+                    ip = redemptionCode.ip,
+                    nodePubKey = null,
+                    password = redemptionCode.password,
+                    redeemInviteDto = null
+                )
+            }
         }
     }
 
@@ -326,7 +337,14 @@ class SignUpViewModel {
 //                    submitSideEffect(OnBoardConnectingSideEffect.GenerateTokenFailed)
 //                    navigator.popBackStack()
                 } else {
-//                    navigator.toOnBoardMessageScreen(step1Message)
+                    setSignupInviterState {
+                        copy(
+                            welcomeMessage = step1Message.inviterData.message ?: "Welcome to Sphinx!",
+                            friendName = step1Message.inviterData.nickname ?: "Sphinx Support"
+                        )
+                    }
+                    LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
+
                 }
             }
         }
@@ -379,4 +397,5 @@ class SignUpViewModel {
 
         return hMacKey
     }
+
 }
