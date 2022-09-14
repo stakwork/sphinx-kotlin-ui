@@ -140,7 +140,7 @@ fun ChatRow(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (dashboardChat is DashboardChat.Active) {
-                                if (dashboardChat.chat.isMuted.value == ChatMuted.MUTED)
+                                if (dashboardChat.isMuted())
                                     Icon(
                                         Icons.Filled.NotificationsOff,
                                         contentDescription = null,

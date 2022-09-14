@@ -41,7 +41,7 @@ fun ChatAction(
     chatViewModel?.let {
         val paymentViewModel = remember(chatViewModel.getUniqueKey()) { PaymentViewModel(chatViewModel) }
 
-        chatViewModel?.chatActionsStateFlow?.collectAsState()?.value?.let { state ->
+        chatViewModel.chatActionsStateFlow.collectAsState().value?.let { state ->
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = modifier

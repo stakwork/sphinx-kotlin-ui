@@ -50,7 +50,8 @@ sealed class DashboardChat {
                     this.chatName == other.chatName &&
                     this.photoUrl?.value == other.photoUrl?.value &&
                     this.isEncrypted() == other.isEncrypted() &&
-                    this.hasUnseenMessages() == other.hasUnseenMessages()
+                    this.hasUnseenMessages() == other.hasUnseenMessages() &&
+                    this.isMuted() == other.isMuted()
             )
         }
 
@@ -73,6 +74,8 @@ sealed class DashboardChat {
     abstract fun hasUnseenMessages(): Boolean
 
     abstract fun isEncrypted(): Boolean
+
+    abstract fun isMuted(): Boolean
 
     abstract fun isTribe(): Boolean
 
@@ -121,6 +124,10 @@ sealed class DashboardChat {
 
         override fun isEncrypted(): Boolean {
             return true
+        }
+
+        override fun isMuted(): Boolean {
+            return chat.isMuted()
         }
 
         override fun isTribe(): Boolean {
@@ -394,6 +401,10 @@ sealed class DashboardChat {
                 return !(contact.rsaPublicKey?.value?.isEmpty() ?: true)
             }
 
+            override fun isMuted(): Boolean {
+                return false
+            }
+
             override fun isTribe(): Boolean {
                 return false
             }
@@ -501,6 +512,10 @@ sealed class DashboardChat {
             }
 
             override fun isEncrypted(): Boolean {
+                return false
+            }
+
+            override fun isMuted(): Boolean {
                 return false
             }
 
