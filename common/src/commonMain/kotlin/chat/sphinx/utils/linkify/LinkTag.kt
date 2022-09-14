@@ -8,6 +8,7 @@ enum class LinkTag {
     Email,
     BitcoinAddress,
     LinkPreview,
-    CopyableLink
+    CopyableLink,
+    Mention,
     // TODO: Bitcoin address/txid
 }
