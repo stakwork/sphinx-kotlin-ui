@@ -144,7 +144,7 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
                 endIcon = Icons.Default.ArrowForward,
                 enabled = viewModel.signupBasicInfoState.basicInfoButtonEnabled
             ) {
-                viewModel.navigateTo(LightningScreenState.ProfileImage)
+                viewModel.onSubmitNicknameAndPin()
             }
         }
     }

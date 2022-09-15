@@ -3,12 +3,14 @@ package chat.sphinx.common.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import chat.sphinx.authentication.KeyRestoreResponse
 import chat.sphinx.authentication.model.OnBoardInviterData
 import chat.sphinx.authentication.model.OnBoardStep
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
+import chat.sphinx.concepts.authentication.coordinator.AuthenticationResponse
 import chat.sphinx.concepts.network.query.contact.model.GenerateTokenResponse
 import chat.sphinx.concepts.network.query.invite.NetworkQueryInvite
 import chat.sphinx.concepts.network.query.invite.model.RedeemInviteDto
@@ -16,9 +18,13 @@ import chat.sphinx.concepts.network.query.relay_keys.NetworkQueryRelayKeys
 import chat.sphinx.concepts.network.query.relay_keys.model.PostHMacKeyDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
+import chat.sphinx.crypto.common.clazzes.Password
 import chat.sphinx.crypto.common.clazzes.PasswordGenerator
 import chat.sphinx.crypto.common.clazzes.UnencryptedString
+import chat.sphinx.crypto.common.clazzes.compare
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.features.authentication.core.AuthenticationCoreManager
+import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
@@ -30,12 +36,15 @@ import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.relay.*
 import chat.sphinx.wrapper.rsa.RsaPublicKey
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import okio.Path
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 
 class SignUpViewModel {
 
+    private val authenticationManager = SphinxContainer.authenticationModule.authenticationCoreManager
     private val networkModule = SphinxContainer.networkModule
     private val networkQueryInvite: NetworkQueryInvite = networkModule.networkQueryInvite
     private val networkQueryRelayKeys: NetworkQueryRelayKeys = networkModule.networkQueryRelayKeys
@@ -337,6 +346,12 @@ class SignUpViewModel {
 //                    submitSideEffect(OnBoardConnectingSideEffect.GenerateTokenFailed)
 //                    navigator.popBackStack()
                 } else {
+                    setSignupBasicInfoState {
+                        copy(
+                            onboardStep = step1Message
+                        )
+                    }
+
                     setSignupInviterState {
                         copy(
                             welcomeMessage = step1Message.inviterData.message ?: "Welcome to Sphinx!",
@@ -357,7 +372,7 @@ class SignUpViewModel {
         var hMacKey: RelayHMacKey? = null
 
         if (transportKey == null) {
-            return hMacKey
+            return null
         }
 
         scope.launch(dispatchers.mainImmediate) {
@@ -398,4 +413,92 @@ class SignUpViewModel {
         return hMacKey
     }
 
+    @OptIn(RawPasswordAccess::class)
+    fun onSubmitNicknameAndPin() {
+        // Create JOB to avoid duplicated process.
+        // ShowLoadingWheel
+
+        scope.launch(dispatchers.mainImmediate) {
+            val request = AuthenticationRequest.LogIn(privateKey = null)
+            val input = authenticationManager.getNewUserInput()
+            val userInput = signupBasicInfoState.newPin.toCharArray()
+
+            var userPinBuilt = true
+            for (c in userInput) {
+                try {
+                    input.addCharacter(c)
+                } catch (e: IllegalArgumentException) {
+                    //Error Invalid PIN / Hide loading wheeel, show toast with error on RED color
+                    userPinBuilt = false
+                    break
+                }
+            }
+
+            if (userPinBuilt) {
+                var confirmToSetPin: AuthenticateFlowResponse.ConfirmInputToSetForFirstTime? = null
+                authenticationManager.authenticate(input, listOf(request)).collect { flowResponse ->
+                    if (flowResponse is AuthenticateFlowResponse.ConfirmInputToSetForFirstTime) {
+                        confirmToSetPin = flowResponse
+                    }
+                }
+
+                confirmToSetPin?.let { setPin ->
+
+                    var completionResponse: AuthenticationResponse.Success.Authenticated? = null
+                    authenticationManager.setPasswordFirstTime(setPin, input, listOf(request))
+                        .collect { flowResponse ->
+                            if (
+                                flowResponse is AuthenticateFlowResponse.Success &&
+                                flowResponse.requests.size == 1 &&
+                                flowResponse.requests[0] is AuthenticationResponse.Success.Authenticated
+                            ) {
+                                completionResponse = flowResponse.requests[0] as AuthenticationResponse.Success.Authenticated
+                            }
+
+                            if (flowResponse is AuthenticateFlowResponse.Error) {
+                                //Failed to secure keys / Hide Loading wheel and show toast with error
+                            }
+                        }
+
+                    completionResponse?.let { _ ->
+                        authenticationManager.getEncryptionKey()?.let { encryptionKey ->
+                            (signupBasicInfoState.onboardStep as? OnBoardStep.Step1_WelcomeMessage)?.let { onboardStep1 ->
+                                // relayDataHandler.persistRelayUrl()
+                                // relayDataHandler.persistAuthorizationToken()
+                                // relayDataHandler.persistRelayTransportKey()
+                                // relayDataHandler.persistRelayHMacKey()
+
+                                // val publicKey = String(encryptionKey.publicKey.value)
+                                // OnboardNameViewModel - 65 (get all contacts, update Onwer with name and publicKey
+
+                                //Save Step 2
+                                val step2Message: OnBoardStep.Step2_NameAndPin? = onBoardStepHandler.persistOnBoardStep2Data(
+                                    onboardStep1.inviterData
+                                )
+
+                                if (step2Message == null) {
+                                    //Generic Error
+                                } else {
+                                    setSignupBasicInfoState {
+                                        copy(
+                                            onboardStep = step2Message
+                                        )
+                                    }
+
+                                    //Go to Profile Picture view
+                                }
+                            }
+                        } ?: let {
+                            //Generic error message
+                        }
+                    } ?: let {
+                        //Generic error message
+                    }
+
+                } ?: {
+                    //Generic error message
+                }
+            }
+        }
+    }
 }
