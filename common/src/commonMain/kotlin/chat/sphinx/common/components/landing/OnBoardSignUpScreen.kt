@@ -36,8 +36,11 @@ import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.signup.SignupUploadImageButton
 import chat.sphinx.wrapper.lightning.asFormattedString
+import chat.sphinx.wrapper.message.media.isImage
+import kotlinx.coroutines.launch
 import okio.Path
 import theme.md_theme_dark_onBackground
+import utils.deduceMediaType
 import views.BackButton
 
 @Composable
@@ -139,6 +142,13 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
     ) {
+        if (viewModel.signupBasicInfoState.submitProgressBar) {
+            CircularProgressIndicator(
+                Modifier.padding(20.dp).size(20.dp),
+                color = Color.White,
+                strokeWidth = 2.dp
+            )
+        }
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
             CommonButton(text = "Continue",
                 endIcon = Icons.Default.ArrowForward,
@@ -154,6 +164,7 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
 
 @Composable
 fun ProfileImage(viewModel: SignUpViewModel) {
+    val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top

@@ -29,7 +29,8 @@ data class SignupBasicInfoState(
     val basicInfoButtonEnabled: Boolean = false,
     val userPicture: AttachmentInfo? = null,
     val balance: NodeBalanceAll = NodeBalanceAll(Sat(0L), Sat(0L)),
-    val onboardStep: OnBoardStep? = null
+    val onboardStep: OnBoardStep? = null,
+    val submitProgressBar: Boolean = false
 )
 
 

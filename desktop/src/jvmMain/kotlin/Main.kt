@@ -1,30 +1,39 @@
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
 import androidx.compose.ui.window.*
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.components.LandingScreen
+import chat.sphinx.common.components.TransactionsUI
+import chat.sphinx.common.components.WelcomeScreen
+import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.chat.FilePickerDialog
 import chat.sphinx.common.components.chat.FilePickerMode
+import chat.sphinx.common.components.landing.*
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import theme.LocalSpacing
 import theme.Spacing
-import java.awt.Window
+import java.awt.event.WindowEvent
+import java.awt.event.WindowFocusListener
+import java.awt.event.WindowStateListener
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -33,8 +42,28 @@ fun main() = application {
 
     val sphinxStore = remember { SphinxStore() }
     val sphinxState = sphinxStore.state
-    var currentWindow: MutableState<ComposeWindow?> = remember { mutableStateOf(null) }
 
+//    val rememberSphinxTray = remember {
+//        DesktopSphinxNotificationManager.sphinxTrayState
+//    }
+//    Tray(
+//        state = rememberSphinxTray,
+//        icon = sphinxIcon,
+//        menu = {
+//            Item(
+//                "Send notification",
+//                onClick = {
+//                    rememberSphinxTray.sendNotification(
+//                        Notification("Sphinx Notification", "Message from Sphinx App!")
+//                    )
+//                }
+//            )
+//            Item(
+//                "Exit",
+//                onClick = ::exitApplication
+//            )
+//        }
+//    )
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
             Window(
@@ -46,6 +75,8 @@ fun main() = application {
                 ),
                 icon = sphinxIcon
             ) {
+                DesktopSphinxToast("Sphinx")
+
                 MenuBar {
                     Menu("Sphinx") {
                         Item("About", icon = sphinxIcon, onClick = { })
@@ -53,17 +84,36 @@ fun main() = application {
                     }
                 }
                 AppTheme(useDarkTheme = true) {
-                    SphinxSplash()
-                    LaunchedEffect(windowState) {
-                        delay(1000L)
-                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-                            ContentState.onContentReady(ScreenType.DashboardScreen)
-                        } else {
-                            ContentState.onContentReady(ScreenType.LandingScreen)
-                        }
-                    }
+//                    OnBoardMessageScreen(SignUpViewModel())
+                    OnBoardSignUpScreen(SignUpViewModel())
+//                    OnBoardLightningScreen(true, false)
+//                    NewUserScreen(NewUserStore())
+//                    OnBoardSphinxOnYourPhone()
                 }
             }
+
+//            Window(
+//                onCloseRequest = ::exitApplication,
+//                title = "Sphinx",
+//                state = WindowState(
+//                    position = WindowPosition.Aligned(Alignment.Center),
+//                    size = getPreferredWindowSize(800, 500)
+//                ),
+//                undecorated = true,
+//                icon = sphinxIcon,
+//            ) {
+//                AppTheme {
+//                    SphinxSplash()
+//                    LaunchedEffect(windowState) {
+//                        delay(1000L)
+//                        if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
+//                            ContentState.onContentReady(ScreenType.DashboardScreen)
+//                        } else {
+//                            ContentState.onContentReady(ScreenType.LandingScreen)
+//                        }
+//                    }
+//                }
+//            }
         }
         ScreenType.DashboardScreen -> {
             Window(
@@ -75,8 +125,6 @@ fun main() = application {
                 ),
                 icon = sphinxIcon
             ) {
-                currentWindow.value = window
-
                 val dashboardViewModel = remember { DashboardViewModel() }
                 this.window.addWindowFocusListener(dashboardViewModel)
 
@@ -110,8 +158,33 @@ fun main() = application {
                         icon = sphinxIcon
                     )
                 }
+
+                CompositionLocalProvider(LocalSpacing provides Spacing()){
+                    if (ContentState.sendFilePickerDialog.isAwaiting) {
+                        FilePickerDialog(
+                            window,
+                            "Sphinx File Picker",
+                            FilePickerMode.LOAD_FILE,
+                            onResult = {
+                                ContentState.sendFilePickerDialog.onResult(it)
+                            }
+                        )
+                    }
+                    if (ContentState.saveFilePickerDialog.isAwaiting) {
+                        FilePickerDialog(
+                            window,
+                            "Save File",
+                            FilePickerMode.SAVE_FILE,
+                            onResult = {
+                                ContentState.saveFilePickerDialog.onResult(it)
+                            },
+                            desiredFileName = ContentState.saveFilePickerDialog.desiredFileName
+                        )
+                    }
+                }
             }
         }
+
         ScreenType.LandingScreen -> {
             Window(
                 onCloseRequest = ::exitApplication,
@@ -122,8 +195,6 @@ fun main() = application {
                 ),
                 icon = sphinxIcon
             ) {
-                currentWindow.value = window
-
                 MenuBar {
                     Menu("Sphinx") {
                         Item("About", icon = sphinxIcon, onClick = { })
@@ -133,31 +204,6 @@ fun main() = application {
                 AppTheme(useDarkTheme = true) {
                     LandingScreen()
                 }
-            }
-        }
-    }
-    currentWindow.value?.let { window ->
-        CompositionLocalProvider(LocalSpacing provides Spacing()){
-            if (ContentState.sendFilePickerDialog.isAwaiting) {
-                FilePickerDialog(
-                    window,
-                    "Pick File",
-                    FilePickerMode.LOAD_FILE,
-                    onResult = {
-                        ContentState.sendFilePickerDialog.onResult(it)
-                    }
-                )
-            }
-            if (ContentState.saveFilePickerDialog.isAwaiting) {
-                FilePickerDialog(
-                    window,
-                    "Save File",
-                    FilePickerMode.SAVE_FILE,
-                    onResult = {
-                        ContentState.saveFilePickerDialog.onResult(it)
-                    },
-                    desiredFileName = ContentState.saveFilePickerDialog.desiredFileName
-                )
             }
         }
     }

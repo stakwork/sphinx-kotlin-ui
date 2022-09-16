@@ -3,6 +3,7 @@ package chat.sphinx.common.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import chat.sphinx.authentication.KeyRestoreResponse
 import chat.sphinx.authentication.model.OnBoardInviterData
 import chat.sphinx.authentication.model.OnBoardStep
@@ -28,6 +29,7 @@ import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
+import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.invite.InviteString
 import chat.sphinx.wrapper.invite.toValidInviteStringOrNull
 import chat.sphinx.wrapper.lightning.toLightningNodePubKey
@@ -41,6 +43,8 @@ import kotlinx.coroutines.launch
 import okio.Path
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import theme.primary_green
+import theme.primary_red
 
 class SignUpViewModel {
 
@@ -52,6 +56,8 @@ class SignUpViewModel {
     private val networkQueryContact = networkModule.networkQueryContact
     private val onBoardStepHandler = OnBoardStepHandler()
     private val rsa = SphinxContainer.authenticationModule.rsa
+    private val sphinxNotificationManager = createSphinxNotificationManager()
+    private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
@@ -75,7 +81,6 @@ class SignUpViewModel {
         }
     }
 
-    //SIGNUP INVITER INFO STATE
     var signupInviterState: SignupInviterState by mutableStateOf(initialSignupInviterState())
 
     private fun initialSignupInviterState(): SignupInviterState = SignupInviterState()
@@ -84,7 +89,6 @@ class SignUpViewModel {
         signupInviterState = signupInviterState.update()
     }
 
-    //SIGNUP BASIC INFO STATE
     var signupBasicInfoState: SignupBasicInfoState by mutableStateOf(initialSignupBasicInfoState())
 
     private fun initialSignupBasicInfoState(): SignupBasicInfoState = SignupBasicInfoState()
@@ -100,7 +104,6 @@ class SignUpViewModel {
             )
         }
     }
-
 
     fun onNicknameChanged(nickname: String) {
         setSignupBasicInfoState {
@@ -164,6 +167,20 @@ class SignUpViewModel {
             )
         }
     }
+    fun toast(
+        message: String,
+        color: Color = primary_red,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(
+                "Sphinx",
+                message,
+                color.value,
+                delay
+            )
+        }
+    }
 
     fun onSubmitInvitationCode() {
         val code = signupCodeState.invitationCodeText
@@ -179,7 +196,6 @@ class SignUpViewModel {
 
         val redemptionCode = RedemptionCode.decode(code)
         if (redemptionCode != null && redemptionCode is RedemptionCode.NodeInvite) {
-            //IS A HOME NODE CONNECT STRING FROM RELAY
             LandingScreenState.screenState(LandingScreenType.Loading)
 
             scope.launch(dispatchers.mainImmediate) {
@@ -198,6 +214,9 @@ class SignUpViewModel {
             when (loadResponse) {
                 is LoadResponse.Loading -> {}
                 is Response.Error -> {
+                    toast("There was a problem with the invitation code, please try later")
+                    LandingScreenState.screenState(LandingScreenType.NewUser)
+
                 }
                 is Response.Success -> {
                     val inviteResponse = loadResponse.value.response
@@ -229,8 +248,10 @@ class SignUpViewModel {
         networkQueryRelayKeys.getRelayTransportKey(relayUrl).collect { loadResponse ->
             when (loadResponse) {
                 is LoadResponse.Loading -> {}
-                is Response.Error -> {}
-
+                is Response.Error -> {
+                    toast("There was a problem with your code, please try again")
+                    LandingScreenState.screenState(LandingScreenType.NewUser)
+                }
                 is Response.Success -> {
                     transportKey = RsaPublicKey(loadResponse.value.transport_key.toCharArray())
                 }
@@ -323,7 +344,9 @@ class SignUpViewModel {
                         relayTransportToken
                     )
                 } else {
-//                    submitSideEffect(OnBoardConnectingSideEffect.GenerateTokenFailed)
+                    toast("Generate token has failed")
+                    LandingScreenState.screenState(LandingScreenType.NewUser)
+
 //                    navigator.popBackStack()
                 }
             }
@@ -343,8 +366,9 @@ class SignUpViewModel {
                 )
 
                 if (step1Message == null) {
-//                    submitSideEffect(OnBoardConnectingSideEffect.GenerateTokenFailed)
-//                    navigator.popBackStack()
+                    toast("Generate token has failed")
+                    LandingScreenState.screenState(LandingScreenType.NewUser)
+
                 } else {
                     setSignupBasicInfoState {
                         copy(
@@ -412,13 +436,20 @@ class SignUpViewModel {
 
         return hMacKey
     }
+    private var submitJob: Job? = null
 
     @OptIn(RawPasswordAccess::class)
     fun onSubmitNicknameAndPin() {
-        // Create JOB to avoid duplicated process.
-        // ShowLoadingWheel
+        setSignupBasicInfoState {
+            copy(
+                submitProgressBar = true
+            )
+        }
+        if (submitJob?.isActive == true) {
+            return
+        }
 
-        scope.launch(dispatchers.mainImmediate) {
+        submitJob = scope.launch(dispatchers.mainImmediate) {
             val request = AuthenticationRequest.LogIn(privateKey = null)
             val input = authenticationManager.getNewUserInput()
             val userInput = signupBasicInfoState.newPin.toCharArray()
@@ -428,7 +459,13 @@ class SignUpViewModel {
                 try {
                     input.addCharacter(c)
                 } catch (e: IllegalArgumentException) {
-                    //Error Invalid PIN / Hide loading wheeel, show toast with error on RED color
+
+                    setSignupBasicInfoState {
+                        copy(
+                            submitProgressBar = false
+                        )
+                    }
+                    toast("Error Invalid PIN")
                     userPinBuilt = false
                     break
                 }
@@ -452,32 +489,67 @@ class SignUpViewModel {
                                 flowResponse.requests.size == 1 &&
                                 flowResponse.requests[0] is AuthenticationResponse.Success.Authenticated
                             ) {
-                                completionResponse = flowResponse.requests[0] as AuthenticationResponse.Success.Authenticated
+                                completionResponse =
+                                    flowResponse.requests[0] as AuthenticationResponse.Success.Authenticated
                             }
 
                             if (flowResponse is AuthenticateFlowResponse.Error) {
-                                //Failed to secure keys / Hide Loading wheel and show toast with error
+                                setSignupBasicInfoState {
+                                    copy(
+                                        submitProgressBar = false
+                                    )
+                                }
+                                toast("There was an error to set your PIN")
                             }
                         }
 
                     completionResponse?.let { _ ->
                         authenticationManager.getEncryptionKey()?.let { encryptionKey ->
                             (signupBasicInfoState.onboardStep as? OnBoardStep.Step1_WelcomeMessage)?.let { onboardStep1 ->
-                                // relayDataHandler.persistRelayUrl()
-                                // relayDataHandler.persistAuthorizationToken()
-                                // relayDataHandler.persistRelayTransportKey()
-                                // relayDataHandler.persistRelayHMacKey()
+                                 relayDataHandler.persistRelayUrl(onboardStep1.relayUrl)
+                                 relayDataHandler.persistAuthorizationToken(onboardStep1.authorizationToken)
+                                 relayDataHandler.persistRelayTransportKey(onboardStep1.transportKey)
+                                 relayDataHandler.persistRelayHMacKey(onboardStep1.hMacKey)
 
-                                // val publicKey = String(encryptionKey.publicKey.value)
-                                // OnboardNameViewModel - 65 (get all contacts, update Onwer with name and publicKey
+                                contactRepository.networkRefreshContacts.collect { refreshResponse ->
 
-                                //Save Step 2
-                                val step2Message: OnBoardStep.Step2_NameAndPin? = onBoardStepHandler.persistOnBoardStep2Data(
-                                    onboardStep1.inviterData
-                                )
+                                    when (refreshResponse) {
+                                        is LoadResponse.Loading -> {}
+                                        is Response.Error -> {
+
+                                        }
+                                        is Response.Success -> {
+                                            contactRepository.updateOwnerNameAndKey(
+                                                signupBasicInfoState.nickname,
+                                                encryptionKey.publicKey
+                                            ).let { updateOwnerResponse ->
+
+                                                when (updateOwnerResponse) {
+                                                    is Response.Error -> {
+//                                                        toast("Error to update Owner")
+                                                    }
+                                                    is Response.Success -> {
+//                                                        val step3: OnBoardStep.Step3_Picture? = onBoardStepHandler.persistOnBoardStep3Data(onboardStep1.inviterData)
+
+//                                                        if (step3 != null) {
+//
+//                                                        }
+//                                                        else {
+//                                                            // TODO: Handle Error
+//                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                val step2Message: OnBoardStep.Step2_NameAndPin? =
+                                    onBoardStepHandler.persistOnBoardStep2Data(
+                                        onboardStep1.inviterData
+                                    )
 
                                 if (step2Message == null) {
-                                    //Generic Error
+                                    toast("There was an error")
                                 } else {
                                     setSignupBasicInfoState {
                                         copy(
@@ -485,18 +557,23 @@ class SignUpViewModel {
                                         )
                                     }
 
-                                    //Go to Profile Picture view
+                                    setSignupBasicInfoState {
+                                        copy(
+                                            lightningScreenState = LightningScreenState.ProfileImage
+                                        )
+                                    }
                                 }
                             }
                         } ?: let {
-                            //Generic error message
+                            toast("There was an error")
                         }
                     } ?: let {
-                        //Generic error message
+                        toast("There was an error")
+
                     }
 
                 } ?: {
-                    //Generic error message
+                    toast("There was an error")
                 }
             }
         }
