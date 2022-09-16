@@ -164,7 +164,6 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
 
 @Composable
 fun ProfileImage(viewModel: SignUpViewModel) {
-    val scope = rememberCoroutineScope()
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top
