@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.state.AppState
+import chat.sphinx.common.state.ScreenType
 import chat.sphinx.platform.imageResource
 
 @Composable
@@ -77,10 +79,8 @@ fun OnBoardSphinxOnYourPhone() {
 
             Box(modifier = Modifier.height(48.dp).width(259.dp)) {
                 Button(text = "Skip ", backgroundColor = Color.White)
-
             }
         }
-
     }
 }
 
@@ -95,6 +95,8 @@ private fun Button(text:String, backgroundColor: Color){
             text = text,
             enabled = true,
             backgroundColor = backgroundColor,
-        ) {}
+        ) {
+            AppState.screenState(ScreenType.DashboardScreen)
+        }
     }
 }

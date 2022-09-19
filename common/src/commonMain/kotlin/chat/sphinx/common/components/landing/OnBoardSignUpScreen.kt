@@ -150,7 +150,8 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
             )
         }
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-            CommonButton(text = "Continue",
+            CommonButton(
+                text = "Continue",
                 endIcon = Icons.Default.ArrowForward,
                 enabled = viewModel.signupBasicInfoState.basicInfoButtonEnabled
             ) {
@@ -159,7 +160,6 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
         }
     }
 }
-
 
 
 @Composable
@@ -185,7 +185,7 @@ fun ProfileImage(viewModel: SignUpViewModel) {
             fontWeight = FontWeight.W400,
         )
         Spacer(modifier = Modifier.height(64.dp))
-        ProfileBox(viewModel.signupBasicInfoState.userPicture.value?.filePath)
+        ProfileBox(viewModel.signupBasicInfoState.userPicture.value?.filePath, viewModel)
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -195,9 +195,11 @@ fun ProfileImage(viewModel: SignUpViewModel) {
         SignupUploadImageButton(viewModel)
         Spacer(modifier = Modifier.height(18.dp))
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-            CommonButton(text = if (viewModel.signupBasicInfoState.userPicture == null) "Skip" else "Continue",
+            CommonButton(
+                text = if (viewModel.signupBasicInfoState.userPicture == null) "Skip" else "Continue",
                 true,
-                endIcon = Icons.Default.ArrowForward) {
+                endIcon = Icons.Default.ArrowForward
+            ) {
                 viewModel.updateProfilePic()
             }
         }
@@ -205,11 +207,11 @@ fun ProfileImage(viewModel: SignUpViewModel) {
 }
 
 @Composable
-fun EndScreen(viewModel: SignUpViewModel){
+fun EndScreen(viewModel: SignUpViewModel) {
     Column(
         modifier = Modifier.fillMaxSize().padding(top = 132.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
+    ) {
         Text(
             text = " YOU'RE READY\n" +
                     "TO USE SPHINX!",
@@ -238,7 +240,12 @@ fun EndScreen(viewModel: SignUpViewModel){
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "or receive up to ${viewModel.signupBasicInfoState.balance.remoteBalance.asFormattedString(' ', true)}.",
+            text = "or receive up to ${
+                viewModel.signupBasicInfoState.balance.remoteBalance.asFormattedString(
+                    ' ',
+                    true
+                )
+            }.",
             fontSize = 18.sp,
             color = Color.White,
             fontFamily = Roboto,
@@ -250,6 +257,13 @@ fun EndScreen(viewModel: SignUpViewModel){
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
     ) {
+        if (viewModel.signupBasicInfoState.showLoading) {
+            CircularProgressIndicator(
+                Modifier.padding(20.dp).size(20.dp),
+                color = Color.White,
+                strokeWidth = 2.dp
+            )
+        }
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
             CommonButton(text = "Finish", true, endIcon = Icons.Default.ArrowForward) {
                 viewModel.onReadySubmit()
@@ -308,7 +322,7 @@ private fun TextField(
 }
 
 @Composable
-private fun ProfileBox(path: Path?) {
+private fun ProfileBox(path: Path?, viewModel: SignUpViewModel) {
     Box(
         modifier = Modifier.size(180.dp),
         contentAlignment = Alignment.Center
@@ -323,6 +337,13 @@ private fun ProfileBox(path: Path?) {
                     ),
                 )
             })
+        if (viewModel.signupBasicInfoState.showLoading) {
+            CircularProgressIndicator(
+                Modifier.fillMaxSize(),
+                color = Color.White,
+                strokeWidth = 2.dp
+            )
+        }
         if (path != null) {
             PhotoFileImage(
                 photoFilepath = path,

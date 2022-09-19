@@ -11,6 +11,8 @@ import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationResponse
+import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
+import chat.sphinx.concepts.network.query.chat.model.TribeDto
 import chat.sphinx.concepts.network.query.contact.model.GenerateTokenResponse
 import chat.sphinx.concepts.network.query.invite.NetworkQueryInvite
 import chat.sphinx.concepts.network.query.invite.model.RedeemInviteDto
@@ -26,15 +28,17 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.chat.ChatHost
+import chat.sphinx.wrapper.chat.ChatUUID
+import chat.sphinx.wrapper.contact.ContactAlias
 import chat.sphinx.wrapper.invite.InviteString
 import chat.sphinx.wrapper.invite.toValidInviteStringOrNull
-import chat.sphinx.wrapper.lightning.NodeBalanceAll
-import chat.sphinx.wrapper.lightning.asFormattedString
-import chat.sphinx.wrapper.lightning.toLightningNodePubKey
+import chat.sphinx.wrapper.lightning.*
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.relay.*
 import chat.sphinx.wrapper.rsa.RsaPublicKey
+import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -50,17 +54,18 @@ class SignUpViewModel {
     private val repositoryModule = SphinxContainer.repositoryModule(sphinxNotificationManager)
     private val networkQueryInvite: NetworkQueryInvite = networkModule.networkQueryInvite
     private val networkQueryRelayKeys: NetworkQueryRelayKeys = networkModule.networkQueryRelayKeys
+    private val networkQueryChat: NetworkQueryChat = networkModule.networkQueryChat
     private val relayDataHandler = networkModule.relayDataHandler
     private val networkQueryContact = networkModule.networkQueryContact
     private val onBoardStepHandler = OnBoardStepHandler()
     private val rsa = SphinxContainer.authenticationModule.rsa
+    private val chatRepository = repositoryModule.chatRepository
     private val contactRepository = repositoryModule.contactRepository
     private val lightningRepository = repositoryModule.lightningRepository
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
 
-    //SIGNUP CODE STATE
     var signupCodeState: SignupCodeState by mutableStateOf(initialSignupCodeState())
 
     private fun initialSignupCodeState(): SignupCodeState = SignupCodeState()
@@ -139,7 +144,6 @@ class SignUpViewModel {
             fileName = filepath.name.toFileName(),
             isLocalFile = true
         )
-
     }
 
     private fun checkValidInput() {
@@ -342,7 +346,6 @@ class SignUpViewModel {
                     toast("Generate token has failed")
                     LandingScreenState.screenState(LandingScreenType.NewUser)
 
-//                    navigator.popBackStack()
                 }
             }
             is Response.Success -> {
@@ -521,7 +524,7 @@ class SignUpViewModel {
 
                                                 when (updateOwnerResponse) {
                                                     is Response.Error -> {
-//                                                        toast("Error to update Owner")
+                                                        toast("Error to update Owner")
                                                     }
                                                     is Response.Success -> {
                                                         val step2Message: OnBoardStep.Step2_NameAndPin? =
@@ -565,7 +568,11 @@ class SignUpViewModel {
 
         scope.launch(dispatchers.mainImmediate) {
             signupBasicInfoState.userPicture.value?.let {
-                // Add and show loading wheel
+                setSignupBasicInfoState {
+                    copy(
+                        showLoading = true
+                    )
+                }
 
                 contactRepository.updateProfilePic(
                     path = it.filePath,
@@ -575,11 +582,19 @@ class SignUpViewModel {
                 ).let { response ->
                     when (response) {
                         is Response.Error -> {
-                            //Hide loading wheel
-                            //Add Error toast
+                            setSignupBasicInfoState {
+                                copy(
+                                    showLoading = false
+                                )
+                            }
+                            toast("There was a problem to update your picture, please try again")
                         }
                         is Response.Success -> {
-                            //Hide loading wheel
+                            setSignupBasicInfoState {
+                                copy(
+                                    showLoading = false
+                                )
+                            }
                             continueToEndScreen()
                         }
                     }
@@ -608,6 +623,7 @@ class SignUpViewModel {
 
         navigateTo(LightningScreenState.EndScreen)
     }
+
     private fun getBalances() {
         scope.launch(dispatchers.io) {
             lightningRepository.getAccountBalanceAll().collect { loadResponse ->
@@ -633,15 +649,138 @@ class SignUpViewModel {
     }
 
     fun onReadySubmit() {
-        //Show Loading wheel
-
+        setSignupBasicInfoState {
+            copy(
+                showLoading = true
+            )
+        }
         signupBasicInfoState.onboardStep?.inviterData?.let {
             if (it.nickname?.isNotEmpty() == true && it.pubkey?.value?.isNotEmpty() == true) {
-                //SAVE INVITER AND FINISH
+                saveInviterAndFinish(it.nickname!!, it.pubkey!!.value, it.routeHint, it.pin)
             } else if (it.pin?.isNotEmpty() == true) {
-                //FINISH INVITE
+                finishInvite(it.pin!!)
             } else {
-                // LOAD AND JOIN DEFAULT TRUEB
+                loadAndJoinDefaultTribeData()
+            }
+        }
+    }
+
+    private fun saveInviterAndFinish(
+        nickname: String,
+        pubkey: String,
+        routeHint: String?,
+        inviteString: String? = null
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            val alias = ContactAlias(nickname)
+            val pubKey = LightningNodePubKey(pubkey)
+            val lightningRouteHint = routeHint?.toLightningRouteHint()
+
+            contactRepository.createContact(
+                alias,
+                pubKey,
+                lightningRouteHint
+            ).collect { loadResponse ->
+                when (loadResponse) {
+                    LoadResponse.Loading -> {}
+
+                    is Response.Error -> {
+                        setSignupBasicInfoState {
+                            copy(
+                                showLoading = false
+                            )
+                        }
+                        toast("Your invite has failed, please try again")
+                    }
+                    is Response.Success -> {
+                        setSignupBasicInfoState {
+                            copy(
+                                showLoading = false
+                            )
+                        }
+                        if (inviteString != null && inviteString.isNotEmpty()) {
+                            finishInvite(inviteString)
+                        } else {
+                            loadAndJoinDefaultTribeData()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun finishInvite(inviteString: String) {
+        scope.launch(dispatchers.mainImmediate) {
+            networkQueryInvite.finishInvite(inviteString).collect { loadResponse ->
+                when (loadResponse) {
+                    is LoadResponse.Loading -> {}
+
+                    is Response.Error -> {
+                        loadAndJoinDefaultTribeData()
+                    }
+                    is Response.Success -> {
+                        loadAndJoinDefaultTribeData()
+                    }
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val PLANET_SPHINX_TRIBE =
+            "sphinx.chat://?action=tribe&uuid=X3IWAiAW5vNrtOX5TLEJzqNWWr3rrUaXUwaqsfUXRMGNF7IWOHroTGbD4Gn2_rFuRZcsER0tZkrLw3sMnzj4RFAk_sx0&host=tribes.sphinx.chat"
+    }
+
+    private fun loadAndJoinDefaultTribeData() {
+        scope.launch(dispatchers.mainImmediate) {
+            PLANET_SPHINX_TRIBE.toTribeJoinLink()?.let { tribeJoinLink ->
+
+                networkQueryChat.getTribeInfo(
+                    ChatHost(tribeJoinLink.tribeHost),
+                    ChatUUID(tribeJoinLink.tribeUUID)
+                ).collect { loadResponse ->
+                    when (loadResponse) {
+                        is LoadResponse.Loading -> {}
+                        is Response.Error -> {
+                            setSignupBasicInfoState {
+                                copy(
+                                    showLoading = false
+                                )
+                            }
+                            LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+
+                        }
+                        is Response.Success -> {
+                            setSignupBasicInfoState {
+                                copy(
+                                    showLoading = false
+                                )
+                            }
+                            val tribeInfo = loadResponse.value
+                            tribeInfo.set(tribeJoinLink.tribeHost, tribeJoinLink.tribeUUID)
+                            joinDefaultTribe(tribeInfo)
+                        }
+                    }
+                }
+            } ?: LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+        }
+    }
+
+    private fun joinDefaultTribe(tribeInfo: TribeDto) {
+        scope.launch(dispatchers.mainImmediate) {
+            tribeInfo.amount = tribeInfo.price_to_join
+
+            chatRepository.joinTribe(tribeInfo).collect { loadResponse ->
+                when (loadResponse) {
+                    LoadResponse.Loading -> {}
+
+                    is Response.Error -> {
+                        LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+                    }
+                    is Response.Success -> {
+                        LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+                    }
+                }
             }
         }
     }
