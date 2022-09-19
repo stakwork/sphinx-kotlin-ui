@@ -28,12 +28,15 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.invite.InviteString
 import chat.sphinx.wrapper.invite.toValidInviteStringOrNull
+import chat.sphinx.wrapper.lightning.NodeBalanceAll
+import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.lightning.toLightningNodePubKey
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.relay.*
 import chat.sphinx.wrapper.rsa.RsaPublicKey
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import okio.Path
 import kotlinx.coroutines.flow.collect
@@ -41,16 +44,18 @@ import theme.primary_red
 
 class SignUpViewModel {
 
+    private val sphinxNotificationManager = createSphinxNotificationManager()
     private val authenticationManager = SphinxContainer.authenticationModule.authenticationCoreManager
     private val networkModule = SphinxContainer.networkModule
+    private val repositoryModule = SphinxContainer.repositoryModule(sphinxNotificationManager)
     private val networkQueryInvite: NetworkQueryInvite = networkModule.networkQueryInvite
     private val networkQueryRelayKeys: NetworkQueryRelayKeys = networkModule.networkQueryRelayKeys
     private val relayDataHandler = networkModule.relayDataHandler
     private val networkQueryContact = networkModule.networkQueryContact
     private val onBoardStepHandler = OnBoardStepHandler()
     private val rsa = SphinxContainer.authenticationModule.rsa
-    private val sphinxNotificationManager = createSphinxNotificationManager()
-    private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    private val contactRepository = repositoryModule.contactRepository
+    private val lightningRepository = repositoryModule.lightningRepository
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
@@ -591,6 +596,29 @@ class SignUpViewModel {
                     copy(
                         onboardStep = step3Message
                     )
+                }
+            }
+        }
+    }
+    fun getBalances() {
+        scope.launch(dispatchers.mainImmediate) {
+            lightningRepository.getAccountBalanceAll().collect { loadResponse ->
+                when (loadResponse) {
+                    LoadResponse.Loading -> {}
+                    is Response.Error -> {
+                        toast("There was a problem to load balances")
+                    }
+                    is Response.Success -> {
+                        val balance = loadResponse.value
+                        val localBalance = balance.localBalance
+                        val remoteBalance = balance.remoteBalance
+
+                        setSignupBasicInfoState {
+                            copy(
+                                balance = NodeBalanceAll(localBalance, remoteBalance)
+                            )
+                        }
+                    }
                 }
             }
         }
