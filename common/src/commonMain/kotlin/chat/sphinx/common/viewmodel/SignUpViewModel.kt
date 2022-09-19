@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import chat.sphinx.authentication.KeyRestoreResponse
 import chat.sphinx.authentication.model.OnBoardInviterData
 import chat.sphinx.authentication.model.OnBoardStep
 import chat.sphinx.authentication.model.OnBoardStepHandler
@@ -19,12 +18,9 @@ import chat.sphinx.concepts.network.query.relay_keys.NetworkQueryRelayKeys
 import chat.sphinx.concepts.network.query.relay_keys.model.PostHMacKeyDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
-import chat.sphinx.crypto.common.clazzes.Password
 import chat.sphinx.crypto.common.clazzes.PasswordGenerator
 import chat.sphinx.crypto.common.clazzes.UnencryptedString
-import chat.sphinx.crypto.common.clazzes.compare
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.features.authentication.core.AuthenticationCoreManager
 import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -38,12 +34,9 @@ import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.relay.*
 import chat.sphinx.wrapper.rsa.RsaPublicKey
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import okio.Path
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import theme.primary_green
 import theme.primary_red
 
 class SignUpViewModel {
@@ -60,7 +53,6 @@ class SignUpViewModel {
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
-
 
 
     //SIGNUP CODE STATE
@@ -136,16 +128,13 @@ class SignUpViewModel {
         val ext = filepath.toFile().extension
         val mediaType = MediaType.Image(MediaType.IMAGE + "/$ext")
 
-        setSignupBasicInfoState {
-            copy(
-                userPicture = AttachmentInfo(
-                    filePath = filepath,
-                    mediaType = mediaType,
-                    fileName = filepath.name.toFileName(),
-                    isLocalFile = true
-                )
-            )
-        }
+        signupBasicInfoState.userPicture.value = AttachmentInfo(
+            filePath = filepath,
+            mediaType = mediaType,
+            fileName = filepath.name.toFileName(),
+            isLocalFile = true
+        )
+
     }
 
     private fun checkValidInput() {
@@ -167,6 +156,7 @@ class SignUpViewModel {
             )
         }
     }
+
     fun toast(
         message: String,
         color: Color = primary_red,
@@ -436,6 +426,7 @@ class SignUpViewModel {
 
         return hMacKey
     }
+
     private var submitJob: Job? = null
 
     @OptIn(RawPasswordAccess::class)
@@ -506,10 +497,10 @@ class SignUpViewModel {
                     completionResponse?.let { _ ->
                         authenticationManager.getEncryptionKey()?.let { encryptionKey ->
                             (signupBasicInfoState.onboardStep as? OnBoardStep.Step1_WelcomeMessage)?.let { onboardStep1 ->
-                                 relayDataHandler.persistRelayUrl(onboardStep1.relayUrl)
-                                 relayDataHandler.persistAuthorizationToken(onboardStep1.authorizationToken)
-                                 relayDataHandler.persistRelayTransportKey(onboardStep1.transportKey)
-                                 relayDataHandler.persistRelayHMacKey(onboardStep1.hMacKey)
+                                relayDataHandler.persistRelayUrl(onboardStep1.relayUrl)
+                                relayDataHandler.persistAuthorizationToken(onboardStep1.authorizationToken)
+                                relayDataHandler.persistRelayTransportKey(onboardStep1.transportKey)
+                                relayDataHandler.persistRelayHMacKey(onboardStep1.hMacKey)
 
                                 contactRepository.networkRefreshContacts.collect { refreshResponse ->
 
@@ -578,4 +569,31 @@ class SignUpViewModel {
             }
         }
     }
+
+    fun updateProfilePic() {
+        scope.launch(dispatchers.mainImmediate) {
+            signupBasicInfoState.userPicture.value?.apply {
+                contactRepository.updateProfilePic(
+                    path = filePath,
+                    mediaType = mediaType,
+                    fileName = fileName?.value ?: "unknown",
+                    contentLength = null
+                )
+            }
+            val step3Message: OnBoardStep.Step3_Picture? =
+                (signupBasicInfoState.onboardStep as? OnBoardStep.Step2_NameAndPin)?.let { step2 ->
+                    onBoardStepHandler.persistOnBoardStep3Data(step2.inviterData)
+                }
+            if (step3Message == null) {
+                toast("There was an error")
+            } else {
+                setSignupBasicInfoState {
+                    copy(
+                        onboardStep = step3Message
+                    )
+                }
+            }
+        }
+    }
+
 }

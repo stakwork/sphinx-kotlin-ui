@@ -185,7 +185,7 @@ fun ProfileImage(viewModel: SignUpViewModel) {
             fontWeight = FontWeight.W400,
         )
         Spacer(modifier = Modifier.height(64.dp))
-        ProfileBox(viewModel.signupBasicInfoState.userPicture?.filePath)
+        ProfileBox(viewModel.signupBasicInfoState.userPicture.value?.filePath)
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -198,6 +198,7 @@ fun ProfileImage(viewModel: SignUpViewModel) {
             CommonButton(text = if (viewModel.signupBasicInfoState.userPicture == null) "Skip" else "Continue",
                 true,
                 endIcon = Icons.Default.ArrowForward) {
+                viewModel.updateProfilePic()
                 viewModel.navigateTo(LightningScreenState.EndScreen)
             }
         }
