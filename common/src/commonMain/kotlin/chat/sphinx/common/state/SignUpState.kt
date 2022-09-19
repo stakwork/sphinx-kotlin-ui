@@ -30,7 +30,7 @@ data class SignupBasicInfoState(
     val userPicture: MutableState<AttachmentInfo?> = mutableStateOf(null),
     val balance: NodeBalanceAll = NodeBalanceAll(Sat(0L), Sat(0L)),
     val onboardStep: OnBoardStep? = null,
-    val submitProgressBar: Boolean = false
+    val showLoading: Boolean = false
 )
 
 

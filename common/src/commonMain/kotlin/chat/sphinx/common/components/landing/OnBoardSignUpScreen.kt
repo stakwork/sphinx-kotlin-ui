@@ -142,7 +142,7 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
         verticalArrangement = Arrangement.Bottom,
         modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
     ) {
-        if (viewModel.signupBasicInfoState.submitProgressBar) {
+        if (viewModel.signupBasicInfoState.showLoading) {
             CircularProgressIndicator(
                 Modifier.padding(20.dp).size(20.dp),
                 color = Color.White,
@@ -199,7 +199,6 @@ fun ProfileImage(viewModel: SignUpViewModel) {
                 true,
                 endIcon = Icons.Default.ArrowForward) {
                 viewModel.updateProfilePic()
-                viewModel.navigateTo(LightningScreenState.EndScreen)
             }
         }
     }
@@ -253,7 +252,7 @@ fun EndScreen(viewModel: SignUpViewModel){
     ) {
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
             CommonButton(text = "Finish", true, endIcon = Icons.Default.ArrowForward) {
-                LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+                viewModel.onReadySubmit()
             }
         }
     }

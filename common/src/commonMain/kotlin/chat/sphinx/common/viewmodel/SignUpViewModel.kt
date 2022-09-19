@@ -434,11 +434,10 @@ class SignUpViewModel {
 
     private var submitJob: Job? = null
 
-    @OptIn(RawPasswordAccess::class)
     fun onSubmitNicknameAndPin() {
         setSignupBasicInfoState {
             copy(
-                submitProgressBar = true
+                showLoading = true
             )
         }
         if (submitJob?.isActive == true) {
@@ -458,7 +457,7 @@ class SignUpViewModel {
 
                     setSignupBasicInfoState {
                         copy(
-                            submitProgressBar = false
+                            showLoading = false
                         )
                     }
                     toast("Error Invalid PIN")
@@ -492,7 +491,7 @@ class SignUpViewModel {
                             if (flowResponse is AuthenticateFlowResponse.Error) {
                                 setSignupBasicInfoState {
                                     copy(
-                                        submitProgressBar = false
+                                        showLoading = false
                                     )
                                 }
                                 toast("There was an error to set your PIN")
@@ -525,83 +524,92 @@ class SignUpViewModel {
 //                                                        toast("Error to update Owner")
                                                     }
                                                     is Response.Success -> {
-//                                                        val step3: OnBoardStep.Step3_Picture? = onBoardStepHandler.persistOnBoardStep3Data(onboardStep1.inviterData)
+                                                        val step2Message: OnBoardStep.Step2_NameAndPin? =
+                                                            onBoardStepHandler.persistOnBoardStep2Data(
+                                                                onboardStep1.inviterData
+                                                            )
 
-//                                                        if (step3 != null) {
-//
-//                                                        }
-//                                                        else {
-//                                                            // TODO: Handle Error
-//                                                        }
+                                                        if (step2Message == null) {
+                                                            toast("There was an error")
+                                                        } else {
+                                                            setSignupBasicInfoState {
+                                                                copy(
+                                                                    onboardStep = step2Message,
+                                                                    showLoading = false
+                                                                )
+                                                            }
+
+                                                            navigateTo(LightningScreenState.ProfileImage)
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                                val step2Message: OnBoardStep.Step2_NameAndPin? =
-                                    onBoardStepHandler.persistOnBoardStep2Data(
-                                        onboardStep1.inviterData
-                                    )
-
-                                if (step2Message == null) {
-                                    toast("There was an error")
-                                } else {
-                                    setSignupBasicInfoState {
-                                        copy(
-                                            onboardStep = step2Message
-                                        )
-                                    }
-
-                                    setSignupBasicInfoState {
-                                        copy(
-                                            lightningScreenState = LightningScreenState.ProfileImage
-                                        )
-                                    }
-                                }
                             }
-                        } ?: let {
+                        } ?: {
                             toast("There was an error")
                         }
-                    } ?: let {
+                    } ?: {
                         toast("There was an error")
 
                     }
-
-                } ?: {
-                    toast("There was an error")
                 }
             }
         }
     }
 
     fun updateProfilePic() {
+        getBalances()
+
         scope.launch(dispatchers.mainImmediate) {
-            signupBasicInfoState.userPicture.value?.apply {
+            signupBasicInfoState.userPicture.value?.let {
+                // Add and show loading wheel
+
                 contactRepository.updateProfilePic(
-                    path = filePath,
-                    mediaType = mediaType,
-                    fileName = fileName?.value ?: "unknown",
+                    path = it.filePath,
+                    mediaType = it.mediaType,
+                    fileName = it.fileName?.value ?: "unknown",
                     contentLength = null
-                )
-            }
-            val step3Message: OnBoardStep.Step3_Picture? =
-                (signupBasicInfoState.onboardStep as? OnBoardStep.Step2_NameAndPin)?.let { step2 ->
-                    onBoardStepHandler.persistOnBoardStep3Data(step2.inviterData)
+                ).let { response ->
+                    when (response) {
+                        is Response.Error -> {
+                            //Hide loading wheel
+                            //Add Error toast
+                        }
+                        is Response.Success -> {
+                            //Hide loading wheel
+                            continueToEndScreen()
+                        }
+                    }
                 }
-            if (step3Message == null) {
-                toast("There was an error")
-            } else {
-                setSignupBasicInfoState {
-                    copy(
-                        onboardStep = step3Message
-                    )
-                }
+            } ?: run {
+                continueToEndScreen()
             }
         }
     }
-    fun getBalances() {
-        scope.launch(dispatchers.mainImmediate) {
+
+    private suspend fun continueToEndScreen() {
+        val step3Message: OnBoardStep.Step3_Picture? =
+            (signupBasicInfoState.onboardStep as? OnBoardStep.Step2_NameAndPin)?.let { step2 ->
+                onBoardStepHandler.persistOnBoardStep3Data(step2.inviterData)
+            }
+
+        if (step3Message == null) {
+            toast("There was an error")
+        } else {
+            setSignupBasicInfoState {
+                copy(
+                    onboardStep = step3Message
+                )
+            }
+        }
+
+        navigateTo(LightningScreenState.EndScreen)
+    }
+    private fun getBalances() {
+        scope.launch(dispatchers.io) {
             lightningRepository.getAccountBalanceAll().collect { loadResponse ->
                 when (loadResponse) {
                     LoadResponse.Loading -> {}
@@ -620,6 +628,20 @@ class SignUpViewModel {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    fun onReadySubmit() {
+        //Show Loading wheel
+
+        signupBasicInfoState.onboardStep?.inviterData?.let {
+            if (it.nickname?.isNotEmpty() == true && it.pubkey?.value?.isNotEmpty() == true) {
+                //SAVE INVITER AND FINISH
+            } else if (it.pin?.isNotEmpty() == true) {
+                //FINISH INVITE
+            } else {
+                // LOAD AND JOIN DEFAULT TRUEB
             }
         }
     }
