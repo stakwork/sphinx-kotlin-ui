@@ -65,7 +65,7 @@ fun OnBoardMessageScreen(viewModel: SignUpViewModel) {
         verticalArrangement = Arrangement.Center
     ) {
         PhotoUrlImage(
-            photoUrl = viewModel.signupInviterState.friendPhotoUrl ?: PhotoUrl(""),
+            photoUrl = viewModel.signupInviterState.friendPhotoUrl,
             modifier = Modifier
                 .size(112.dp)
                 .clip(CircleShape)
@@ -95,7 +95,7 @@ fun OnBoardMessageScreen(viewModel: SignUpViewModel) {
     ) {
         Box(modifier = Modifier.height(48.dp).width(259.dp)) {
             CommonButton(text = "Get Started", true, endIcon = Icons.Default.ArrowForward) {
-                LandingScreenState.screenState(LandingScreenType.OnBoardSignUp)
+                LandingScreenState.screenState(LandingScreenType.OnBoardLightning)
             }
         }
     }

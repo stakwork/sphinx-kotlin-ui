@@ -22,7 +22,6 @@ data class SignupInviterState(
 )
 
 data class SignupBasicInfoState(
-    var lightningScreenState: LightningScreenState = LightningScreenState.Start,
     val nickname: String = "",
     val newPin: String = "",
     val confirmedPin: String = "",
@@ -32,11 +31,3 @@ data class SignupBasicInfoState(
     val onboardStep: OnBoardStep? = null,
     val showLoading: Boolean = false
 )
-
-
-sealed class LightningScreenState {
-    object Start : LightningScreenState()
-    object BasicInfo : LightningScreenState()
-    object ProfileImage : LightningScreenState()
-    object EndScreen : LightningScreenState()
-}

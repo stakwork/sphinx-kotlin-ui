@@ -33,9 +33,6 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.chat.AttachmentPreview
 import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.components.tribe.JoinTribeView
-import chat.sphinx.common.components.tribe.TribeDetailView
-import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -43,7 +40,6 @@ import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -74,7 +70,6 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
 actual fun Dashboard(
-    sphinxState: SphinxState,
     dashboardViewModel: DashboardViewModel
 ) {
     val splitterState = rememberSplitPaneState()

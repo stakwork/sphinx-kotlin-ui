@@ -40,10 +40,10 @@ import chat.sphinx.wrapper.relay.*
 import chat.sphinx.wrapper.rsa.RsaPublicKey
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import okio.Path
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import theme.primary_red
 
 class SignUpViewModel {
@@ -65,6 +65,16 @@ class SignUpViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
+    companion object {
+        private const val PLANET_SPHINX_TRIBE =
+            "sphinx.chat://?action=tribe&uuid=X3IWAiAW5vNrtOX5TLEJzqNWWr3rrUaXUwaqsfUXRMGNF7IWOHroTGbD4Gn2_rFuRZcsER0tZkrLw3sMnzj4RFAk_sx0&host=tribes.sphinx.chat"
+    }
+
+    init {
+        scope.launch(dispatchers.mainImmediate) {
+            restoreSignupStep()
+        }
+    }
 
     var signupCodeState: SignupCodeState by mutableStateOf(initialSignupCodeState())
 
@@ -99,12 +109,8 @@ class SignUpViewModel {
         signupBasicInfoState = signupBasicInfoState.update()
     }
 
-    fun navigateTo(screenState: LightningScreenState) {
-        setSignupBasicInfoState {
-            copy(
-                lightningScreenState = screenState
-            )
-        }
+    fun navigateTo(screenState: LandingScreenType) {
+        LandingScreenState.screenState(screenState)
     }
 
     fun onNicknameChanged(nickname: String) {
@@ -182,22 +188,18 @@ class SignUpViewModel {
     }
 
     fun onSubmitInvitationCode() {
-        val code = signupCodeState.invitationCodeText
-        val inviteCode = code.toValidInviteStringOrNull()
+        scope.launch(dispatchers.mainImmediate) {
+            val code = signupCodeState.invitationCodeText
+            val inviteCode = code.toValidInviteStringOrNull()
 
-        if (inviteCode != null) {
-            LandingScreenState.screenState(LandingScreenType.Loading)
-
-            scope.launch(dispatchers.mainImmediate) {
+            if (inviteCode != null) {
+                LandingScreenState.screenState(LandingScreenType.Loading)
                 redeemInvite(inviteCode)
             }
-        }
 
-        val redemptionCode = RedemptionCode.decode(code)
-        if (redemptionCode != null && redemptionCode is RedemptionCode.NodeInvite) {
-            LandingScreenState.screenState(LandingScreenType.Loading)
-
-            scope.launch(dispatchers.mainImmediate) {
+            val redemptionCode = RedemptionCode.decode(code)
+            if (redemptionCode != null && redemptionCode is RedemptionCode.NodeInvite) {
+                LandingScreenState.screenState(LandingScreenType.Loading)
                 getTransportKey(
                     ip = redemptionCode.ip,
                     nodePubKey = null,
@@ -345,7 +347,6 @@ class SignUpViewModel {
                 } else {
                     toast("Generate token has failed")
                     LandingScreenState.screenState(LandingScreenType.NewUser)
-
                 }
             }
             is Response.Success -> {
@@ -366,14 +367,12 @@ class SignUpViewModel {
                 if (step1Message == null) {
                     toast("Generate token has failed")
                     LandingScreenState.screenState(LandingScreenType.NewUser)
-
                 } else {
                     setSignupBasicInfoState {
                         copy(
                             onboardStep = step1Message
                         )
                     }
-
                     setSignupInviterState {
                         copy(
                             welcomeMessage = step1Message.inviterData.message ?: "Welcome to Sphinx!",
@@ -381,7 +380,6 @@ class SignUpViewModel {
                         )
                     }
                     LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
-
                 }
             }
         }
@@ -438,13 +436,14 @@ class SignUpViewModel {
     private var submitJob: Job? = null
 
     fun onSubmitNicknameAndPin() {
+        if (submitJob?.isActive == true) {
+            return
+        }
+
         setSignupBasicInfoState {
             copy(
                 showLoading = true
             )
-        }
-        if (submitJob?.isActive == true) {
-            return
         }
 
         submitJob = scope.launch(dispatchers.mainImmediate) {
@@ -457,29 +456,31 @@ class SignUpViewModel {
                 try {
                     input.addCharacter(c)
                 } catch (e: IllegalArgumentException) {
-
-                    setSignupBasicInfoState {
-                        copy(
-                            showLoading = false
-                        )
-                    }
-                    toast("Error Invalid PIN")
+                    showError("Invalid PIN")
                     userPinBuilt = false
                     break
                 }
             }
 
             if (userPinBuilt) {
+                var completionResponse: AuthenticationResponse.Success.Authenticated? = null
                 var confirmToSetPin: AuthenticateFlowResponse.ConfirmInputToSetForFirstTime? = null
+
                 authenticationManager.authenticate(input, listOf(request)).collect { flowResponse ->
                     if (flowResponse is AuthenticateFlowResponse.ConfirmInputToSetForFirstTime) {
                         confirmToSetPin = flowResponse
+                    } else if (
+                        flowResponse is AuthenticateFlowResponse.Success &&
+                        flowResponse.requests.size == 1 &&
+                        flowResponse.requests[0] is AuthenticationResponse.Success.Authenticated
+                    ) {
+                        completionResponse = flowResponse.requests[0] as AuthenticationResponse.Success.Authenticated
+                    } else {
+                        showError("The PIN you entered is invalid. A PIN was already set")
                     }
                 }
 
                 confirmToSetPin?.let { setPin ->
-
-                    var completionResponse: AuthenticationResponse.Success.Authenticated? = null
                     authenticationManager.setPasswordFirstTime(setPin, input, listOf(request))
                         .collect { flowResponse ->
                             if (
@@ -487,80 +488,92 @@ class SignUpViewModel {
                                 flowResponse.requests.size == 1 &&
                                 flowResponse.requests[0] is AuthenticationResponse.Success.Authenticated
                             ) {
-                                completionResponse =
-                                    flowResponse.requests[0] as AuthenticationResponse.Success.Authenticated
+                                completionResponse = flowResponse.requests[0] as AuthenticationResponse.Success.Authenticated
+                            } else {
+                                showError("There was an error while setting your PIN")
                             }
+                        }
+                }
 
-                            if (flowResponse is AuthenticateFlowResponse.Error) {
-                                setSignupBasicInfoState {
-                                    copy(
-                                        showLoading = false
-                                    )
-                                }
-                                toast("There was an error to set your PIN")
+                completionResponse?.let { _ ->
+                    authenticationManager.getEncryptionKey()?.let { encryptionKey ->
+                        (signupBasicInfoState.onboardStep as? OnBoardStep.Step1_WelcomeMessage)?.let { onboardStep1 ->
+                            relayDataHandler.persistRelayUrl(onboardStep1.relayUrl)
+                            relayDataHandler.persistAuthorizationToken(onboardStep1.authorizationToken)
+                            relayDataHandler.persistRelayTransportKey(onboardStep1.transportKey)
+                            relayDataHandler.persistRelayHMacKey(onboardStep1.hMacKey)
+                        }
+
+                        val step2Message: OnBoardStep.Step2_Name? =
+                            onBoardStepHandler.persistOnBoardStep2Data(
+                                signupBasicInfoState.onboardStep?.inviterData
+                            )
+
+                        if (step2Message == null) {
+                            showError("Error persisting signup step. Please try again later")
+                            return@let
+                        } else {
+                            setSignupBasicInfoState {
+                                copy(
+                                    onboardStep = step2Message,
+                                    showLoading = false
+                                )
                             }
                         }
 
-                    completionResponse?.let { _ ->
-                        authenticationManager.getEncryptionKey()?.let { encryptionKey ->
-                            (signupBasicInfoState.onboardStep as? OnBoardStep.Step1_WelcomeMessage)?.let { onboardStep1 ->
-                                relayDataHandler.persistRelayUrl(onboardStep1.relayUrl)
-                                relayDataHandler.persistAuthorizationToken(onboardStep1.authorizationToken)
-                                relayDataHandler.persistRelayTransportKey(onboardStep1.transportKey)
-                                relayDataHandler.persistRelayHMacKey(onboardStep1.hMacKey)
+                        contactRepository.networkRefreshContacts.collect { refreshResponse ->
+                            when (refreshResponse) {
+                                is LoadResponse.Loading -> {}
+                                is Response.Error -> {
+                                    showError("Error retrieving contacts. Please try again")
+                                }
+                                is Response.Success -> {
+                                    contactRepository.updateOwnerNameAndKey(
+                                        signupBasicInfoState.nickname,
+                                        encryptionKey.publicKey
+                                    ).let { updateOwnerResponse ->
+                                        when (updateOwnerResponse) {
+                                            is Response.Error -> {
+                                                showError("Error updating owner nickname. Please try again")
+                                            }
+                                            is Response.Success -> {
+                                                val step3Message: OnBoardStep.Step3_Picture? =
+                                                    onBoardStepHandler.persistOnBoardStep3Data(
+                                                        signupBasicInfoState.onboardStep?.inviterData
+                                                    )
 
-                                contactRepository.networkRefreshContacts.collect { refreshResponse ->
-
-                                    when (refreshResponse) {
-                                        is LoadResponse.Loading -> {}
-                                        is Response.Error -> {
-
-                                        }
-                                        is Response.Success -> {
-                                            contactRepository.updateOwnerNameAndKey(
-                                                signupBasicInfoState.nickname,
-                                                encryptionKey.publicKey
-                                            ).let { updateOwnerResponse ->
-
-                                                when (updateOwnerResponse) {
-                                                    is Response.Error -> {
-                                                        toast("Error to update Owner")
+                                                if (step3Message == null) {
+                                                    showError("Error persisting signup step. Please try again later")
+                                                } else {
+                                                    setSignupBasicInfoState {
+                                                        copy(
+                                                            onboardStep = step3Message,
+                                                            showLoading = false
+                                                        )
                                                     }
-                                                    is Response.Success -> {
-                                                        val step2Message: OnBoardStep.Step2_NameAndPin? =
-                                                            onBoardStepHandler.persistOnBoardStep2Data(
-                                                                onboardStep1.inviterData
-                                                            )
-
-                                                        if (step2Message == null) {
-                                                            toast("There was an error")
-                                                        } else {
-                                                            setSignupBasicInfoState {
-                                                                copy(
-                                                                    onboardStep = step2Message,
-                                                                    showLoading = false
-                                                                )
-                                                            }
-
-                                                            navigateTo(LightningScreenState.ProfileImage)
-                                                        }
-                                                    }
+                                                    navigateTo(LandingScreenType.OnBoardLightningProfilePicture)
                                                 }
                                             }
                                         }
                                     }
                                 }
                             }
-                        } ?: {
-                            toast("There was an error")
                         }
                     } ?: {
-                        toast("There was an error")
-
+                        showError("Error retrieving your encryption keys. Please try again")
                     }
                 }
             }
         }
+    }
+
+    private fun showError(error: String) {
+        setSignupBasicInfoState {
+            copy(
+                showLoading = false
+            )
+        }
+        toast(error)
     }
 
     fun updateProfilePic() {
@@ -582,19 +595,9 @@ class SignUpViewModel {
                 ).let { response ->
                     when (response) {
                         is Response.Error -> {
-                            setSignupBasicInfoState {
-                                copy(
-                                    showLoading = false
-                                )
-                            }
-                            toast("There was a problem to update your picture, please try again")
+                            showError("Error updating profile picture, please try again")
                         }
                         is Response.Success -> {
-                            setSignupBasicInfoState {
-                                copy(
-                                    showLoading = false
-                                )
-                            }
                             continueToEndScreen()
                         }
                     }
@@ -606,22 +609,22 @@ class SignUpViewModel {
     }
 
     private suspend fun continueToEndScreen() {
-        val step3Message: OnBoardStep.Step3_Picture? =
-            (signupBasicInfoState.onboardStep as? OnBoardStep.Step2_NameAndPin)?.let { step2 ->
-                onBoardStepHandler.persistOnBoardStep3Data(step2.inviterData)
-            }
+        val step4Message: OnBoardStep.Step4_Ready? =
+            onBoardStepHandler.persistOnBoardStep4Data(
+                signupBasicInfoState.onboardStep?.inviterData
+            )
 
-        if (step3Message == null) {
-            toast("There was an error")
+        if (step4Message == null) {
+            showError("There was an error. Please try again later")
         } else {
             setSignupBasicInfoState {
                 copy(
-                    onboardStep = step3Message
+                    onboardStep = step4Message,
+                    showLoading = false
                 )
             }
+            navigateTo(LandingScreenType.OnBoardLightningReady)
         }
-
-        navigateTo(LightningScreenState.EndScreen)
     }
 
     private fun getBalances() {
@@ -683,21 +686,7 @@ class SignUpViewModel {
             ).collect { loadResponse ->
                 when (loadResponse) {
                     LoadResponse.Loading -> {}
-
-                    is Response.Error -> {
-                        setSignupBasicInfoState {
-                            copy(
-                                showLoading = false
-                            )
-                        }
-                        toast("Your invite has failed, please try again")
-                    }
-                    is Response.Success -> {
-                        setSignupBasicInfoState {
-                            copy(
-                                showLoading = false
-                            )
-                        }
+                    else -> {
                         if (inviteString != null && inviteString.isNotEmpty()) {
                             finishInvite(inviteString)
                         } else {
@@ -726,11 +715,6 @@ class SignUpViewModel {
         }
     }
 
-    companion object {
-        private const val PLANET_SPHINX_TRIBE =
-            "sphinx.chat://?action=tribe&uuid=X3IWAiAW5vNrtOX5TLEJzqNWWr3rrUaXUwaqsfUXRMGNF7IWOHroTGbD4Gn2_rFuRZcsER0tZkrLw3sMnzj4RFAk_sx0&host=tribes.sphinx.chat"
-    }
-
     private fun loadAndJoinDefaultTribeData() {
         scope.launch(dispatchers.mainImmediate) {
             PLANET_SPHINX_TRIBE.toTribeJoinLink()?.let { tribeJoinLink ->
@@ -742,27 +726,17 @@ class SignUpViewModel {
                     when (loadResponse) {
                         is LoadResponse.Loading -> {}
                         is Response.Error -> {
-                            setSignupBasicInfoState {
-                                copy(
-                                    showLoading = false
-                                )
-                            }
-                            LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+                            continueToSphinxOnYourPhone()
 
                         }
                         is Response.Success -> {
-                            setSignupBasicInfoState {
-                                copy(
-                                    showLoading = false
-                                )
-                            }
                             val tribeInfo = loadResponse.value
                             tribeInfo.set(tribeJoinLink.tribeHost, tribeJoinLink.tribeUUID)
                             joinDefaultTribe(tribeInfo)
                         }
                     }
                 }
-            } ?: LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+            } ?: continueToSphinxOnYourPhone()
         }
     }
 
@@ -775,12 +749,35 @@ class SignUpViewModel {
                     LoadResponse.Loading -> {}
 
                     is Response.Error -> {
-                        LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+                        continueToSphinxOnYourPhone()
                     }
                     is Response.Success -> {
-                        LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+                        continueToSphinxOnYourPhone()
                     }
                 }
+            }
+        }
+    }
+
+    private fun continueToSphinxOnYourPhone() {
+        setSignupBasicInfoState {
+            copy(
+                showLoading = false
+            )
+        }
+        LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+    }
+
+    private suspend fun restoreSignupStep() {
+        onBoardStepHandler.retrieveOnBoardStep()?.let { onBoardStep ->
+            setSignupBasicInfoState {
+                copy(
+                    onboardStep = onBoardStep
+                )
+            }
+
+            if (onBoardStep is OnBoardStep.Step4_Ready) {
+                getBalances()
             }
         }
     }

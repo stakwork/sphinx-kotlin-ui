@@ -31,16 +31,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.*
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoFileImage
-import chat.sphinx.common.state.LightningScreenState
 import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.signup.SignupUploadImageButton
 import chat.sphinx.wrapper.lightning.asFormattedString
-import chat.sphinx.wrapper.message.media.isImage
-import kotlinx.coroutines.launch
 import okio.Path
 import theme.md_theme_dark_onBackground
-import utils.deduceMediaType
 import views.BackButton
 
 @Composable
@@ -58,7 +54,7 @@ fun OnBoardSignUpScreen(viewModel: SignUpViewModel) {
         ) {
             OnBoardLightningScreen(viewModel)
         }
-        if (viewModel.signupBasicInfoState.lightningScreenState !is LightningScreenState.Start) {
+        if (LandingScreenState.screenState() != LandingScreenType.OnBoardLightning) {
             Box(
                 contentAlignment = Alignment.TopStart,
                 modifier = Modifier
@@ -66,14 +62,14 @@ fun OnBoardSignUpScreen(viewModel: SignUpViewModel) {
                     .fillMaxHeight()
                     .background(MaterialTheme.colorScheme.surface)
             ) {
-                when (viewModel.signupBasicInfoState.lightningScreenState) {
-                    is LightningScreenState.BasicInfo -> {
+                when (LandingScreenState.screenState()) {
+                    LandingScreenType.OnBoardLightningBasicInfo -> {
                         BasicInfoScreen(viewModel)
                     }
-                    is LightningScreenState.ProfileImage -> {
+                    LandingScreenType.OnBoardLightningProfilePicture -> {
                         ProfileImage(viewModel)
                     }
-                    is LightningScreenState.EndScreen -> {
+                    LandingScreenType.OnBoardLightningReady -> {
                         EndScreen(viewModel)
                     }
                 }
@@ -169,7 +165,7 @@ fun ProfileImage(viewModel: SignUpViewModel) {
         verticalArrangement = Arrangement.Top
     ) {
         BackButton {
-            viewModel.navigateTo(LightningScreenState.BasicInfo)
+            viewModel.navigateTo(LandingScreenType.OnBoardLightningBasicInfo)
         }
     }
     Column(

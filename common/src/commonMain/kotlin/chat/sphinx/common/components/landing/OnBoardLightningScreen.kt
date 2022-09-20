@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.landing.photoTestUrl
-import chat.sphinx.common.state.LightningScreenState
+import chat.sphinx.common.state.LandingScreenState
+import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.PhotoUrl
@@ -35,7 +36,7 @@ import theme.lightning_network_point_alpha
 fun OnBoardLightningScreen(
     viewModel: SignUpViewModel
 ) {
-    val lightningScreenState = viewModel.signupBasicInfoState.lightningScreenState
+    val lightningScreenState = LandingScreenState.screenState()
 
     Row(
         modifier = Modifier
@@ -49,9 +50,9 @@ fun OnBoardLightningScreen(
                 painter = imageResource(Res.drawable.lightning_network),
                 contentDescription = "Lightning Network",
                 modifier = Modifier.fillMaxSize().padding(
-                    end = if (lightningScreenState is LightningScreenState.Start) 40.dp else 0.dp
+                    end = if (lightningScreenState == LandingScreenType.OnBoardLightning) 40.dp else 0.dp
                 ),
-                contentScale = if (lightningScreenState is LightningScreenState.Start) ContentScale.Fit else ContentScale.FillHeight,
+                contentScale = if (lightningScreenState == LandingScreenType.OnBoardLightning) ContentScale.Fit else ContentScale.FillHeight,
                 alpha = 0.55f
             )
             Canvas(modifier = Modifier.size(12.dp),
@@ -88,8 +89,7 @@ fun OnBoardLightningScreen(
             })
         }
     }
-    if (lightningScreenState is LightningScreenState.EndScreen) {
-        // TODO: Change for PhotoFileImage component and find a default image to show in case there is no image
+    if (lightningScreenState == LandingScreenType.OnBoardLightningReady) {
         ProfileDialogBox(
             viewModel,
             photoTestUrl
@@ -111,7 +111,7 @@ fun OnBoardLightningScreen(
             )
         }
     }
-    if (lightningScreenState is LightningScreenState.Start) {
+    if (lightningScreenState == LandingScreenType.OnBoardLightning) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom,
@@ -119,7 +119,7 @@ fun OnBoardLightningScreen(
         ) {
             Box(modifier = Modifier.height(48.dp).width(259.dp)) {
                 CommonButton(text = "Continue", true, endIcon = Icons.Default.ArrowForward) {
-                    viewModel.navigateTo(LightningScreenState.BasicInfo)
+                    viewModel.navigateTo(LandingScreenType.OnBoardLightningBasicInfo)
                 }
             }
         }

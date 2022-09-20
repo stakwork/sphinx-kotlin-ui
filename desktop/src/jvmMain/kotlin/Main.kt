@@ -5,6 +5,8 @@ import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.*
+import chat.sphinx.authentication.model.OnBoardStep
+import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.Dashboard
@@ -16,23 +18,25 @@ import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import theme.LocalSpacing
 import theme.Spacing
-import java.awt.Window
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
     val windowState = rememberWindowState()
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
 
+    val onBoardStepHandler = remember { OnBoardStepHandler() }
     val sphinxStore = remember { SphinxStore() }
-    val sphinxState = sphinxStore.state
     var currentWindow: MutableState<ComposeWindow?> = remember { mutableStateOf(null) }
 
     when (AppState.screenState()) {
@@ -54,13 +58,19 @@ fun main() = application {
                 }
                 AppTheme(useDarkTheme = true) {
                     SphinxSplash()
+
                     LaunchedEffect(windowState) {
                         delay(1000L)
+
                         if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-                            ContentState.onContentReady(ScreenType.DashboardScreen)
-                        } else {
-                            ContentState.onContentReady(ScreenType.LandingScreen)
+                            if (!onBoardStepHandler.isSignupInProgress()) {
+                                ContentState.onContentReady(ScreenType.DashboardScreen)
+                                return@LaunchedEffect
+                            }
                         }
+
+                        sphinxStore.restoreSignupStep()
+                        ContentState.onContentReady(ScreenType.LandingScreen)
                     }
                 }
             }
@@ -100,7 +110,7 @@ fun main() = application {
                 }
 
                 AppTheme(useDarkTheme = true) {
-                    Dashboard(sphinxState, dashboardViewModel)
+                    Dashboard(dashboardViewModel)
 
                     DesktopSphinxToast("Sphinx")
                     DesktopSphinxConfirmAlert("Sphinx")

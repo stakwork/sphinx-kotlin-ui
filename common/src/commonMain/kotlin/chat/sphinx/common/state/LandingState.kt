@@ -11,7 +11,10 @@ enum class LandingScreenType {
     ExistingUserPIN,
     Loading,
     OnBoardMessage,
-    OnBoardSignUp,
+    OnBoardLightning,
+    OnBoardLightningBasicInfo,
+    OnBoardLightningProfilePicture,
+    OnBoardLightningReady,
     OnBoardSphinxOnYourPhone
 }
 
