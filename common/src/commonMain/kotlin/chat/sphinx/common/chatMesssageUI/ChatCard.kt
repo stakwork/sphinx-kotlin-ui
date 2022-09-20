@@ -39,14 +39,11 @@ import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.lightning.toLightningNodePubKey
 import chat.sphinx.wrapper.lightning.toVirtualLightningNodeAddress
 import chat.sphinx.wrapper.message.*
-import chat.sphinx.wrapper.message.media.isImage
 import theme.badge_red
 import theme.light_divider
 import chat.sphinx.wrapper.message.MessageType
 import chat.sphinx.wrapper.message.isSphinxCallLink
-import chat.sphinx.wrapper.message.media.isPdf
-import chat.sphinx.wrapper.message.media.isUnknown
-import chat.sphinx.wrapper.message.media.isVideo
+import chat.sphinx.wrapper.message.media.*
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import theme.sphinx_orange
@@ -107,13 +104,12 @@ fun ChatCard(
                                 chatViewModel = chatViewModel,
                                 modifier = Modifier.wrapContentHeight().fillMaxWidth()
                             )
+                        } else if (media.mediaType.isAudio) {
+                            MessageAudio(
+                                chatMessage = chatMessage,
+                                chatViewModel = chatViewModel,
+                            )
                         }
-//                    } else if (media.mediaType.isAudio) {
-//                        MessageAudio(
-//                            chatMessage = chatMessage,
-//                            chatViewModel = chatViewModel,
-//                        )
-//                    }
                     }
                     Column {
                         MessageTextLabel(chatMessage, chatViewModel, uriHandler)
@@ -134,7 +130,7 @@ fun ChatCard(
                             modifier = Modifier.width(
                                 maxOf(rowWidth, 250.dp)
                             )
-                            .height(45.dp)
+                                .height(45.dp)
                         )
                     }
                 }
@@ -193,7 +189,8 @@ fun MessageTextLabel(
                             }
                             LinkTag.LightningNodePublicKey.name, LinkTag.VirtualNodePublicKey.name -> {
                                 chatViewModel.contactLinkClicked(
-                                    annotation.item.toLightningNodePubKey() ?: annotation.item.toVirtualLightningNodeAddress()
+                                    annotation.item.toLightningNodePubKey()
+                                        ?: annotation.item.toVirtualLightningNodeAddress()
                                 )
                             }
                             LinkTag.JoinTribeLink.name -> {
