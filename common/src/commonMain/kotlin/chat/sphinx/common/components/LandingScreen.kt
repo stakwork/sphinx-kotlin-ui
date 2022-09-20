@@ -49,7 +49,7 @@ fun LandingScreen() {
                 OnBoardSignUpScreen(signUpViewModel)
             }
             LandingScreenType.OnBoardSphinxOnYourPhone -> {
-                OnBoardSphinxOnYourPhone()
+                OnBoardSphinxOnYourPhone(signUpViewModel)
             }
         }
     }

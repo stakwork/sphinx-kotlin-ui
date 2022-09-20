@@ -744,6 +744,14 @@ class SignUpViewModel {
         LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
     }
 
+    fun continueToDashboard() {
+        scope.launch(dispatchers.mainImmediate) {
+            onBoardStepHandler.finishOnBoardSteps()
+            AppState.screenState(ScreenType.DashboardScreen)
+            LandingScreenState.screenState(LandingScreenType.LandingPage)
+        }
+    }
+
     private fun showError(error: String) {
         setSignupBasicInfoState {
             copy(

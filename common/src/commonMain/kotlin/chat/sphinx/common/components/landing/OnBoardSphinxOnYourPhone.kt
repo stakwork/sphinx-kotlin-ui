@@ -24,10 +24,13 @@ import chat.sphinx.common.state.AppState
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.state.ScreenType
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 
 @Composable
-fun OnBoardSphinxOnYourPhone() {
+fun OnBoardSphinxOnYourPhone(
+    signUpViewModel: SignUpViewModel
+) {
 
     val uriHandler = LocalUriHandler.current
 
@@ -87,8 +90,7 @@ fun OnBoardSphinxOnYourPhone() {
 
             Box(modifier = Modifier.height(48.dp).width(259.dp)) {
                 Button(text = "Skip ", backgroundColor = Color.White) {
-                    AppState.screenState(ScreenType.DashboardScreen)
-                    LandingScreenState.screenState(LandingScreenType.LandingPage)
+                    signUpViewModel.continueToDashboard()
                 }
             }
         }
