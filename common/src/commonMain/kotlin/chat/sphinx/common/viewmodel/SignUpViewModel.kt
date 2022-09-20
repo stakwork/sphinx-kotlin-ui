@@ -172,21 +172,6 @@ class SignUpViewModel {
         }
     }
 
-    fun toast(
-        message: String,
-        color: Color = primary_red,
-        delay: Long = 2000L
-    ) {
-        scope.launch(dispatchers.mainImmediate) {
-            sphinxNotificationManager.toast(
-                "Sphinx",
-                message,
-                color.value,
-                delay
-            )
-        }
-    }
-
     fun onSubmitInvitationCode() {
         scope.launch(dispatchers.mainImmediate) {
             val code = signupCodeState.invitationCodeText
@@ -195,6 +180,7 @@ class SignUpViewModel {
             if (inviteCode != null) {
                 LandingScreenState.screenState(LandingScreenType.Loading)
                 redeemInvite(inviteCode)
+                return@launch
             }
 
             val redemptionCode = RedemptionCode.decode(code)
@@ -345,7 +331,7 @@ class SignUpViewModel {
                         relayTransportToken
                     )
                 } else {
-                    toast("Generate token has failed")
+                    toast("Generate token failed")
                     LandingScreenState.screenState(LandingScreenType.NewUser)
                 }
             }
@@ -365,7 +351,7 @@ class SignUpViewModel {
                 )
 
                 if (step1Message == null) {
-                    toast("Generate token has failed")
+                    toast("Error persisting signup step. Please try again later.")
                     LandingScreenState.screenState(LandingScreenType.NewUser)
                 } else {
                     setSignupBasicInfoState {
@@ -447,7 +433,6 @@ class SignUpViewModel {
         }
 
         submitJob = scope.launch(dispatchers.mainImmediate) {
-            val request = AuthenticationRequest.LogIn(privateKey = null)
             val input = authenticationManager.getNewUserInput()
             val userInput = signupBasicInfoState.newPin.toCharArray()
 
@@ -463,6 +448,7 @@ class SignUpViewModel {
             }
 
             if (userPinBuilt) {
+                val request = AuthenticationRequest.LogIn(privateKey = null)
                 var completionResponse: AuthenticationResponse.Success.Authenticated? = null
                 var confirmToSetPin: AuthenticateFlowResponse.ConfirmInputToSetForFirstTime? = null
 
@@ -515,8 +501,7 @@ class SignUpViewModel {
                         } else {
                             setSignupBasicInfoState {
                                 copy(
-                                    onboardStep = step2Message,
-                                    showLoading = false
+                                    onboardStep = step2Message
                                 )
                             }
                         }
@@ -567,15 +552,6 @@ class SignUpViewModel {
         }
     }
 
-    private fun showError(error: String) {
-        setSignupBasicInfoState {
-            copy(
-                showLoading = false
-            )
-        }
-        toast(error)
-    }
-
     fun updateProfilePic() {
         getBalances()
 
@@ -615,7 +591,7 @@ class SignUpViewModel {
             )
 
         if (step4Message == null) {
-            showError("There was an error. Please try again later")
+            showError("Error persisting signup step. Please try again later")
         } else {
             setSignupBasicInfoState {
                 copy(
@@ -766,6 +742,30 @@ class SignUpViewModel {
             )
         }
         LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+    }
+
+    private fun showError(error: String) {
+        setSignupBasicInfoState {
+            copy(
+                showLoading = false
+            )
+        }
+        toast(error)
+    }
+
+    fun toast(
+        message: String,
+        color: Color = primary_red,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(
+                "Sphinx",
+                message,
+                color.value,
+                delay
+            )
+        }
     }
 
     private suspend fun restoreSignupStep() {

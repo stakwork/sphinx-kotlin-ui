@@ -15,16 +15,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.state.AppState
+import chat.sphinx.common.state.LandingScreenState
+import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.state.ScreenType
 import chat.sphinx.platform.imageResource
 
 @Composable
 fun OnBoardSphinxOnYourPhone() {
+
+    val uriHandler = LocalUriHandler.current
+
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondary),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -72,20 +78,29 @@ fun OnBoardSphinxOnYourPhone() {
             horizontalArrangement = Arrangement.Center
         ){
             Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-                Button(text = "Get it ", backgroundColor = MaterialTheme.colorScheme.secondary)
+                Button(text = "Get it ", backgroundColor = MaterialTheme.colorScheme.secondary) {
+                    uriHandler.openUri("https://buy.sphinx.chat")
+                }
             }
 
             Spacer(modifier = Modifier.width(84.dp))
 
             Box(modifier = Modifier.height(48.dp).width(259.dp)) {
-                Button(text = "Skip ", backgroundColor = Color.White)
+                Button(text = "Skip ", backgroundColor = Color.White) {
+                    AppState.screenState(ScreenType.DashboardScreen)
+                    LandingScreenState.screenState(LandingScreenType.LandingPage)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun Button(text:String, backgroundColor: Color){
+private fun Button(
+    text:String,
+    backgroundColor: Color,
+    onClick: () -> Unit
+){
     Card(
         modifier = Modifier.wrapContentSize(),
         shape = RoundedCornerShape(23.dp),
@@ -96,7 +111,7 @@ private fun Button(text:String, backgroundColor: Color){
             enabled = true,
             backgroundColor = backgroundColor,
         ) {
-            AppState.screenState(ScreenType.DashboardScreen)
+            onClick.invoke()
         }
     }
 }
