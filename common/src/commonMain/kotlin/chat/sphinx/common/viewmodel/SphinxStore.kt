@@ -35,14 +35,10 @@ class SphinxStore {
                 is OnBoardStep.Step1_WelcomeMessage -> {
                     LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
                 }
-                is OnBoardStep.Step2_Name -> {
-                    LandingScreenState.screenState(LandingScreenType.OnBoardLightningBasicInfo)
-                }
-                is OnBoardStep.Step3_Picture -> {
-                    LandingScreenState.screenState(LandingScreenType.OnBoardLightningProfilePicture)
-                }
-                is OnBoardStep.Step4_Ready -> {
-                    LandingScreenState.screenState(LandingScreenType.OnBoardLightningReady)
+                is OnBoardStep.Step2_Name,
+                is OnBoardStep.Step3_Picture,
+                is OnBoardStep.Step4_Ready-> {
+                    LandingScreenState.screenState(LandingScreenType.SignupLocked)
                 }
             }
         }

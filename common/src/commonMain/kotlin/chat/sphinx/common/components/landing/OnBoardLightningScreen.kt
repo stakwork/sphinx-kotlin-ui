@@ -22,8 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
+import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
-import chat.sphinx.common.components.landing.photoTestUrl
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.SignUpViewModel
@@ -90,10 +90,7 @@ fun OnBoardLightningScreen(
         }
     }
     if (lightningScreenState == LandingScreenType.OnBoardLightningReady) {
-        ProfileDialogBox(
-            viewModel,
-            photoTestUrl
-        )
+        ProfileDialogBox(viewModel)
     } else {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -126,7 +123,9 @@ fun OnBoardLightningScreen(
     }
 }
 @Composable
-private fun ProfileDialogBox(viewModel: SignUpViewModel,photoUrl: PhotoUrl){
+private fun ProfileDialogBox(
+    viewModel: SignUpViewModel
+){
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.padding(bottom = 200.dp)
@@ -139,12 +138,25 @@ private fun ProfileDialogBox(viewModel: SignUpViewModel,photoUrl: PhotoUrl){
                 modifier = Modifier.padding(start = 6.dp, top = 3.dp, bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                PhotoUrlImage(
-                    photoUrl = photoUrl,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                )
+                Box(
+                    modifier = Modifier.size(80.dp)
+                ) {
+                    PhotoUrlImage(
+                        photoUrl = viewModel.signupBasicInfoState.userPhotoUrl,
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                    )
+                    viewModel.signupBasicInfoState.userPicture?.let { userPicture ->
+                        PhotoFileImage(
+                            photoFilepath = userPicture.filePath,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
                 Text(
                     text = viewModel.signupBasicInfoState.nickname,
                     fontSize = 20.sp,

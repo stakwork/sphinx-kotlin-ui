@@ -181,7 +181,7 @@ fun ProfileImage(viewModel: SignUpViewModel) {
             fontWeight = FontWeight.W400,
         )
         Spacer(modifier = Modifier.height(64.dp))
-        ProfileBox(viewModel.signupBasicInfoState.userPicture.value?.filePath, viewModel)
+        ProfileBox(viewModel.signupBasicInfoState.userPicture?.filePath, viewModel)
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

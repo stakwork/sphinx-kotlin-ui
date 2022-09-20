@@ -26,7 +26,8 @@ data class SignupBasicInfoState(
     val newPin: String = "",
     val confirmedPin: String = "",
     val basicInfoButtonEnabled: Boolean = false,
-    val userPicture: MutableState<AttachmentInfo?> = mutableStateOf(null),
+    val userPicture: AttachmentInfo? = null,
+    val userPhotoUrl: PhotoUrl? = null,
     val balance: NodeBalanceAll = NodeBalanceAll(Sat(0L), Sat(0L)),
     val onboardStep: OnBoardStep? = null,
     val showLoading: Boolean = false

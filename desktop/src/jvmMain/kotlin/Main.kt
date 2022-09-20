@@ -141,9 +141,9 @@ fun main() = application {
                     }
                 }
                 AppTheme(useDarkTheme = true) {
-                    DesktopSphinxToast("Sphinx")
-
                     LandingScreen()
+
+                    DesktopSphinxToast("Sphinx")
                 }
             }
         }

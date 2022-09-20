@@ -10,6 +10,7 @@ enum class LandingScreenType {
     RestoreExistingUserSuccess,
     ExistingUserPIN,
     Loading,
+    SignupLocked,
     OnBoardMessage,
     OnBoardLightning,
     OnBoardLightningBasicInfo,

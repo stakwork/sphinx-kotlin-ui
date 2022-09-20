@@ -22,7 +22,6 @@ abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
     }
 
     override fun onSubmitPIN() {
-        val text = pinState.sphinxPIN.toCharArray()
         val userInput = authenticationCoreManager.getNewUserInput()
 
         pinState.sphinxPIN.forEach {

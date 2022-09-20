@@ -30,21 +30,25 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.chat.ChatHost
 import chat.sphinx.wrapper.chat.ChatUUID
+import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.ContactAlias
 import chat.sphinx.wrapper.invite.InviteString
 import chat.sphinx.wrapper.invite.toValidInviteStringOrNull
-import chat.sphinx.wrapper.lightning.*
+import chat.sphinx.wrapper.lightning.LightningNodePubKey
+import chat.sphinx.wrapper.lightning.NodeBalanceAll
+import chat.sphinx.wrapper.lightning.toLightningNodePubKey
+import chat.sphinx.wrapper.lightning.toLightningRouteHint
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.relay.*
 import chat.sphinx.wrapper.rsa.RsaPublicKey
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import okio.Path
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import theme.primary_red
+import theme.badge_red
 
 class SignUpViewModel {
 
@@ -57,11 +61,12 @@ class SignUpViewModel {
     private val networkQueryChat: NetworkQueryChat = networkModule.networkQueryChat
     private val relayDataHandler = networkModule.relayDataHandler
     private val networkQueryContact = networkModule.networkQueryContact
-    private val onBoardStepHandler = OnBoardStepHandler()
     private val rsa = SphinxContainer.authenticationModule.rsa
     private val chatRepository = repositoryModule.chatRepository
     private val contactRepository = repositoryModule.contactRepository
     private val lightningRepository = repositoryModule.lightningRepository
+    private val onBoardStepHandler = OnBoardStepHandler()
+
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
@@ -105,7 +110,7 @@ class SignUpViewModel {
 
     private fun initialSignupBasicInfoState(): SignupBasicInfoState = SignupBasicInfoState()
 
-    private inline fun setSignupBasicInfoState(update: SignupBasicInfoState.() -> SignupBasicInfoState) {
+    inline fun setSignupBasicInfoState(update: SignupBasicInfoState.() -> SignupBasicInfoState) {
         signupBasicInfoState = signupBasicInfoState.update()
     }
 
@@ -144,12 +149,16 @@ class SignUpViewModel {
         val ext = filepath.toFile().extension
         val mediaType = MediaType.Image(MediaType.IMAGE + "/$ext")
 
-        signupBasicInfoState.userPicture.value = AttachmentInfo(
-            filePath = filepath,
-            mediaType = mediaType,
-            fileName = filepath.name.toFileName(),
-            isLocalFile = true
-        )
+        setSignupBasicInfoState {
+            copy(
+                userPicture = AttachmentInfo(
+                    filePath = filepath,
+                    mediaType = mediaType,
+                    fileName = filepath.name.toFileName(),
+                    isLocalFile = true
+                )
+            )
+        }
     }
 
     private fun checkValidInput() {
@@ -405,7 +414,9 @@ class SignUpViewModel {
                         when (loadResponse) {
                             is LoadResponse.Loading -> {
                             }
-                            is Response.Error -> {}
+                            is Response.Error -> {
+                                toast("Error creating HMACKey")
+                            }
                             is Response.Success -> {
                                 hMacKey = RelayHMacKey(hMacKeyString)
                             }
@@ -461,8 +472,15 @@ class SignUpViewModel {
                         flowResponse.requests[0] is AuthenticationResponse.Success.Authenticated
                     ) {
                         completionResponse = flowResponse.requests[0] as AuthenticationResponse.Success.Authenticated
-                    } else {
+                    } else if (flowResponse is AuthenticateFlowResponse.WrongPin) {
                         showError("The PIN you entered is invalid. A PIN was already set")
+
+                        setSignupBasicInfoState {
+                            copy(
+                                newPin = "",
+                                confirmedPin = ""
+                            )
+                        }
                     }
                 }
 
@@ -475,7 +493,7 @@ class SignUpViewModel {
                                 flowResponse.requests[0] is AuthenticationResponse.Success.Authenticated
                             ) {
                                 completionResponse = flowResponse.requests[0] as AuthenticationResponse.Success.Authenticated
-                            } else {
+                            } else if (flowResponse is AuthenticateFlowResponse.Error) {
                                 showError("There was an error while setting your PIN")
                             }
                         }
@@ -556,7 +574,7 @@ class SignUpViewModel {
         getBalances()
 
         scope.launch(dispatchers.mainImmediate) {
-            signupBasicInfoState.userPicture.value?.let {
+            signupBasicInfoState.userPicture?.let {
                 setSignupBasicInfoState {
                     copy(
                         showLoading = true
@@ -604,13 +622,11 @@ class SignUpViewModel {
     }
 
     private fun getBalances() {
-        scope.launch(dispatchers.io) {
+        scope.launch(dispatchers.mainImmediate) {
             lightningRepository.getAccountBalanceAll().collect { loadResponse ->
                 when (loadResponse) {
                     LoadResponse.Loading -> {}
-                    is Response.Error -> {
-                        toast("There was a problem to load balances")
-                    }
+                    is Response.Error -> {}
                     is Response.Success -> {
                         val balance = loadResponse.value
                         val localBalance = balance.localBalance
@@ -624,6 +640,34 @@ class SignUpViewModel {
                     }
                 }
             }
+        }
+    }
+
+    private suspend fun loadOwner() {
+        val owner = contactRepository.accountOwner.value.let { contact ->
+            if (contact != null) {
+                contact
+            } else {
+                var resolvedOwner: Contact? = null
+                try {
+                    contactRepository.accountOwner.collect { ownerContact ->
+                        if (ownerContact != null) {
+                            resolvedOwner = ownerContact
+                            throw Exception()
+                        }
+                    }
+                } catch (e: Exception) {
+                }
+                delay(25L)
+
+                resolvedOwner!!
+            }
+        }
+        setSignupBasicInfoState {
+            copy(
+                nickname = owner.alias?.value ?: "Unknown",
+                userPhotoUrl = owner.photoUrl
+            )
         }
     }
 
@@ -747,6 +791,8 @@ class SignUpViewModel {
     fun continueToDashboard() {
         scope.launch(dispatchers.mainImmediate) {
             onBoardStepHandler.finishOnBoardSteps()
+
+            DashboardScreenState.screenState(DashboardScreenType.Unlocked)
             AppState.screenState(ScreenType.DashboardScreen)
             LandingScreenState.screenState(LandingScreenType.LandingPage)
         }
@@ -763,7 +809,7 @@ class SignUpViewModel {
 
     fun toast(
         message: String,
-        color: Color = primary_red,
+        color: Color = badge_red,
         delay: Long = 2000L
     ) {
         scope.launch(dispatchers.mainImmediate) {
@@ -783,10 +829,13 @@ class SignUpViewModel {
                     onboardStep = onBoardStep
                 )
             }
+        }
+    }
 
-            if (onBoardStep is OnBoardStep.Step4_Ready) {
-                getBalances()
-            }
+    fun reloadAccountData() {
+        scope.launch(dispatchers.mainImmediate) {
+            loadOwner()
+            getBalances()
         }
     }
 
