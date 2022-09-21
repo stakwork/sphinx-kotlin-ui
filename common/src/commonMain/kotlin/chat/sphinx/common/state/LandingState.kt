@@ -2,6 +2,9 @@ package chat.sphinx.common.state
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import chat.sphinx.common.components.landing.OnBoardMessageScreen
+import chat.sphinx.common.components.landing.OnBoardSignUpScreen
+import chat.sphinx.common.components.landing.OnBoardSphinxOnYourPhone
 
 enum class LandingScreenType {
     LandingPage,
@@ -28,5 +31,15 @@ object LandingScreenState {
 
     fun screenState(state: LandingScreenType) {
         screen.value = state
+    }
+
+    fun isUnlockedSignup(): Boolean {
+        return (
+            screenState() == LandingScreenType.OnBoardLightning ||
+            screenState() == LandingScreenType.OnBoardLightningBasicInfo ||
+            screenState() == LandingScreenType.OnBoardLightningProfilePicture ||
+            screenState() == LandingScreenType.OnBoardLightningReady ||
+            screenState() == LandingScreenType.OnBoardSphinxOnYourPhone
+        )
     }
 }

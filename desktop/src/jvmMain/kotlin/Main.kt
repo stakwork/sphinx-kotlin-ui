@@ -97,14 +97,15 @@ fun main() = application {
                             DashboardScreenType.Unlocked ->{
                                 Item("Profile", onClick = {dashboardViewModel.toggleProfileWindow(true)})
                                 Item("Transactions", onClick = {dashboardViewModel.toggleTransactionsWindow(true)})
+
+                                Item("Remove Account from this machine", onClick = {
+                                    sphinxStore.removeAccount()
+                                    // TODO: Hack as logic to recreate database in the same process needs to be reworked...
+                                    exitApplication()
+                                })
                             }
                             else -> {}
                         }
-                        Item("Remove Account from this machine", onClick = {
-                            sphinxStore.removeAccount()
-                            // TODO: Hack as logic to recreate database in the same process needs to be reworked...
-                            exitApplication()
-                        })
                         Item("Exit", onClick = ::exitApplication)
                     }
                 }
@@ -138,6 +139,14 @@ fun main() = application {
                     Menu("Sphinx") {
                         Item("About", icon = sphinxIcon, onClick = { })
                         Item("Exit", onClick = ::exitApplication, shortcut = KeyShortcut(Key.Escape))
+
+                        if (LandingScreenState.isUnlockedSignup()) {
+                            Item("Remove Account from this machine", onClick = {
+                                sphinxStore.removeAccount()
+                                // TODO: Hack as logic to recreate database in the same process needs to be reworked...
+                                exitApplication()
+                            })
+                        }
                     }
                 }
                 AppTheme(useDarkTheme = true) {

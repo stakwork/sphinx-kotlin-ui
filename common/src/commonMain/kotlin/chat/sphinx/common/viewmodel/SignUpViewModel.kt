@@ -27,6 +27,7 @@ import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
+import chat.sphinx.response.message
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.chat.ChatHost
 import chat.sphinx.wrapper.chat.ChatUUID
@@ -171,6 +172,8 @@ class SignUpViewModel {
                         )
                     }
                     return
+                } else {
+                    toast("Pin doesn't match")
                 }
             }
         }
@@ -201,16 +204,19 @@ class SignUpViewModel {
                     password = redemptionCode.password,
                     redeemInviteDto = null
                 )
+                return@launch
             }
+
+            toast("The code your entered is not a valid invite or connection code")
         }
     }
 
     private suspend fun redeemInvite(input: InviteString) {
-        networkQueryInvite.redeemInvite(input).collect { loadResponse ->
+        networkQueryInvite.redeemInvite(input.value).collect { loadResponse ->
             when (loadResponse) {
                 is LoadResponse.Loading -> {}
                 is Response.Error -> {
-                    toast("There was a problem with the invitation code, please try later")
+                    toast("There was a problem with the invitation code, please try later ${loadResponse.message}")
                     LandingScreenState.screenState(LandingScreenType.NewUser)
 
                 }
@@ -732,11 +738,7 @@ class SignUpViewModel {
             networkQueryInvite.finishInvite(inviteString).collect { loadResponse ->
                 when (loadResponse) {
                     is LoadResponse.Loading -> {}
-
-                    is Response.Error -> {
-                        loadAndJoinDefaultTribeData()
-                    }
-                    is Response.Success -> {
+                    else -> {
                         loadAndJoinDefaultTribeData()
                     }
                 }
@@ -836,6 +838,15 @@ class SignUpViewModel {
                 copy(
                     onboardStep = onBoardStep
                 )
+            }
+
+            if (onBoardStep is OnBoardStep.Step1_WelcomeMessage) {
+                setSignupInviterState {
+                    copy(
+                        welcomeMessage = onBoardStep.inviterData.message ?: "Welcome to Sphinx!",
+                        friendName = onBoardStep.inviterData.nickname ?: "Sphinx Support"
+                    )
+                }
             }
         }
     }
