@@ -75,6 +75,7 @@ val wash_out_send = Color(0xFF829CB9)
 val sphinx_action_menu = Color(0xFF909BAA)
 val secondary_red = Color(0xFFFF8F80)
 val template_circle_background = Color(0x1Affffff)
+val selected_chat = Color(0xFF0e141a)
 
 
 val randomColor1 = Color(0xFF7077FF)
