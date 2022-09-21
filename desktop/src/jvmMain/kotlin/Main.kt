@@ -151,7 +151,6 @@ fun main() = application {
                 }
                 AppTheme(useDarkTheme = true) {
                     LandingScreen()
-
                     DesktopSphinxToast("Sphinx")
                 }
             }

@@ -8,11 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.viewmodel.LockedSignupViewModel
+import chat.sphinx.common.viewmodel.SignUpViewModel
 
 @Composable
 fun OnBoardSignupLocked(
-    lockedSignupViewModel: LockedSignupViewModel
+    signUpViewModel: SignUpViewModel
 ) {
     Row(
         modifier = Modifier.fillMaxSize()
@@ -26,7 +26,7 @@ fun OnBoardSignupLocked(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxHeight()
             ) {
-                PINScreen(lockedSignupViewModel)
+                PINScreen(signUpViewModel)
             }
         }
     }

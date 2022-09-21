@@ -36,8 +36,6 @@ import theme.lightning_network_point_alpha
 fun OnBoardLightningScreen(
     viewModel: SignUpViewModel
 ) {
-    val lightningScreenState = LandingScreenState.screenState()
-
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -50,9 +48,9 @@ fun OnBoardLightningScreen(
                 painter = imageResource(Res.drawable.lightning_network),
                 contentDescription = "Lightning Network",
                 modifier = Modifier.fillMaxSize().padding(
-                    end = if (lightningScreenState == LandingScreenType.OnBoardLightning) 40.dp else 0.dp
+                    end = if (LandingScreenState.screenState() == LandingScreenType.OnBoardLightning) 40.dp else 0.dp
                 ),
-                contentScale = if (lightningScreenState == LandingScreenType.OnBoardLightning) ContentScale.Fit else ContentScale.FillHeight,
+                contentScale = if (LandingScreenState.screenState() == LandingScreenType.OnBoardLightning) ContentScale.Fit else ContentScale.FillHeight,
                 alpha = 0.55f
             )
             Canvas(modifier = Modifier.size(12.dp),
@@ -89,7 +87,7 @@ fun OnBoardLightningScreen(
             })
         }
     }
-    if (lightningScreenState == LandingScreenType.OnBoardLightningReady) {
+    if (LandingScreenState.screenState() == LandingScreenType.OnBoardLightningReady) {
         ProfileDialogBox(viewModel)
     } else {
         Column(
@@ -108,7 +106,7 @@ fun OnBoardLightningScreen(
             )
         }
     }
-    if (lightningScreenState == LandingScreenType.OnBoardLightning) {
+    if (LandingScreenState.screenState() == LandingScreenType.OnBoardLightning) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom,

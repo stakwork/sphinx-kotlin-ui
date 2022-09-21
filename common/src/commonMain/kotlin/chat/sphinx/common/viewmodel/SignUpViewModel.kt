@@ -51,7 +51,7 @@ import kotlinx.coroutines.launch
 import okio.Path
 import theme.badge_red
 
-class SignUpViewModel {
+class SignUpViewModel : PinAuthenticationViewModel() {
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val authenticationManager = SphinxContainer.authenticationModule.authenticationCoreManager
@@ -68,9 +68,6 @@ class SignUpViewModel {
     private val lightningRepository = repositoryModule.lightningRepository
     private val onBoardStepHandler = OnBoardStepHandler()
 
-    val scope = SphinxContainer.appModule.applicationScope
-    val dispatchers = SphinxContainer.appModule.dispatchers
-
     companion object {
         private const val PLANET_SPHINX_TRIBE =
             "sphinx.chat://?action=tribe&uuid=X3IWAiAW5vNrtOX5TLEJzqNWWr3rrUaXUwaqsfUXRMGNF7IWOHroTGbD4Gn2_rFuRZcsER0tZkrLw3sMnzj4RFAk_sx0&host=tribes.sphinx.chat"
@@ -79,6 +76,26 @@ class SignUpViewModel {
     init {
         scope.launch(dispatchers.mainImmediate) {
             restoreSignupStep()
+        }
+    }
+
+    override fun onAuthenticationSucceed() {
+        scope.launch(dispatchers.mainImmediate) {
+            onBoardStepHandler.retrieveOnBoardStep()?.let { onBoardStep ->
+                when (onBoardStep) {
+                    is OnBoardStep.Step2_Name -> {
+                        setPinFields(pinState.sphinxPIN)
+                        LandingScreenState.screenState(LandingScreenType.OnBoardLightningBasicInfo)
+                    }
+                    is OnBoardStep.Step3_Picture -> {
+                        LandingScreenState.screenState(LandingScreenType.OnBoardLightningProfilePicture)
+                    }
+                    is OnBoardStep.Step4_Ready -> {
+                        reloadAccountData()
+                        LandingScreenState.screenState(LandingScreenType.OnBoardLightningReady)
+                    }
+                }
+            }
         }
     }
 
@@ -848,6 +865,15 @@ class SignUpViewModel {
                     )
                 }
             }
+        }
+    }
+
+    fun setPinFields(pin: String) {
+        setSignupBasicInfoState {
+            copy(
+                newPin = pin,
+                confirmedPin = pin,
+            )
         }
     }
 
