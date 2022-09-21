@@ -431,7 +431,6 @@ class SignUpViewModel {
     }
 
     private var submitJob: Job? = null
-
     fun onSubmitNicknameAndPin() {
         if (submitJob?.isActive == true) {
             return
@@ -571,9 +570,13 @@ class SignUpViewModel {
     }
 
     fun updateProfilePic() {
+        if (submitJob?.isActive == true) {
+            return
+        }
+
         getBalances()
 
-        scope.launch(dispatchers.mainImmediate) {
+        submitJob = scope.launch(dispatchers.mainImmediate) {
             signupBasicInfoState.userPicture?.let {
                 setSignupBasicInfoState {
                     copy(
@@ -672,18 +675,24 @@ class SignUpViewModel {
     }
 
     fun onReadySubmit() {
+        if (submitJob?.isActive == true) {
+            return
+        }
+
         setSignupBasicInfoState {
             copy(
                 showLoading = true
             )
         }
-        signupBasicInfoState.onboardStep?.inviterData?.let {
-            if (it.nickname?.isNotEmpty() == true && it.pubkey?.value?.isNotEmpty() == true) {
-                saveInviterAndFinish(it.nickname!!, it.pubkey!!.value, it.routeHint, it.pin)
-            } else if (it.pin?.isNotEmpty() == true) {
-                finishInvite(it.pin!!)
-            } else {
-                loadAndJoinDefaultTribeData()
+        submitJob = scope.launch(dispatchers.mainImmediate) {
+            signupBasicInfoState.onboardStep?.inviterData?.let {
+                if (it.nickname?.isNotEmpty() == true && it.pubkey?.value?.isNotEmpty() == true) {
+                    saveInviterAndFinish(it.nickname!!, it.pubkey!!.value, it.routeHint, it.pin)
+                } else if (it.pin?.isNotEmpty() == true) {
+                    finishInvite(it.pin!!)
+                } else {
+                    loadAndJoinDefaultTribeData()
+                }
             }
         }
     }
@@ -785,17 +794,16 @@ class SignUpViewModel {
                 showLoading = false
             )
         }
-        LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+        scope.launch(dispatchers.mainImmediate) {
+            onBoardStepHandler.finishOnBoardSteps()
+            LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
+        }
     }
 
     fun continueToDashboard() {
-        scope.launch(dispatchers.mainImmediate) {
-            onBoardStepHandler.finishOnBoardSteps()
-
-            DashboardScreenState.screenState(DashboardScreenType.Unlocked)
-            AppState.screenState(ScreenType.DashboardScreen)
-            LandingScreenState.screenState(LandingScreenType.LandingPage)
-        }
+        DashboardScreenState.screenState(DashboardScreenType.Unlocked)
+        AppState.screenState(ScreenType.DashboardScreen)
+        LandingScreenState.screenState(LandingScreenType.LandingPage)
     }
 
     private fun showError(error: String) {

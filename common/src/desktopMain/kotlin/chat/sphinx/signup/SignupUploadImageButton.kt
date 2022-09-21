@@ -33,7 +33,7 @@ actual fun SignupUploadImageButton(viewModel: SignUpViewModel) {
             border = BorderStroke(1.dp, md_theme_dark_onBackground)
         ) {
             CommonButton(
-                text = if (viewModel.signupBasicInfoState.userPicture == null) "Upload Image" else "Change image",
+                text = if (viewModel.signupBasicInfoState.userPicture == null) "Select Image" else "Change image",
                 enabled = true,
                 endIcon = Icons.Default.CameraAlt,
                 backgroundColor = MaterialTheme.colorScheme.surface,
