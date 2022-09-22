@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import java.io.File
-import javax.sound.sampled.AudioSystem
+//import java.io.File
+//import javax.sound.sampled.AudioSystem
 
 @Composable
 fun MessageAudio(
@@ -30,11 +30,13 @@ fun MessageAudio(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.height(68.dp).padding(start = 8.dp, top = 12.dp, bottom = 12.dp, end = 12.dp)
+        modifier = Modifier
+            .width(300.dp)
+            .height(68.dp)
+            .padding(start = 8.dp, top = 12.dp, bottom = 12.dp, end = 8.dp)
     ) {
         Box(
-            modifier = Modifier.size(48.dp),
+            modifier = Modifier.size(42.dp),
             contentAlignment = Alignment.Center
         ) {
             if (localFilepath != null) {
@@ -56,7 +58,7 @@ fun MessageAudio(
             }
         }
         Box(
-            modifier = Modifier.fillMaxWidth(0.4f).padding(start = 8.dp, end = 12.dp)
+            modifier = Modifier.width(190.dp).padding(start = 8.dp)
         ) {
             val slideValue = remember { mutableStateOf(0f) }
             Slider(
@@ -84,7 +86,11 @@ fun MessageAudio(
 //                println("Duration Error: $e ")
 //            }
 //        }
-
-        Text("01:00", color = MaterialTheme.colorScheme.tertiary)
+        Box(
+            modifier = Modifier.width(68.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("00:00", color = MaterialTheme.colorScheme.tertiary)
+        }
     }
 }
