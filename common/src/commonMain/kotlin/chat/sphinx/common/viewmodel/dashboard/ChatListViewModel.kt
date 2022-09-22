@@ -100,6 +100,12 @@ class ChatListViewModel {
                                 val contact: Contact = repositoryDashboard.getContactById(contactId)
                                     .firstOrNull() ?: continue
 
+                                (ChatDetailState.screenState() as? ChatDetailData.SelectedChatDetailData.SelectedContactDetail)?.let {
+                                    if (contactId == it.contactId) {
+                                        reloadChatDetailsOnFirstMessageSent(chat, contact, it.dashboardChat)
+                                    }
+                                }
+
                                 if (!contact.isBlocked()) {
                                     contactsAdded.add(contactId)
 
@@ -170,6 +176,49 @@ class ChatListViewModel {
             delay(50L)
             repositoryDashboard.getAllInvites.distinctUntilChanged().collect {
                 updateChatListContacts(_contactsStateFlow.value)
+            }
+        }
+    }
+
+    private suspend fun reloadChatDetailsOnFirstMessageSent(
+        chat: Chat,
+        contact: Contact,
+        dashboardChat: DashboardChat
+    ) {
+        val message: Message? = chat.latestMessageId?.let {
+            repositoryDashboard.getMessageById(it).firstOrNull()
+        }
+
+        val dashboard = DashboardChat.Active.Conversation(
+            chat,
+            message,
+            contact,
+            dashboardChat.color,
+            dashboardChat.unseenMessageFlow
+        )
+
+        ChatDetailState.screenState(
+            ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
+                chat.id,
+                contact.id,
+                dashboard
+            )
+        )
+
+        (ChatListState.screenState() as? ChatListData.PopulatedChatListData)?.let { currentState ->
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    currentState.dashboardChats,
+                    dashboard.dashboardChatId
+                )
+            )
+        }
+    }
+
+    private fun resetChatDetailOnContactDeleted(contactId: ContactId) {
+        (ChatDetailState.screenState() as? ChatDetailData.SelectedChatDetailData)?.let { chatDetailState ->
+            if (contactId == chatDetailState.contactId) {
+                ChatDetailState.screenState(ChatDetailData.EmptyChatDetailData)
             }
         }
     }
@@ -304,6 +353,8 @@ class ChatListViewModel {
                             updateChatViewState = true
                             currentChats.remove(chat)
                             chatContactIds.remove(it.id)
+
+                            resetChatDetailOnContactDeleted(it.id)
                         }
 
                         if (repositoryDashboard.updatedContactIds.contains(it.id)) {

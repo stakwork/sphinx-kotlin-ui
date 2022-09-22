@@ -1,11 +1,9 @@
 package chat.sphinx.common.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import chat.sphinx.common.state.AppState
-import chat.sphinx.common.state.ScreenType
-import chat.sphinx.common.state.SphinxState
+import androidx.compose.runtime.remember
+import chat.sphinx.authentication.model.OnBoardStep
+import chat.sphinx.authentication.model.OnBoardStepHandler
+import chat.sphinx.common.state.*
 import chat.sphinx.di.container.SphinxContainer
 import kotlinx.coroutines.launch
 
@@ -14,12 +12,7 @@ class SphinxStore {
     private val authenticationManager = SphinxContainer.authenticationModule.authenticationCoreManager
     private val authenticationStorage = SphinxContainer.authenticationModule.authenticationStorage
     private val encryptionKeyHandler = SphinxContainer.authenticationModule.encryptionKeyHandler
-
-    var state: SphinxState by mutableStateOf(initialState())
-        private set
-
-    private fun initialState(): SphinxState =
-        SphinxState()
+    private val onBoardStepHandler = OnBoardStepHandler()
 
     fun removeAccount() {
         // TODO: logout Confirmation...
@@ -31,11 +24,23 @@ class SphinxStore {
             authenticationManager.logOut()
             encryptionKeyHandler.clearKeysToRestore()
             // TODO: Restart DB...
+
             AppState.screenState(ScreenType.LandingScreen)
         }
     }
 
-    private inline fun setState(update: SphinxState.() -> SphinxState) {
-        state = state.update()
+    suspend fun restoreSignupStep() {
+        onBoardStepHandler.retrieveOnBoardStep()?.let { onBoardStep ->
+            when (onBoardStep) {
+                is OnBoardStep.Step1_WelcomeMessage -> {
+                    LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
+                }
+                is OnBoardStep.Step2_Name,
+                is OnBoardStep.Step3_Picture,
+                is OnBoardStep.Step4_Ready-> {
+                    LandingScreenState.screenState(LandingScreenType.SignupLocked)
+                }
+            }
+        }
     }
 }

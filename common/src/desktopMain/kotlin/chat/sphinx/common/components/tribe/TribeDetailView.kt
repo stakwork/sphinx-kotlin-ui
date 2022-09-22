@@ -61,7 +61,7 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
 
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
-            size = getPreferredWindowSize(400, 560)
+            size = getPreferredWindowSize(420, 560)
         ),
     ) {
         Column(

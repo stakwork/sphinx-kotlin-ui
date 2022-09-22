@@ -44,7 +44,6 @@ import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -75,7 +74,6 @@ private fun Modifier.cursorForHorizontalResize(): Modifier =
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
 actual fun Dashboard(
-    sphinxState: SphinxState,
     dashboardViewModel: DashboardViewModel
 ) {
     val splitterState = rememberSplitPaneState()

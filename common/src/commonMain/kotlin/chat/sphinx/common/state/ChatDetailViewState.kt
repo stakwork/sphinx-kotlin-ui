@@ -7,8 +7,13 @@ import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import chat.sphinx.wrapper.chat.Chat
+import chat.sphinx.wrapper.chat.isTribe
+import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
+import chat.sphinx.wrapper.message.Message
+import kotlinx.coroutines.flow.firstOrNull
 
 sealed class ChatDetailData {
     object EmptyChatDetailData : ChatDetailData()

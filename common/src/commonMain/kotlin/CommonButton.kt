@@ -30,7 +30,12 @@ fun CommonButton(
     }
 
     val textColor= if (enabled == true) {
-        androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+        if (backgroundColor == Color.White){
+            androidx.compose.material3.MaterialTheme.colorScheme.secondary
+        }
+        else {
+            androidx.compose.material3.MaterialTheme.colorScheme.tertiary
+        }
     } else {
         androidx.compose.material3.MaterialTheme.colorScheme.tertiary.copy(alpha = 0.7f)
     }

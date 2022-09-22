@@ -683,7 +683,6 @@ abstract class ChatViewModel(
         var preview: ChatMessage.LinkPreview? = null
 
         scope.launch(dispatchers.mainImmediate) {
-            // TODO: Implement
             Exhaustive@
             when (link.tag) {
                 LinkTag.LightningNodePublicKey.name, LinkTag.VirtualNodePublicKey.name -> {

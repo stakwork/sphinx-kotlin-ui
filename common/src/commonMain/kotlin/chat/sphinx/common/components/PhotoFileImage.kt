@@ -63,7 +63,6 @@ fun PhotoFileImage(
             resource = photoUrlResource,
             contentDescription = "image file",
             onLoading = {
-
                 if (effect != null) {
                     effect()
                 } else {

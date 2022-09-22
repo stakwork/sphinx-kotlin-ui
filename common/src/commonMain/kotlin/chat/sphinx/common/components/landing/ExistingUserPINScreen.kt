@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.state.LandingScreenState
+import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import views.BackButton
 
@@ -38,14 +40,15 @@ fun ExistingUserPINScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.background)
                 ) {
-                    BackButton()
+                    BackButton {
+                        LandingScreenState.screenState(LandingScreenType.LandingPage)
+                    }
                     Text("Back",color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
                 PINScreen(restoreExistingUserViewModel)
             }
-
         }
     }
 

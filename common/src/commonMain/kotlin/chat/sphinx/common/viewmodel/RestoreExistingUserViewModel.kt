@@ -65,7 +65,6 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
                 setState {
                     copy(errorMessage = "Invalid Restore string")
                 }
-                LandingScreenState.screenState(LandingScreenType.RestoreFromKeystore)
             }
         } ?: run {
             setState {
