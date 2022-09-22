@@ -44,43 +44,22 @@ fun MessageVideo(
     chatViewModel: ChatViewModel,
     modifier: Modifier = Modifier,
 ){
-    val message = chatMessage.message
-    val localFilepath = rememberSaveable { mutableStateOf(message.messageMedia?.localFile) }
     val videoLoadError = rememberSaveable { mutableStateOf(false) }
-    val urlAndMessageMedia = message.retrieveUrlAndMessageMedia()
-    val url = urlAndMessageMedia?.first
-    val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
+
+    val message = chatMessage.message
+    val messageMedia = message.messageMedia
+    val localFilepath = messageMedia?.localFile
+    val url = messageMedia?.url?.value ?: ""
 
     if (message.isPaidPendingMessage && chatMessage.isReceived) {
         PaidVideoOverlay(modifier)
     } else {
         LaunchedEffect(url) {
-            if (localFilepath.value == null) {
-                url?.let { mediaURL ->
-                    try {
-                        urlAndMessageMedia.second?.retrieveRemoteMediaInputStream(
-                            mediaURL,
-                            chatViewModel.memeServerTokenHandler,
-                            chatViewModel.memeInputStreamHandler
-                        )?.let { videoInputStream ->
-                            mediaCacheHandler.createVideoFile("mp4").let { videoFilepath ->
-                                videoFilepath.toFile().outputStream().use { fileOutputStream ->
-                                    videoInputStream.copyTo(fileOutputStream)
-                                    chatViewModel.messageRepository.messageMediaUpdateLocalFile(
-                                        message,
-                                        videoFilepath
-                                    )
-                                    localFilepath.value = videoFilepath
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        videoLoadError.value = true
-                    }
-                }
+            if (localFilepath == null) {
+                chatViewModel.downloadFileMedia(message, chatMessage.isSent)
             }
         }
-        if (localFilepath.value != null) {
+        if (localFilepath != null) {
             Box(
                 modifier = Modifier.height(250.dp).fillMaxWidth(),
                 contentAlignment = Alignment.Center
