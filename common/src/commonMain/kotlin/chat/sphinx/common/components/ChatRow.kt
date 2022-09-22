@@ -41,6 +41,7 @@ import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.util.getInitials
 import theme.badge_red
 import theme.primary_green
+import theme.selected_chat
 
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -80,7 +81,7 @@ fun ChatRow(
             .height(62.dp)
             .background(
                 if (selected) {
-                    androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                    selected_chat
                 } else {
                     androidx.compose.material3.MaterialTheme.colorScheme.background
                 }
