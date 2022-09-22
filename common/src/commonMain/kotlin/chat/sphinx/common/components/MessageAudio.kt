@@ -39,7 +39,7 @@ fun MessageAudio(
         ) {
             if (localFilepath != null) {
                 IconButton(
-                    onClick = { toast("Please download the file, audio player not implemented yet") }
+                    onClick = { toast("Audio Player not implemented yet, save the file to listen the audio") }
                 ) {
                     Icon(
                         Icons.Default.PlayArrow,
