@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Switch
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +37,8 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.state.ContentState
+import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.chat.CreateTribeViewModel
 import chat.sphinx.concepts.link_preview.model.toPhotoUrl
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
@@ -49,13 +53,14 @@ import java.net.URISyntaxException
 import java.net.URL
 
 @Composable
-fun CreateTribeView() {
+fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
     var isOpen by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
+    val viewModel = CreateTribeViewModel()
 
     if (isOpen) {
         Window(
-            onCloseRequest = {},
+            onCloseRequest = { dashboardViewModel.toggleCreateTribeWindow(false) },
             title = "Create Tribe",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
@@ -72,14 +77,16 @@ fun CreateTribeView() {
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.Top
                 ) {
-                    TribeTextField("Name*", "") {}
+                    TribeTextField("Name*", viewModel.createTribeState.name) {
+                        viewModel.onNameChanged(it)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
                         modifier = Modifier
                     ) {
                         TribeTextField(
                             "Image",
-                            "",
+                            viewModel.createTribeState.imgUrl,
                             Modifier.padding(end = 50.dp),
                             false
                         ) {}
@@ -93,37 +100,77 @@ fun CreateTribeView() {
                                 scope.launch {
                                     ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
                                         if (path.deduceMediaType().isImage) {
+                                            viewModel.onPictureChanged(path)
                                         }
                                     }
                                 }
                             }
-                            PhotoUrlImage(
-                                photoUrl = PhotoUrl("https://example.com"),
-                                modifier = Modifier.size(40.dp)
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        onImageClick.invoke()
-                                    },
-                                placeHolderRes = Res.drawable.ic_tribe_place_holder
-                            )
+                            val path = viewModel.createTribeState.img
+                            if (path != null) {
+                                PhotoFileImage(
+                                    photoFilepath = path,
+                                    modifier = Modifier.size(40.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            onImageClick.invoke()
+                                        }
+                                )
+                            }
+                            else {
+                                PhotoUrlImage(
+                                    photoUrl = PhotoUrl("https://example.com"),
+                                    modifier = Modifier.size(40.dp)
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            onImageClick.invoke()
+                                        },
+                                    placeHolderRes = Res.drawable.ic_tribe_place_holder
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    TribeTextField("Description*", "") {}
+                    TribeTextField("Description*", viewModel.createTribeState.description) {
+                        viewModel.onDescriptionChanged(it)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     TribeTextField("Tags", "") {}
                     Spacer(modifier = Modifier.height(16.dp))
-                    TribeTextField("Price to Join", "") {}
+                    val priceToJoin = viewModel.createTribeState.priceToJoin?.let {
+                        it.toString()
+                    }
+                    TribeTextField("Price to Join", priceToJoin ?: "") {
+                        viewModel.onPriceToJoinChanged(it)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
-                    TribeTextField("Price Per Message", "") {}
+                    val pricePerMessage = viewModel.createTribeState.pricePerMessage?.let {
+                        it.toString()
+                    }
+                    TribeTextField("Price Per Message", pricePerMessage ?: "") {
+                        viewModel.onPricePerMessageChanged(it)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
-                    TribeTextField("Amount to Stake", "") {}
+                    val amountToStake = viewModel.createTribeState.escrowAmount?.let {
+                        it.toString()
+                    }
+                    TribeTextField("Amount to Stake", amountToStake ?: "") {
+                        viewModel.onAmountToStakeChanged(it)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
-                    TribeTextField("Time to Stake (hours)", "") {}
+                    val timeToStake = viewModel.createTribeState.escrowMillis?.let {
+                        it.toString()
+                    }
+                    TribeTextField("Time to Stake (hours)", timeToStake ?: "") {
+                        viewModel.onTimeToStakeChanged(it)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
-                    TribeTextField("App Url", "") {}
+                    TribeTextField("App Url", viewModel.createTribeState.appUrl) {
+                        viewModel.onAppUrlChanged(it)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
-                    TribeTextField("Feed URL", "") {}
+                    TribeTextField("Feed URL", viewModel.createTribeState.feedUrl) {
+                        viewModel.onFeedUrlChanged(it)
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     TribeTextField("Feed Content Type", "") {}
                     Spacer(modifier = Modifier.height(16.dp))
@@ -154,8 +201,8 @@ fun CreateTribeView() {
                             )
                         }
                         Switch(
-                            checked = true,
-                            onCheckedChange = { },
+                            checked = viewModel.createTribeState.unlisted,
+                            onCheckedChange = { viewModel.onUnlistedChanged(it) },
                             colors = SwitchDefaults.colors(
                                 checkedTrackColor = MaterialTheme.colorScheme.secondary,
                                 checkedThumbColor = MaterialTheme.colorScheme.secondary
@@ -175,8 +222,8 @@ fun CreateTribeView() {
                             color = Color.White,
                         )
                         Switch(
-                            checked = false,
-                            onCheckedChange = { },
+                            checked = viewModel.createTribeState.private,
+                            onCheckedChange = { viewModel.onPrivateChanged(it) },
                             colors = SwitchDefaults.colors(
                                 checkedTrackColor = MaterialTheme.colorScheme.secondary,
                                 checkedThumbColor = MaterialTheme.colorScheme.secondary

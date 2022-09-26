@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.profile.Profile
+import chat.sphinx.common.components.tribe.CreateTribeView
 import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.ContactScreenState
@@ -186,6 +187,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             val transactionsWindowState by dashboardViewModel.transactionsStateFlow.collectAsState()
             if (transactionsWindowState) {
                 TransactionsUI(dashboardViewModel)
+            }
+
+            val createTribeWindowState by dashboardViewModel.createTribeStateFlow.collectAsState()
+            if (createTribeWindowState) {
+                CreateTribeView(dashboardViewModel)
             }
 
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
