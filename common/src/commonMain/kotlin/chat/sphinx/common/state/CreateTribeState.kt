@@ -20,4 +20,5 @@ data class CreateTribeState(
     val feedType: String? = "",
     val unlisted: Boolean = true,
     val private: Boolean = false,
+    val buttonEnabled: Boolean = false
 )

@@ -3,16 +3,10 @@ package chat.sphinx.common.components.tribe
 import CommonButton
 import Roboto
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.Divider
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material3.MaterialTheme
@@ -21,12 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,12 +30,11 @@ import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.CreateTribeViewModel
-import chat.sphinx.concepts.link_preview.model.toPhotoUrl
+import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.message.media.isImage
 import kotlinx.coroutines.launch
-import okio.Path
 import theme.tribe_hyperlink
 import utils.deduceMediaType
 import java.awt.Desktop
@@ -55,8 +45,10 @@ import java.net.URL
 @Composable
 fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
     var isOpen by remember { mutableStateOf(true) }
+    var tagPopupState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val viewModel = CreateTribeViewModel()
+
 
     if (isOpen) {
         Window(
@@ -115,8 +107,7 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
                                             onImageClick.invoke()
                                         }
                                 )
-                            }
-                            else {
+                            } else {
                                 PhotoUrlImage(
                                     photoUrl = PhotoUrl("https://example.com"),
                                     modifier = Modifier.size(40.dp)
@@ -134,7 +125,13 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
                         viewModel.onDescriptionChanged(it)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    TribeTextField("Tags", "") {}
+                    TribeTextField(
+                        label = "Tags",
+                        "",
+                        modifier = Modifier.clickable { tagPopupState = true },
+                        enabled = false
+                    ) {
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     val priceToJoin = viewModel.createTribeState.priceToJoin?.let {
                         it.toString()
@@ -185,6 +182,7 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
                             Text(
                                 text = "List on ",
                                 fontSize = 15.sp,
+                                fontFamily = Roboto,
                                 fontWeight = FontWeight.W400,
                                 color = Color.White,
                             )
@@ -237,8 +235,90 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
                 verticalArrangement = Arrangement.Bottom
             )
             {
-                CommonButton("Create Tribe") {}
+                CommonButton("Create Tribe", enabled = viewModel.createTribeState.buttonEnabled) {
+                    viewModel.saveTribe()
+                }
             }
+            if (tagPopupState) {
+                SelectTagPopup() {
+                    tagPopupState = false
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SelectTagPopup(onClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(
+                onClick = { onClick.invoke() },
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            )
+            .background(color = Color.Black.copy(0.4f))
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(start = 24.dp, end = 24.dp)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                .clickable(
+                    onClick = {},
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                )
+
+
+        ) {
+            Spacer(Modifier.height(8.dp))
+            TagRow()
+            TagRow()
+            TagRow()
+            TagRow()
+            TagRow()
+            TagRow()
+            TagRow()
+            TagRow()
+            Spacer(Modifier.height(8.dp))
+
+        }
+
+    }
+}
+
+@Composable
+fun TagRow() {
+    val selected = false
+    Box(
+        modifier = Modifier.padding(6.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth().background(
+                    color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    shape = RoundedCornerShape(percent = 50)
+                )
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        )
+        {
+            Image(
+                painter = imageResource(Res.drawable.ic_bitcoin),
+                contentDescription = "icon",
+                modifier = Modifier.padding(start = 8.dp)
+            )
+            Text(
+                text = "Bitcoin ",
+                fontSize = 14.sp,
+                fontFamily = Roboto,
+                fontWeight = FontWeight.Light,
+                color = Color.White,
+                modifier = Modifier.padding(start = 16.dp)
+            )
         }
     }
 }

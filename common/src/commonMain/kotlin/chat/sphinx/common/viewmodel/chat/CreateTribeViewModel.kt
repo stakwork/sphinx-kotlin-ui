@@ -3,11 +3,17 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import chat.sphinx.common.Res
 import chat.sphinx.common.state.CreateTribeState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
+import chat.sphinx.concepts.repository.chat.model.CreateTribe
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.platform.imageResource
+import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import com.squareup.sqldelight.internal.copyOnWriteList
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import okio.Path
 
 class CreateTribeViewModel {
@@ -30,10 +36,58 @@ class CreateTribeViewModel {
         createTribeState = createTribeState.update()
     }
 
+    val createTribeBuilder = CreateTribe.Builder(
+        arrayOf(
+            CreateTribe.Builder.Tag("Bitcoin", Res.drawable.ic_bitcoin),
+            CreateTribe.Builder.Tag("Lightning", Res.drawable.ic_lightning),
+            CreateTribe.Builder.Tag("Sphinx", Res.drawable.ic_sphinx),
+            CreateTribe.Builder.Tag("Crypto", Res.drawable.ic_crypto),
+            CreateTribe.Builder.Tag("Tech", Res.drawable.ic_tech),
+            CreateTribe.Builder.Tag("Altcoins", Res.drawable.ic_altcoins),
+            CreateTribe.Builder.Tag("Music", Res.drawable.ic_music),
+            CreateTribe.Builder.Tag("Podcast", Res.drawable.ic_podcast)
+        )
+    )
+
+    private var saveTribeJob: Job? = null
+    fun saveTribe() {
+        if (saveTribeJob?.isActive == true) {
+            return
+        }
+        setTribeBuilder()
+
+        if (createTribeBuilder.hasRequiredFields) {
+            createTribeBuilder.build()?.let {
+                saveTribeJob = scope.launch(dispatchers.mainImmediate) {
+                    when(chatRepository.createTribe(it)){
+                        is Response.Error -> {}
+                        is Response.Success -> {}
+                    }
+                }
+            }
+        }
+
+    }
+
+    private fun setTribeBuilder(){
+        createTribeBuilder.setName(createTribeState.name)
+        createTribeBuilder.setDescription(createTribeState.description)
+        createTribeBuilder.setImg(createTribeState.img)
+        createTribeBuilder.setPriceToJoin(createTribeState.priceToJoin)
+        createTribeBuilder.setPricePerMessage(createTribeState.pricePerMessage)
+        createTribeBuilder.setEscrowAmount(createTribeState.escrowAmount)
+        createTribeBuilder.setEscrowMillis(createTribeState.escrowMillis)
+        createTribeBuilder.setAppUrl(createTribeState.appUrl)
+        createTribeBuilder.setFeedUrl(createTribeState.feedUrl)
+        createTribeBuilder.setUnlisted(createTribeState.unlisted)
+        createTribeBuilder.setPrivate(createTribeState.private)
+    }
+
     fun onNameChanged(text: String) {
         setCreateTribeState {
             copy(name = text)
         }
+        checkValidInput()
     }
 
     fun onPictureChanged(filepath: Path) {
@@ -46,6 +100,7 @@ class CreateTribeViewModel {
         setCreateTribeState {
             copy(description = text)
         }
+        checkValidInput()
     }
 
     fun onPriceToJoinChanged(text: String) {
@@ -96,6 +151,18 @@ class CreateTribeViewModel {
         }
     }
 
+    fun checkValidInput(){
+        if (createTribeState.name.isNotEmpty() && createTribeState.description.isNotEmpty()) {
+            setCreateTribeState {
+                copy(buttonEnabled = true)
+            }
+        }
+        else {
+            setCreateTribeState {
+                copy(buttonEnabled = false)
+            }
+        }
+    }
     private fun getLong(text: String): Long {
         val amount = try {
             text.toLong()
