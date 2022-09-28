@@ -1,24 +1,23 @@
 package chat.sphinx.common.state
 
-import chat.sphinx.wrapper.chat.AppUrl
-import chat.sphinx.wrapper.feed.FeedType
-import chat.sphinx.wrapper.feed.FeedUrl
+import chat.sphinx.wrapper.PhotoUrl
 import okio.Path
 
 data class CreateTribeState(
     val name: String = "",
     val imgUrl: String = "",
-    val img: Path? = null,
+    val path: Path? = null,
+    val img: PhotoUrl? = PhotoUrl("empty"),
     val description: String = "",
-    val tags: Array<String>? = null,
+    val tags: ArrayList<String> = arrayListOf(""),
     val priceToJoin: Long? = null,
     val pricePerMessage: Long? = null,
     val escrowAmount: Long? = null,
     val escrowMillis: Long? = null,
     val appUrl: String = "",
     val feedUrl: String = "",
-    val feedType: String? = "",
-    val unlisted: Boolean = true,
-    val private: Boolean = false,
+    val feedType: String = "",
+    val unlisted: Boolean = false,
+    val private: Boolean = true,
     val buttonEnabled: Boolean = false
 )

@@ -190,8 +190,12 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             }
 
             val createTribeWindowState by dashboardViewModel.createTribeStateFlow.collectAsState()
-            if (createTribeWindowState) {
-                CreateTribeView(dashboardViewModel)
+            if (createTribeWindowState.first) {
+                if (createTribeWindowState.second != null) {
+                    CreateTribeView(dashboardViewModel, createTribeWindowState.second)
+                } else {
+                    CreateTribeView(dashboardViewModel, null)
+                }
             }
 
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()

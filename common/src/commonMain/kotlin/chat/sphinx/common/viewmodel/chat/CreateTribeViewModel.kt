@@ -8,17 +8,25 @@ import chat.sphinx.common.state.CreateTribeState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.repository.chat.model.CreateTribe
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.contact.Contact
+import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.feed.toFeedTypeString
+import chat.sphinx.wrapper.feed.toFeedType
+import chat.sphinx.wrapper.toPhotoUrl
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import okio.Path
 
-class CreateTribeViewModel {
+class CreateTribeViewModel(
+    private val chatId: ChatId?
+) {
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -28,6 +36,7 @@ class CreateTribeViewModel {
     private val networkQueryChat: NetworkQueryChat = networkModule.networkQueryChat
     private val chatRepository = repositoryModule.chatRepository
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
+    private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
 
 
     var createTribeState: CreateTribeState by mutableStateOf(initialCreateTribeState())
@@ -56,12 +65,12 @@ class CreateTribeViewModel {
     val tribeTagListState: StateFlow<Array<CreateTribe.Builder.Tag>>
         get() = _tribeTagListStateFlow.asStateFlow()
 
-    private val _tribeTagNameList: MutableStateFlow<List<String>> by lazy {
-        MutableStateFlow(listOf(""))
-    }
+    private val accountOwnerStateFlow: StateFlow<Contact?>
+        get() = contactRepository.accountOwner
 
-    val tribeTagNameList: StateFlow<List<String>>
-        get() = _tribeTagNameList.asStateFlow()
+    private val createTribeBuilder = CreateTribe.Builder(
+        tribeTagListState.value
+    )
 
     fun getTagNameList() {
         val list = arrayListOf<String>()
@@ -69,7 +78,11 @@ class CreateTribeViewModel {
             if (tag.isSelected) {
                 list.add(tag.name)
             }
-            _tribeTagNameList.value = list
+            setCreateTribeState {
+                copy(
+                    tags = list
+                )
+            }
         }
     }
 
@@ -83,13 +96,64 @@ class CreateTribeViewModel {
         }
     }
 
+    private var loadJob: Job? = null
+    fun load() {
+        if (loadJob?.isActive == true) {
+            return
+        }
+
+        loadJob = scope.launch(dispatchers.mainImmediate) {
+            accountOwnerStateFlow.collect { contactOwner ->
+                contactOwner?.let { owner ->
+                    chatId?.let { chatId ->
+                        chatRepository.getChatById(chatId)?.let { chat ->
+                            val host = chat.host
+
+                            if (host != null) {
+                                networkQueryChat.getTribeInfo(host, chat.uuid).collect { loadResponse ->
+                                    when (loadResponse) {
+                                        is LoadResponse.Loading -> {}
+
+                                        is Response.Error -> {}
+
+                                        is Response.Success -> {
+                                            createTribeBuilder.load(loadResponse.value)
+                                            getTagNameList()
+                                            setCreateTribeState {
+                                                copy(
+                                                    name = loadResponse.value.name,
+                                                    img = loadResponse.value.img?.toPhotoUrl(),
+                                                    imgUrl = loadResponse.value.img ?: "",
+                                                    description = loadResponse.value.description,
+                                                    priceToJoin = loadResponse.value.price_to_join,
+                                                    pricePerMessage = loadResponse.value.price_per_message,
+                                                    escrowAmount = loadResponse.value.escrow_amount,
+                                                    escrowMillis = loadResponse.value.escrow_millis,
+                                                    appUrl = loadResponse.value.app_url ?: "",
+                                                    feedUrl = loadResponse.value.feed_url ?: "",
+                                                    feedType = loadResponse.value.feed_type?.toFeedType()?.toFeedTypeString() ?: "",
+                                                    private = loadResponse.value.private.value,
+                                                    unlisted = loadResponse.value.unlisted.value
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    init {
+        load()
+    }
+
     fun changeSelectTag(position: Int) {
         _tribeTagListStateFlow.value[position].isSelected = !_tribeTagListStateFlow.value[position].isSelected
     }
-
-    val createTribeBuilder = CreateTribe.Builder(
-        tribeTagListState.value
-    )
 
     private var saveTribeJob: Job? = null
     fun saveTribe() {
@@ -108,13 +172,12 @@ class CreateTribeViewModel {
                 }
             }
         }
-
     }
 
     private fun setTribeBuilder() {
         createTribeBuilder.setName(createTribeState.name)
         createTribeBuilder.setDescription(createTribeState.description)
-        createTribeBuilder.setImg(createTribeState.img)
+        createTribeBuilder.setImg(createTribeState.path)
         createTribeBuilder.setPriceToJoin(createTribeState.priceToJoin)
         createTribeBuilder.setPricePerMessage(createTribeState.pricePerMessage)
         createTribeBuilder.setEscrowAmount(createTribeState.escrowAmount)
@@ -134,7 +197,7 @@ class CreateTribeViewModel {
 
     fun onPictureChanged(filepath: Path) {
         setCreateTribeState {
-            copy(img = filepath)
+            copy(path = filepath)
         }
     }
 
@@ -165,8 +228,9 @@ class CreateTribeViewModel {
     }
 
     fun onTimeToStakeChanged(text: String) {
+        val hours = (getLong(text) * 60 * 60 * 1000)
         setCreateTribeState {
-            copy(escrowMillis = getLong(text))
+            copy(escrowMillis = hours)
         }
     }
 
@@ -186,6 +250,7 @@ class CreateTribeViewModel {
         setCreateTribeState {
             copy(unlisted = unlisted)
         }
+        println(createTribeState.unlisted)
     }
 
     fun onPrivateChanged(private: Boolean) {
@@ -214,6 +279,5 @@ class CreateTribeViewModel {
         }
         return amount
     }
-
 
 }
