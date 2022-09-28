@@ -127,8 +127,12 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
                     Spacer(modifier = Modifier.height(16.dp))
                     TribeTextField(
                         label = "Tags",
-                        "",
-                        modifier = Modifier.clickable { tagPopupState = true },
+                        value = viewModel.tribeTagNameList.value.toString().replace("[", "").replace("]", ""),
+                        modifier = Modifier.clickable(
+                            onClick = { tagPopupState = true },
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ),
                         enabled = false
                     ) {
                     }
@@ -240,7 +244,7 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
                 }
             }
             if (tagPopupState) {
-                SelectTagPopup() {
+                SelectTagPopup(viewModel) {
                     tagPopupState = false
                 }
             }
@@ -249,7 +253,7 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel) {
 }
 
 @Composable
-fun SelectTagPopup(onClick: () -> Unit) {
+fun SelectTagPopup(viewModel: CreateTribeViewModel, onClick: () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -275,14 +279,14 @@ fun SelectTagPopup(onClick: () -> Unit) {
 
         ) {
             Spacer(Modifier.height(8.dp))
-            TagRow()
-            TagRow()
-            TagRow()
-            TagRow()
-            TagRow()
-            TagRow()
-            TagRow()
-            TagRow()
+            TagRow(0, viewModel)
+            TagRow(1, viewModel)
+            TagRow(2, viewModel)
+            TagRow(3, viewModel)
+            TagRow(4, viewModel)
+            TagRow(5, viewModel)
+            TagRow(6, viewModel)
+            TagRow(7, viewModel)
             Spacer(Modifier.height(8.dp))
 
         }
@@ -291,8 +295,8 @@ fun SelectTagPopup(onClick: () -> Unit) {
 }
 
 @Composable
-fun TagRow() {
-    val selected = false
+fun TagRow(position: Int, viewModel: CreateTribeViewModel) {
+    var selected by remember { mutableStateOf(viewModel.tribeTagListState.value[position].isSelected) }
     Box(
         modifier = Modifier.padding(6.dp)
     ) {
@@ -302,17 +306,26 @@ fun TagRow() {
                     color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                     shape = RoundedCornerShape(percent = 50)
                 )
-                .padding(8.dp),
+                .padding(8.dp)
+                .clickable (
+                    onClick = {
+                        selected = !selected
+                        viewModel.changeSelectTag(position)
+                        viewModel.getTagNameList()
+                    },
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ),
             verticalAlignment = Alignment.CenterVertically
         )
         {
             Image(
-                painter = imageResource(Res.drawable.ic_bitcoin),
+                painter = imageResource(viewModel.tribeTagListState.value[position].image),
                 contentDescription = "icon",
                 modifier = Modifier.padding(start = 8.dp)
             )
             Text(
-                text = "Bitcoin ",
+                text = viewModel.tribeTagListState.value[position].name,
                 fontSize = 14.sp,
                 fontFamily = Roboto,
                 fontWeight = FontWeight.Light,

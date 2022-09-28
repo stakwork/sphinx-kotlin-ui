@@ -8,11 +8,13 @@ import chat.sphinx.common.state.CreateTribeState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.repository.chat.model.CreateTribe
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.platform.imageResource
 import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
-import com.squareup.sqldelight.internal.copyOnWriteList
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import okio.Path
 
@@ -36,17 +38,57 @@ class CreateTribeViewModel {
         createTribeState = createTribeState.update()
     }
 
-    val createTribeBuilder = CreateTribe.Builder(
-        arrayOf(
-            CreateTribe.Builder.Tag("Bitcoin", Res.drawable.ic_bitcoin),
-            CreateTribe.Builder.Tag("Lightning", Res.drawable.ic_lightning),
-            CreateTribe.Builder.Tag("Sphinx", Res.drawable.ic_sphinx),
-            CreateTribe.Builder.Tag("Crypto", Res.drawable.ic_crypto),
-            CreateTribe.Builder.Tag("Tech", Res.drawable.ic_tech),
-            CreateTribe.Builder.Tag("Altcoins", Res.drawable.ic_altcoins),
-            CreateTribe.Builder.Tag("Music", Res.drawable.ic_music),
-            CreateTribe.Builder.Tag("Podcast", Res.drawable.ic_podcast)
+    private val _tribeTagListStateFlow: MutableStateFlow<Array<CreateTribe.Builder.Tag>> by lazy {
+        MutableStateFlow(
+            arrayOf(
+                CreateTribe.Builder.Tag("Bitcoin", Res.drawable.ic_bitcoin),
+                CreateTribe.Builder.Tag("Lightning", Res.drawable.ic_lightning),
+                CreateTribe.Builder.Tag("Sphinx", Res.drawable.ic_sphinx),
+                CreateTribe.Builder.Tag("Crypto", Res.drawable.ic_crypto),
+                CreateTribe.Builder.Tag("Tech", Res.drawable.ic_tech),
+                CreateTribe.Builder.Tag("Altcoins", Res.drawable.ic_altcoins),
+                CreateTribe.Builder.Tag("Music", Res.drawable.ic_music),
+                CreateTribe.Builder.Tag("Podcast", Res.drawable.ic_podcast)
+            )
         )
+    }
+
+    val tribeTagListState: StateFlow<Array<CreateTribe.Builder.Tag>>
+        get() = _tribeTagListStateFlow.asStateFlow()
+
+    private val _tribeTagNameList: MutableStateFlow<List<String>> by lazy {
+        MutableStateFlow(listOf(""))
+    }
+
+    val tribeTagNameList: StateFlow<List<String>>
+        get() = _tribeTagNameList.asStateFlow()
+
+    fun getTagNameList() {
+        val list = arrayListOf<String>()
+        _tribeTagListStateFlow.value.forEach { tag ->
+            if (tag.isSelected) {
+                list.add(tag.name)
+            }
+            _tribeTagNameList.value = list
+        }
+    }
+
+    fun getTagSelected(tags: Array<String>) {
+        tags.forEach { name ->
+            _tribeTagListStateFlow.value.forEach { tag ->
+                if (tag.name == name) {
+                    tag.isSelected = true
+                }
+            }
+        }
+    }
+
+    fun changeSelectTag(position: Int) {
+        _tribeTagListStateFlow.value[position].isSelected = !_tribeTagListStateFlow.value[position].isSelected
+    }
+
+    val createTribeBuilder = CreateTribe.Builder(
+        tribeTagListState.value
     )
 
     private var saveTribeJob: Job? = null
@@ -59,7 +101,7 @@ class CreateTribeViewModel {
         if (createTribeBuilder.hasRequiredFields) {
             createTribeBuilder.build()?.let {
                 saveTribeJob = scope.launch(dispatchers.mainImmediate) {
-                    when(chatRepository.createTribe(it)){
+                    when (chatRepository.createTribe(it)) {
                         is Response.Error -> {}
                         is Response.Success -> {}
                     }
@@ -69,7 +111,7 @@ class CreateTribeViewModel {
 
     }
 
-    private fun setTribeBuilder(){
+    private fun setTribeBuilder() {
         createTribeBuilder.setName(createTribeState.name)
         createTribeBuilder.setDescription(createTribeState.description)
         createTribeBuilder.setImg(createTribeState.img)
@@ -121,48 +163,49 @@ class CreateTribeViewModel {
             copy(escrowAmount = getLong(text))
         }
     }
+
     fun onTimeToStakeChanged(text: String) {
         setCreateTribeState {
             copy(escrowMillis = getLong(text))
         }
     }
 
-    fun onAppUrlChanged(text: String){
+    fun onAppUrlChanged(text: String) {
         setCreateTribeState {
             copy(appUrl = text)
         }
     }
 
-    fun onFeedUrlChanged(text: String){
+    fun onFeedUrlChanged(text: String) {
         setCreateTribeState {
             copy(feedUrl = text)
         }
     }
 
-    fun onUnlistedChanged(unlisted: Boolean){
+    fun onUnlistedChanged(unlisted: Boolean) {
         setCreateTribeState {
             copy(unlisted = unlisted)
         }
     }
 
-    fun onPrivateChanged(private: Boolean){
+    fun onPrivateChanged(private: Boolean) {
         setCreateTribeState {
             copy(private = private)
         }
     }
 
-    fun checkValidInput(){
+    fun checkValidInput() {
         if (createTribeState.name.isNotEmpty() && createTribeState.description.isNotEmpty()) {
             setCreateTribeState {
                 copy(buttonEnabled = true)
             }
-        }
-        else {
+        } else {
             setCreateTribeState {
                 copy(buttonEnabled = false)
             }
         }
     }
+
     private fun getLong(text: String): Long {
         val amount = try {
             text.toLong()
