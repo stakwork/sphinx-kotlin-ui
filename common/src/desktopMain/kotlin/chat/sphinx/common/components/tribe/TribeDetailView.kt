@@ -248,7 +248,6 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
             }
             CursorDropdownMenu(
                 expanded = showOptionMenu.value,
-
                 onDismissRequest = {showOptionMenu.value = false},
                 modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary).clip(
                     RoundedCornerShape(16.dp)
@@ -278,6 +277,7 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
                             dashboardViewModel.toggleCreateTribeWindow(true, chatId)
+                            showOptionMenu.value = false
                         }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {

@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material3.MaterialTheme
@@ -26,10 +27,12 @@ import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.CreateTribeViewModel
 import chat.sphinx.platform.imageResource
+import chat.sphinx.response.LoadResponse
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.dashboard.ChatId
@@ -47,18 +50,19 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
     var isOpen by remember { mutableStateOf(true) }
     var tagPopupState by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val viewModel = CreateTribeViewModel(chatId)
-
+    val viewModel = CreateTribeViewModel(dashboardViewModel, chatId)
 
     if (isOpen) {
         Window(
             onCloseRequest = { dashboardViewModel.toggleCreateTribeWindow(false, null) },
-            title = "Create Tribe",
+            title = if (chatId != null) "Edit Tribe" else "New Tribe",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(420, 620)
             )
         ) {
+            DesktopSphinxToast("Sphinx")
+
             Box(
                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant)
             ) {
@@ -180,7 +184,6 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                     ) {}
                     Spacer(modifier = Modifier.height(16.dp))
 
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -240,10 +243,21 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
             }
             Column(
                 modifier = Modifier.fillMaxSize().padding(start = 40.dp, end = 40.dp, bottom = 16.dp),
-                verticalArrangement = Arrangement.Bottom
+                verticalArrangement = Arrangement.Bottom,
+                horizontalAlignment = Alignment.CenterHorizontally
             )
             {
-                CommonButton("Create Tribe", enabled = viewModel.createTribeState.buttonEnabled) {
+                if (viewModel.createTribeState.saveTribeResponse is LoadResponse.Loading) {
+                    CircularProgressIndicator(
+                        Modifier.padding(20.dp).size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                }
+                CommonButton(
+                    text = if (chatId != null) "Save" else "Create Tribe",
+                    enabled = viewModel.createTribeState.buttonEnabled
+                ) {
                     viewModel.saveTribe()
                 }
             }
@@ -279,8 +293,6 @@ fun SelectTagPopup(viewModel: CreateTribeViewModel, onClick: () -> Unit) {
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
                 )
-
-
         ) {
             Spacer(Modifier.height(8.dp))
             TagRow(0, viewModel)
@@ -292,9 +304,7 @@ fun SelectTagPopup(viewModel: CreateTribeViewModel, onClick: () -> Unit) {
             TagRow(6, viewModel)
             TagRow(7, viewModel)
             Spacer(Modifier.height(8.dp))
-
         }
-
     }
 }
 

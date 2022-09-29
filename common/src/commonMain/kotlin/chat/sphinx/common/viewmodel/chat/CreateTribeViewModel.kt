@@ -3,8 +3,10 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.Res
 import chat.sphinx.common.state.CreateTribeState
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.repository.chat.model.CreateTribe
 import chat.sphinx.di.container.SphinxContainer
@@ -17,14 +19,16 @@ import chat.sphinx.wrapper.feed.toFeedTypeString
 import chat.sphinx.wrapper.feed.toFeedType
 import chat.sphinx.wrapper.toPhotoUrl
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
 import okio.Path
+import theme.badge_red
 
 class CreateTribeViewModel(
+    private val dashboardViewModel: DashboardViewModel,
     private val chatId: ChatId?
 ) {
 
@@ -83,21 +87,12 @@ class CreateTribeViewModel(
                     tags = list
                 )
             }
-        }
-    }
-
-    fun getTagSelected(tags: Array<String>) {
-        tags.forEach { name ->
-            _tribeTagListStateFlow.value.forEach { tag ->
-                if (tag.name == name) {
-                    tag.isSelected = true
-                }
-            }
+            checkValidInput()
         }
     }
 
     private var loadJob: Job? = null
-    fun load() {
+    fun loadTribe() {
         if (loadJob?.isActive == true) {
             return
         }
@@ -114,7 +109,9 @@ class CreateTribeViewModel(
                                     when (loadResponse) {
                                         is LoadResponse.Loading -> {}
 
-                                        is Response.Error -> {}
+                                        is Response.Error -> {
+                                            toast("There was an error, please try later")
+                                        }
 
                                         is Response.Success -> {
                                             createTribeBuilder.load(loadResponse.value)
@@ -131,7 +128,8 @@ class CreateTribeViewModel(
                                                     escrowMillis = loadResponse.value.escrow_millis,
                                                     appUrl = loadResponse.value.app_url ?: "",
                                                     feedUrl = loadResponse.value.feed_url ?: "",
-                                                    feedType = loadResponse.value.feed_type?.toFeedType()?.toFeedTypeString() ?: "",
+                                                    feedType = loadResponse.value.feed_type?.toFeedType()
+                                                        ?.toFeedTypeString() ?: "",
                                                     private = loadResponse.value.private.value,
                                                     unlisted = loadResponse.value.unlisted.value
                                                 )
@@ -148,7 +146,7 @@ class CreateTribeViewModel(
     }
 
     init {
-        load()
+        loadTribe()
     }
 
     fun changeSelectTag(position: Int) {
@@ -162,12 +160,43 @@ class CreateTribeViewModel(
         }
         setTribeBuilder()
 
+        setCreateTribeState {
+            copy(
+                saveTribeResponse = LoadResponse.Loading
+            )
+        }
+
         if (createTribeBuilder.hasRequiredFields) {
             createTribeBuilder.build()?.let {
                 saveTribeJob = scope.launch(dispatchers.mainImmediate) {
-                    when (chatRepository.createTribe(it)) {
-                        is Response.Error -> {}
-                        is Response.Success -> {}
+                    if (chatId == null) {
+                        when (chatRepository.createTribe(it)) {
+                            is Response.Error -> {
+                                setCreateTribeState {
+                                    toast("There was an error, please try later")
+                                    copy(
+                                        saveTribeResponse = null
+                                    )
+                                }
+                            }
+                            is Response.Success -> {
+                                dashboardViewModel.toggleCreateTribeWindow(false, null)
+                            }
+                        }
+                    } else {
+                        when (chatRepository.updateTribe(chatId, it)) {
+                            is Response.Error -> {
+                                toast("There was an error, please try later")
+                                setCreateTribeState {
+                                    copy(
+                                        saveTribeResponse = null
+                                    )
+                                }
+                            }
+                            is Response.Success -> {
+                                dashboardViewModel.toggleCreateTribeWindow(false, null)
+                            }
+                        }
                     }
                 }
             }
@@ -199,6 +228,7 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(path = filepath)
         }
+        checkValidInput()
     }
 
     fun onDescriptionChanged(text: String) {
@@ -212,6 +242,7 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(priceToJoin = getLong(text))
         }
+        checkValidInput()
     }
 
 
@@ -219,12 +250,14 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(pricePerMessage = getLong(text))
         }
+        checkValidInput()
     }
 
     fun onAmountToStakeChanged(text: String) {
         setCreateTribeState {
             copy(escrowAmount = getLong(text))
         }
+        checkValidInput()
     }
 
     fun onTimeToStakeChanged(text: String) {
@@ -232,31 +265,35 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(escrowMillis = hours)
         }
+        checkValidInput()
     }
 
     fun onAppUrlChanged(text: String) {
         setCreateTribeState {
             copy(appUrl = text)
         }
+        checkValidInput()
     }
 
     fun onFeedUrlChanged(text: String) {
         setCreateTribeState {
             copy(feedUrl = text)
         }
+        checkValidInput()
     }
 
     fun onUnlistedChanged(unlisted: Boolean) {
         setCreateTribeState {
             copy(unlisted = unlisted)
         }
-        println(createTribeState.unlisted)
+        checkValidInput()
     }
 
     fun onPrivateChanged(private: Boolean) {
         setCreateTribeState {
             copy(private = private)
         }
+        checkValidInput()
     }
 
     fun checkValidInput() {
@@ -278,6 +315,21 @@ class CreateTribeViewModel(
             0
         }
         return amount
+    }
+
+    fun toast(
+        message: String,
+        color: Color = badge_red,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(
+                "Sphinx",
+                message,
+                color.value,
+                delay
+            )
+        }
     }
 
 }
