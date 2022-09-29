@@ -282,6 +282,13 @@ class CreateTribeViewModel(
         checkValidInput()
     }
 
+    fun onFeedContentTypeChanged(text: String) {
+        setCreateTribeState {
+            copy(feedType = text)
+        }
+        checkValidInput()
+    }
+
     fun onUnlistedChanged(unlisted: Boolean) {
         setCreateTribeState {
             copy(unlisted = unlisted)

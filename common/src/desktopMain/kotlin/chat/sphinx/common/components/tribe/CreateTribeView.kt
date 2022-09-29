@@ -7,9 +7,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Switch
-import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -49,8 +49,10 @@ import java.net.URL
 fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
     var isOpen by remember { mutableStateOf(true) }
     var tagPopupState by remember { mutableStateOf(false) }
+    var showOptionMenu = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val viewModel = CreateTribeViewModel(dashboardViewModel, chatId)
+
 
     if (isOpen) {
         Window(
@@ -180,8 +182,60 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                     TribeTextField(
                         label = "Feed Content Type",
                         value = viewModel.createTribeState.feedType,
-                        enabled = false
+                        enabled = false,
+                        modifier = Modifier.clickable(
+                            onClick = if (viewModel.createTribeState.feedUrl.isNotEmpty()) {
+                                { showOptionMenu.value = true }
+                            } else {
+                                { }
+                            },
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        )
+
                     ) {}
+                    CursorDropdownMenu(
+                        expanded = showOptionMenu.value,
+                        onDismissRequest = { showOptionMenu.value = false },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary).clip(
+                            RoundedCornerShape(16.dp)
+                        )
+                    ) {
+                        DropdownMenuItem(
+                            modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
+                            onClick = {
+                                viewModel.onFeedContentTypeChanged("Podcast")
+                                showOptionMenu.value = false
+                            },
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("Podcast", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                            }
+                        }
+                        DropdownMenuItem(
+                            modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
+                            onClick = {
+                                viewModel.onFeedContentTypeChanged("Video")
+                                showOptionMenu.value = false
+                            },
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("Video", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                            }
+                        }
+                        DropdownMenuItem(
+                            modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
+                            onClick = {
+                                viewModel.onFeedContentTypeChanged("Newsletter")
+                                showOptionMenu.value = false
+                            },
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("Newsletter", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
@@ -349,6 +403,26 @@ fun TagRow(position: Int, viewModel: CreateTribeViewModel) {
         }
     }
 }
+
+//@Composable
+//fun FeedTypeDropdownMenu(){
+//    CursorDropdownMenu(
+//        expanded =  showOptionMenu.value,
+//        onDismissRequest = { showOptionMenu.value = false},
+//        modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary).clip(
+//            RoundedCornerShape(16.dp)
+//        )
+//    ) {
+//        DropdownMenuItem(
+//            modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
+//            onClick = {},
+//        ) {
+//            Row(verticalAlignment = Alignment.CenterVertically) {
+//                Text("Podcast", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
+//            }
+//        }
+//    }
+//}
 
 fun openWebpage(uri: URI?): Boolean {
     val desktop = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
