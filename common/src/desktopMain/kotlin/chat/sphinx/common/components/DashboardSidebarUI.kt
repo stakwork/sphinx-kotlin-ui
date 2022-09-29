@@ -189,19 +189,19 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 TransactionsUI(dashboardViewModel)
             }
 
+            val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
+            if (tribeWindowState.first) {
+                tribeWindowState.second?.let { chatId ->
+                    TribeDetailView(dashboardViewModel, chatId)
+                }
+            }
+
             val createTribeWindowState by dashboardViewModel.createTribeStateFlow.collectAsState()
             if (createTribeWindowState.first) {
                 if (createTribeWindowState.second != null) {
                     CreateTribeView(dashboardViewModel, createTribeWindowState.second)
                 } else {
                     CreateTribeView(dashboardViewModel, null)
-                }
-            }
-
-            val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
-            if (tribeWindowState.first) {
-                tribeWindowState.second?.let { chatId ->
-                    TribeDetailView(dashboardViewModel, chatId)
                 }
             }
 
