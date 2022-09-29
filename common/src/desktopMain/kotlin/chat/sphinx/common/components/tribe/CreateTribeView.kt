@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.feed.FeedType
 import chat.sphinx.wrapper.message.media.isImage
 import kotlinx.coroutines.launch
 import theme.tribe_hyperlink
@@ -51,7 +53,7 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
     var tagPopupState by remember { mutableStateOf(false) }
     var showOptionMenu = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val viewModel = CreateTribeViewModel(dashboardViewModel, chatId)
+    val viewModel = remember { CreateTribeViewModel(dashboardViewModel, chatId) }
 
 
     if (isOpen) {
@@ -91,7 +93,6 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                         ) {}
                         Box(
                             modifier = Modifier
-                                .padding(top = 6.dp)
                                 .align(Alignment.TopEnd)
                                 .wrapContentSize()
                         ) {
@@ -116,11 +117,18 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                             } else {
                                 PhotoUrlImage(
                                     photoUrl = viewModel.createTribeState.img,
-                                    modifier = Modifier.size(40.dp)
-                                        .clip(CircleShape)
-                                        .clickable {
-                                            onImageClick.invoke()
-                                        },
+                                    modifier = if (viewModel.createTribeState.img != null) {
+                                        Modifier.size(40.dp)
+                                            .clip(CircleShape)
+                                            .clickable {
+                                                onImageClick.invoke()
+                                            }
+                                    } else {
+                                        Modifier.size(40.dp)
+                                            .clickable {
+                                                onImageClick.invoke()
+                                            }
+                                    },
                                     placeHolderRes = Res.drawable.ic_tribe_place_holder
                                 )
                             }
@@ -164,8 +172,8 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                         viewModel.onAmountToStakeChanged(it)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    val timeToStake = viewModel.createTribeState.escrowMillis?.let {
-                        (it / 60 / 60 / 1000).toString()
+                    val timeToStake = viewModel.createTribeState.escrowHours?.let {
+                        it.toString()
                     }
                     TribeTextField("Time to Stake (hours)", timeToStake ?: "") {
                         viewModel.onTimeToStakeChanged(it)
@@ -192,7 +200,6 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() }
                         )
-
                     ) {}
                     CursorDropdownMenu(
                         expanded = showOptionMenu.value,
@@ -204,7 +211,7 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                         DropdownMenuItem(
                             modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                             onClick = {
-                                viewModel.onFeedContentTypeChanged("Podcast")
+                                viewModel.onFeedTypeChanged(FeedType.Podcast)
                                 showOptionMenu.value = false
                             },
                         ) {
@@ -215,7 +222,7 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                         DropdownMenuItem(
                             modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                             onClick = {
-                                viewModel.onFeedContentTypeChanged("Video")
+                                viewModel.onFeedTypeChanged(FeedType.Video)
                                 showOptionMenu.value = false
                             },
                         ) {
@@ -226,7 +233,7 @@ fun CreateTribeView(dashboardViewModel: DashboardViewModel, chatId: ChatId?) {
                         DropdownMenuItem(
                             modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                             onClick = {
-                                viewModel.onFeedContentTypeChanged("Newsletter")
+                                viewModel.onFeedTypeChanged(FeedType.Newsletter)
                                 showOptionMenu.value = false
                             },
                         ) {
@@ -340,8 +347,8 @@ fun SelectTagPopup(viewModel: CreateTribeViewModel, onClick: () -> Unit) {
         Column(
             modifier = Modifier
                 .padding(start = 24.dp, end = 24.dp)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                .fillMaxWidth(0.8f)
+                .background(color = MaterialTheme.colorScheme.onSurfaceVariant, shape = RoundedCornerShape(10.dp))
                 .clickable(
                     onClick = {},
                     indication = null,
@@ -379,7 +386,7 @@ fun TagRow(position: Int, viewModel: CreateTribeViewModel) {
                     onClick = {
                         selected = !selected
                         viewModel.changeSelectTag(position)
-                        viewModel.getTagNameList()
+                        viewModel.setTagListState()
                     },
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
@@ -403,26 +410,6 @@ fun TagRow(position: Int, viewModel: CreateTribeViewModel) {
         }
     }
 }
-
-//@Composable
-//fun FeedTypeDropdownMenu(){
-//    CursorDropdownMenu(
-//        expanded =  showOptionMenu.value,
-//        onDismissRequest = { showOptionMenu.value = false},
-//        modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary).clip(
-//            RoundedCornerShape(16.dp)
-//        )
-//    ) {
-//        DropdownMenuItem(
-//            modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
-//            onClick = {},
-//        ) {
-//            Row(verticalAlignment = Alignment.CenterVertically) {
-//                Text("Podcast", color = MaterialTheme.colorScheme.tertiary, fontSize = 12.sp)
-//            }
-//        }
-//    }
-//}
 
 fun openWebpage(uri: URI?): Boolean {
     val desktop = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null

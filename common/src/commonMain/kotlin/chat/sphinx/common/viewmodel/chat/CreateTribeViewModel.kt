@@ -15,8 +15,9 @@ import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
-import chat.sphinx.wrapper.feed.toFeedTypeString
+import chat.sphinx.wrapper.feed.FeedType
 import chat.sphinx.wrapper.feed.toFeedType
+import chat.sphinx.wrapper.feed.toFeedTypeString
 import chat.sphinx.wrapper.toPhotoUrl
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
@@ -39,9 +40,11 @@ class CreateTribeViewModel(
     private val networkModule = SphinxContainer.networkModule
     private val networkQueryChat: NetworkQueryChat = networkModule.networkQueryChat
     private val chatRepository = repositoryModule.chatRepository
-    private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
 
+    companion object {
+        private const val MILLISECONDS_IN_AN_HOUR = 3_600_000L
+    }
 
     var createTribeState: CreateTribeState by mutableStateOf(initialCreateTribeState())
 
@@ -76,7 +79,7 @@ class CreateTribeViewModel(
         tribeTagListState.value
     )
 
-    fun getTagNameList() {
+    fun setTagListState() {
         val list = arrayListOf<String>()
         _tribeTagListStateFlow.value.forEach { tag ->
             if (tag.isSelected) {
@@ -92,50 +95,49 @@ class CreateTribeViewModel(
     }
 
     private var loadJob: Job? = null
-    fun loadTribe() {
+    private fun loadTribe() {
+        if (chatId == null) {
+            return
+        }
+
         if (loadJob?.isActive == true) {
             return
         }
 
         loadJob = scope.launch(dispatchers.mainImmediate) {
-            accountOwnerStateFlow.collect { contactOwner ->
-                contactOwner?.let { owner ->
-                    chatId?.let { chatId ->
-                        chatRepository.getChatById(chatId)?.let { chat ->
-                            val host = chat.host
+            chatRepository.getChatById(chatId)?.let { chat ->
+                val host = chat.host
 
-                            if (host != null) {
-                                networkQueryChat.getTribeInfo(host, chat.uuid).collect { loadResponse ->
-                                    when (loadResponse) {
-                                        is LoadResponse.Loading -> {}
+                if (host != null) {
+                    networkQueryChat.getTribeInfo(host, chat.uuid).collect { loadResponse ->
+                        when (loadResponse) {
+                            is LoadResponse.Loading -> {}
 
-                                        is Response.Error -> {
-                                            toast("There was an error, please try later")
-                                        }
+                            is Response.Error -> {
+                                toast("There was an error, please try later")
+                            }
 
-                                        is Response.Success -> {
-                                            createTribeBuilder.load(loadResponse.value)
-                                            getTagNameList()
-                                            setCreateTribeState {
-                                                copy(
-                                                    name = loadResponse.value.name,
-                                                    img = loadResponse.value.img?.toPhotoUrl(),
-                                                    imgUrl = loadResponse.value.img ?: "",
-                                                    description = loadResponse.value.description,
-                                                    priceToJoin = loadResponse.value.price_to_join,
-                                                    pricePerMessage = loadResponse.value.price_per_message,
-                                                    escrowAmount = loadResponse.value.escrow_amount,
-                                                    escrowMillis = loadResponse.value.escrow_millis,
-                                                    appUrl = loadResponse.value.app_url ?: "",
-                                                    feedUrl = loadResponse.value.feed_url ?: "",
-                                                    feedType = loadResponse.value.feed_type?.toFeedType()
-                                                        ?.toFeedTypeString() ?: "",
-                                                    private = loadResponse.value.private.value,
-                                                    unlisted = loadResponse.value.unlisted.value
-                                                )
-                                            }
-                                        }
-                                    }
+                            is Response.Success -> {
+                                createTribeBuilder.load(loadResponse.value)
+
+                                setTagListState()
+
+                                setCreateTribeState {
+                                    copy(
+                                        name = loadResponse.value.name,
+                                        img = loadResponse.value.img?.toPhotoUrl(),
+                                        imgUrl = loadResponse.value.img ?: "",
+                                        description = loadResponse.value.description,
+                                        priceToJoin = loadResponse.value.price_to_join,
+                                        pricePerMessage = loadResponse.value.price_per_message,
+                                        escrowAmount = loadResponse.value.escrow_amount,
+                                        escrowHours = loadResponse.value.escrow_millis / MILLISECONDS_IN_AN_HOUR,
+                                        appUrl = loadResponse.value.app_url ?: "",
+                                        feedUrl = loadResponse.value.feed_url ?: "",
+                                        feedType = loadResponse.value.feed_type?.toFeedType()?.toFeedTypeString() ?: "",
+                                        private = loadResponse.value.private.value,
+                                        unlisted = loadResponse.value.unlisted.value
+                                    )
                                 }
                             }
                         }
@@ -158,7 +160,6 @@ class CreateTribeViewModel(
         if (saveTribeJob?.isActive == true) {
             return
         }
-        setTribeBuilder()
 
         setCreateTribeState {
             copy(
@@ -172,8 +173,9 @@ class CreateTribeViewModel(
                     if (chatId == null) {
                         when (chatRepository.createTribe(it)) {
                             is Response.Error -> {
+                                toast("There was an error, please try later")
+
                                 setCreateTribeState {
-                                    toast("There was an error, please try later")
                                     copy(
                                         saveTribeResponse = null
                                     )
@@ -187,6 +189,7 @@ class CreateTribeViewModel(
                         when (chatRepository.updateTribe(chatId, it)) {
                             is Response.Error -> {
                                 toast("There was an error, please try later")
+
                                 setCreateTribeState {
                                     copy(
                                         saveTribeResponse = null
@@ -203,24 +206,11 @@ class CreateTribeViewModel(
         }
     }
 
-    private fun setTribeBuilder() {
-        createTribeBuilder.setName(createTribeState.name)
-        createTribeBuilder.setDescription(createTribeState.description)
-        createTribeBuilder.setImg(createTribeState.path)
-        createTribeBuilder.setPriceToJoin(createTribeState.priceToJoin)
-        createTribeBuilder.setPricePerMessage(createTribeState.pricePerMessage)
-        createTribeBuilder.setEscrowAmount(createTribeState.escrowAmount)
-        createTribeBuilder.setEscrowMillis(createTribeState.escrowMillis)
-        createTribeBuilder.setAppUrl(createTribeState.appUrl)
-        createTribeBuilder.setFeedUrl(createTribeState.feedUrl)
-        createTribeBuilder.setUnlisted(createTribeState.unlisted)
-        createTribeBuilder.setPrivate(createTribeState.private)
-    }
-
     fun onNameChanged(text: String) {
         setCreateTribeState {
             copy(name = text)
         }
+        createTribeBuilder.setName(text)
         checkValidInput()
     }
 
@@ -228,6 +218,7 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(path = filepath)
         }
+        createTribeBuilder.setImg(filepath)
         checkValidInput()
     }
 
@@ -235,36 +226,46 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(description = text)
         }
+        createTribeBuilder.setDescription(text)
         checkValidInput()
     }
 
     fun onPriceToJoinChanged(text: String) {
+        val price = getLong(text)
         setCreateTribeState {
-            copy(priceToJoin = getLong(text))
+            copy(priceToJoin = price)
         }
+        createTribeBuilder.setPriceToJoin(price)
         checkValidInput()
     }
 
 
     fun onPricePerMessageChanged(text: String) {
+        val price = getLong(text)
         setCreateTribeState {
-            copy(pricePerMessage = getLong(text))
+            copy(pricePerMessage = price)
         }
+        createTribeBuilder.setPricePerMessage(price)
         checkValidInput()
     }
 
     fun onAmountToStakeChanged(text: String) {
+        val amount = getLong(text)
         setCreateTribeState {
-            copy(escrowAmount = getLong(text))
+            copy(escrowAmount = amount)
         }
+        createTribeBuilder.setEscrowAmount(amount)
         checkValidInput()
     }
 
     fun onTimeToStakeChanged(text: String) {
-        val hours = (getLong(text) * 60 * 60 * 1000)
+        val hours = getLong(text)
+        val milliseconds = hours * MILLISECONDS_IN_AN_HOUR
+
         setCreateTribeState {
-            copy(escrowMillis = hours)
+            copy(escrowHours = hours)
         }
+        createTribeBuilder.setEscrowMillis(milliseconds)
         checkValidInput()
     }
 
@@ -272,6 +273,7 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(appUrl = text)
         }
+        createTribeBuilder.setAppUrl(text)
         checkValidInput()
     }
 
@@ -279,13 +281,15 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(feedUrl = text)
         }
+        createTribeBuilder.setFeedUrl(text)
         checkValidInput()
     }
 
-    fun onFeedContentTypeChanged(text: String) {
+    fun onFeedTypeChanged(feedType: FeedType) {
         setCreateTribeState {
-            copy(feedType = text)
+            copy(feedType = feedType.toFeedTypeString())
         }
+        createTribeBuilder.setFeedType(feedType.value)
         checkValidInput()
     }
 
@@ -293,6 +297,7 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(unlisted = unlisted)
         }
+        createTribeBuilder.setUnlisted(unlisted)
         checkValidInput()
     }
 
@@ -300,10 +305,11 @@ class CreateTribeViewModel(
         setCreateTribeState {
             copy(private = private)
         }
+        createTribeBuilder.setPrivate(private)
         checkValidInput()
     }
 
-    fun checkValidInput() {
+    private fun checkValidInput() {
         if (createTribeState.name.isNotEmpty() && createTribeState.description.isNotEmpty()) {
             setCreateTribeState {
                 copy(buttonEnabled = true)
