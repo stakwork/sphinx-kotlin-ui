@@ -102,6 +102,17 @@ class DashboardViewModel: WindowFocusListener {
         _transactionsStateFlow.value = open
     }
 
+    private val _createTribeStateFlow: MutableStateFlow<Pair<Boolean, ChatId?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
+    val createTribeStateFlow: StateFlow<Pair<Boolean, ChatId?>>
+        get() = _createTribeStateFlow.asStateFlow()
+
+    fun toggleCreateTribeWindow(open: Boolean, chatId: ChatId?) {
+        _createTribeStateFlow.value = Pair(open, chatId)
+    }
+
     private val _joinTribeStateFlow: MutableStateFlow<Pair<Boolean, TribeJoinLink?>> by lazy {
         MutableStateFlow(Pair(false, null))
     }

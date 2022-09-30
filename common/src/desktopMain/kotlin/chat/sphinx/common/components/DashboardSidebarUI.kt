@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.profile.Profile
+import chat.sphinx.common.components.tribe.CreateTribeView
 import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.ContactScreenState
@@ -192,6 +193,15 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             if (tribeWindowState.first) {
                 tribeWindowState.second?.let { chatId ->
                     TribeDetailView(dashboardViewModel, chatId)
+                }
+            }
+
+            val createTribeWindowState by dashboardViewModel.createTribeStateFlow.collectAsState()
+            if (createTribeWindowState.first) {
+                if (createTribeWindowState.second != null) {
+                    CreateTribeView(dashboardViewModel, createTribeWindowState.second)
+                } else {
+                    CreateTribeView(dashboardViewModel, null)
                 }
             }
 
