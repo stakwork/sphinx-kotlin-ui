@@ -44,7 +44,6 @@ import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-
 import chat.sphinx.components.browser.HandleScript
 import chat.sphinx.components.browser.SphinxFeedUrlViewer
 import chat.sphinx.components.browser.WebAppBrowserWindow
@@ -90,7 +89,6 @@ class WebRequest(val type: String)
 @OptIn(ExperimentalSplitPaneApi::class)
 @Composable
 actual fun Dashboard(
-    sphinxState: SphinxState,
     dashboardViewModel: DashboardViewModel
 ) {
     val splitterState = rememberSplitPaneState()

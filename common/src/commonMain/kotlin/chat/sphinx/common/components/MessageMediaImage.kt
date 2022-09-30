@@ -4,6 +4,7 @@ package chat.sphinx.common.components
 import Roboto
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -40,7 +41,7 @@ fun MessageMediaImage(
     modifier: Modifier = Modifier,
 ) {
     MessageMediaImage(
-        chatMessage.message,
+        chatMessage,
         chatViewModel,
         modifier,
         false,
@@ -51,19 +52,19 @@ fun MessageMediaImage(
 
 @Composable
 fun MessageMediaImage(
-    message: Message,
+    chatMessage: ChatMessage,
     chatViewModel: ChatViewModel,
     modifier: Modifier = Modifier,
     isReplyView: Boolean = false,
     isReceived: Boolean = false,
     contentScale: ContentScale = ContentScale.FillWidth
 ) {
-    val localFilepath = rememberSaveable { mutableStateOf(message.messageMedia?.localFile) }
     val imageLoadError = rememberSaveable { mutableStateOf(false) }
-    val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
 
-    val urlAndMessageMedia = message.retrieveUrlAndMessageMedia()
-    val url = urlAndMessageMedia?.first
+    val message = chatMessage.message
+    val messageMedia = message.messageMedia
+    val localFilepath = messageMedia?.localFile
+    val url = messageMedia?.url?.value ?: ""
 
     if (
         message.isPaidPendingMessage && isReceived
@@ -71,39 +72,21 @@ fun MessageMediaImage(
         PaidImageOverlay(modifier, isReplyView)
     } else {
         LaunchedEffect(url) {
-            if (localFilepath.value == null) {
-                url?.let { mediaURL ->
-                    try {
-                        urlAndMessageMedia.second?.retrieveRemoteMediaInputStream(
-                            mediaURL,
-                            chatViewModel.memeServerTokenHandler,
-                            chatViewModel.memeInputStreamHandler
-                        )?.let { imageInputStream ->
-                            mediaCacheHandler.createImageFile("jpg").let { imageFilepath ->
-                                imageFilepath.toFile().outputStream().use { fileOutputStream ->
-                                    imageInputStream.copyTo(fileOutputStream)
-
-                                    chatViewModel.messageRepository.messageMediaUpdateLocalFile(
-                                        message,
-                                        imageFilepath
-                                    )
-                                    localFilepath.value = imageFilepath
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        imageLoadError.value = true
-                    }
-                }
-            }
+            chatViewModel.downloadFileMedia(message, chatMessage.isSent)
         }
 
-        if (localFilepath.value != null) {
+        if (localFilepath != null) {
             PhotoFileImage(
-                localFilepath.value!!,
-                modifier = modifier.clickable {
-                    fullScreenImageState.value = localFilepath.value
-                },
+                localFilepath!!,
+                modifier = modifier.clickable(
+                    onClick = {
+                        if (message.type.isAttachment()) {
+                            fullScreenImageState.value = localFilepath
+                        }
+                    },
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ),
                 effect = {
                     ImageLoadingView(modifier)
                 },

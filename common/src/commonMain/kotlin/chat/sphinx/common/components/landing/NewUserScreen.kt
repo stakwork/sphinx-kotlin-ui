@@ -21,7 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
-import chat.sphinx.common.viewmodel.NewUserStore
+import chat.sphinx.common.state.LandingScreenState
+import chat.sphinx.common.state.LandingScreenType
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.onKeyUp
@@ -33,7 +35,7 @@ import views.BackButton
 
 @Composable
 fun NewUserScreen(
-    newUserStore: NewUserStore,
+    signUpViewModel: SignUpViewModel
 ) {
     Row(
         modifier = Modifier.fillMaxSize()
@@ -44,7 +46,7 @@ fun NewUserScreen(
                 .fillMaxHeight()
                 .weight(1f)
                 .background(MaterialTheme.colorScheme.secondary)
-        ) { RightPortionNewUser() }
+        ) { LeftPortionNewUser() }
 
         Box(
             contentAlignment = Alignment.Center,
@@ -53,17 +55,13 @@ fun NewUserScreen(
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            LeftPortionNewUser(newUserStore)
+            RightPortionNewUser(signUpViewModel)
         }
-    }
-
-    newUserStore.state.isProcessing?.let {
-
     }
 }
 
 @Composable
-fun RightPortionNewUser() {
+fun LeftPortionNewUser() {
     Box() {
         AnimatedContainer(fromTopToBottom = 20) {
             Image(
@@ -92,13 +90,17 @@ fun RightPortionNewUser() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun LeftPortionNewUser(newUserStore: NewUserStore) {
+fun RightPortionNewUser(
+    signUpViewModel: SignUpViewModel
+) {
     Column(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxHeight()
     ) {
-        BackButton()
+        BackButton {
+            LandingScreenState.screenState(LandingScreenType.LandingPage)
+        }
 
         Column(
             verticalArrangement = Arrangement.Center,
@@ -133,16 +135,16 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                                 backgroundColor = MaterialTheme.colorScheme.tertiary,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
                             ),
-                            value = newUserStore.state.invitationCodeText,
+                            value = signUpViewModel.signupCodeState.invitationCodeText,
 
                             modifier = Modifier.fillMaxWidth()
                                 .onKeyEvent(
                                     onKeyUp(
                                         Key.Enter,
-                                        newUserStore::onSubmitInvitationCode
+                                        signUpViewModel::onSubmitInvitationCode
                                     )
                                 ),
-                            onValueChange = newUserStore::onInvitationCodeTextChanged,
+                            onValueChange = signUpViewModel::onInvitationCodeTextChanged,
                             singleLine = true,
                             placeholder = { Text(text = "Paste your invitation code") }
                         )
@@ -157,8 +159,8 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                 ) {
                     CommonButton(
                         text = "Submit",
-                        enabled = newUserStore.state.invitationCodeText.isNotEmpty(),
-                        callback = newUserStore::onSubmitInvitationCode
+                        enabled = signUpViewModel.signupCodeState.invitationCodeText.isNotEmpty(),
+                        callback = signUpViewModel::onSubmitInvitationCode
                     )
                     Column(
                         horizontalAlignment = Alignment.End,
@@ -166,7 +168,7 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
                         modifier = Modifier.fillMaxSize().padding(16.dp, 0.dp)
                     ) {
                         val textColor =
-                            if (newUserStore.state.invitationCodeText.isNotEmpty()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
+                            if (signUpViewModel.signupCodeState.invitationCodeText.isNotEmpty()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
                         Icon(
                             Icons.Filled.ArrowForward,
                             "arrow",
@@ -180,7 +182,7 @@ fun LeftPortionNewUser(newUserStore: NewUserStore) {
             Box(
                 modifier = Modifier.height(20.dp), contentAlignment = Alignment.Center
             ) {
-                newUserStore.state.errorMessage?.let { invitationCodeErrorMessage ->
+                signUpViewModel.signupCodeState.errorMessage?.let { invitationCodeErrorMessage ->
                     Text(
                         text = invitationCodeErrorMessage,
                         color = badge_red

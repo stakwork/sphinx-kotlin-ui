@@ -8,6 +8,7 @@ import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.*
 import androidx.compose.ui.graphics.Color
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.concepts.link_preview.model.*
 import chat.sphinx.utils.linkify.LinkSpec
 import chat.sphinx.wrapper.PhotoUrl
@@ -29,6 +30,8 @@ class ChatMessage(
     val boostMessage: () -> Unit,
     val flagMessage: () -> Unit,
     val deleteMessage: () -> Unit,
+    val isSeparator: Boolean = false,
+    val background: BubbleBackground,
     private val previewProvider: suspend (link: LinkSpec) -> LinkPreview?,
 ) {
 
@@ -48,6 +51,10 @@ class ChatMessage(
         senderAlias
     }
 
+    val isAdmin: Boolean by lazy {
+        chat.ownerPubKey == accountOwner().nodePubKey
+    }
+
     val replyToMessageTextPreview: String by lazy {
         val messageMediaText = if (message.messageMedia != null) "attachment" else ""
         message.retrieveTextToShow() ?: messageMediaText
@@ -55,6 +62,20 @@ class ChatMessage(
 
     val replyToMessageColor: Int? by lazy {
         colors[message.id.value]
+    }
+
+    val isUnsupportedType: Boolean by lazy {
+        message.type.isInvoice() || message.type.isInvoicePayment()
+    }
+
+    val unsupportedTypeLabel: String by lazy {
+        if (message.type.isInvoice()) {
+            "Invoice"
+        } else if (message.type.isInvoicePayment()) {
+            "Invoice Payment"
+        } else {
+            ""
+        }
     }
 
     val boostsLayoutState: BoostLayoutState? by lazy {

@@ -3,6 +3,7 @@ package chat.sphinx.common.components
 import CommonButton
 import Roboto
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +25,7 @@ import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
+import io.ktor.utils.io.*
 import theme.badge_red
 import theme.light_divider
 import theme.place_holder_text
@@ -41,6 +44,10 @@ fun SendReceiveAmountPopup(
             .background(
                 color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(10.dp)
+            ).clickable(
+                onClick = {},
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
             ),
         contentAlignment = Alignment.Center,
     ) {
@@ -133,7 +140,7 @@ fun SendReceiveAmountPopup(
                         ) {
                             Text(
                                 "sats",
-                                color = MaterialTheme.colorScheme.tertiary,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 fontFamily = Roboto,
                                 fontWeight = FontWeight.Light,
                                 fontSize = 20.sp
@@ -177,31 +184,11 @@ fun SendReceiveAmountPopup(
                         )
                         Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
                     }
-                    Spacer(modifier = Modifier.height(40.dp).fillMaxWidth())
-                    Box(
-                        Modifier.fillMaxWidth().height(40.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (viewModel.chatPaymentState.status is Response.Error) {
-                            Text(
-                                text = "There was an error, please try again later",
-                                fontSize = 12.sp,
-                                fontFamily = Roboto,
-                                color = badge_red,
-                            )
-                        }
-                        if (viewModel.chatPaymentState.status is LoadResponse.Loading) {
-                            CircularProgressIndicator(
-                                Modifier.padding(start = 8.dp).size(24.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        }
-                    }
-
+                    Spacer(modifier = Modifier.height(80.dp).fillMaxWidth())
                 }
             }
             Box(
+                contentAlignment = Alignment.CenterStart,
                 modifier = Modifier
                     .width(180.dp)
                     .height(80.dp)
@@ -210,9 +197,16 @@ fun SendReceiveAmountPopup(
                     callback = {
                         viewModel.sendPayment()
                     },
-                    text = "Confirm",
+                    text = if (viewModel.isTribePayment()) "Confirm" else "Continue",
                     enabled = viewModel.chatPaymentState.saveButtonEnabled
                 )
+                if (viewModel.chatPaymentState.status is LoadResponse.Loading) {
+                    CircularProgressIndicator(
+                        Modifier.padding(start = 8.dp).size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                }
             }
         }
     }

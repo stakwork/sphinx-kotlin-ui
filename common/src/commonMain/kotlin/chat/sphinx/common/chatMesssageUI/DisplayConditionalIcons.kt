@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.wrapper.chatTimeFormat
 import theme.place_holder_text
@@ -25,65 +26,78 @@ import theme.place_holder_text
 fun DisplayConditionalIcons(
     chatMessage: ChatMessage
 ) {
+    if (
+        chatMessage.background !is BubbleBackground.First
+    ) {
+        return
+    }
+
     val color = chatMessage.colors[chatMessage.message.id.value]
 
-    if (
-        chatMessage.chat.isTribe() &&
-        chatMessage.isReceived &&
-        (chatMessage.isDeleted.not() && chatMessage.isFlagged.not())
+    Row(
+        modifier = Modifier
+            .height(15.dp)
+            .padding(bottom = 2.dp, end = if (chatMessage.isSent) 5.dp else 0.dp, start = if (chatMessage.isSent) 0.dp else 5.dp)
     ) {
+        if (
+            chatMessage.chat.isTribe() &&
+            chatMessage.isReceived &&
+            (chatMessage.isDeleted.not() && chatMessage.isFlagged.not())
+        ) {
+            Text(
+                text = chatMessage.message.senderAlias?.value ?: "",
+                color = if (color != null) Color(color) else Color.Unspecified,
+                fontSize = 10.sp,
+                fontFamily = Roboto,
+                fontWeight = FontWeight.Medium,
+            )
+            Spacer(
+                modifier = Modifier.width(4.dp)
+            )
+        }
+
+        if (chatMessage.showSendingIcon) {
+            CircularProgressIndicator(
+                modifier = Modifier.height(14.dp).width(14.dp).padding(end = 4.dp, bottom = 2.dp),
+                color = MaterialTheme.colorScheme.tertiary,
+                strokeWidth = 2.dp
+            )
+        }
+
+        if (chatMessage.showBoltIcon) {
+            Icon(
+                Icons.Default.FlashOn,
+                "Confirmed",
+                tint = MaterialTheme.colorScheme.secondaryContainer,
+                modifier = Modifier.height(14.dp).width(13.dp).padding(bottom = 1.dp)
+            )
+        }
+
+        if (chatMessage.showLockIcon && chatMessage.isSent) {
+            Icon(
+                Icons.Default.Lock,
+                "Secure chat",
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.height(14.dp).width(13.dp).padding(end = 1.dp, bottom = 2.dp)
+            )
+        }
+
         Text(
-            text = chatMessage.message.senderAlias?.value ?: "",
-            color = if (color != null) Color(color) else Color.Unspecified,
-            fontSize = 10.sp,
+            text = chatMessage.message.date.chatTimeFormat(),
+            fontWeight = FontWeight.W400,
             fontFamily = Roboto,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 10.sp,
+            textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
         )
-        Spacer(
-            modifier = Modifier.width(4.dp)
-        )
-    }
 
-    if (chatMessage.showSendingIcon) {
-        CircularProgressIndicator(
-            modifier = Modifier.width(20.dp).height(16.dp).padding(4.dp, 2.dp),
-            color = MaterialTheme.colorScheme.tertiary,
-            strokeWidth = 2.dp
-        )
-    }
-
-    if (chatMessage.showBoltIcon) {
-        Icon(
-            Icons.Default.FlashOn,
-            "Confirmed",
-            tint = MaterialTheme.colorScheme.secondaryContainer,
-            modifier = Modifier.size(12.dp)
-        )
-    }
-
-    if (chatMessage.showLockIcon && chatMessage.isSent) {
-        Icon(
-            Icons.Default.Lock,
-            "Secure chat",
-            tint = place_holder_text,
-            modifier = Modifier.size(18.dp).padding(4.dp)
-        )
-    }
-
-    Text(
-        text = chatMessage.message.date.chatTimeFormat(),
-        fontWeight = FontWeight.W300,
-        fontFamily = Roboto,
-        color = place_holder_text,
-        fontSize = 10.sp,
-        textAlign = if (chatMessage.isSent) TextAlign.End else TextAlign.Start,
-    )
-
-    if (chatMessage.showLockIcon && chatMessage.isReceived) {
-        Icon(
-            Icons.Default.Lock,
-            "Secure chat",
-            tint = place_holder_text,
-            modifier = Modifier.size(18.dp).padding(4.dp)
-        )
+        if (chatMessage.showLockIcon && chatMessage.isReceived) {
+            Icon(
+                Icons.Default.Lock,
+                "Secure chat",
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.height(14.dp).width(13.dp).padding(end = 1.dp, bottom = 2.dp)
+            )
+        }
     }
 }

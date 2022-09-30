@@ -22,6 +22,7 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.utils.containLinks
@@ -29,14 +30,13 @@ import chat.sphinx.utils.containLinks
 @Composable
 fun ChatMessageUI(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel,
-    dashboardViewModel: DashboardViewModel
+    chatViewModel: ChatViewModel
 ) {
     print("rebuilding ${chatMessage.message.id}")
 
     val bubbleColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary
 
-    Column(modifier = Modifier.padding(8.dp)) {
+    Column(modifier = getMessageUIPadding(chatMessage)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = if (chatMessage.isSent) Arrangement.End else Arrangement.Start
@@ -44,44 +44,47 @@ fun ChatMessageUI(
             Row(
                 verticalAlignment = Alignment.Top,
                 modifier = Modifier.fillMaxWidth(
-                    if (chatMessage.groupActionLabelText.isNullOrEmpty().not()) 1.0f else 0.8f
+                    if (chatMessage.message.type.isGroupAction()) 1.0f else 0.8f
                 ),
             ) {
+
                 /**
                  * Show [ImageProfile] at the starting of chat message if
                  * message is received, message doesn't contains [MessageType.GroupAction] and it's not deleted yet
                  */
                 val showProfilePic = (
-                    chatMessage.groupActionLabelText.isNullOrEmpty() &&
+                    chatMessage.message.type.isGroupAction().not() &&
                     chatMessage.isReceived &&
                     chatMessage.isDeleted.not() &&
                     chatMessage.isFlagged.not()
                 )
 
-                Box(modifier = Modifier.width(42.dp)) {
-                    if (showProfilePic) {
-                        ImageProfile(
-                            chatMessage,
-                            Modifier.clickable {
-                                if (chatMessage.chat.isTribe()) {
-                                    chatViewModel.toggleChatActionsPopup(
-                                        ChatViewModel.ChatActionsMode.SEND_TRIBE,
-                                        PaymentViewModel.PaymentData(
-                                            chatId = chatMessage.chat.id,
-                                            messageUUID = chatMessage.message.uuid
+                if (showProfilePic) {
+                    Box(modifier = Modifier.width(42.dp)) {
+                        if (chatMessage.background is BubbleBackground.First) {
+                            ImageProfile(
+                                chatMessage,
+                                Modifier.clickable {
+                                    if (chatMessage.chat.isTribe()) {
+                                        chatViewModel.toggleChatActionsPopup(
+                                            ChatViewModel.ChatActionsMode.SEND_TRIBE,
+                                            PaymentViewModel.PaymentData(
+                                                chatId = chatMessage.chat.id,
+                                                messageUUID = chatMessage.message.uuid
+                                            )
                                         )
-                                    )
+                                    }
                                 }
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(12.dp).background(color = Color.Red))
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
                     }
                 }
                 Column(
                     verticalArrangement = Arrangement.Top,
                 ) {
                     if (chatMessage.message.type.isGroupAction()) {
-                        TribeHeaderMessage(chatMessage)
+                        GroupActionsUI(chatMessage, chatViewModel)
                     } else {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -122,7 +125,7 @@ fun ChatMessageUI(
                                         ChatOptionMenu(chatMessage, chatViewModel)
                                     }
                                     if (chatMessage.isReceived) {
-                                        BubbleArrow(false, bubbleColor)
+                                        BubbleArrow(false, bubbleColor, chatMessage)
                                     }
 
                                     val messageContainsLinks = (chatMessage.message.retrieveTextToShow()?.containLinks() == true)
@@ -150,7 +153,7 @@ fun ChatMessageUI(
                                         ChatOptionMenu(chatMessage, chatViewModel)
                                     }
                                     if (chatMessage.isSent) {
-                                        BubbleArrow(true, bubbleColor)
+                                        BubbleArrow(true, bubbleColor, chatMessage)
                                     }
                                 }
                             }
@@ -166,32 +169,45 @@ fun ChatMessageUI(
 fun BubbleArrow(
     sent: Boolean,
     color: Color,
+    chatMessage: ChatMessage
 ) {
     val density = LocalDensity.current
     val width = with(density) { 5.dp.roundToPx() }.toFloat()
     val height = with(density) { 7.dp.roundToPx() }.toFloat()
 
-    Canvas(modifier = Modifier.width(5.dp).height(7.dp), onDraw = {
-        drawPath(
-            color = color,
-            path = if (sent) {
-                Path().apply {
-                    moveTo(0f, 0f)
-                    lineTo(width, 0f)
-                    lineTo(0f, height)
-                    lineTo(0f, 0f)
-                }
-            } else {
-                Path().apply {
-                    moveTo(0f, 0f)
-                    lineTo(width, 0f)
-                    lineTo(width, height)
-                    lineTo(0f, 0f)
-                }
-            }
-        )
-    })
+    Box(modifier = Modifier.width(5.dp).height(7.dp)) {
+        if (chatMessage.background is BubbleBackground.First) {
+            Canvas(modifier = Modifier.fillMaxSize(), onDraw = {
+                drawPath(
+                    color = color,
+                    path = if (sent) {
+                        Path().apply {
+                            moveTo(0f, 0f)
+                            lineTo(width, 0f)
+                            lineTo(0f, height)
+                            lineTo(0f, 0f)
+                        }
+                    } else {
+                        Path().apply {
+                            moveTo(0f, 0f)
+                            lineTo(width, 0f)
+                            lineTo(width, height)
+                            lineTo(0f, 0f)
+                        }
+                    }
+                )
+            })
+        }
+    }
 }
 
+fun getMessageUIPadding(chatMessage: ChatMessage): Modifier {
+    return when (chatMessage.background) {
+        is BubbleBackground.First.Grouped -> Modifier.padding(start = 8.dp, top = 8.dp, bottom = 2.dp, end = 8.dp)
+        is BubbleBackground.Middle -> Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp, end = 8.dp)
+        is BubbleBackground.Last -> Modifier.padding(start = 8.dp, top = 2.dp, bottom = 8.dp, end = 8.dp)
 
+        else -> { return Modifier.padding(8.dp)}
+    }
+}
 

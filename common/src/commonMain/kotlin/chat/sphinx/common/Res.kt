@@ -23,8 +23,14 @@ object Res {
         const val ic_received =  "drawable/ic_received.xml"
         const val ic_coin =  "drawable/ic_coin.xml"
         const val ic_qr_code =  "drawable/ic_qr_code.xml"
+        const val ic_video_place_holder =  "drawable/ic_video_place_holder.xml"
+        const val ic_boost =  "drawable/ic_boost.xml"
         const val ic_received_image_not_available =  "drawable/received_image_not_available.xml"
         const val ic_tribe_place_holder = "drawable/ic_tribe_place_holder.xml"
+        const val ic_transaction_payment_received = "drawable/ic_transaction_payment_received.xml"
+        const val ic_transaction_payment_sent = "drawable/ic_transaction_payment_sent.xml"
+        const val ic_template_no_image = "drawable/ic_template_no_image.xml"
+        const val ic_transaction_item = "drawable/ic_transaction_item.xml"
         const val paid_image_blurred_placeholder =  "drawable/paid_image_blurred_placeholder.png"
         const val copy_paste_your_keys =  "drawable/ic_copy_your_keys_from_your__mobile_app_and_paste_it_here_.xml"
 
@@ -32,6 +38,8 @@ object Res {
         const val new_user_image = "drawable/newuserimage.png"
         const val splash_background = "drawable/splash_background.png"
         const val landing_page_image = "drawable/landingpageimage.png"
+        const val lightning_network = "drawable/lightning_network.png"
+        const val ending_page_image = "drawable/endingpageimage.png"
 
         const val connection_animation =  "drawable/connecting.gif"
         const val ic_camera =  "drawable/ic_camera.xml"
@@ -39,6 +47,15 @@ object Res {
         const val ic_paid_message =  "drawable/ic_paid_message.xml"
         const val ic_request =  "drawable/ic_request.xml"
         const val ic_send =  "drawable/ic_send.xml"
+
+        const val ic_bitcoin = "drawable/ic_bitcoin.png"
+        const val ic_lightning = "drawable/ic_lightning.png"
+        const val ic_sphinx = "drawable/ic_sphinx.png"
+        const val ic_crypto = "drawable/ic_crypto.png"
+        const val ic_tech = "drawable/ic_tech.png"
+        const val ic_altcoins = "drawable/ic_altcoins.png"
+        const val ic_music = "drawable/ic_music.png"
+        const val ic_podcast = "drawable/ic_podcast.png"
 
         // chat action sheet
 

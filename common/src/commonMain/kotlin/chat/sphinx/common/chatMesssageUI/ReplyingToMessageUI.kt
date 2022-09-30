@@ -55,7 +55,7 @@ fun ReplyingToMessageUI(
 
                 if (media.mediaType.isImage) {
                     MessageMediaImage(
-                        replyMessage,
+                        chatMessage,
                         chatViewModel,
                         modifier = Modifier.width(36.dp),
                         isReplyView = true

@@ -53,7 +53,7 @@ fun WelcomeScreen() {
                 text = "Your app is now connected",
                 fontSize = 22.sp,
                 color = Color.Gray,
-                fontWeight = FontWeight.W400,
+                fontWeight = FontWeight.Light,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 // textAlign = TextAlign.Center
             )

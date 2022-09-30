@@ -21,16 +21,20 @@ import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
+import chat.sphinx.utils.containLinks
 import chat.sphinx.utils.linkify.LinkSpec
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.utils.toAnnotatedString
+import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.getColorKey
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
+import chat.sphinx.wrapper.getMinutesDifferenceWithDateTime
+import chat.sphinx.wrapper.isDifferentDayThan
 import chat.sphinx.wrapper.lightning.*
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
@@ -191,43 +195,82 @@ abstract class ChatViewModel(
             )
         }
 
-        val chatMessages = messages.reversed().map { message ->
+        val chatMessages: MutableList<ChatMessage> = mutableListOf()
+        var groupingDate: DateTime? = null
+
+        messages.withIndex().forEach { (index, message) ->
 
             val colors = getColorsMapFor(message, contactColorInt, tribeAdmin)
 
-            ChatMessage(
-                chat,
-                contact,
+            val previousMessage: Message? = if (index > 0) messages[index - 1] else null
+            val nextMessage: Message? = if (index < messages.size - 1) messages[index + 1] else null
+
+            val groupingDateAndBubbleBackground = getBubbleBackgroundForMessage(
                 message,
-                colors,
-                accountOwner = { owner },
-                boostMessage = {
-                    boostMessage(chat, message.uuid)
-                },
-                flagMessage = {
-                    confirm(
-                        "Confirm Flagging message",
-                        "Are you sure you want to flag this message? This action can not be undone"
-                    ) {
-                        flagMessage(chat, message)
-                    }
-                },
-                deleteMessage = {
-                    confirm(
-                        "Confirm Deleting message",
-                        "Are you sure you want to delete this message? This action can not be undone"
-                    ) {
-                        deleteMessage(message)
-                    }
-                },
-                previewProvider = { handleLinkPreview(it) },
+                previousMessage,
+                nextMessage,
+                groupingDate
+            )
+
+            groupingDate = groupingDateAndBubbleBackground.first
+
+            if (
+                previousMessage == null ||
+                message.date.isDifferentDayThan(previousMessage.date)
+            ) {
+                chatMessages.add(
+                    ChatMessage(
+                        chat,
+                        contact,
+                        message,
+                        colors,
+                        isSeparator = true,
+                        accountOwner = { owner },
+                        boostMessage = {},
+                        flagMessage = {},
+                        deleteMessage = {},
+                        previewProvider = { handleLinkPreview(it) },
+                        background = BubbleBackground.Gone
+                    )
+                )
+            }
+
+            chatMessages.add(
+                ChatMessage(
+                    chat,
+                    contact,
+                    message,
+                    colors,
+                    accountOwner = { owner },
+                    boostMessage = {
+                        boostMessage(chat, message.uuid)
+                    },
+                    flagMessage = {
+                        confirm(
+                            "Confirm Flagging message",
+                            "Are you sure you want to flag this message? This action can not be undone"
+                        ) {
+                            flagMessage(chat, message)
+                        }
+                    },
+                    deleteMessage = {
+                        confirm(
+                            "Confirm Deleting message",
+                            "Are you sure you want to delete this message? This action can not be undone"
+                        ) {
+                            deleteMessage(message)
+                        }
+                    },
+                    previewProvider = { handleLinkPreview(it) },
+                    background = groupingDateAndBubbleBackground.second
+                )
             )
         }
 
         MessageListState.screenState(
             MessageListData.PopulatedMessageListData(
                 chat.id,
-                chatMessages
+                chatMessages.reversed()
             )
         )
 
@@ -238,6 +281,55 @@ abstract class ChatViewModel(
             onNewMessageCallback?.invoke()
         }
     }
+
+    private fun getBubbleBackgroundForMessage(
+        message: Message,
+        previousMessage: Message?,
+        nextMessage: Message?,
+        groupingDate: DateTime?,
+    ): Pair<DateTime?, BubbleBackground> {
+
+        val groupingMinutesLimit = 5.0
+        var date = groupingDate ?: message.date
+
+        val shouldAvoidGroupingWithPrevious = (previousMessage?.shouldAvoidGrouping() ?: true) || message.shouldAvoidGrouping()
+        val isGroupedBySenderWithPrevious = previousMessage?.hasSameSenderThanMessage(message) ?: false
+        val isGroupedByDateWithPrevious = message.date.getMinutesDifferenceWithDateTime(date) < groupingMinutesLimit
+
+        val groupedWithPrevious = (!shouldAvoidGroupingWithPrevious && isGroupedBySenderWithPrevious && isGroupedByDateWithPrevious)
+
+        date = if (groupedWithPrevious) date else message.date
+
+        val shouldAvoidGroupingWithNext = (nextMessage?.shouldAvoidGrouping() ?: true) || message.shouldAvoidGrouping()
+        val isGroupedBySenderWithNext = nextMessage?.hasSameSenderThanMessage(message) ?: false
+        val isGroupedByDateWithNext = if (nextMessage != null) nextMessage.date.getMinutesDifferenceWithDateTime(date) < groupingMinutesLimit else false
+
+        val groupedWithNext = (!shouldAvoidGroupingWithNext && isGroupedBySenderWithNext && isGroupedByDateWithNext)
+
+        when {
+            (!groupedWithPrevious && !groupedWithNext) -> {
+                return Pair(date, BubbleBackground.First.Isolated)
+            }
+            (groupedWithPrevious && !groupedWithNext) -> {
+                return Pair(date, BubbleBackground.Last)
+            }
+            (!groupedWithPrevious && groupedWithNext) -> {
+                return Pair(date, BubbleBackground.First.Grouped)
+            }
+            (groupedWithPrevious && groupedWithNext) -> {
+                return Pair(date, BubbleBackground.Middle)
+            }
+        }
+
+        return Pair(date, BubbleBackground.First.Isolated)
+    }
+    open suspend fun processMemberRequest(
+        contactId: ContactId,
+        messageId: MessageId,
+        type: MessageType,
+    ) {}
+
+    open suspend fun deleteTribe() {}
 
     private suspend fun getColorsMapFor(
         message: Message,
@@ -371,7 +463,7 @@ abstract class ChatViewModel(
 
     abstract val chatSharedFlow: SharedFlow<Chat?>
 
-    private suspend fun getChat(): Chat? {
+    suspend fun getChat(): Chat? {
         return chatId?.let { chatRepository.getChatById(it) }
     }
 
@@ -386,6 +478,8 @@ abstract class ChatViewModel(
         protected set
 
     abstract fun initialState(): EditMessageState
+
+    abstract fun getUniqueKey() : String
 
     private inline fun setEditMessageState(update: EditMessageState.() -> EditMessageState) {
         editMessageState = editMessageState.update()
@@ -552,7 +646,6 @@ abstract class ChatViewModel(
         var preview: ChatMessage.LinkPreview? = null
 
         scope.launch(dispatchers.mainImmediate) {
-            // TODO: Implement
             Exhaustive@
             when (link.tag) {
                 LinkTag.LightningNodePublicKey.name, LinkTag.VirtualNodePublicKey.name -> {
@@ -658,6 +751,7 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     } ?: run {
                         dashboardViewModel.toggleJoinTribeWindow(true, it)
@@ -681,6 +775,7 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     } ?: run {
                         getDashboardChatFor(contact, null)?.let { dashboardChat ->
@@ -690,12 +785,24 @@ abstract class ChatViewModel(
                                     dashboardChat
                                 )
                             )
+                            selectListRowFor(dashboardChat)
                         }
                     }
                 } ?: run {
                     dashboardViewModel.toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx(link))
                 }
             }
+        }
+    }
+
+    private fun selectListRowFor(dashboardChat: DashboardChat) {
+        (ChatListState.screenState() as? ChatListData.PopulatedChatListData)?.let { currentState ->
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    currentState.dashboardChats,
+                    dashboardChat.dashboardChatId
+                )
+            )
         }
     }
 

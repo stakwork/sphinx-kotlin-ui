@@ -1,6 +1,7 @@
 package chat.sphinx.common.chatMesssageUI
 
 import Roboto
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -32,8 +33,9 @@ import chat.sphinx.common.components.CustomDivider
 import chat.sphinx.common.components.MessageFile
 import chat.sphinx.common.components.MessageMediaImage
 import chat.sphinx.common.components.browser.SphinxWebView
+import chat.sphinx.common.components.*
 import chat.sphinx.common.models.ChatMessage
-import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.linkify.SphinxLinkify
@@ -41,18 +43,14 @@ import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.lightning.toLightningNodePubKey
 import chat.sphinx.wrapper.lightning.toVirtualLightningNodeAddress
 import chat.sphinx.wrapper.message.*
-import chat.sphinx.wrapper.message.media.isImage
 import theme.badge_red
 import theme.light_divider
 import chat.sphinx.wrapper.message.MessageType
 import chat.sphinx.wrapper.message.isSphinxCallLink
-import chat.sphinx.wrapper.message.media.isPdf
-import chat.sphinx.wrapper.message.media.isUnknown
+import chat.sphinx.wrapper.message.media.*
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
-import kotlinx.coroutines.launch
-import chat.sphinx.wrapper.tribe.isValidTribeJoinLink
-import chat.sphinx.wrapper.tribe.toTribeJoinLink
+import theme.sphinx_orange
 
 @Composable
 fun ChatCard(
@@ -60,16 +58,11 @@ fun ChatCard(
     chatViewModel: ChatViewModel,
     modifier: Modifier? = null
 ) {
-    val receiverCorner =
-        RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
-    val senderCorner =
-        RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
-
     val uriHandler = LocalUriHandler.current
 
     Card(
         backgroundColor = if (chatMessage.isReceived) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.inversePrimary,
-        shape = if (chatMessage.isReceived) receiverCorner else senderCorner,
+        shape = getBubbleShape(chatMessage),
         modifier = modifier ?: Modifier
     ) {
         val density = LocalDensity.current
@@ -94,6 +87,9 @@ fun ChatCard(
                         Spacer(modifier = Modifier.height(4.dp))
                         CustomDivider(color = light_divider, modifier = Modifier.width(rowWidth))
                     }
+                    chatMessage.message.feedBoost?.let { feedBoost ->
+                        PodcastBoost(feedBoost)
+                    }
                     chatMessage.message.messageMedia?.let { media ->
                         if (media.mediaType.isImage) {
                             MessageMediaImage(
@@ -106,13 +102,18 @@ fun ChatCard(
                                 chatMessage = chatMessage,
                                 chatViewModel = chatViewModel,
                             )
+                        } else if (media.mediaType.isVideo) {
+                            MessageVideo(
+                                chatMessage = chatMessage,
+                                chatViewModel = chatViewModel,
+                                modifier = Modifier.wrapContentHeight().fillMaxWidth()
+                            )
+                        } else if (media.mediaType.isAudio) {
+                            MessageAudio(
+                                chatMessage = chatMessage,
+                                chatViewModel = chatViewModel,
+                            )
                         }
-//                    } else if (media.mediaType.isAudio) {
-//                        MessageAudio(
-//                            chatMessage = chatMessage,
-//                            chatViewModel = chatViewModel,
-//                        )
-//                    }
                     }
                     Column {
                         MessageTextLabel(chatMessage, chatViewModel, uriHandler)
@@ -133,7 +134,7 @@ fun ChatCard(
                             modifier = Modifier.width(
                                 maxOf(rowWidth, 250.dp)
                             )
-                            .height(45.dp)
+                                .height(45.dp)
                         )
                     }
                 }
@@ -154,11 +155,11 @@ fun MessageTextLabel(
     chatViewModel: ChatViewModel,
     uriHandler: UriHandler
 ) {
-
-    val topPadding = if (chatMessage.message.isPaidMessage && chatMessage.isSent) 44.dp else 12.dp
+    val topPadding = if (chatMessage.message.isPaidTextMessage && chatMessage.isSent) 44.dp else 12.dp
 
     if (chatMessage.message.retrieveTextToShow() != null) {
-        val messageText = chatMessage.message.retrieveTextToShow()!!
+
+        val messageText = chatMessage.message.retrieveTextToShow()?.trim() ?: ""
 
         Row(
             modifier = Modifier
@@ -192,7 +193,8 @@ fun MessageTextLabel(
                             }
                             LinkTag.LightningNodePublicKey.name, LinkTag.VirtualNodePublicKey.name -> {
                                 chatViewModel.contactLinkClicked(
-                                    annotation.item.toLightningNodePubKey() ?: annotation.item.toVirtualLightningNodeAddress()
+                                    annotation.item.toLightningNodePubKey()
+                                        ?: annotation.item.toVirtualLightningNodeAddress()
                                 )
                             }
                             LinkTag.JoinTribeLink.name -> {
@@ -210,6 +212,18 @@ fun MessageTextLabel(
             //
             //                                }
         }
+    } else if (chatMessage.isUnsupportedType) {
+        Text(
+            modifier = Modifier
+                .wrapContentWidth(if (chatMessage.isSent) Alignment.End else Alignment.Start)
+                .padding(12.dp),
+            text = "Unsupported Message Type: ${chatMessage.unsupportedTypeLabel}",
+            fontWeight = FontWeight.W300,
+            fontFamily = Roboto,
+            fontStyle = FontStyle.Italic,
+            fontSize = 13.sp,
+            color = sphinx_orange
+        )
     } else if (chatMessage.message.messageDecryptionError) {
         Text(
             modifier = Modifier
@@ -336,6 +350,46 @@ fun FailedContainer(
                 color = Color.Red,
                 textAlign = TextAlign.Start
             )
+        }
+    }
+}
+
+fun getBubbleShape(chatMessage: ChatMessage): RoundedCornerShape {
+    if (chatMessage.isReceived) {
+        return when (chatMessage.background) {
+            is BubbleBackground.First.Isolated -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+            is BubbleBackground.First.Grouped -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 0.dp)
+            }
+            is BubbleBackground.Middle -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 0.dp)
+            }
+            is BubbleBackground.Last -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+            else -> {
+                RoundedCornerShape(topEnd = 10.dp, topStart = 0.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+        }
+    } else {
+        return when (chatMessage.background) {
+            is BubbleBackground.First.Isolated -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+            is BubbleBackground.First.Grouped -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 0.dp, bottomStart = 10.dp)
+            }
+            is BubbleBackground.Middle -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 0.dp, bottomStart = 10.dp)
+            }
+            is BubbleBackground.Last -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
+            else -> {
+                RoundedCornerShape(topEnd = 0.dp, topStart = 10.dp, bottomEnd = 10.dp, bottomStart = 10.dp)
+            }
         }
     }
 }
