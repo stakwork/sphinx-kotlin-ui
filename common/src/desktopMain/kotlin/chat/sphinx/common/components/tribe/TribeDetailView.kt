@@ -248,7 +248,7 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
             }
             CursorDropdownMenu(
                 expanded = showOptionMenu.value,
-                onDismissRequest = {showOptionMenu.value = false},
+                onDismissRequest = { showOptionMenu.value = false },
                 modifier = Modifier.background(MaterialTheme.colorScheme.inversePrimary).clip(
                     RoundedCornerShape(16.dp)
                 )
@@ -258,8 +258,8 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                     DropdownMenuItem(
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
-                            dashboardViewModel.toggleQRWindow(true, "TRIBE JOIN LINK", viewModel.tribeDetailState.shareTribeUrl)
                             showOptionMenu.value = false
+                            dashboardViewModel.toggleQRWindow(true, "TRIBE JOIN LINK", viewModel.tribeDetailState.shareTribeUrl)
                         }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -276,8 +276,8 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                     DropdownMenuItem(
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
-                            dashboardViewModel.toggleCreateTribeWindow(true, chatId)
                             showOptionMenu.value = false
+                            dashboardViewModel.toggleCreateTribeWindow(true, chatId)
                         }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -294,8 +294,8 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                     DropdownMenuItem(
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
-                            viewModel.exitAndDeleteTribe()
                             showOptionMenu.value = false
+                            viewModel.exitAndDeleteTribe()
                         }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -312,8 +312,8 @@ fun TopHeader(dashboardViewModel: DashboardViewModel, viewModel: TribeDetailView
                     DropdownMenuItem(
                         modifier = Modifier.height(40.dp).width(180.dp).clip(RoundedCornerShape(8.dp)),
                         onClick = {
-                            viewModel.exitAndDeleteTribe()
                             showOptionMenu.value = false
+                            viewModel.exitAndDeleteTribe()
                         }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
