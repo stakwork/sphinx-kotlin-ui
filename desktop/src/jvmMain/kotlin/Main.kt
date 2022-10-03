@@ -9,6 +9,7 @@ import chat.sphinx.authentication.model.OnBoardStep
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
+import chat.sphinx.common.components.AudioPlay
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.components.LandingScreen
 import chat.sphinx.common.components.chat.FilePickerDialog
@@ -38,6 +39,7 @@ fun main() = application {
     val onBoardStepHandler = remember { OnBoardStepHandler() }
     val sphinxStore = remember { SphinxStore() }
     var currentWindow: MutableState<ComposeWindow?> = remember { mutableStateOf(null) }
+
 
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {

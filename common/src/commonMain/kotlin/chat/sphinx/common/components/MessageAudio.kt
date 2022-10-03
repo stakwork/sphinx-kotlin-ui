@@ -11,6 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
+import com.soywiz.korau.sound.Sound
+import com.soywiz.korau.sound.readSound
+import com.soywiz.korio.file.std.resourcesVfs
 //import java.io.File
 //import javax.sound.sampled.AudioSystem
 
@@ -41,7 +44,9 @@ fun MessageAudio(
         ) {
             if (localFilepath != null) {
                 IconButton(
-                    onClick = { toast("Audio Player not implemented yet, save the file to listen the audio") }
+                    onClick = {
+                        chatViewModel.audio.play(SoundType.BreatheOut)
+                        toast("Audio Player not implemented yet, save the file to listen the audio") }
                 ) {
                     Icon(
                         Icons.Default.PlayArrow,

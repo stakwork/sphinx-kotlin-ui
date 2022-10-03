@@ -26,6 +26,8 @@ kotlin {
     sourceSets {
         val jvmMain by getting {
             val kmpTorBinaryVersion = "0.4.7.8"
+            val korauVersion = "2.2.0"
+            val korioVersion = "2.2.0"
 
             dependencies {
                 implementation(project(":common"))
@@ -35,6 +37,10 @@ kotlin {
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorBinaryVersion")
+                implementation("com.soywiz.korlibs.korio:korio:$korioVersion")
+                implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
+
+
 //                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
 //                implementation ("io.coil-kt:coil-compose:1.4.0")
             }

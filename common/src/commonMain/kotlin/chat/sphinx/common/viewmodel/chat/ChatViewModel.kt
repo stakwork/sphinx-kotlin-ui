@@ -4,6 +4,7 @@ import androidx.annotation.ColorInt
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
+import chat.sphinx.common.components.AudioPlay
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -42,6 +43,8 @@ import chat.sphinx.wrapper.message.media.MessageMedia
 import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
+import com.soywiz.korau.sound.readSound
+import com.soywiz.korio.file.std.resourcesVfs
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -94,6 +97,15 @@ abstract class ChatViewModel(
 
     var onNewMessageCallback: (() -> Unit)? = null
     private var messagesSize: Int = 0
+
+//    fun playAudio(){
+//        scope.launch(dispatchers.mainImmediate) {
+//            resourcesVfs["sound/parte.mp3"].readSound()
+//        }
+//
+//    }
+
+    val audio = AudioPlay()
 
     enum class ChatActionsMode {
         MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE
