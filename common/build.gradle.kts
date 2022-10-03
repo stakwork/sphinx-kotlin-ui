@@ -48,6 +48,8 @@ kotlin {
                 implementation("org.cryptonode.jncryptor:jncryptor:1.2.0")
                 implementation("com.soywiz.korlibs.korio:korio:$korioVersion")
                 implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
+                implementation("org.jetbrains.compose.ui:ui-graphics:1.1.1")
+                implementation("uk.co.caprica:vlcj:4.7.1")
 //                implementation ("com.google.accompanist:accompanist-pager:0.23.1")
 //                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
 //                implementation ("com.google.accompanist:accompanist-flowlayout:0.24.12-rc")
