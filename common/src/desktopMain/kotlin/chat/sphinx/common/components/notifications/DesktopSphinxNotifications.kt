@@ -26,6 +26,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.notifications.DesktopSphinxNotificationManager.notifications
 import chat.sphinx.utils.getPreferredWindowSize
+import com.example.compose.AppTheme
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -108,86 +109,88 @@ fun DesktopSphinxNotifications(
                 sphinxReadingNotificationsListener
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Transparent.copy(alpha = 0.0f))
-            )
-            {
-                Column(
-                    modifier = Modifier.align(Alignment.TopEnd)
-                        .padding(
-                            top = 20.dp,
-                            end = 50.dp
-                        )
-                        .fillMaxWidth()
+            AppTheme(useDarkTheme = true) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
                         .background(Color.Transparent.copy(alpha = 0.0f))
-                ) {
-                    notifications.forEach { notification ->
-                        key(notification.key) {
-                            Spacer(Modifier.height(15.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.background, RoundedCornerShape(10.dp))
-                                    .align(Alignment.End)
-                                    .defaultMinSize(300.dp, 0.dp)
-                            ) {
+                )
+                {
+                    Column(
+                        modifier = Modifier.align(Alignment.TopEnd)
+                            .padding(
+                                top = 20.dp,
+                                end = 50.dp
+                            )
+                            .fillMaxWidth()
+                            .background(Color.Transparent.copy(alpha = 0.0f))
+                    ) {
+                        notifications.forEach { notification ->
+                            key(notification.key) {
+                                Spacer(Modifier.height(15.dp))
                                 Box(
                                     modifier = Modifier
-                                        .padding(10.dp)
-                                        .align(Alignment.TopEnd)
+                                        .background(MaterialTheme.colorScheme.background, RoundedCornerShape(10.dp))
+                                        .align(Alignment.End)
+                                        .defaultMinSize(300.dp, 0.dp)
                                 ) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        contentDescription = "Close notification",
-                                        tint = MaterialTheme.colorScheme.primary,
+                                    Box(
                                         modifier = Modifier
-                                            .size(20.dp)
+                                            .padding(10.dp)
                                             .align(Alignment.TopEnd)
-                                            .clickable {
-                                                notifications.remove(notification.key)
-                                            }
-                                    )
-                                }
-
-                                Column (
-                                    modifier = Modifier.padding(
-                                        top = 15.dp,
-                                        bottom = 15.dp,
-                                        start = 15.dp,
-                                        end = 30.dp
-                                    ).clickable {
-                                        if (dashboardWindow.isMinimized) {
-                                            dashboardWindow.isMinimized = false
-                                        }
-                                        dashboardWindow.toFront()
-                                        notifications.clear()
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "Close notification",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .align(Alignment.TopEnd)
+                                                .clickable {
+                                                    notifications.remove(notification.key)
+                                                }
+                                        )
                                     }
-                                ) {
-                                    Text(
-                                        text = notification.value.first,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontFamily = Roboto,
-                                        fontSize = 16.sp,
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Spacer(Modifier.height(8.dp))
-                                    Text(
-                                        text = notification.value.second,
-                                        fontWeight = FontWeight.Light,
-                                        fontFamily = Roboto,
-                                        fontSize = 13.sp,
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+
+                                    Column(
+                                        modifier = Modifier.padding(
+                                            top = 15.dp,
+                                            bottom = 15.dp,
+                                            start = 15.dp,
+                                            end = 30.dp
+                                        ).clickable {
+                                            if (dashboardWindow.isMinimized) {
+                                                dashboardWindow.isMinimized = false
+                                            }
+                                            dashboardWindow.toFront()
+                                            notifications.clear()
+                                        }
+                                    ) {
+                                        Text(
+                                            text = notification.value.first,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontFamily = Roboto,
+                                            fontSize = 16.sp,
+                                            color = MaterialTheme.colorScheme.tertiary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Spacer(Modifier.height(8.dp))
+                                        Text(
+                                            text = notification.value.second,
+                                            fontWeight = FontWeight.Light,
+                                            fontFamily = Roboto,
+                                            fontSize = 13.sp,
+                                            color = MaterialTheme.colorScheme.tertiary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
                             }
+
+
                         }
-
-
                     }
                 }
             }
