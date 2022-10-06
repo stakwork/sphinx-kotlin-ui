@@ -5,11 +5,9 @@ import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.window.*
-import chat.sphinx.authentication.model.OnBoardStep
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
-import chat.sphinx.common.components.AudioPlay
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.components.LandingScreen
 import chat.sphinx.common.components.chat.FilePickerDialog
@@ -19,8 +17,6 @@ import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
-import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
@@ -39,7 +35,6 @@ fun main() = application {
     val onBoardStepHandler = remember { OnBoardStepHandler() }
     val sphinxStore = remember { SphinxStore() }
     var currentWindow: MutableState<ComposeWindow?> = remember { mutableStateOf(null) }
-
 
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
@@ -184,4 +179,29 @@ fun main() = application {
             }
         }
     }
+
+//    Window(
+//        onCloseRequest = ::exitApplication,
+//        title = "Video Player",
+//        state = WindowState(
+//            position = WindowPosition.Aligned(Alignment.Center),
+//            size = getPreferredWindowSize(600, 600)
+//        ),
+//        icon = sphinxIcon
+//    ) {
+//        AppTheme(useDarkTheme = true) {
+//            val videoPlayerState = rememberVideoPlayerState(
+//                time = 0L,
+//                isPlaying = false,
+//            )
+//            val time by videoPlayerState.time.collectAsState()
+//            val isPlaying by videoPlayerState.isPlaying.collectAsState()
+//            val length by videoPlayerState.length.collectAsState()
+//
+//            VideoPlayer(
+//                mrl = "/Users/tomastiminskas/Desktop/end_video_2.mp4",
+//                state = videoPlayerState,
+//            )
+//        }
+//    }
 }

@@ -1,5 +1,3 @@
-package chat.sphinx.common.components
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
@@ -21,6 +19,7 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCall
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat
 import java.nio.ByteBuffer
+import kotlinx.coroutines.launch
 
 @Composable
 fun rememberVideoPlayerState(
@@ -28,31 +27,10 @@ fun rememberVideoPlayerState(
     isPlaying: Boolean = true,
 ) = remember { VideoPlayerState(time, isPlaying) }
 
-class VideoPlayerState(
-    time: Long,
-    isPlaying: Boolean,
-) {
-    internal val lengthMutable = MutableStateFlow(VideoLength())
-
-    val time: MutableStateFlow<TimeState> = MutableStateFlow(TimeState.time(time))
-    val isPlaying: MutableStateFlow<Boolean> = MutableStateFlow(isPlaying)
-    val length: StateFlow<VideoLength> = lengthMutable
-
-    fun seekTo(time: Long) {
-        this.time.value = TimeState.time(time)
-    }
-    fun play() {
-        isPlaying.value = true
-    }
-    fun pause() {
-        isPlaying.value = false
-    }
-}
-
 @Composable
 fun VideoPlayer(
     mrl: String,
-    state: VideoPlayerState = rememberVideoPlayerState(),
+    state: VideoPlayerState,
     modifier: Modifier = Modifier,
 ) {
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
@@ -69,13 +47,13 @@ fun VideoPlayer(
 
     val mediaPlayer = remember {
         var byteArray :ByteArray? = null
-//        var info: ImageInfo? = null
+        var info: ImageInfo? = null
         val factory = MediaPlayerFactory()
         val embeddedMediaPlayer = factory.mediaPlayers().newEmbeddedMediaPlayer()
         val callbackVideoSurface = CallbackVideoSurface(
             object : BufferFormatCallback {
                 override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
-//                    info = ImageInfo.makeN32(sourceWidth, sourceHeight, ColorAlphaType.OPAQUE)
+                    info = ImageInfo.makeN32(sourceWidth, sourceHeight, ColorAlphaType.OPAQUE)
                     return RV32BufferFormat(sourceWidth, sourceHeight)
                 }
 
@@ -159,6 +137,28 @@ fun VideoPlayer(
         }
     })
 }
+
+class VideoPlayerState(
+    time: Long,
+    isPlaying: Boolean,
+) {
+    val lengthMutable = MutableStateFlow(VideoLength())
+
+    val time: MutableStateFlow<TimeState> = MutableStateFlow(TimeState.time(time))
+    val isPlaying: MutableStateFlow<Boolean> = MutableStateFlow(isPlaying)
+    val length: StateFlow<VideoLength> = lengthMutable
+
+    fun seekTo(time: Long) {
+        this.time.value = TimeState.time(time)
+    }
+    fun play() {
+        isPlaying.value = true
+    }
+    fun pause() {
+        isPlaying.value = false
+    }
+}
+
 data class VideoLength(
     val length: Long = -1L
 ) {

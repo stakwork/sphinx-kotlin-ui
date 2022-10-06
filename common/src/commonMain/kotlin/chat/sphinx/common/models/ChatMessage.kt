@@ -1,5 +1,7 @@
 package chat.sphinx.common.models
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import chat.sphinx.common.state.EditMessageState
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatType
@@ -135,7 +137,7 @@ class ChatMessage(
         }
     }
 
-
+    var audioLayoutState: MutableState<AudioLayoutState?> = mutableStateOf(null)
 
     val isSent: Boolean by lazy {
         message.sender == chat.contactIds.firstOrNull()
@@ -226,6 +228,12 @@ class ChatMessage(
             null
         }
     }
+
+    data class AudioLayoutState(
+        var length: Int,
+        var currentTime: Int,
+        var isPlaying: Boolean,
+    )
 
     data class BoostLayoutState(
         val showSent: Boolean,
