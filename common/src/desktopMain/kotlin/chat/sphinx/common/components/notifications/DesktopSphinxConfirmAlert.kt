@@ -77,12 +77,13 @@ fun DesktopSphinxConfirmAlert(windowTitle: String) {
                             Button(
                                 onClick = {
                                     alert.value = null
+                                    value.cancelCallback?.invoke()
                                 },
                                 colors = ButtonDefaults.buttonColors(backgroundColor = badge_red),
                                 modifier = Modifier.wrapContentSize().padding(horizontal = 8.dp),
                             ) {
                                 Text(
-                                    "CANCEL",
+                                    value.negativeButtonTitle ?: "CANCEL",
                                     color = MaterialTheme.colorScheme.tertiary,
                                     fontFamily = SphinxFonts.montserratFamily,
                                     fontSize = 12.sp
@@ -97,7 +98,7 @@ fun DesktopSphinxConfirmAlert(windowTitle: String) {
                                 modifier = Modifier.wrapContentSize().padding(horizontal = 8.dp),
                             ) {
                                 Text(
-                                    "CONFIRM",
+                                    value.positiveButtonTitle ?: "CONFIRM",
                                     color = MaterialTheme.colorScheme.tertiary,
                                     fontFamily = SphinxFonts.montserratFamily,
                                     fontSize = 12.sp
