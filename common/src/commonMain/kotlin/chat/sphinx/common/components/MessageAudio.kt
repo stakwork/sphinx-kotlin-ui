@@ -11,9 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-import chat.sphinx.wrapper.chat.ChatUnlisted
-import com.soywiz.korio.dynamic.KDynamic.Companion.get
-import kotlinx.coroutines.flow.asStateFlow
+import okio.Path
 
 @Composable
 fun MessageAudio(
@@ -25,7 +23,7 @@ fun MessageAudio(
     val localFilepath = messageMedia?.localFile
     val url = messageMedia?.url?.value ?: ""
 
-    val audioState = chatMessage.audioLayoutState.value
+    val audioState = chatMessage.audioState.value
 
     LaunchedEffect(url) {
         chatViewModel.downloadFileMedia(message, chatMessage.isSent)
@@ -43,11 +41,17 @@ fun MessageAudio(
             contentAlignment = Alignment.Center
         ) {
             if (localFilepath != null) {
-                chatViewModel.audioPlayer.loadAudio(chatMessage)
+                if (localFilepath.isSupportedAudio()) {
+                    chatViewModel.audioPlayer.loadAudio(chatMessage)
+                }
 
                 IconButton(
                     onClick = {
-                        chatViewModel.audioPlayer.playAudio(chatMessage)
+                        if (localFilepath.isSupportedAudio()) {
+                            chatViewModel.audioPlayer.playAudio(chatMessage)
+                        } else {
+                            toast("Audio format not supported. Save the file to listen the audio message.")
+                        }
                     }
                 ) {
                     Icon(
@@ -71,12 +75,9 @@ fun MessageAudio(
         Box(
             modifier = Modifier.width(190.dp).padding(start = 8.dp)
         ) {
-            val slideValue = remember { mutableStateOf(0f) }
             Slider(
-                value = slideValue.value,
-                onValueChange = {
-                    slideValue.value = it
-                },
+                value = audioState?.progress?.toFloat() ?: 0f,
+                onValueChange = {},
                 colors = SliderDefaults.colors(
                     activeTrackColor = MaterialTheme.colorScheme.secondary,
                     inactiveTrackColor = MaterialTheme.colorScheme.onBackground,
@@ -104,3 +105,7 @@ inline fun Int.toAudioTimeFormat(): String {
 
     return "$minutesString:$secondsString"
 }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Path.isSupportedAudio(): Boolean =
+    (this.toString().contains(".wav") || this.toString().contains(".ogg") || this.toString().contains(".mp3"))

@@ -7,84 +7,89 @@ import com.soywiz.korau.sound.*
 import com.soywiz.korio.file.std.*
 import kotlinx.coroutines.*
 
-
-//TODO: fix the null-unsafe calls
 class AudioPlayer {
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
-    private var loadedSounds : HashMap<String, Sound> = HashMap()
+    private var loadedSounds : MutableMap<String, Sound> = mutableMapOf()
     private var channel: SoundChannel? = null
 
+    private var playingMessage: ChatMessage? = null
+
     fun loadAudio(chatMessage: ChatMessage) {
+        if (chatMessage.message.id == playingMessage?.message?.id) {
+            return
+        }
+
         loadedSounds["${chatMessage.message.id.value}"]?.let { sound ->
+            val audioState = chatMessage.audioState
 
-            chatMessage.audioLayoutState.value?.let { audioState ->
-                if (audioState.isPlaying) {
-                    return@let
-                }
-            }
-
-            chatMessage.audioLayoutState.value = ChatMessage.AudioLayoutState(
+            chatMessage.audioState.value = ChatMessage.AudioState(
                 length = sound.length.seconds.toInt(),
-                currentTime = chatMessage.audioLayoutState.value?.currentTime ?: 0,
-                isPlaying = chatMessage.audioLayoutState.value?.isPlaying ?: false
+                currentTime = audioState.value?.currentTime ?: 0,
+                progress = audioState.value?.progress ?: 0.0,
+                isPlaying = audioState.value?.isPlaying ?: false
             )
-            return@let
+            return
         }
 
         chatMessage?.message?.messageMedia?.localFile?.toString()?.let {
-            if (it.contains(".wav")) {
-                scope.launch(dispatchers.mainImmediate) {
-                    val file = applicationVfs[it].readSound()
-                    loadedSounds["${chatMessage.message.id.value}"] = file
+            scope.launch(dispatchers.mainImmediate) {
+                val file = applicationVfs[it].readSound()
+                loadedSounds["${chatMessage.message.id.value}"] = file
 
-                    chatMessage.audioLayoutState.value = ChatMessage.AudioLayoutState(
-                        length = file.length.seconds.toInt(),
-                        currentTime = 0,
-                        isPlaying = false
-                    )
-                }
+                chatMessage.audioState.value = ChatMessage.AudioState(
+                    length = file.length.seconds.toInt(),
+                    currentTime = 0,
+                    progress = 0.0,
+                    isPlaying = false
+                )
             }
         }
     }
 
     fun playAudio(chatMessage: ChatMessage) {
-        val messageAudioState = chatMessage.audioLayoutState.value
+        playingMessage?.let {
 
-        messageAudioState?.let {
-            if (it.isPlaying) {
-                channel?.pause()
+            channel?.pause()
 
-                chatMessage.audioLayoutState.value = ChatMessage.AudioLayoutState(
-                    length = it.length,
-                    currentTime = it.currentTime,
+            if (chatMessage.message.id == it.message.id) {
+                chatMessage.audioState.value = ChatMessage.AudioState(
+                    length = chatMessage.audioState.value?.length ?: 0,
+                    currentTime = chatMessage.audioState.value?.currentTime ?: 0,
+                    progress = chatMessage.audioState.value?.progress ?: 0.0,
                     isPlaying = false
                 )
+                playingMessage = null
                 return
+            } else {
+                playingMessage?.audioState?.value?.isPlaying = false
             }
-        } ?: run {
-            channel?.pause()
         }
 
         scope.launch(dispatchers.mainImmediate) {
             loadedSounds["${chatMessage.message.id.value}"]?.let {
                 it.playAndWait(
-                    startTime = TimeSpan((chatMessage.audioLayoutState.value?.currentTime ?: 0 * 1000).toDouble()),
+                    times = 1.playbackTimes,
+                    startTime = TimeSpan(((chatMessage.audioState.value?.currentTime ?: 0) * 1000).toDouble()),
                     progress = { current, total ->
                         channel = this
 
                         scope.launch(dispatchers.mainImmediate) {
 
-                            chatMessage.audioLayoutState.value = ChatMessage.AudioLayoutState(
+                             val audioState = ChatMessage.AudioState(
                                 length = total.seconds.toInt(),
-                                currentTime = current.seconds.toInt(),
-                                isPlaying = true
+                                currentTime = if (current < total) current.seconds.toInt() else 0,
+                                progress = if (current < total) current.milliseconds / total.milliseconds else 0.0,
+                                isPlaying = (current < total)
                             )
 
-                            println("CURRENT: $current")
-                            println("TOTAL: $total")
+                            chatMessage.audioState.value = audioState
+                            playingMessage = chatMessage
+
+                            println("CURRENT: ${current.seconds}")
+                            println("TOTAL: ${total.seconds}")
                         }
                     }
                 )
