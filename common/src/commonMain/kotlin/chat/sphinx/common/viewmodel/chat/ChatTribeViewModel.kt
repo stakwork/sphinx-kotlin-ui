@@ -51,12 +51,12 @@ class ChatTribeViewModel(
 //                    MoreMenuOptionsViewState.NotOwnTribe
 //                }
 
-                chatRepository.updateTribeInfo(chat)?.let { tribeData ->
-                    handleSphinxTribeData(
-                        chat.name?.value ?: "Tribe",
-                        tribeData
-                    )
-                }
+                val tribeData = chatRepository.updateTribeInfo(chat)
+
+                handleSphinxTribeData(
+                    chat.name?.value ?: "Tribe",
+                    tribeData
+                )
 
             } ?: run {
 //                _feedDataStateFlow.value = TribeFeedData.Result.NoFeed

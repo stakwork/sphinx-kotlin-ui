@@ -6,14 +6,14 @@ import java.util.*
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.0.1"
-    id("org.openjfx.javafxplugin") version "0.0.10"
+    id("org.openjfx.javafxplugin") version "0.0.13"
 }
 
 group = "chat.sphinx"
 version = "1.0"
 
 javafx {
-    version = "18.0.2"
+    version = "19"
     modules = listOf(
         "javafx.swing",
         "javafx.web"
@@ -43,8 +43,6 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.desktop.currentOs)
                 api(compose.preview)
-//                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
-//                implementation ("io.coil-kt:coil-compose:1.4.0")
             }
         }
         val jvmTest by getting

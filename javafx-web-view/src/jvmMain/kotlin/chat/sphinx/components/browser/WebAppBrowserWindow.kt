@@ -3,6 +3,7 @@ package chat.sphinx.components.browser
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.geometry.Offset
@@ -11,9 +12,11 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import com.sun.javafx.application.PlatformImpl
 import javafx.application.Platform
@@ -38,7 +41,6 @@ public val sphinxHandler: SphinxHandler = SphinxHandler()
 @Composable
 fun WebAppBrowserWindow(
     initialScript: String,
-    windowSize: DpSize,
     onReceive: (String, HandleScript) -> Unit,
     onCloseRequest: (() -> Unit)? = null,
 ) {
@@ -54,16 +56,15 @@ fun WebAppBrowserWindow(
 
             Window(
                 title = tribeFeedUrlPair.first,
-                resizable = false,
-//                state = WindowState(
-//                    placement = WindowPlacement.Floating,
-//                    size = windowSize
-//                ),
+                resizable = true,
                 onCloseRequest = {
                     PlatformImpl.removeListener(finishListener)
                     onCloseRequest?.invoke()
-                    SphinxFeedUrlViewer.tribeAppUrl.value = null
                 },
+                state = WindowState(
+                    position = WindowPosition.Aligned(Alignment.Center),
+                    size = DpSize(1000.dp, 800.dp)
+                ),
                 content = {
                     val jfxPanel = remember { JFXPanel() }
                     var jsObject = remember<JSObject?> { null }
@@ -87,8 +88,6 @@ fun WebAppBrowserWindow(
 //                                                    val win = root.engine.executeScript("window") as JSObject
 //                                                    win.setMember("sphinxApp", sphinxHandler)
 //                                                    engine.executeScript("window.addEventListener('message', (event) => {sphinxApp.handle(JSON.stringify(event.data))})")
-
-
                                                     val callback = object : HandleScript {
                                                         override fun runScript(query: String) {
                                                             Platform.runLater {
@@ -108,7 +107,8 @@ fun WebAppBrowserWindow(
                                                 println("page load error : $newError")
                                             }
                                             jfxPanel.scene = scene
-                                            engine.load("https://temp-sphinx-rahul.web.app/") // can be a html document from resources ..
+//                                            engine.load("https://temp-sphinx-rahul.web.app/")
+                                            engine.load(tribeFeedUrlPair.second.toString())
                                             engine.setOnError { error -> println("onError : $error") }
                                         }
                                     }

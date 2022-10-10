@@ -4,6 +4,7 @@ import androidx.annotation.ColorInt
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
+import chat.sphinx.common.handleSphinxTribeData
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -123,6 +124,11 @@ abstract class ChatViewModel(
     }
 
     init {
+        handleSphinxTribeData(
+            "",
+            null
+        )
+
         messagesLoadJob = scope.launch(dispatchers.mainImmediate) {
             loadChatMessages()
         }

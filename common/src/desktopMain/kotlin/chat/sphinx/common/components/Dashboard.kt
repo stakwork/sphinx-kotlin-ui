@@ -47,7 +47,7 @@ import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.components.browser.HandleScript
 import chat.sphinx.components.browser.SphinxFeedUrlViewer
 import chat.sphinx.components.browser.WebAppBrowserWindow
-import chat.sphinx.concepts.network.query.chat.model.LSATDto
+//import chat.sphinx.concepts.network.query.chat.model.LSATDto
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -382,21 +382,19 @@ fun SphinxChatDetailTopAppBar(
             ), onCloseRequest = {
                 openWebView.value = false
             }, onReceive = { jsonRequest, executionCallback ->
-                val request: WebRequest =
-                    Json { ignoreUnknownKeys = true }.decodeFromString(WebRequest.serializer(), jsonRequest)
-                webBrowserCallback.value = executionCallback
-                when (request.type) {
-                    "AUTHORIZE" -> {
-                        if (jsonRequest.contains("pubkey").not()) {
-                            openAuthorizeDialog.value = true
-                        }
-                    }
-                    "LSAT" -> {
-                        val dto: LSATDto = SphinxJson.decodeFromString(jsonRequest)
-                        saveLSAT(dashboardViewModel, dto, executionCallback)
-                    }
-
-                }
+//                val request: WebRequest = Json { ignoreUnknownKeys = true }.decodeFromString(WebRequest.serializer(), jsonRequest)
+//                webBrowserCallback.value = executionCallback
+//                when (request.type) {
+//                    "AUTHORIZE" -> {
+//                        if (jsonRequest.contains("pubkey").not()) {
+//                            openAuthorizeDialog.value = true
+//                        }
+//                    }
+//                    "LSAT" -> {
+////                        val dto: LSATDto = SphinxJson.decodeFromString(jsonRequest)
+////                        saveLSAT(dashboardViewModel, dto, executionCallback)
+//                    }
+//                }
             }
         )
     }
@@ -428,27 +426,27 @@ fun SphinxChatDetailTopAppBar(
         }
 }
 
-fun saveLSAT(dashboardViewModel: DashboardViewModel?, dto: LSATDto, executionCallback: HandleScript) {
-
-    CoroutineScope(Dispatchers.IO).launch {
-        dashboardViewModel?.networkQueryChat?.payLSAT(dto.apply { })?.collect {
-            when (it) {
-                LoadResponse.Loading -> {}
-                is Response.Error -> {}
-                is Response.Success -> {
-                    val model = LSATDataModel(getRandomString(16), "50", it.value.lsat)
-                    executionCallback.runScript(model.toJSScript())
-                }
-                else -> {
-
-                }
-            }
-
-        }
-    }
-    // create request body
-    // payLsat function to execute api call
-}
+//fun saveLSAT(dashboardViewModel: DashboardViewModel?, dto: LSATDto, executionCallback: HandleScript) {
+//
+//    CoroutineScope(Dispatchers.IO).launch {
+//        dashboardViewModel?.networkQueryChat?.payLSAT(dto.apply { })?.collect {
+//            when (it) {
+//                LoadResponse.Loading -> {}
+//                is Response.Error -> {}
+//                is Response.Success -> {
+//                    val model = LSATDataModel(getRandomString(16), "50", it.value.lsat)
+//                    executionCallback.runScript(model.toJSScript())
+//                }
+//                else -> {
+//
+//                }
+//            }
+//
+//        }
+//    }
+//    // create request body
+//    // payLsat function to execute api call
+//}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
