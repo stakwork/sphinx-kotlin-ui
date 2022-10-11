@@ -27,8 +27,8 @@ kotlin {
     sourceSets {
         val jvmMain by getting {
             val kmpTorBinaryVersion = "0.4.7.8"
-            val korauVersion = "2.2.0"
-            val korioVersion = "2.2.0"
+            val korauVersion = "3.2.0"
+            val korioVersion = "3.2.0"
 
             dependencies {
                 implementation(project(":common"))

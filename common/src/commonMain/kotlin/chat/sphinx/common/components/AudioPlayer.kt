@@ -35,7 +35,7 @@ class AudioPlayer {
         }
 
         chatMessage?.message?.messageMedia?.localFile?.toString()?.let {
-            scope.launch(dispatchers.mainImmediate) {
+            scope.launch(dispatchers.io) {
                 val file = applicationVfs[it].readSound()
                 loadedSounds["${chatMessage.message.id.value}"] = file
 
@@ -57,14 +57,19 @@ class AudioPlayer {
             if (chatMessage.message.id == it.message.id) {
                 chatMessage.audioState.value = ChatMessage.AudioState(
                     length = chatMessage.audioState.value?.length ?: 0,
-                    currentTime = chatMessage.audioState.value?.currentTime ?: 0,
-                    progress = chatMessage.audioState.value?.progress ?: 0.0,
+                    currentTime = 0,
+                    progress = 0.0,
                     isPlaying = false
                 )
                 playingMessage = null
                 return
             } else {
-                playingMessage?.audioState?.value?.isPlaying = false
+                playingMessage?.audioState?.value = ChatMessage.AudioState(
+                    length = playingMessage?.audioState?.value?.length ?: 0,
+                    currentTime = 0,
+                    progress = 0.0,
+                    isPlaying = false
+                )
             }
         }
 
