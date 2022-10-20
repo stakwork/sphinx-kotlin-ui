@@ -854,12 +854,15 @@ abstract class ChatViewModel(
             val unseenMessagesFlow = repositoryDashboard.getUnseenMessagesByChatId(chat.id)
 
             if (nnChat.isTribe()) {
+                val unseenMentionsFlow = repositoryDashboard.getUnseenMentionsByChatId(chat.id)
+
                 return DashboardChat.Active.GroupOrTribe(
                     chat,
                     message,
                     owner,
                     color,
-                    unseenMessagesFlow
+                    unseenMessagesFlow,
+                    unseenMentionsFlow
                 )
             } else {
                 contact?.let { nnContact ->
