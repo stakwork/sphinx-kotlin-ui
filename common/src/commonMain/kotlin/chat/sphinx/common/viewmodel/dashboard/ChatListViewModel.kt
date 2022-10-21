@@ -126,7 +126,8 @@ class ChatListViewModel {
                                         message,
                                         accountOwnerStateFlow.value,
                                         getColorFor(null, chat),
-                                        repositoryDashboard.getUnseenMessagesByChatId(chat.id)
+                                        repositoryDashboard.getUnseenMessagesByChatId(chat.id),
+                                        repositoryDashboard.getUnseenMentionsByChatId(chat.id)
                                     )
                                 )
                             }

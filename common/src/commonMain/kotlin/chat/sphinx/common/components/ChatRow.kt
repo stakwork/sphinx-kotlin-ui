@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +30,7 @@ import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.ChatMuted
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import chat.sphinx.common.Res
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
@@ -39,9 +41,12 @@ import chat.sphinx.wrapper.invite.isPaymentPending
 import chat.sphinx.wrapper.invite.isReady
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.util.getInitials
+import chat.sphinx.wrapper_chat.isMuteChat
+import chat.sphinx.wrapper_chat.isOnlyMentions
 import theme.badge_red
 import theme.primary_green
 import theme.selected_chat
+import theme.wash_out_received
 
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -141,7 +146,7 @@ fun ChatRow(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (dashboardChat is DashboardChat.Active) {
-                                if (dashboardChat.chat.isMuted.value == ChatMuted.MUTED)
+                                if (dashboardChat.isMuted())
                                     Icon(
                                         Icons.Filled.NotificationsOff,
                                         contentDescription = null,
@@ -209,6 +214,7 @@ fun ChatRow(
                         ) {
 
                             val unseenCountState = dashboardChat.unseenMessageFlow?.collectAsState(0)
+                            val unseenMentionsCountState = dashboardChat.unseenMentionsFlow?.collectAsState(0)
                             val isUnseen = (dashboardChat.hasUnseenMessages() || unseenCountState?.value ?: 0 > 0)
 
                             Text(
@@ -223,8 +229,27 @@ fun ChatRow(
                                     androidx.compose.material3.MaterialTheme.colorScheme.onBackground
                             )
 
+                            unseenMentionsCountState?.let {
+                                if (it.value != 0L) {
+                                    MessageCount("@ ${it.value.toString()}")
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                            }
+
                             unseenCountState?.let {
-                                if (it.value != 0L) MessageCount(it.value.toString())
+                                if (it.value != 0L) {
+                                    val isChatMutedOrOnlyMentions = (dashboardChat.notify?.isMuteChat() == true || dashboardChat.notify?.isOnlyMentions() == true)
+
+                                    MessageCount(
+                                        it.value.toString(),
+                                        if (isChatMutedOrOnlyMentions) {
+                                            wash_out_received
+                                        } else {
+                                            androidx.compose.material3.MaterialTheme.colorScheme.secondary
+                                        },
+                                        if (isChatMutedOrOnlyMentions) 0.2f else 1.0f
+                                    )
+                                }
                             }
                         }
                     }
@@ -236,12 +261,16 @@ fun ChatRow(
 
 
 @Composable
-fun MessageCount(messageCount: String) {
+fun MessageCount(
+    messageCount: String,
+    color: Color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+    textAlpha: Float = 1.0f
+) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .background(
-                color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+                color = color,
                 shape = RoundedCornerShape(10.dp)
             )
     ) {
@@ -249,8 +278,9 @@ fun MessageCount(messageCount: String) {
             text = messageCount,
             textAlign = TextAlign.Center,
             color = Color.White,
-            modifier = Modifier.defaultMinSize(18.dp).padding(2.dp),
-            fontSize = 11.sp
+            modifier = Modifier.defaultMinSize(20.dp).padding(horizontal = 5.dp, vertical = 2.dp).alpha(textAlpha),
+            fontFamily = Roboto,
+            fontSize = 12.sp
         )
     }
 }

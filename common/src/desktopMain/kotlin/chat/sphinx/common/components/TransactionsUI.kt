@@ -67,42 +67,40 @@ fun TransactionsUI(dashboardViewModel: DashboardViewModel) {
                 size = getPreferredWindowSize(420, 700)
             )
         ) {
-            AppTheme {
-                if (viewState.loadingTransactions) {
-                    Box(
-                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant),
-                        contentAlignment = Alignment.Center
+            if (viewState.loadingTransactions) {
+                Box(
+                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        Modifier.size(40.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+                ) {
+                    LazyColumn(
+                        state = listState,
+                        contentPadding = PaddingValues(top = 1.dp)
                     ) {
-                        CircularProgressIndicator(
-                            Modifier.size(40.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
+                        items(viewState.transactionsList) { transaction ->
+                            transaction?.let {
+                                TransactionRow(transaction)
+                            }
+                        }
+                        if (viewState.loadingMore) {
+                            item { LoadingRow() }
+                        }
                     }
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-                    ) {
-                        LazyColumn(
-                            state = listState,
-                            contentPadding = PaddingValues(top = 1.dp)
-                        ) {
-                            items(viewState.transactionsList) { transaction ->
-                                transaction?.let {
-                                    TransactionRow(transaction)
-                                }
-                            }
-                            if (viewState.loadingMore) {
-                                item { LoadingRow() }
-                            }
-                        }
-                        VerticalScrollbar(
-                            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                            adapter = rememberScrollbarAdapter(scrollState = listState)
-                        )
-                        if (endOfListReached) {
-                            viewModel.loadMoreTransactions()
-                        }
+                    VerticalScrollbar(
+                        modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                        adapter = rememberScrollbarAdapter(scrollState = listState)
+                    )
+                    if (endOfListReached) {
+                        viewModel.loadMoreTransactions()
                     }
                 }
             }

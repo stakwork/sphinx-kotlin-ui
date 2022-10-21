@@ -208,4 +208,29 @@ fun main() = application {
             }
         }
     }
+
+//    Window(
+//        onCloseRequest = ::exitApplication,
+//        title = "Video Player",
+//        state = WindowState(
+//            position = WindowPosition.Aligned(Alignment.Center),
+//            size = getPreferredWindowSize(600, 600)
+//        ),
+//        icon = sphinxIcon
+//    ) {
+//        AppTheme(useDarkTheme = true) {
+//            val videoPlayerState = rememberVideoPlayerState(
+//                time = 0L,
+//                isPlaying = false,
+//            )
+//            val time by videoPlayerState.time.collectAsState()
+//            val isPlaying by videoPlayerState.isPlaying.collectAsState()
+//            val length by videoPlayerState.length.collectAsState()
+//
+//            VideoPlayer(
+//                mrl = "/Users/tomastiminskas/Desktop/end_video_2.mp4",
+//                state = videoPlayerState,
+//            )
+//        }
+//    }
 }

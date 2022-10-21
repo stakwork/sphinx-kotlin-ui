@@ -37,6 +37,10 @@ import chat.sphinx.common.components.browser.AuthorizeBrowserDialog
 import chat.sphinx.common.components.chat.AttachmentPreview
 import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
+import chat.sphinx.common.components.tribe.JoinTribeView
+import chat.sphinx.common.components.tribe.TribeDetailView
+import chat.sphinx.common.components.profile.Profile
+import chat.sphinx.common.components.tribe.NotificationLevel
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -158,6 +162,10 @@ actual fun Dashboard(
                             Modifier.padding(paddingValues)
                         )
                         ChatAction(
+                            chatViewModel,
+                            Modifier.padding(paddingValues)
+                        )
+                        NotificationLevel(
                             chatViewModel,
                             Modifier.padding(paddingValues)
                         )

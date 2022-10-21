@@ -78,88 +78,90 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
             ),
             icon = sphinxIcon,
         ) {
-            AppTheme {
-                Box(
-                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+            Box(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
+            ) {
+                Column(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(
-                        modifier = Modifier.background(MaterialTheme.colorScheme.background),
-                        verticalArrangement = Arrangement.SpaceBetween
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(24.dp)
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(24.dp)
-                        ) {
-                            if (viewModel.profileState.profilePictureResponse is LoadResponse.Loading) {
-                                CircularProgressIndicator(
-                                    Modifier.padding(10.dp).size(40.dp),
-                                    color = Color.White,
-                                    strokeWidth = 2.dp
-                                )
-                            } else {
-                                PhotoUrlImage(
-                                    photoUrl = viewModel.profileState.photoUrl,
-                                    modifier = Modifier
-                                        .size(60.dp)
-                                        .clip(CircleShape)
-                                        .clickable {
-                                            scope.launch {
-                                                ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
-                                                    if (path.deduceMediaType().isImage) {
-                                                        viewModel.onProfilePictureChanged(path)
-                                                    }
+                        if (viewModel.profileState.profilePictureResponse is LoadResponse.Loading) {
+                            CircularProgressIndicator(
+                                Modifier.padding(10.dp).size(40.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            PhotoUrlImage(
+                                photoUrl = viewModel.profileState.photoUrl,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        scope.launch {
+                                            ContentState.sendFilePickerDialog.awaitResult()?.let { path ->
+                                                if (path.deduceMediaType().isImage) {
+                                                    viewModel.onProfilePictureChanged(path)
                                                 }
                                             }
                                         }
-                                )
-                            }
+                                    }
+                            )
+                        }
 
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column(verticalArrangement = Arrangement.Center) {
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(verticalArrangement = Arrangement.Center) {
+                            Text(
+                                text = viewModel.profileState.alias,
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = SphinxFonts.montserratFamily,
+                                fontSize = 16.sp
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.padding(top = 4.dp)
+                            ) {
+                                val balance by dashboardViewModel.balanceStateFlow.collectAsState()
                                 Text(
-                                    text = viewModel.profileState.alias,
+                                    text = balance?.balance?.asFormattedString(' ') ?: "0",
                                     color = MaterialTheme.colorScheme.tertiary,
-                                    fontWeight = FontWeight.Bold,
                                     fontFamily = SphinxFonts.montserratFamily,
-                                    fontSize = 16.sp
+                                    fontSize = 14.sp
                                 )
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.padding(top = 4.dp)
-                                ) {
-                                    val balance by dashboardViewModel.balanceStateFlow.collectAsState()
-                                    Text(
-                                        text = balance?.balance?.asFormattedString(' ') ?: "0",
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        fontFamily = SphinxFonts.montserratFamily,
-                                        fontSize = 14.sp
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        "sat",
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        fontFamily = SphinxFonts.montserratFamily,
-                                        fontSize = 14.sp
-                                    )
-                                }
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    "sat",
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontFamily = SphinxFonts.montserratFamily,
+                                    fontSize = 14.sp
+                                )
                             }
                         }
-
-                        Row(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            Tabs(viewModel, dashboardViewModel)
-                        }
-                        saveButton(viewModel)
                     }
+
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                    ) {
+                        Tabs(viewModel, dashboardViewModel)
+                    }
+                    saveButton(viewModel)
                 }
-                DesktopSphinxToast("Profile")
-                DesktopSphinxConfirmAlert("Profile")
             }
+            DesktopSphinxToast("Profile")
+            DesktopSphinxConfirmAlert("Profile")
         }
+    }
+
+    if (viewModel.profileState.status is Response.Success){
+        dashboardViewModel.toggleProfileWindow(false)
     }
 }
 
@@ -225,8 +227,10 @@ fun AdvanceTab(
                 )
                 BasicTextField(
                     value = viewModel.profileState.serverUrl,
-                    onValueChange = {},
-                    enabled = false,
+                    onValueChange = {
+                        viewModel.onServerUrlChanged(it)
+                    },
+                    enabled = true,
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
@@ -310,7 +314,9 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                 )
                 BasicTextField(
                     value = viewModel.profileState.alias,
-                    onValueChange = {viewModel.onAliasTextChanged(it)},
+                    onValueChange = {
+                        viewModel.onAliasTextChanged(it)
+                    },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
@@ -343,7 +349,7 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                         cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                     )
                     IconButton(onClick = {
-                        dashboardViewModel.toggleQRWindow(true, "PUBLIC KEY", viewModel.getNodeDescriptor()?.value ?: "")
+                        dashboardViewModel.toggleQRWindow(true, "PUBLIC KEY", viewModel.profileState.nodeDescription)
                     }
                     ) {
                         Icon(
@@ -454,10 +460,6 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
 
     if (dashboardViewModel.backUpWindowStateFlow.collectAsState().value) {
         BackupKeys(dashboardViewModel)
-    }
-
-    if (viewModel.profileState.status is Response.Success){
-        dashboardViewModel.toggleProfileWindow(false)
     }
 }
 
