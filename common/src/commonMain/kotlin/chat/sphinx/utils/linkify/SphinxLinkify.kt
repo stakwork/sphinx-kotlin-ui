@@ -55,19 +55,26 @@ object SphinxLinkify {
      * Bit field indicating that [VirtualLightningNodeAddress] should be matched in methods that
      * take an options mask
      */
-    const val VIRTUAL_NODE_ADDRESS: Int = 0x16
+    const val VIRTUAL_NODE_ADDRESS: Int = 0x10
 
     /**
      * Bit field indicating that a Bitcoin address should be matched in methods that
      * take an options mask
      */
-    const val BITCOIN_ADDRESS: Int = 0x32
+    const val BITCOIN_ADDRESS: Int = 0x20
 
     /**
      * Bit field indicating that a [TribeJoinLink] should be matched in methods that
      * take an options mask
      */
-    const val TRIBE_LINK: Int = 0x64
+    const val TRIBE_LINK: Int = 0x40
+
+    /**
+     * Bit field indicating that a [Mention] should be matched in methods that
+     * take an options mask
+     */
+    const val MENTION: Int = 0x80
+
 
     /**
      * Bit mask indicating that all available patterns should be matched in
@@ -77,9 +84,9 @@ object SphinxLinkify {
      * Use [android.view.textclassifier.TextClassifier.generateLinks]
      * instead and avoid it even when targeting API levels where no alternative is available.
      */
-    const val ALL: Int = WEB_URLS or EMAIL_ADDRESSES or PHONE_NUMBERS or LIGHTNING_NODE_PUBLIC_KEY or VIRTUAL_NODE_ADDRESS or BITCOIN_ADDRESS or TRIBE_LINK
+    const val ALL: Int = WEB_URLS or EMAIL_ADDRESSES or PHONE_NUMBERS or LIGHTNING_NODE_PUBLIC_KEY or VIRTUAL_NODE_ADDRESS or BITCOIN_ADDRESS or TRIBE_LINK or MENTION
+    const val LINKS_WITH_PREVIEWS: Int = WEB_URLS or LIGHTNING_NODE_PUBLIC_KEY or VIRTUAL_NODE_ADDRESS or TRIBE_LINK
 
-    private val EMPTY_STRING = arrayOfNulls<String>(0)
     private val COMPARATOR: Comparator<LinkSpec> = object : Comparator<LinkSpec> {
         override fun compare(a: LinkSpec, b: LinkSpec): Int {
             if (a.start < b.start) {
@@ -141,11 +148,12 @@ object SphinxLinkify {
                 null,
             )
         }
-        // TODO: Support phone numbers?
-//        if (mask and PHONE_NUMBERS != 0) {
-//            Linkify.addLinks(text, Linkify.PHONE_NUMBERS)
-//        }
-
+        if (mask and MENTION != 0) {
+            gatherLinks(
+                links, text, SphinxPatterns.MENTION, arrayOf(),
+                null,
+            )
+        }
         if (mask and WEB_URLS != 0) {
             gatherLinks(
                 links,
@@ -261,6 +269,10 @@ object SphinxLinkify {
             TribeJoinLink.REGEX
         )
 
+        val MENTION: Pattern = Pattern.compile(
+            "\\B@[^\\s]+"
+        )
+
         val LINK_PREVIEWS: Pattern = Pattern.compile(
             "(" +
                     "${TribeJoinLink.REGEX}|" +
@@ -302,6 +314,9 @@ object SphinxLinkify {
                 }
                 BITCOIN_ADDRESS -> {
                     LinkTag.BitcoinAddress
+                }
+                MENTION -> {
+                    LinkTag.Mention
                 }
                 else -> LinkTag.WebURL
             }

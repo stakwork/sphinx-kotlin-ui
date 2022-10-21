@@ -23,9 +23,8 @@ import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.wrapper.message.*
 import androidx.compose.ui.text.font.FontStyle
 import chat.sphinx.common.state.BubbleBackground
-import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.wrapper.chat.isTribe
-import chat.sphinx.utils.containLinks
+import chat.sphinx.utils.containLinksWithPreview
 
 @Composable
 fun ChatMessageUI(
@@ -128,7 +127,7 @@ fun ChatMessageUI(
                                         BubbleArrow(false, bubbleColor, chatMessage)
                                     }
 
-                                    val messageContainsLinks = (chatMessage.message.retrieveTextToShow()?.containLinks() == true)
+                                    val messageContainsLinks = chatMessage.message.retrieveTextToShow()?.containLinksWithPreview() ?: false
 
                                     Column(
                                         modifier = if (messageContainsLinks) {

@@ -32,10 +32,10 @@ fun String.toAnnotatedString(): AnnotatedString {
     }.toAnnotatedString()
 }
 
-fun String.containLinks(): Boolean {
+fun String.containLinksWithPreview(): Boolean {
     val links = SphinxLinkify.gatherLinks(
         text = this,
-        mask = SphinxLinkify.ALL
+        mask = SphinxLinkify.LINKS_WITH_PREVIEWS
     )
     return links.isNotEmpty()
 }

@@ -38,6 +38,8 @@ import chat.sphinx.wrapper.message.media.MessageMedia
 import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
+import chat.sphinx.wrapper_chat.NotificationLevel
+import chat.sphinx.wrapper_chat.isMuteChat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -126,6 +128,13 @@ abstract class ChatViewModel(
     fun hideChatActionsPopup() {
         _chatActionsStateFlow.value = null
     }
+
+    private val _notificationLevelStateFlow: MutableStateFlow<Pair<Boolean, NotificationLevel?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
+    val notificationLevelStateFlow: StateFlow<Pair<Boolean, NotificationLevel?>>
+        get() = _notificationLevelStateFlow.asStateFlow()
 
     init {
         messagesLoadJob = scope.launch(dispatchers.mainImmediate) {
@@ -587,13 +596,20 @@ abstract class ChatViewModel(
         if (toggleChatMutedJob?.isActive == true) {
             return
         }
+
         chatSharedFlow.replayCache.firstOrNull()?.let { chat ->
             toggleChatMutedJob = scope.launch(dispatchers.mainImmediate) {
+                if (chat.isTribe()) {
+                    _notificationLevelStateFlow.value = Pair(true, chat.notifyActualValue())
+                    return@launch
+                }
+
+                val newLevel = if (chat.notifyActualValue().isMuteChat()) NotificationLevel.SeeAll else NotificationLevel.MuteChat
+
                 Exhaustive@
-                when (val response = chatRepository.toggleChatMuted(chat)) {
+                when (val response = chatRepository.setNotificationLevel(chat, newLevel)) {
                     is Response.Error -> {
                         toast(response.cause.message, color = primary_red)
-                        delay(2_000)
                     }
                     is Response.Success -> {
                         if (response.value) {
@@ -606,6 +622,30 @@ abstract class ChatViewModel(
                 }
             }
         }
+    }
+
+    private var toggleNotificationLevelJob: Job? = null
+    fun setNotificationLevel(level: NotificationLevel) {
+        if (toggleNotificationLevelJob?.isActive == true) {
+            return
+        }
+
+        _notificationLevelStateFlow.value = Pair(true, level)
+
+        toggleNotificationLevelJob = scope.launch(dispatchers.mainImmediate) {
+            getChat()?.let { chat ->
+                val response = chatRepository.setNotificationLevel(chat, level)
+
+                if (response is Response.Error) {
+                    toast(response.cause.message, color = primary_red)
+                    _notificationLevelStateFlow.value = Pair(true, chat.notifyActualValue())
+                }
+            }
+        }
+    }
+
+    fun closeNotificationLevelPopup() {
+        _notificationLevelStateFlow.value = Pair(false, null)
     }
 
     private suspend fun createPaidMessageFile(text: String?): Path? {
@@ -822,12 +862,15 @@ abstract class ChatViewModel(
             val unseenMessagesFlow = repositoryDashboard.getUnseenMessagesByChatId(chat.id)
 
             if (nnChat.isTribe()) {
+                val unseenMentionsFlow = repositoryDashboard.getUnseenMentionsByChatId(chat.id)
+
                 return DashboardChat.Active.GroupOrTribe(
                     chat,
                     message,
                     owner,
                     color,
-                    unseenMessagesFlow
+                    unseenMessagesFlow,
+                    unseenMentionsFlow
                 )
             } else {
                 contact?.let { nnContact ->

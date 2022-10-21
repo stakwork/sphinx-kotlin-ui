@@ -15,6 +15,7 @@ import chat.sphinx.wrapper.lightning.Sat
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.*
 import chat.sphinx.wrapper.message.media.MediaType
+import chat.sphinx.wrapper_chat.NotificationLevel
 import theme.badge_red
 import theme.primary_blue
 import theme.primary_green
@@ -50,7 +51,8 @@ sealed class DashboardChat {
                     this.chatName == other.chatName &&
                     this.photoUrl?.value == other.photoUrl?.value &&
                     this.isEncrypted() == other.isEncrypted() &&
-                    this.hasUnseenMessages() == other.hasUnseenMessages()
+                    this.hasUnseenMessages() == other.hasUnseenMessages() &&
+                    this.notify == other.notify
             )
         }
 
@@ -62,8 +64,10 @@ sealed class DashboardChat {
     abstract val sortBy: Long
     abstract val color: Int?
     abstract val dashboardChatId: String?
+    abstract val notify: NotificationLevel?
 
     abstract val unseenMessageFlow: Flow<Long?>?
+    abstract val unseenMentionsFlow: Flow<Long?>?
 
     abstract fun getDisplayTime(today00: DateTime): String
 
@@ -73,6 +77,8 @@ sealed class DashboardChat {
     abstract fun hasUnseenMessages(): Boolean
 
     abstract fun isEncrypted(): Boolean
+
+    abstract fun isMuted(): Boolean
 
     abstract fun isTribe(): Boolean
 
@@ -121,6 +127,10 @@ sealed class DashboardChat {
 
         override fun isEncrypted(): Boolean {
             return true
+        }
+
+        override fun isMuted(): Boolean {
+            return chat.isMuted()
         }
 
         override fun isTribe(): Boolean {
@@ -296,6 +306,12 @@ sealed class DashboardChat {
             override val photoUrl: PhotoUrl?
                 get() = chat.photoUrl ?: contact.photoUrl
 
+            override val notify: NotificationLevel?
+                get() = chat.notify
+
+            override val unseenMentionsFlow: Flow<Long?>?
+                get() = null
+
             override fun getMessageSender(message: Message, withColon: Boolean): String {
                 if (isMessageSenderSelf(message)) {
                     return "you" + if (withColon) ": " else ""
@@ -321,6 +337,7 @@ sealed class DashboardChat {
             override val owner: Contact?,
             override val color: Int?,
             override val unseenMessageFlow: Flow<Long?>?,
+            override val unseenMentionsFlow: Flow<Long?>?,
         ): Active() {
 
             override val chatName: String?
@@ -328,6 +345,9 @@ sealed class DashboardChat {
 
             override val photoUrl: PhotoUrl?
                 get() = chat.photoUrl
+
+            override val notify: NotificationLevel?
+                get() = chat.notify
 
             override fun getMessageSender(message: Message, withColon: Boolean): String {
                 if (isMessageSenderSelf(message)) {
@@ -378,7 +398,13 @@ sealed class DashboardChat {
             override val sortBy: Long
                 get() = contact.createdAt.time
 
+            override val notify: NotificationLevel?
+                get() = null
+
             override val unseenMessageFlow: Flow<Long?>?
+                get() = null
+
+            override val unseenMentionsFlow: Flow<Long?>?
                 get() = null
 
             @ExperimentalStdlibApi
@@ -392,6 +418,10 @@ sealed class DashboardChat {
 
             override fun isEncrypted(): Boolean {
                 return !(contact.rsaPublicKey?.value?.isEmpty() ?: true)
+            }
+
+            override fun isMuted(): Boolean {
+                return false
             }
 
             override fun isTribe(): Boolean {
@@ -415,10 +445,16 @@ sealed class DashboardChat {
             override val photoUrl: PhotoUrl?
                 get() = contact.photoUrl
 
+            override val notify: NotificationLevel?
+                get() = null
+
             override val sortBy: Long
                 get() = Long.MAX_VALUE
 
             override val unseenMessageFlow: Flow<Long?>?
+                get() = null
+
+            override val unseenMentionsFlow: Flow<Long?>?
                 get() = null
 
             @JvmName("getChatName1")
@@ -501,6 +537,10 @@ sealed class DashboardChat {
             }
 
             override fun isEncrypted(): Boolean {
+                return false
+            }
+
+            override fun isMuted(): Boolean {
                 return false
             }
 
