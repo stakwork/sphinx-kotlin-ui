@@ -159,6 +159,10 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
             DesktopSphinxConfirmAlert("Profile")
         }
     }
+
+    if (viewModel.profileState.status is Response.Success){
+        dashboardViewModel.toggleProfileWindow(false)
+    }
 }
 
 @Composable
@@ -223,8 +227,10 @@ fun AdvanceTab(
                 )
                 BasicTextField(
                     value = viewModel.profileState.serverUrl,
-                    onValueChange = {},
-                    enabled = false,
+                    onValueChange = {
+                        viewModel.onServerUrlChanged(it)
+                    },
+                    enabled = true,
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
@@ -308,7 +314,9 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                 )
                 BasicTextField(
                     value = viewModel.profileState.alias,
-                    onValueChange = {viewModel.onAliasTextChanged(it)},
+                    onValueChange = {
+                        viewModel.onAliasTextChanged(it)
+                    },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
@@ -341,7 +349,7 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                         cursorBrush = SolidColor(androidx.compose.material3.MaterialTheme.colorScheme.secondary)
                     )
                     IconButton(onClick = {
-                        dashboardViewModel.toggleQRWindow(true, "PUBLIC KEY", viewModel.getNodeDescriptor()?.value ?: "")
+                        dashboardViewModel.toggleQRWindow(true, "PUBLIC KEY", viewModel.profileState.nodeDescription)
                     }
                     ) {
                         Icon(
@@ -452,10 +460,6 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
 
     if (dashboardViewModel.backUpWindowStateFlow.collectAsState().value) {
         BackupKeys(dashboardViewModel)
-    }
-
-    if (viewModel.profileState.status is Response.Success){
-        dashboardViewModel.toggleProfileWindow(false)
     }
 }
 

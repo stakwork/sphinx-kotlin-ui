@@ -51,13 +51,19 @@ object DesktopSphinxNotificationManager: SphinxNotificationManager {
         windowTitle: String,
         title: String,
         message: String,
-        confirm: () -> Unit
+        confirm: (() -> Unit)?,
+        cancel: (() -> Unit)?,
+        positiveButtonTitle: String?,
+        negativeButtonTitle: String?,
     ) {
         alert.value = SphinxAlertConfirm(
             windowTitle,
             title,
             message,
-            confirm
+            positiveButtonTitle,
+            negativeButtonTitle,
+            confirm,
+            cancel
         )
     }
 }
@@ -66,7 +72,10 @@ class SphinxAlertConfirm(
     val windowTitle: String,
     val title: String,
     val message: String,
-    val confirmCallback: (() -> Unit)? = null
+    val positiveButtonTitle: String? = null,
+    val negativeButtonTitle: String? = null,
+    val confirmCallback: (() -> Unit)? = null,
+    val cancelCallback: (() -> Unit)? = null
 )
 
 class SphinxToast(
