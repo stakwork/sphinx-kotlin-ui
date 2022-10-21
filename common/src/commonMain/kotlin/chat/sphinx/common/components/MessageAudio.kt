@@ -11,8 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
-//import java.io.File
-//import javax.sound.sampled.AudioSystem
+import okio.Path
 
 @Composable
 fun MessageAudio(
@@ -23,6 +22,8 @@ fun MessageAudio(
     val messageMedia = message.messageMedia
     val localFilepath = messageMedia?.localFile
     val url = messageMedia?.url?.value ?: ""
+
+    val audioState = chatMessage.audioState.value
 
     LaunchedEffect(url) {
         chatViewModel.downloadFileMedia(message, chatMessage.isSent)
@@ -40,11 +41,25 @@ fun MessageAudio(
             contentAlignment = Alignment.Center
         ) {
             if (localFilepath != null) {
+                if (localFilepath.isSupportedAudio()) {
+                    chatViewModel.audioPlayer.loadAudio(chatMessage)
+                }
+
                 IconButton(
-                    onClick = { toast("Audio Player not implemented yet, save the file to listen the audio") }
+                    onClick = {
+                        if (localFilepath.isSupportedAudio()) {
+                            chatViewModel.audioPlayer.playAudio(chatMessage)
+                        } else {
+                            toast("Audio format not supported. Save the file to listen the audio message.")
+                        }
+                    }
                 ) {
                     Icon(
-                        Icons.Default.PlayArrow,
+                        if (audioState?.isPlaying == true) {
+                            Icons.Default.Pause
+                        } else {
+                            Icons.Default.PlayArrow
+                        },
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.tertiary,
                     )
@@ -60,12 +75,9 @@ fun MessageAudio(
         Box(
             modifier = Modifier.width(190.dp).padding(start = 8.dp)
         ) {
-            val slideValue = remember { mutableStateOf(0f) }
             Slider(
-                value = slideValue.value,
-                onValueChange = {
-                    slideValue.value = it
-                },
+                value = audioState?.progress?.toFloat() ?: 0f,
+                onValueChange = {},
                 colors = SliderDefaults.colors(
                     activeTrackColor = MaterialTheme.colorScheme.secondary,
                     inactiveTrackColor = MaterialTheme.colorScheme.onBackground,
@@ -73,24 +85,27 @@ fun MessageAudio(
                 )
             )
         }
-//        if (localFilepath != null) {
-//            try {
-//                val audioInputStream = AudioSystem.getAudioFileFormat(localFilepath.toFile())
-//                val format = audioInputStream.format
-//                val audioFileLength = audioInputStream.frameLength
-//                val frameSize = format.frameSize
-//                val frameRate = format.frameRate
-//                val durationInSeconds = (audioFileLength / (frameSize * frameRate))
-//            }
-//            catch (e: Exception) {
-//                println("Duration Error: $e ")
-//            }
-//        }
         Box(
             modifier = Modifier.width(68.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("00:00", color = MaterialTheme.colorScheme.tertiary)
+            val seconds = (audioState?.length ?: 0) - (audioState?.currentTime ?: 0)
+            Text(seconds.toAudioTimeFormat(), color = MaterialTheme.colorScheme.tertiary)
         }
     }
 }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Int.toAudioTimeFormat(): String {
+    val minutes = (this / 60)
+    val seconds = (this % 60)
+
+    val minutesString = if (minutes < 10) "0$minutes" else minutes
+    val secondsString = if (seconds < 10) "0$seconds" else seconds
+
+    return "$minutesString:$secondsString"
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Path.isSupportedAudio(): Boolean =
+    (this.toString().contains(".wav") || this.toString().contains(".ogg") || this.toString().contains(".mp3"))

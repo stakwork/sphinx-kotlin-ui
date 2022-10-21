@@ -1,13 +1,12 @@
 package chat.sphinx.common.models
 
-import chat.sphinx.common.state.EditMessageState
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatType
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.invoiceExpirationTimeFormat
 import chat.sphinx.wrapper.message.*
-import chat.sphinx.wrapper.message.media.*
-import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.state.BubbleBackground
 import chat.sphinx.concepts.link_preview.model.*
 import chat.sphinx.utils.linkify.LinkSpec
@@ -135,7 +134,7 @@ class ChatMessage(
         }
     }
 
-
+    var audioState: MutableState<AudioState?> = mutableStateOf(null)
 
     val isSent: Boolean by lazy {
         message.sender == chat.contactIds.firstOrNull()
@@ -175,14 +174,6 @@ class ChatMessage(
             linkPreviewLayoutState ?: previewProvider?.invoke(link)
                 ?.also { linkPreviewLayoutState = it }
         }
-    }
-
-    private val unsupportedMessageTypes: List<MessageType> by lazy {
-        listOf(
-            MessageType.Attachment,
-            MessageType.Payment,
-            MessageType.GroupAction.TribeDelete,
-        )
     }
 
     val invoiceExpirationHeader: String? by lazy {
@@ -226,6 +217,13 @@ class ChatMessage(
             null
         }
     }
+
+    data class AudioState(
+        var length: Int,
+        var currentTime: Int,
+        var progress: Double,
+        var isPlaying: Boolean,
+    )
 
     data class BoostLayoutState(
         val showSent: Boolean,

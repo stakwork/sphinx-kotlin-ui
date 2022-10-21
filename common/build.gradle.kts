@@ -26,8 +26,9 @@ kotlin {
         kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
     }
     sourceSets {
-        val paging_version = "3.1.0"
         val klockVersion = "2.5.1"
+        val korauVersion = "3.2.0"
+        val korioVersion = "3.2.0"
 
         val commonMain by getting {
             dependencies {
@@ -44,9 +45,8 @@ kotlin {
                 implementation("com.google.zxing:core:3.5.0")
                 implementation("com.russhwolf:multiplatform-settings:0.8.1")
                 implementation("org.cryptonode.jncryptor:jncryptor:1.2.0")
-//                implementation ("com.google.accompanist:accompanist-pager:0.23.1")
-//                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
-//                implementation ("com.google.accompanist:accompanist-flowlayout:0.24.12-rc")
+                implementation("com.soywiz.korlibs.korio:korio:$korioVersion")
+                implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
             }
         }
         val commonTest by getting {
@@ -98,8 +98,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
     implementation("androidx.compose.ui:ui-text:1.1.1")
     implementation("com.google.android.material:material:1.6.1")
-//    implementation ("com.github.skydoves:landscapist-glide:1.3.6")
     implementation ("io.coil-kt:coil-compose:1.4.0")
     implementation("androidx.compose.material:material:1.0.0-beta04")
-//    implementation("androidx.navigation:navigation-runtime-ktx:2.3.5")
 }

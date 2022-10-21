@@ -6,6 +6,7 @@ import java.util.*
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.0.1"
+
 }
 
 group = "chat.sphinx"
@@ -26,6 +27,8 @@ kotlin {
     sourceSets {
         val jvmMain by getting {
             val kmpTorBinaryVersion = "0.4.7.8"
+            val korauVersion = "3.2.0"
+            val korioVersion = "3.2.0"
 
             dependencies {
                 implementation(project(":common"))
@@ -35,6 +38,12 @@ kotlin {
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorBinaryVersion")
+                implementation("com.soywiz.korlibs.korio:korio:$korioVersion")
+                implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
+                implementation("org.jetbrains.compose.ui:ui-graphics:1.1.1")
+                implementation("uk.co.caprica:vlcj:4.7.1")
+
+
 //                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
 //                implementation ("io.coil-kt:coil-compose:1.4.0")
             }

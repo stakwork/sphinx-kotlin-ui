@@ -2,8 +2,7 @@ package chat.sphinx.common.viewmodel.chat
 
 import androidx.annotation.ColorInt
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalUriHandler
+import chat.sphinx.common.components.AudioPlayer
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -19,13 +18,10 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
-import chat.sphinx.response.message
 import chat.sphinx.utils.UserColorsHelper
-import chat.sphinx.utils.containLinks
 import chat.sphinx.utils.linkify.LinkSpec
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
-import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.*
@@ -94,6 +90,15 @@ abstract class ChatViewModel(
 
     var onNewMessageCallback: (() -> Unit)? = null
     private var messagesSize: Int = 0
+
+//    fun playAudio(){
+//        scope.launch(dispatchers.mainImmediate) {
+//            resourcesVfs["sound/parte.mp3"].readSound()
+//        }
+//
+//    }
+
+    val audioPlayer = AudioPlayer()
 
     enum class ChatActionsMode {
         MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE
