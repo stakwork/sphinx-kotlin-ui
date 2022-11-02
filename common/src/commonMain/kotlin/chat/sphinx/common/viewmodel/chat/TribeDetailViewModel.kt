@@ -17,6 +17,7 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatAlias
+import chat.sphinx.wrapper.chat.fixedAlias
 import chat.sphinx.wrapper.chat.isTribeOwnedByAccount
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
@@ -87,7 +88,7 @@ class TribeDetailViewModel(
     fun onAliasTextChanged(text: String){
         setTribeDetailState {
             copy(
-                userAlias = text,
+                userAlias = text.fixedAlias(),
                 saveButtonEnable = true
             )
         }

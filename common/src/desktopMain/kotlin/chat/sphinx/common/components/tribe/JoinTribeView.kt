@@ -31,6 +31,7 @@ import chat.sphinx.common.viewmodel.chat.JoinTribeViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.getPreferredWindowSize
+import chat.sphinx.wrapper.chat.fixedAlias
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import kotlinx.coroutines.launch
