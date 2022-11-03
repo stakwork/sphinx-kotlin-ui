@@ -154,9 +154,15 @@ class JoinTribeViewModel(
     }
 
     fun onAliasTextChanged(text: String){
+        val fixedAlias = text.fixedAlias()
+
+        if (text != fixedAlias) {
+            toast("Only letters, numbers and underscore\nare allowed in tribe aliases")
+        }
+
         setJoinTribeState {
             copy(
-                userAlias = text.fixedAlias()
+                userAlias = fixedAlias
             )
         }
     }

@@ -25,6 +25,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.chat.JoinTribeViewModel
@@ -198,6 +199,7 @@ actual fun JoinTribeView(
                 )
             }
         }
+        DesktopSphinxToast("Join Tribe")
     }
 }
 
