@@ -3,6 +3,7 @@ package chat.sphinx.common.viewmodel.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.common.state.TribeDetailState
@@ -17,6 +18,7 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.DateTime
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatAlias
+import chat.sphinx.wrapper.chat.fixedAlias
 import chat.sphinx.wrapper.chat.isTribeOwnedByAccount
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import okio.Path
+import theme.primary_green
 
 class TribeDetailViewModel(
     private val dashboardViewModel: DashboardViewModel,
@@ -85,9 +88,15 @@ class TribeDetailViewModel(
     }
 
     fun onAliasTextChanged(text: String){
+        val fixedAlias = text.fixedAlias()
+
+        if (text != fixedAlias) {
+            toast("Only letters, numbers and underscore\nare allowed in tribe aliases")
+        }
+
         setTribeDetailState {
             copy(
-                userAlias = text,
+                userAlias = fixedAlias,
                 saveButtonEnable = true
             )
         }
@@ -189,5 +198,20 @@ class TribeDetailViewModel(
 
     private inline fun setTribeDetailState(update: TribeDetailState.() -> TribeDetailState) {
         tribeDetailState = tribeDetailState.update()
+    }
+
+    private fun toast(
+        message: String,
+        color: Color = primary_green,
+        delay: Long = 2000L
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            sphinxNotificationManager.toast(
+                "Tribe Detail",
+                message,
+                color.value,
+                delay
+            )
+        }
     }
 }

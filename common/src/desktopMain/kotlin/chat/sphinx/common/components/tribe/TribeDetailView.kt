@@ -35,6 +35,7 @@ import chat.sphinx.common.components.PhotoFileImage
 import chat.sphinx.common.components.PhotoUrlImage
 import chat.sphinx.common.components.QRDetail
 import chat.sphinx.common.components.chat.KebabMenu
+import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.state.fullScreenImageState
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -58,7 +59,7 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
         onCloseRequest = {
             dashboardViewModel.toggleTribeDetailWindow(false,  null)
         },
-        title = "Sphinx",
+        title = "Tribe Detail",
 
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
@@ -172,6 +173,7 @@ actual fun TribeDetailView(dashboardViewModel: DashboardViewModel, chatId: ChatI
                 }
             )
         }
+        DesktopSphinxToast("Tribe Detail")
     }
 }
 

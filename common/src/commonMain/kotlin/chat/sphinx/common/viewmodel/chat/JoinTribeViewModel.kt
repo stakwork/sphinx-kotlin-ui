@@ -16,6 +16,7 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.ChatHost
 import chat.sphinx.wrapper.chat.ChatUUID
+import chat.sphinx.wrapper.chat.fixedAlias
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
@@ -79,7 +80,7 @@ class JoinTribeViewModel(
                                     price_per_message = value.price_per_message.toString(),
                                     escrow_amount = value.escrow_amount.toString(),
                                     hourToStake = hourToStake.toString(),
-                                    userAlias = owner.alias?.value ?: "",
+                                    userAlias = (owner.alias?.value ?: "").fixedAlias(),
                                     myPhotoUrl = owner.photoUrl,
                                     loadingTribe = false
                                 )
@@ -153,9 +154,15 @@ class JoinTribeViewModel(
     }
 
     fun onAliasTextChanged(text: String){
+        val fixedAlias = text.fixedAlias()
+
+        if (text != fixedAlias) {
+            toast("Only letters, numbers and underscore\nare allowed in tribe aliases")
+        }
+
         setJoinTribeState {
             copy(
-                userAlias = text
+                userAlias = fixedAlias
             )
         }
     }
