@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.*
 import chat.sphinx.common.Res
 import chat.sphinx.common.components.SendReceiveAmountPopup
 import chat.sphinx.common.components.SendTribePaymentPopUp
+import chat.sphinx.common.components.TribeProfilePopUp
 import chat.sphinx.common.paymentDetail.PaymentDetailTemplate
 import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
@@ -70,6 +71,12 @@ fun ChatAction(
                     ChatViewModel.ChatActionsMode.SEND_TRIBE -> {
                         paymentViewModel.resetChatPaymentState()
                         SendTribePaymentPopUp(
+                            chatViewModel, paymentViewModel
+                        )
+                    }
+                    ChatViewModel.ChatActionsMode.TRIBE_PROFILE -> {
+                        paymentViewModel.resetChatPaymentState()
+                        TribeProfilePopUp(
                             chatViewModel, paymentViewModel
                         )
                     }

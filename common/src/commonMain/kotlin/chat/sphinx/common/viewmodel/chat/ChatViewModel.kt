@@ -12,6 +12,7 @@ import chat.sphinx.concepts.link_preview.model.TribePreviewName
 import chat.sphinx.concepts.link_preview.model.toPreviewImageUrlOrNull
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
+import chat.sphinx.concepts.network.query.save_profile.model.TribeMemberProfileDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
@@ -86,6 +87,7 @@ abstract class ChatViewModel(
     private val linkPreviewHandler =  SphinxContainer.networkModule.linkPreviewHandler
 
     val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
+    val networkQueryPeople = SphinxContainer.networkModule.networkQuerySaveProfile
 
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
     private var messagesLoadJob: Job? = null
@@ -103,7 +105,7 @@ abstract class ChatViewModel(
     val audioPlayer = AudioPlayer()
 
     enum class ChatActionsMode {
-        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE
+        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE, TRIBE_PROFILE
     }
 
     private val _chatActionsStateFlow: MutableStateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?> by lazy {
@@ -127,6 +129,29 @@ abstract class ChatViewModel(
 
     fun hideChatActionsPopup() {
         _chatActionsStateFlow.value = null
+    }
+
+    private val _personDataStateFlow: MutableStateFlow<TribeMemberProfileDto?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    val personDataStateFlow: StateFlow<TribeMemberProfileDto?>
+        get() = _personDataStateFlow.asStateFlow()
+
+    fun loadPersonData(person: MessagePerson) {
+        scope.launch(dispatchers.mainImmediate) {
+            networkQueryPeople.getTribeMemberProfile(person).collect { loadResponse ->
+                when (loadResponse) {
+                    is LoadResponse.Loading -> {}
+                    is Response.Error -> {
+                        _chatActionsStateFlow.value = Pair(ChatActionsMode.SEND_TRIBE, chatActionsStateFlow.value?.second)
+                    }
+                    is Response.Success -> {
+                        _personDataStateFlow.value = loadResponse.value
+                    }
+                }
+            }
+        }
     }
 
     private val _notificationLevelStateFlow: MutableStateFlow<Pair<Boolean, NotificationLevel?>> by lazy {

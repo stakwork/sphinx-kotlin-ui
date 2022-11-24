@@ -2,7 +2,6 @@ package chat.sphinx.common.chatMesssageUI
 
 import Roboto
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -65,13 +64,26 @@ fun ChatMessageUI(
                                 chatMessage,
                                 Modifier.clickable {
                                     if (chatMessage.chat.isTribe()) {
-                                        chatViewModel.toggleChatActionsPopup(
-                                            ChatViewModel.ChatActionsMode.SEND_TRIBE,
-                                            PaymentViewModel.PaymentData(
-                                                chatId = chatMessage.chat.id,
-                                                messageUUID = chatMessage.message.uuid
+                                        val person = chatMessage.message.person
+                                        if (person != null) {
+                                            chatViewModel.loadPersonData(person)
+                                            chatViewModel.toggleChatActionsPopup(
+                                                ChatViewModel.ChatActionsMode.TRIBE_PROFILE,
+                                                PaymentViewModel.PaymentData(
+                                                    chatId = chatMessage.chat.id,
+                                                    messageUUID = chatMessage.message.uuid
+                                                ),
                                             )
-                                        )
+                                        }
+                                        else {
+                                            chatViewModel.toggleChatActionsPopup(
+                                                ChatViewModel.ChatActionsMode.SEND_TRIBE,
+                                                PaymentViewModel.PaymentData(
+                                                    chatId = chatMessage.chat.id,
+                                                    messageUUID = chatMessage.message.uuid
+                                                ),
+                                            )
+                                        }
                                     }
                                 }
                             )
