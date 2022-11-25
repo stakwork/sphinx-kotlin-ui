@@ -15,7 +15,6 @@ import chat.sphinx.concepts.link_preview.model.TribePreviewName
 import chat.sphinx.concepts.link_preview.model.toPreviewImageUrlOrNull
 import chat.sphinx.concepts.meme_input_stream.MemeInputStreamHandler
 import chat.sphinx.concepts.meme_server.MemeServerTokenHandler
-import chat.sphinx.concepts.network.query.save_profile.model.TribeMemberProfileDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.concepts.repository.message.model.SendMessage
 import chat.sphinx.di.container.SphinxContainer
@@ -44,7 +43,6 @@ import chat.sphinx.wrapper.tribe.TribeJoinLink
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import chat.sphinx.wrapper_chat.NotificationLevel
 import chat.sphinx.wrapper_chat.isMuteChat
-import io.ktor.util.Identity.decode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
