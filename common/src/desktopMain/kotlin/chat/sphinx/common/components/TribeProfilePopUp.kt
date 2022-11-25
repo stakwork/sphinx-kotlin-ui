@@ -1,10 +1,7 @@
 package chat.sphinx.common.components
 
 import Roboto
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -34,6 +31,7 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.profile.Tabs
 import chat.sphinx.common.components.profile.saveButton
 import chat.sphinx.common.state.ContentState
+import chat.sphinx.common.viewmodel.TransactionsViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
 import chat.sphinx.platform.imageResource
@@ -54,6 +52,9 @@ fun TribeProfilePopUp(
     chatViewModel: ChatViewModel,
     paymentViewModel: PaymentViewModel
 ) {
+    val viewModel = remember { chatViewModel }
+    val viewState = viewModel.tribeProfileState
+
     Box(
         modifier = Modifier
             .width(420.dp)
@@ -68,188 +69,212 @@ fun TribeProfilePopUp(
                 interactionSource = remember { MutableInteractionSource() }
             )
     ) {
-        Column(
-            Modifier.fillMaxSize().padding(24.dp)
-        ) {
-            Column(
-                modifier = Modifier.background(MaterialTheme.colorScheme.onSurfaceVariant),
-                verticalArrangement = Arrangement.SpaceBetween
+        if (viewState.loadingTribeProfile) {
+            Box(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.onSurfaceVariant),
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
+                CircularProgressIndicator(
+                    Modifier.size(40.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            }
+        } else {
+            Column(
+                Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState())
+            ) {
+                Column(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.onSurfaceVariant),
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    PhotoUrlImage(
-                        photoUrl = PhotoUrl("test"),
-                        modifier = Modifier
-                            .size(112.dp)
-                            .clip(CircleShape)
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        PhotoUrlImage(
+                            photoUrl = PhotoUrl(viewState.profilePicture),
+                            modifier = Modifier
+                                .size(112.dp)
+                                .clip(CircleShape)
+                        )
 
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column() {
-                        Text(
-                            text = "TRIBE MEMBER",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = Roboto,
-                            fontSize = 10.sp
-                        )
-                        Spacer(Modifier.width(2.dp))
-                        Text(
-                            text = "Stephanie",
-                            color = MaterialTheme.colorScheme.tertiary,
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = Roboto,
-                            fontSize = 22.sp
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Column(
-                            modifier = Modifier.height(40.dp).padding(top = 4.dp)
-                        ) {
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column() {
                             Text(
-                                text = "This is an example for the description on tribe profile",
-                                maxLines = 2,
+                                text = "TRIBE MEMBER",
                                 color = MaterialTheme.colorScheme.onBackground,
-                                fontFamily = SphinxFonts.montserratFamily,
-                                fontSize = 12.sp
+                                fontWeight = FontWeight.Medium,
+                                fontFamily = Roboto,
+                                fontSize = 10.sp
                             )
+                            Spacer(Modifier.width(2.dp))
+                            Text(
+                                text = viewState.name,
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontWeight = FontWeight.Medium,
+                                fontFamily = Roboto,
+                                fontSize = 22.sp
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Column(
+                                modifier = Modifier.height(40.dp).padding(top = 4.dp)
+                            ) {
+                                Text(
+                                    text = viewState.description,
+                                    maxLines = 2,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontFamily = SphinxFonts.montserratFamily,
+                                    fontSize = 12.sp
+                                )
+                            }
                         }
                     }
                 }
-            }
-            Spacer(Modifier.height(26.dp))
-            SendSatsButton()
-            Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(26.dp))
+                SendSatsButton(chatViewModel, paymentViewModel)
+                Spacer(Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth().height(49.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Price to Meet:",
-                    fontSize = 15.sp,
-                    fontFamily = Roboto,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    modifier = Modifier.fillMaxWidth().height(49.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "150",
+                        text = "Price to Meet:",
                         fontSize = 15.sp,
                         fontFamily = Roboto,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = viewState.priceToMeet,
+                            fontSize = 15.sp,
+                            fontFamily = Roboto,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    }
                 }
-            }
-            Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
+                Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
 
-            Row(
-                modifier = Modifier.fillMaxWidth().height(49.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Coding languages:",
-                    fontSize = 15.sp,
-                    fontFamily = Roboto,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                Text(
-                    text = "Python, C, Java, Kotlin, Swift, Goland,",
-                    fontSize = 15.sp,
-                    fontFamily = Roboto,
-                    maxLines = 2,
-                    textAlign = TextAlign.End,
-                    color = MaterialTheme.colorScheme.tertiary,
-                )
-            }
-            Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
-
-            Row(
-                modifier = Modifier.fillMaxWidth().height(49.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Posts:",
-                    fontSize = 15.sp,
-                    fontFamily = Roboto,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    modifier = Modifier.fillMaxWidth().height(49.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "150",
+                        text = "Coding languages:",
                         fontSize = 15.sp,
                         fontFamily = Roboto,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = viewState.codingLanguages,
+                            fontSize = 15.sp,
+                            fontFamily = Roboto,
+                            maxLines = 2,
+                            textAlign = TextAlign.End,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    }
                 }
-            }
-            Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
+                Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
 
-            Row(
-                modifier = Modifier.fillMaxWidth().height(49.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Twitter:",
-                    fontSize = 15.sp,
-                    fontFamily = Roboto,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    modifier = Modifier.fillMaxWidth().height(49.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "150",
+                        text = "Posts:",
                         fontSize = 15.sp,
                         fontFamily = Roboto,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = viewState.posts,
+                            fontSize = 15.sp,
+                            fontFamily = Roboto,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    }
                 }
-            }
-            Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
+                Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
 
-            Row(
-                modifier = Modifier.fillMaxWidth().height(49.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Github:",
-                    fontSize = 15.sp,
-                    fontFamily = Roboto,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    modifier = Modifier.fillMaxWidth().height(49.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "150",
+                        text = "Twitter:",
                         fontSize = 15.sp,
                         fontFamily = Roboto,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = viewState.twitter,
+                            fontSize = 15.sp,
+                            fontFamily = Roboto,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    }
                 }
+                Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(49.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Github:",
+                        fontSize = 15.sp,
+                        fontFamily = Roboto,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = viewState.github,
+                            fontSize = 15.sp,
+                            fontFamily = Roboto,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    }
+                }
+                Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
             }
-            Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
-
-
         }
-
     }
 }
 
 @Composable
-fun SendSatsButton() {
+private fun SendSatsButton(
+    chatViewModel: ChatViewModel,
+    paymentViewModel: PaymentViewModel
+) {
     Button(
         modifier = Modifier.width(147.dp).height(40.dp),
-        onClick = {},
+        onClick = {
+            chatViewModel.setChatActionsStateFlow(
+                Pair(
+                    ChatViewModel.ChatActionsMode.SEND_AMOUNT, paymentViewModel.getPaymentData()
+                )
+            )
+        },
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(
             backgroundColor = MaterialTheme.colorScheme.tertiary

@@ -1,6 +1,9 @@
 package chat.sphinx.common.viewmodel.chat
 
 import androidx.annotation.ColorInt
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.components.AudioPlayer
 import chat.sphinx.common.models.ChatMessage
@@ -41,6 +44,7 @@ import chat.sphinx.wrapper.tribe.TribeJoinLink
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import chat.sphinx.wrapper_chat.NotificationLevel
 import chat.sphinx.wrapper_chat.isMuteChat
+import io.ktor.util.Identity.decode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -115,6 +119,10 @@ abstract class ChatViewModel(
     val chatActionsStateFlow: StateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?>
         get() = _chatActionsStateFlow.asStateFlow()
 
+    fun setChatActionsStateFlow(data: Pair<ChatActionsMode, PaymentViewModel.PaymentData?>) {
+        _chatActionsStateFlow.value = data
+    }
+
     fun toggleChatActionsPopup(
         mode: ChatActionsMode,
         data: PaymentViewModel.PaymentData? = null
@@ -131,23 +139,43 @@ abstract class ChatViewModel(
         _chatActionsStateFlow.value = null
     }
 
-    private val _personDataStateFlow: MutableStateFlow<TribeMemberProfileDto?> by lazy {
-        MutableStateFlow(null)
-    }
+    var tribeProfileState: TribeProfileState by mutableStateOf(initialTribeProfileState())
 
-    val personDataStateFlow: StateFlow<TribeMemberProfileDto?>
-        get() = _personDataStateFlow.asStateFlow()
+    private fun initialTribeProfileState(): TribeProfileState = TribeProfileState()
+
+    private inline fun setTribeProfileState(update: TribeProfileState.() -> TribeProfileState) {
+        tribeProfileState = tribeProfileState.update()
+    }
 
     fun loadPersonData(person: MessagePerson) {
         scope.launch(dispatchers.mainImmediate) {
             networkQueryPeople.getTribeMemberProfile(person).collect { loadResponse ->
                 when (loadResponse) {
-                    is LoadResponse.Loading -> {}
+                    is LoadResponse.Loading -> {
+                        setTribeProfileState {
+                            copy(
+                                loadingTribeProfile = true
+                            )
+                        }
+                    }
                     is Response.Error -> {
                         _chatActionsStateFlow.value = Pair(ChatActionsMode.SEND_TRIBE, chatActionsStateFlow.value?.second)
                     }
                     is Response.Success -> {
-                        _personDataStateFlow.value = loadResponse.value
+                        setTribeProfileState {
+                            copy(
+                                name = loadResponse.value.owner_alias,
+                                description = loadResponse.value.description,
+                                profilePicture = loadResponse.value.img,
+                                codingLanguages = loadResponse.value.extras?.codingLanguages ?: "-",
+                                priceToMeet = loadResponse.value.price_to_meet.toString(),
+                                posts = if (loadResponse.value.extras?.post?.size != null){
+                                    loadResponse.value.extras?.post?.size.toString()} else { "0" } ,
+                                twitter = loadResponse.value.extras?.twitter?.first()?.formattedValue.toString(),
+                                github = loadResponse.value.extras?.github?.first()?.formattedValue.toString(),
+                                loadingTribeProfile = false
+                            )
+                        }
                     }
                 }
             }
