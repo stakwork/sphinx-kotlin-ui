@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +28,7 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.wrapper.PhotoUrl
 import theme.light_divider
+import theme.primary_red
 
 @Composable
 fun TribeProfilePopUp(
@@ -37,7 +40,7 @@ fun TribeProfilePopUp(
 
     Box(
         modifier = Modifier
-            .width(420.dp)
+            .width(380.dp)
             .height(525.dp)
             .background(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -126,7 +129,7 @@ fun TribeProfilePopUp(
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
                         Text(
@@ -150,7 +153,7 @@ fun TribeProfilePopUp(
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
                         Text(
@@ -176,7 +179,7 @@ fun TribeProfilePopUp(
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
                         Text(
@@ -200,7 +203,7 @@ fun TribeProfilePopUp(
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
                         Text(
@@ -224,7 +227,7 @@ fun TribeProfilePopUp(
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
                         Text(
@@ -236,6 +239,23 @@ fun TribeProfilePopUp(
                     }
                 }
                 Divider(modifier = Modifier.fillMaxWidth(), color = light_divider)
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .align(Alignment.TopEnd)
+                    .clickable {
+                        chatViewModel.hideChatActionsPopup()
+                    },
+                contentAlignment = Alignment.Center,
+            ){
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "close",
+                    tint = primary_red,
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }

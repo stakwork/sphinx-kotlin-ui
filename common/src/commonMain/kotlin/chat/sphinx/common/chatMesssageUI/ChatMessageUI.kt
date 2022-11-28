@@ -65,8 +65,9 @@ fun ChatMessageUI(
                                 Modifier.clickable {
                                     if (chatMessage.chat.isTribe()) {
                                         val person = chatMessage.message.person
-                                        if (person != null) {
+                                        if (person?.value?.isNullOrEmpty() == false) {
                                             chatViewModel.loadPersonData(person)
+
                                             chatViewModel.toggleChatActionsPopup(
                                                 ChatViewModel.ChatActionsMode.TRIBE_PROFILE,
                                                 PaymentViewModel.PaymentData(
