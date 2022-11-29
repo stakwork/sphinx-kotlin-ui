@@ -90,6 +90,8 @@ compose.desktop {
             }
             windows {
                 iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
+                console = true
+                dirChooser = true
             }
             linux {
                 iconFile.set(iconsRoot.resolve("sphinx-logo.png"))
