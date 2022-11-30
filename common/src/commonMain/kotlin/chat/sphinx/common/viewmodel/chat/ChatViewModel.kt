@@ -1,6 +1,9 @@
 package chat.sphinx.common.viewmodel.chat
 
 import androidx.annotation.ColorInt
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.components.AudioPlayer
 import chat.sphinx.common.models.ChatMessage
@@ -86,6 +89,7 @@ abstract class ChatViewModel(
     private val linkPreviewHandler =  SphinxContainer.networkModule.linkPreviewHandler
 
     val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
+    val networkQueryPeople = SphinxContainer.networkModule.networkQuerySaveProfile
 
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)
     private var messagesLoadJob: Job? = null
@@ -103,7 +107,7 @@ abstract class ChatViewModel(
     val audioPlayer = AudioPlayer()
 
     enum class ChatActionsMode {
-        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE
+        MENU, REQUEST, SEND_AMOUNT, SEND_TEMPLATE, SEND_TRIBE, TRIBE_PROFILE
     }
 
     private val _chatActionsStateFlow: MutableStateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?> by lazy {
@@ -112,6 +116,10 @@ abstract class ChatViewModel(
 
     val chatActionsStateFlow: StateFlow<Pair<ChatActionsMode, PaymentViewModel.PaymentData?>?>
         get() = _chatActionsStateFlow.asStateFlow()
+
+    fun setChatActionsStateFlow(data: Pair<ChatActionsMode, PaymentViewModel.PaymentData?>) {
+        _chatActionsStateFlow.value = data
+    }
 
     fun toggleChatActionsPopup(
         mode: ChatActionsMode,
@@ -127,6 +135,49 @@ abstract class ChatViewModel(
 
     fun hideChatActionsPopup() {
         _chatActionsStateFlow.value = null
+    }
+
+    var tribeProfileState: TribeProfileState by mutableStateOf(initialTribeProfileState())
+
+    private fun initialTribeProfileState(): TribeProfileState = TribeProfileState()
+
+    private inline fun setTribeProfileState(update: TribeProfileState.() -> TribeProfileState) {
+        tribeProfileState = tribeProfileState.update()
+    }
+
+    fun loadPersonData(person: MessagePerson) {
+        scope.launch(dispatchers.mainImmediate) {
+            networkQueryPeople.getTribeMemberProfile(person).collect { loadResponse ->
+                when (loadResponse) {
+                    is LoadResponse.Loading -> {
+                        setTribeProfileState {
+                            copy(
+                                loadingTribeProfile = true
+                            )
+                        }
+                    }
+                    is Response.Error -> {
+                        _chatActionsStateFlow.value = Pair(ChatActionsMode.SEND_TRIBE, chatActionsStateFlow.value?.second)
+                    }
+                    is Response.Success -> {
+                        setTribeProfileState {
+                            copy(
+                                name = loadResponse.value.owner_alias,
+                                description = loadResponse.value.description,
+                                profilePicture = loadResponse.value.img,
+                                codingLanguages = loadResponse.value.extras?.codingLanguages ?: "-",
+                                priceToMeet = loadResponse.value.price_to_meet.toString(),
+                                posts = if (loadResponse.value.extras?.post?.size != null){
+                                    loadResponse.value.extras?.post?.size.toString()} else { "0" } ,
+                                twitter = loadResponse.value.extras?.twitter?.first()?.formattedValue.toString(),
+                                github = loadResponse.value.extras?.github?.first()?.formattedValue.toString(),
+                                loadingTribeProfile = false
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private val _notificationLevelStateFlow: MutableStateFlow<Pair<Boolean, NotificationLevel?>> by lazy {

@@ -93,7 +93,7 @@ fun SendTribePaymentPopUp(
                         PaymentViewModel.PaymentData(
                             chatId = paymentViewModel.getPaymentData()?.chatId,
                             messageUUID = paymentViewModel.getPaymentData()?.messageUUID
-                        )
+                        ),
                     )
                 },
                 shape = CircleShape,
