@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.tribe.CreateTribeView
 import chat.sphinx.common.components.tribe.JoinTribeView
+import chat.sphinx.common.components.tribe.LeaderboardUI
 import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.DashboardViewModel
@@ -203,6 +204,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 } else {
                     CreateTribeView(dashboardViewModel, null)
                 }
+            }
+
+            val leaderboardWindowState by dashboardViewModel.leaderboardStateFlow.collectAsState()
+            if (leaderboardWindowState) {
+                LeaderboardUI(dashboardViewModel)
             }
 
             val qrWindowState by dashboardViewModel.qrWindowStateFlow.collectAsState()

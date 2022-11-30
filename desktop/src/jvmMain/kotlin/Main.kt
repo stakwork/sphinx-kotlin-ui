@@ -95,6 +95,7 @@ fun main() = application {
                                 Item("Profile", onClick = {dashboardViewModel.toggleProfileWindow(true)})
                                 Item("Transactions", onClick = {dashboardViewModel.toggleTransactionsWindow(true)})
                                 Item("Create Tribe", onClick = {dashboardViewModel.toggleCreateTribeWindow(true, null)})
+                                Item("Leaderboard", onClick = {dashboardViewModel.toggleLeaderboardWindow(true)})
 
                                 Item("Remove Account from this machine", onClick = {
                                     sphinxStore.removeAccount()

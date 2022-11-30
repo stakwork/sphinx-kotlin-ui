@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
-import kotlinx.coroutines.flow.collect
 
 class DashboardViewModel: WindowFocusListener {
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -111,6 +110,17 @@ class DashboardViewModel: WindowFocusListener {
 
     fun toggleCreateTribeWindow(open: Boolean, chatId: ChatId?) {
         _createTribeStateFlow.value = Pair(open, chatId)
+    }
+
+    private val _leaderboardStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val leaderboardStateFlow: StateFlow<Boolean>
+        get() = _leaderboardStateFlow.asStateFlow()
+
+    fun toggleLeaderboardWindow(open: Boolean) {
+        _leaderboardStateFlow.value = open
     }
 
     private val _joinTribeStateFlow: MutableStateFlow<Pair<Boolean, TribeJoinLink?>> by lazy {
