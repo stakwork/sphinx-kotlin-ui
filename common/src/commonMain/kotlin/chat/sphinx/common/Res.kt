@@ -47,6 +47,9 @@ object Res {
         const val ic_paid_message =  "drawable/ic_paid_message.xml"
         const val ic_request =  "drawable/ic_request.xml"
         const val ic_send =  "drawable/ic_send.xml"
+        const val ic_polygon_down =  "drawable/ic_polygon_down.xml"
+        const val ic_polygon_up =  "drawable/ic_polygon_up.xml"
+        const val ic_crown =  "drawable/ic_crown.xml"
 
         const val ic_bitcoin = "drawable/ic_bitcoin.png"
         const val ic_lightning = "drawable/ic_lightning.png"
@@ -56,6 +59,8 @@ object Res {
         const val ic_altcoins = "drawable/ic_altcoins.png"
         const val ic_music = "drawable/ic_music.png"
         const val ic_podcast = "drawable/ic_podcast.png"
+
+
 
         // chat action sheet
 
