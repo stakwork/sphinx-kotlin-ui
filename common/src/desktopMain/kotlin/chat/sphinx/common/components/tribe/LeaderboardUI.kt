@@ -290,14 +290,4 @@ fun UsersRow(){
         }
     }
     Divider(modifier = Modifier.fillMaxWidth().padding(start = 68.dp, end = 20.dp), color = light_divider)
-
-}
-
-
-
-@Preview
-@Composable
-fun MyPreview() {
-    SmallProfile("2")
-
 }
