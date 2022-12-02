@@ -1,14 +1,12 @@
 package chat.sphinx.common.components.tribe
 
 import Roboto
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
@@ -28,10 +26,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.Res
-import chat.sphinx.common.components.LoadingRow
 import chat.sphinx.common.components.PhotoUrlImage
-import chat.sphinx.common.components.PodcastBoost
-import chat.sphinx.common.components.TransactionRow
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
