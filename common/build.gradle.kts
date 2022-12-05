@@ -47,6 +47,7 @@ kotlin {
                 implementation("org.cryptonode.jncryptor:jncryptor:1.2.0")
                 implementation("com.soywiz.korlibs.korio:korio:$korioVersion")
                 implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
+
             }
         }
         val commonTest by getting {
@@ -71,6 +72,7 @@ kotlin {
                 api(compose.desktop.common)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 api(compose.desktop.components.splitPane)
+                implementation ("me.friwi:jcefmaven:107.1.9.1")
             }
         }
         val desktopTest by getting
