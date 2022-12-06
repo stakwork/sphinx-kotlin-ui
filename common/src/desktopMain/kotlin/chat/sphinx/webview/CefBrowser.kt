@@ -75,8 +75,8 @@ class CefBrowser(
     }
 
     companion object {
-        private const val SECOND_BRAIN = "https://second-brain.sphinx.chat"
-        private const val GOOGLE = "https://www.google.com"
-        private const val MY_GITHUB = "https://github.com/MathRoda"
+        const val SECOND_BRAIN = "https://second-brain.sphinx.chat"
+        const val GOOGLE = "https://www.google.com"
+        const val MY_GITHUB = "https://github.com/MathRoda"
     }
 }
