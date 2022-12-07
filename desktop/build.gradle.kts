@@ -6,7 +6,6 @@ import java.util.*
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.1.0"
-
 }
 
 group = "chat.sphinx"
@@ -62,6 +61,7 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
+            // Set the packageVersion in currentAppVersion val on getPackageVersion() in DashboardViewModel.kt as well
             packageVersion = "1.0.13"
 
             val iconsRoot = project.file("../common/src/desktopMain/resources/images")

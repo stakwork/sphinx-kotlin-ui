@@ -1,6 +1,7 @@
 package chat.sphinx.common.components
 
 
+import Roboto
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +35,8 @@ import theme.primary_red
 fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
 
     val chatListViewModel = remember { ChatListViewModel() }
+    val uriHandler = LocalUriHandler.current
+
 
     Box(
         Modifier
@@ -79,6 +83,39 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                                 )
                             }
                         )
+                    }
+                }
+
+                val upgradeApp by dashboardViewModel.packageVersionAndUpgrade.collectAsState()
+                if (upgradeApp.second) {
+                    Row(
+                        Modifier.fillMaxHeight().weight(0.8f).padding(top = 12.dp, bottom = 12.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Spacer(Modifier.width(8.dp))
+                        IconButton(onClick = dashboardViewModel::networkRefresh) {
+                            Button(
+                                shape = RoundedCornerShape(23.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                                onClick = {
+                                    uriHandler.openUri("https://buy.sphinx.chat/")
+                                }
+                            ) {
+                                Box {
+                                    Text(
+                                        text = "UPGRADE",
+                                        fontSize = 10.sp,
+                                        fontFamily = Roboto,
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                        maxLines = 1,
+                                        modifier = Modifier.fillMaxWidth().align(Alignment.Center),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 

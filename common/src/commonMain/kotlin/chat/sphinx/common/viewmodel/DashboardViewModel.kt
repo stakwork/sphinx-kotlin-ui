@@ -3,11 +3,10 @@ package chat.sphinx.common.viewmodel
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenState
 import chat.sphinx.common.state.DashboardScreenType
+import chat.sphinx.concepts.network.query.version.NetworkQueryVersion
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.response.LoadResponse
-import chat.sphinx.response.Response
-import chat.sphinx.response.ResponseError
+import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
-import kotlinx.coroutines.flow.collect
 
 class DashboardViewModel: WindowFocusListener {
     val dispatchers = SphinxContainer.appModule.dispatchers
@@ -29,6 +27,7 @@ class DashboardViewModel: WindowFocusListener {
     private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
+    private val networkQueryVersion: NetworkQueryVersion = SphinxContainer.networkModule.networkQueryVersion
 
     private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
         MutableStateFlow(null)
@@ -40,6 +39,13 @@ class DashboardViewModel: WindowFocusListener {
     private val _contactWindowStateFlow: MutableStateFlow<Pair<Boolean, ContactScreenState?>> by lazy {
         MutableStateFlow(Pair(false, null))
     }
+
+    private val _packageVersionAndUpgrade: MutableStateFlow<Pair<String?, Boolean>> by lazy {
+        MutableStateFlow(Pair(null, false))
+    }
+
+    val packageVersionAndUpgrade: StateFlow<Pair<String?, Boolean>>
+        get() = _packageVersionAndUpgrade.asStateFlow()
 
     val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
         get() = _contactWindowStateFlow.asStateFlow()
@@ -153,6 +159,34 @@ class DashboardViewModel: WindowFocusListener {
         }
     }
 
+    private fun getPackageVersion(){
+        val currentAppVersion = "1.0.13"
+
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            networkQueryVersion.getAppVersions().collect { loadResponse ->
+
+                when (loadResponse) {
+                    is Response.Error -> {
+                        _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
+                    }
+                    is Response.Success -> {
+                        val serverHubVersion = loadResponse.value.kmm
+                        val currentVersion = currentAppVersion.replace(".", "").toInt()
+
+                        if (serverHubVersion > currentVersion) {
+                            _packageVersionAndUpgrade.value = Pair(currentAppVersion, true)
+                        }
+                        else {
+                            _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
+                        }
+                    }
+                    is LoadResponse.Loading -> {
+                    }
+                }
+            }
+        }
+    }
+
     private var screenInit: Boolean = false
     fun screenInit() {
         if (screenInit) {
@@ -160,10 +194,10 @@ class DashboardViewModel: WindowFocusListener {
         } else {
             screenInit = true
         }
-
         getRelayKeys()
         networkRefresh()
         connectSocket()
+        getPackageVersion()
 
         viewModelScope.launch(dispatchers.mainImmediate) {
             repositoryDashboard.getAccountBalanceStateFlow().collect {
@@ -266,8 +300,6 @@ class DashboardViewModel: WindowFocusListener {
             }
         }
     }
-
-
 
     fun cancelRestore() {
         jobNetworkRefresh?.cancel()
