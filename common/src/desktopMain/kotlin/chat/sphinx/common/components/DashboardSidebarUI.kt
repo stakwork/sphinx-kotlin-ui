@@ -212,6 +212,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                 dashboardViewModel
             )
 
+            val aboutSphinxWindowState by dashboardViewModel.aboutSphinxStateFlow.collectAsState()
+            if (aboutSphinxWindowState) {
+                AboutSphinx(dashboardViewModel)
+            }
+
             val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
             if (addContactWindowState.first) {
                 AddContactWindow(dashboardViewModel)

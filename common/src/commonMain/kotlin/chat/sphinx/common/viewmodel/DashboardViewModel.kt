@@ -36,9 +36,6 @@ class DashboardViewModel: WindowFocusListener {
     val balanceStateFlow: StateFlow<NodeBalance?>
         get() = _balanceStateFlow.asStateFlow()
 
-    private val _contactWindowStateFlow: MutableStateFlow<Pair<Boolean, ContactScreenState?>> by lazy {
-        MutableStateFlow(Pair(false, null))
-    }
 
     private val _packageVersionAndUpgrade: MutableStateFlow<Pair<String?, Boolean>> by lazy {
         MutableStateFlow(Pair(null, false))
@@ -47,11 +44,26 @@ class DashboardViewModel: WindowFocusListener {
     val packageVersionAndUpgrade: StateFlow<Pair<String?, Boolean>>
         get() = _packageVersionAndUpgrade.asStateFlow()
 
+    private val _contactWindowStateFlow: MutableStateFlow<Pair<Boolean, ContactScreenState?>> by lazy {
+        MutableStateFlow(Pair(false, null))
+    }
+
     val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
         get() = _contactWindowStateFlow.asStateFlow()
 
     fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
         _contactWindowStateFlow.value = Pair(open, screen)
+    }
+
+    private val _aboutSphinxStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val aboutSphinxStateFlow: StateFlow<Boolean>
+        get() = _aboutSphinxStateFlow.asStateFlow()
+
+    fun toggleAboutSphinxWindow(open: Boolean) {
+        _aboutSphinxStateFlow.value = open
     }
 
     private val _tribeDetailWindowStateFlow: MutableStateFlow<Pair<Boolean, ChatId?>> by lazy {
