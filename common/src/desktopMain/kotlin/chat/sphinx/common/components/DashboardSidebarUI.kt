@@ -30,6 +30,7 @@ import chat.sphinx.response.Response
 import theme.place_holder_text
 import theme.primary_green
 import theme.primary_red
+import theme.sphinx_orange
 
 @Composable
 fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
@@ -98,7 +99,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                             Button(
                                 shape = RoundedCornerShape(23.dp),
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.secondary),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = sphinx_orange),
                                 onClick = {
                                     uriHandler.openUri("https://buy.sphinx.chat/")
                                 }
