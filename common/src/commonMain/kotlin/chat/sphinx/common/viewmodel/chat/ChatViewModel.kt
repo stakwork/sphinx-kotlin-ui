@@ -43,6 +43,7 @@ import chat.sphinx.wrapper.tribe.TribeJoinLink
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import chat.sphinx.wrapper_chat.NotificationLevel
 import chat.sphinx.wrapper_chat.isMuteChat
+import com.soywiz.korio.util.substringAfterLastOrNull
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -71,6 +72,7 @@ suspend inline fun MessageMedia.retrieveRemoteMediaInputStream(
     }
 }
 
+
 abstract class ChatViewModel(
     val chatId: ChatId?,
     val dashboardViewModel: DashboardViewModel
@@ -86,7 +88,7 @@ abstract class ChatViewModel(
     val memeServerTokenHandler = SphinxContainer.repositoryModule(sphinxNotificationManager).memeServerTokenHandler
     val memeInputStreamHandler = SphinxContainer.networkModule.memeInputStreamHandler
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
-    private val linkPreviewHandler =  SphinxContainer.networkModule.linkPreviewHandler
+    private val linkPreviewHandler = SphinxContainer.networkModule.linkPreviewHandler
 
     val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
     val networkQueryPeople = SphinxContainer.networkModule.networkQuerySaveProfile
@@ -157,7 +159,8 @@ abstract class ChatViewModel(
                         }
                     }
                     is Response.Error -> {
-                        _chatActionsStateFlow.value = Pair(ChatActionsMode.SEND_TRIBE, chatActionsStateFlow.value?.second)
+                        _chatActionsStateFlow.value =
+                            Pair(ChatActionsMode.SEND_TRIBE, chatActionsStateFlow.value?.second)
                     }
                     is Response.Success -> {
                         setTribeProfileState {
@@ -167,8 +170,11 @@ abstract class ChatViewModel(
                                 profilePicture = loadResponse.value.img,
                                 codingLanguages = loadResponse.value.extras?.codingLanguages ?: "-",
                                 priceToMeet = loadResponse.value.price_to_meet.toString(),
-                                posts = if (loadResponse.value.extras?.post?.size != null){
-                                    loadResponse.value.extras?.post?.size.toString()} else { "0" } ,
+                                posts = if (loadResponse.value.extras?.post?.size != null) {
+                                    loadResponse.value.extras?.post?.size.toString()
+                                } else {
+                                    "0"
+                                },
                                 twitter = loadResponse.value.extras?.twitter?.first()?.formattedValue.toString(),
                                 github = loadResponse.value.extras?.github?.first()?.formattedValue.toString(),
                                 loadingTribeProfile = false
@@ -215,7 +221,7 @@ abstract class ChatViewModel(
     }
 
     private suspend fun loadChatMessages() {
-        getChat()?.let{ chat ->
+        getChat()?.let { chat ->
             messageRepository.getAllMessagesToShowByChatId(chat.id, 50).firstOrNull()?.let { messages ->
                 processChatMessages(chat, messages)
             }
@@ -233,7 +239,7 @@ abstract class ChatViewModel(
     }
 
     private suspend fun checkChatStatus() {
-        getChat()?.let{ chat ->
+        getChat()?.let { chat ->
             if (chat.isPrivateTribe() && chat.status.isPending()) {
                 toast("Waiting for admin approval", delay = 3000L)
             }
@@ -250,7 +256,7 @@ abstract class ChatViewModel(
             null
         }
 
-        var contactColorInt:Int? = null
+        var contactColorInt: Int? = null
 
         contact?.let { nnContact ->
             val contactColorKey = nnContact.getColorKey()
@@ -357,17 +363,20 @@ abstract class ChatViewModel(
         val groupingMinutesLimit = 5.0
         var date = groupingDate ?: message.date
 
-        val shouldAvoidGroupingWithPrevious = (previousMessage?.shouldAvoidGrouping() ?: true) || message.shouldAvoidGrouping()
+        val shouldAvoidGroupingWithPrevious =
+            (previousMessage?.shouldAvoidGrouping() ?: true) || message.shouldAvoidGrouping()
         val isGroupedBySenderWithPrevious = previousMessage?.hasSameSenderThanMessage(message) ?: false
         val isGroupedByDateWithPrevious = message.date.getMinutesDifferenceWithDateTime(date) < groupingMinutesLimit
 
-        val groupedWithPrevious = (!shouldAvoidGroupingWithPrevious && isGroupedBySenderWithPrevious && isGroupedByDateWithPrevious)
+        val groupedWithPrevious =
+            (!shouldAvoidGroupingWithPrevious && isGroupedBySenderWithPrevious && isGroupedByDateWithPrevious)
 
         date = if (groupedWithPrevious) date else message.date
 
         val shouldAvoidGroupingWithNext = (nextMessage?.shouldAvoidGrouping() ?: true) || message.shouldAvoidGrouping()
         val isGroupedBySenderWithNext = nextMessage?.hasSameSenderThanMessage(message) ?: false
-        val isGroupedByDateWithNext = if (nextMessage != null) nextMessage.date.getMinutesDifferenceWithDateTime(date) < groupingMinutesLimit else false
+        val isGroupedByDateWithNext =
+            if (nextMessage != null) nextMessage.date.getMinutesDifferenceWithDateTime(date) < groupingMinutesLimit else false
 
         val groupedWithNext = (!shouldAvoidGroupingWithNext && isGroupedBySenderWithNext && isGroupedByDateWithNext)
 
@@ -388,11 +397,13 @@ abstract class ChatViewModel(
 
         return Pair(date, BubbleBackground.First.Isolated)
     }
+
     open suspend fun processMemberRequest(
         contactId: ContactId,
         messageId: MessageId,
         type: MessageType,
-    ) {}
+    ) {
+    }
 
     open suspend fun deleteTribe() {}
 
@@ -425,7 +436,7 @@ abstract class ChatViewModel(
             }
         }
 
-        for (m in  message.reactions ?: listOf()) {
+        for (m in message.reactions ?: listOf()) {
             contactColor?.let {
                 colors[m.id.value] = contactColor
             } ?: run {
@@ -544,14 +555,54 @@ abstract class ChatViewModel(
 
     abstract fun initialState(): EditMessageState
 
-    abstract fun getUniqueKey() : String
+    abstract fun getUniqueKey(): String
 
     private inline fun setEditMessageState(update: EditMessageState.() -> EditMessageState) {
         editMessageState = editMessageState.update()
     }
 
+    var aliasMatcherState: AliasMatcherState by mutableStateOf(initialAliasMatcherState())
+
+    private fun initialAliasMatcherState(): AliasMatcherState = AliasMatcherState()
+
+    private inline fun setAliasMatcherState(update: AliasMatcherState.() -> AliasMatcherState) {
+        aliasMatcherState = aliasMatcherState.update()
+    }
+
     fun onMessageTextChanged(text: String) {
         editMessageState.messageText.value = text
+        aliasMatcher(text)
+    }
+
+    private fun aliasMatcher(text: String) {
+        if (text.isNotEmpty()) {
+            if (aliasMatcherState.isOn.value) {
+                text.substringAfterLastOrNull('@')?.let {
+                    aliasMatcherState.inputText.value = it
+                    generateSuggestedAliasList()
+                } ?: run {
+                    aliasMatcherState.isOn.value = false
+                    aliasMatcherState.inputText.value = ""
+                }
+            }
+            if (text.last() == '@') {
+                aliasMatcherState.isOn.value = true
+            }
+            if (text.last() == ' ') {
+                aliasMatcherState.isOn.value = false
+                aliasMatcherState.inputText.value = ""
+            }
+        }
+    }
+
+    private fun generateSuggestedAliasList() {
+        val messageListData = MessageListState.screenState()
+        if (messageListData is MessageListData.PopulatedMessageListData) {
+            val aliasList = messageListData.messages.map { it.message.senderAlias?.value ?: "" }.distinct()
+            val suggestedList = aliasList.sortedBy { it.startsWith(aliasMatcherState.inputText.value, ignoreCase = true) }.reversed()
+
+            aliasMatcherState.suggestedAliasList.value = suggestedList
+        }
     }
 
     fun onPriceTextChanged(text: String) {

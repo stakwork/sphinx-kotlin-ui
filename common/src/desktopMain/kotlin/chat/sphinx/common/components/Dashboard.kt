@@ -430,7 +430,7 @@ fun SphinxChatDetailBottomAppBar(
                             maxLines = 4,
                             onValueChange = {
                                 if (chatViewModel != null) run {
-                                    chatViewModel.onMessageTextChanged(it.trim())
+                                    chatViewModel.onMessageTextChanged(it)
                                 }
                             },
                             value = chatViewModel?.editMessageState?.messageText?.value ?: "",
