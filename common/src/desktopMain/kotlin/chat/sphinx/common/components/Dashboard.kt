@@ -33,9 +33,6 @@ import chat.sphinx.common.Res
 import chat.sphinx.common.components.chat.AttachmentPreview
 import chat.sphinx.common.components.menu.ChatAction
 import chat.sphinx.common.components.pin.PINScreen
-import chat.sphinx.common.components.tribe.JoinTribeView
-import chat.sphinx.common.components.tribe.TribeDetailView
-import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.tribe.NotificationLevel
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
@@ -418,11 +415,19 @@ fun SphinxChatDetailBottomAppBar(
                                     ) {
                                         chatViewModel?.onSendMessage()
                                     }
-                                ).onKeyEvent(
+                                )
+                                .onKeyEvent(
                                     onKeyUp(
-                                        Key.Tab
+                                        Key.DirectionDown
                                     ) {
-                                        chatViewModel?.onAliasMatcherFocus()
+                                        chatViewModel?.onAliasNextFocus()
+                                    }
+                                )
+                                .onKeyEvent(
+                                    onKeyUp(
+                                        Key.DirectionUp
+                                    ) {
+                                        chatViewModel?.onAliasPreviousFocus()
                                     }
                                 ),
                             color = Color.White,
@@ -504,13 +509,14 @@ fun SuggestedAliasListBar(
             ) {
                 Box(modifier = Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
                     Column() {
-                    viewModel.aliasMatcherState.suggestedAliasList.value.forEachIndexed() { index, alias ->
-                        if (index < 3) {
+                        viewModel.aliasMatcherState.suggestedAliasList.value.forEachIndexed() { index, alias ->
+                            if (index < 3) {
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Row() {
+                                Row(modifier = Modifier.height(25.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         alias,
-                                        color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                        color = if(index == viewModel.aliasMatcherState.focus.value) Color.Black else androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                                         fontSize = 12.sp,
                                         fontFamily = Roboto,
                                         fontWeight = FontWeight.Medium

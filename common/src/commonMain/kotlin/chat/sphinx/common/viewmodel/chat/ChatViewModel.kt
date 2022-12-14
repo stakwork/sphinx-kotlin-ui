@@ -565,12 +565,22 @@ abstract class ChatViewModel(
 
     private fun initialAliasMatcherState(): AliasMatcherState = AliasMatcherState()
 
-    private inline fun setAliasMatcherState(update: AliasMatcherState.() -> AliasMatcherState) {
-        aliasMatcherState = aliasMatcherState.update()
+    fun onAliasNextFocus() {
+        if (aliasMatcherState.focus.value < aliasMatcherState.suggestedAliasList.value.lastIndex) {
+            aliasMatcherState.focus.value++
+        }
+        else {
+            aliasMatcherState.focus.value = 0
+        }
     }
 
-    fun onAliasMatcherFocus() {
-        aliasMatcherState.focus.value = true
+    fun onAliasPreviousFocus() {
+        if (aliasMatcherState.focus.value > 0) {
+            aliasMatcherState.focus.value--
+        }
+        else {
+            aliasMatcherState.focus.value = aliasMatcherState.suggestedAliasList.value.lastIndex
+        }
     }
 
     fun onMessageTextChanged(text: String) {
@@ -587,7 +597,7 @@ abstract class ChatViewModel(
                 } ?: run {
                     aliasMatcherState.isOn.value = false
                     aliasMatcherState.inputText.value = ""
-                    aliasMatcherState.focus.value = false
+                    aliasMatcherState.focus.value = 0
                 }
             }
             if (text.last() == '@') {
@@ -597,7 +607,7 @@ abstract class ChatViewModel(
                     aliasMatcherState.inputText.value.length > 4)
             {
                 aliasMatcherState.isOn.value = false
-                aliasMatcherState.focus.value = false
+                aliasMatcherState.focus.value = 0
                 aliasMatcherState.inputText.value = ""
             }
         }
@@ -612,7 +622,13 @@ abstract class ChatViewModel(
             val aliasList = messageListData.messages.map { it.message.senderAlias?.value ?: "" }.distinct()
             val suggestedList = aliasList.filter { it.startsWith(aliasMatcherState.inputText.value, ignoreCase = true) }.reversed()
 
-            aliasMatcherState.suggestedAliasList.value = suggestedList
+            if (suggestedList.size > 3) {
+                aliasMatcherState.suggestedAliasList.value = suggestedList.slice(0..2)
+            }
+            else {
+                aliasMatcherState.suggestedAliasList.value = suggestedList
+            }
+            aliasMatcherState.focus.value = 0
         }
     }
 
