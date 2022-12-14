@@ -51,6 +51,12 @@ fun MessageListUI(
                         chatViewModel,
                         dashboardViewModel
                     )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter
+                    ){
+                        SuggestedAliasListBar(chatViewModel)
+                    }
 
                     VerticalScrollbar(
                         modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),

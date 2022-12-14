@@ -56,14 +56,11 @@ import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.media.isImage
 import chat.sphinx.wrapper.util.getInitials
-import theme.place_holder_text
-import theme.primary_green
-import theme.sphinx_orange
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
 import org.jetbrains.compose.splitpane.HorizontalSplitPane
 import org.jetbrains.compose.splitpane.rememberSplitPaneState
-import theme.primary_blue
+import theme.*
 import utils.AnimatedContainer
 import java.awt.Cursor
 
@@ -417,10 +414,15 @@ fun SphinxChatDetailBottomAppBar(
                                 .padding(horizontal = 6.dp, vertical = 4.dp)
                                 .defaultMinSize(Dp.Unspecified, 32.dp)
                                 .onKeyEvent(
-                                    onKeyUp(
-                                        Key.Enter
+                                        onKeyUp(Key.Enter
                                     ) {
                                         chatViewModel?.onSendMessage()
+                                    }
+                                ).onKeyEvent(
+                                    onKeyUp(
+                                        Key.Tab
+                                    ) {
+                                        chatViewModel?.onAliasMatcherFocus()
                                     }
                                 ),
                             color = Color.White,
@@ -478,6 +480,45 @@ fun SphinxChatDetailBottomAppBar(
                                 tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.size(27.dp)
                             )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun SuggestedAliasListBar(
+    chatViewModel: ChatViewModel?
+) {
+    chatViewModel?.let { viewModel ->
+
+        if (viewModel.aliasMatcherState.isOn.value) {
+            AnimatedContainer(
+                fromTopToBottom = 20,
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
+                    .background(color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
+            ) {
+                Box(modifier = Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                    Column() {
+                    viewModel.aliasMatcherState.suggestedAliasList.value.forEachIndexed() { index, alias ->
+                        if (index < 3) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row() {
+                                    Text(
+                                        alias,
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                        fontSize = 12.sp,
+                                        fontFamily = Roboto,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Divider(color = light_divider)
+                            }
                         }
                     }
                 }

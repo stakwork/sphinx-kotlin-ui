@@ -569,6 +569,10 @@ abstract class ChatViewModel(
         aliasMatcherState = aliasMatcherState.update()
     }
 
+    fun onAliasMatcherFocus() {
+        aliasMatcherState.focus.value = true
+    }
+
     fun onMessageTextChanged(text: String) {
         editMessageState.messageText.value = text
         aliasMatcher(text)
@@ -583,15 +587,22 @@ abstract class ChatViewModel(
                 } ?: run {
                     aliasMatcherState.isOn.value = false
                     aliasMatcherState.inputText.value = ""
+                    aliasMatcherState.focus.value = false
                 }
             }
             if (text.last() == '@') {
                 aliasMatcherState.isOn.value = true
             }
-            if (text.last() == ' ') {
+            if (aliasMatcherState.inputText.value.contains(' ') ||
+                    aliasMatcherState.inputText.value.length > 4)
+            {
                 aliasMatcherState.isOn.value = false
+                aliasMatcherState.focus.value = false
                 aliasMatcherState.inputText.value = ""
             }
+        }
+        else {
+            aliasMatcherState.isOn.value = false
         }
     }
 
@@ -599,7 +610,7 @@ abstract class ChatViewModel(
         val messageListData = MessageListState.screenState()
         if (messageListData is MessageListData.PopulatedMessageListData) {
             val aliasList = messageListData.messages.map { it.message.senderAlias?.value ?: "" }.distinct()
-            val suggestedList = aliasList.sortedBy { it.startsWith(aliasMatcherState.inputText.value, ignoreCase = true) }.reversed()
+            val suggestedList = aliasList.filter { it.startsWith(aliasMatcherState.inputText.value, ignoreCase = true) }.reversed()
 
             aliasMatcherState.suggestedAliasList.value = suggestedList
         }
