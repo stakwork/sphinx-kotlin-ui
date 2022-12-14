@@ -7,5 +7,6 @@ data class AliasMatcherState(
     val isOn:  MutableState<Boolean> = mutableStateOf(false),
     val inputText: MutableState<String> = mutableStateOf(""),
     val suggestedAliasList: MutableState<List<String>> = mutableStateOf(listOf("")),
-    val focus: MutableState<Int> = mutableStateOf(0)
+    val selectedItem: MutableState<Int> = mutableStateOf(0),
+    val visibility: MutableState<Boolean> = mutableStateOf(false)
     )

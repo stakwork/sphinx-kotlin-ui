@@ -561,31 +561,35 @@ abstract class ChatViewModel(
         editMessageState = editMessageState.update()
     }
 
+    fun onMessageTextChanged(text: String) {
+        editMessageState.messageText.value = text
+    }
+
+    fun onTribeMessageTextChanged(text: String) {
+        editMessageState.messageText.value = text
+        aliasMatcher(text)
+    }
+
     var aliasMatcherState: AliasMatcherState by mutableStateOf(initialAliasMatcherState())
 
     private fun initialAliasMatcherState(): AliasMatcherState = AliasMatcherState()
 
     fun onAliasNextFocus() {
-        if (aliasMatcherState.focus.value < aliasMatcherState.suggestedAliasList.value.lastIndex) {
-            aliasMatcherState.focus.value++
+        if (aliasMatcherState.selectedItem.value < aliasMatcherState.suggestedAliasList.value.lastIndex) {
+            aliasMatcherState.selectedItem.value++
         }
         else {
-            aliasMatcherState.focus.value = 0
+            aliasMatcherState.selectedItem.value = 0
         }
     }
 
     fun onAliasPreviousFocus() {
-        if (aliasMatcherState.focus.value > 0) {
-            aliasMatcherState.focus.value--
+        if (aliasMatcherState.selectedItem.value > 0) {
+            aliasMatcherState.selectedItem.value--
         }
         else {
-            aliasMatcherState.focus.value = aliasMatcherState.suggestedAliasList.value.lastIndex
+            aliasMatcherState.selectedItem.value = aliasMatcherState.suggestedAliasList.value.lastIndex
         }
-    }
-
-    fun onMessageTextChanged(text: String) {
-        editMessageState.messageText.value = text
-        aliasMatcher(text)
     }
 
     private fun aliasMatcher(text: String) {
@@ -595,9 +599,7 @@ abstract class ChatViewModel(
                     aliasMatcherState.inputText.value = it
                     generateSuggestedAliasList()
                 } ?: run {
-                    aliasMatcherState.isOn.value = false
-                    aliasMatcherState.inputText.value = ""
-                    aliasMatcherState.focus.value = 0
+                    resetAliasMatcher()
                 }
             }
             if (text.last() == '@') {
@@ -606,21 +608,33 @@ abstract class ChatViewModel(
             if (aliasMatcherState.inputText.value.contains(' ') ||
                     aliasMatcherState.inputText.value.length > 4)
             {
-                aliasMatcherState.isOn.value = false
-                aliasMatcherState.focus.value = 0
-                aliasMatcherState.inputText.value = ""
+                resetAliasMatcher()
+            }
+            if (aliasMatcherState.inputText.value.isNotEmpty()) {
+                aliasMatcherState.visibility.value = true
+            }
+            if (aliasMatcherState.inputText.value.isEmpty()) {
+                aliasMatcherState.visibility.value = false
             }
         }
         else {
-            aliasMatcherState.isOn.value = false
+            resetAliasMatcher()
         }
+    }
+
+    fun resetAliasMatcher() {
+        aliasMatcherState.isOn.value = false
+        aliasMatcherState.visibility.value = false
+        aliasMatcherState.inputText.value = ""
+        aliasMatcherState.selectedItem.value = 0
     }
 
     private fun generateSuggestedAliasList() {
         val messageListData = MessageListState.screenState()
         if (messageListData is MessageListData.PopulatedMessageListData) {
+            val inputText = aliasMatcherState.inputText.value.replace("\t", "").replace("\n", "")
             val aliasList = messageListData.messages.map { it.message.senderAlias?.value ?: "" }.distinct()
-            val suggestedList = aliasList.filter { it.startsWith(aliasMatcherState.inputText.value, ignoreCase = true) }.reversed()
+            val suggestedList = aliasList.filter { it.startsWith(inputText, ignoreCase = true) }.reversed()
 
             if (suggestedList.size > 3) {
                 aliasMatcherState.suggestedAliasList.value = suggestedList.slice(0..2)
@@ -628,8 +642,13 @@ abstract class ChatViewModel(
             else {
                 aliasMatcherState.suggestedAliasList.value = suggestedList
             }
-            aliasMatcherState.focus.value = 0
         }
+    }
+
+    fun onSelectAlias() {
+        val oldString = "@" + aliasMatcherState.inputText.value
+        val newString = "@" + aliasMatcherState.suggestedAliasList.value.get(aliasMatcherState.selectedItem.value)
+        editMessageState.messageText.value = editMessageState.messageText.value.replace(oldString, newString)
     }
 
     fun onPriceTextChanged(text: String) {
@@ -676,7 +695,7 @@ abstract class ChatViewModel(
                 editMessageState.messageText.value.isNotEmpty()
             ) {
                 //Paid text message
-                createPaidMessageFile(editMessageState.messageText.value)?.let { path ->
+                createPaidMessageFile(editMessageState.messageText.value.trim())?.let { path ->
                     sendMessageBuilder.setAttachmentInfo(
                         AttachmentInfo(
                             filePath = path,

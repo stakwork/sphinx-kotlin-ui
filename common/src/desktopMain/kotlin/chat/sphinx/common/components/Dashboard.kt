@@ -411,9 +411,16 @@ fun SphinxChatDetailBottomAppBar(
                                 .padding(horizontal = 6.dp, vertical = 4.dp)
                                 .defaultMinSize(Dp.Unspecified, 32.dp)
                                 .onKeyEvent(
-                                        onKeyUp(Key.Enter
+                                    onKeyUp(
+                                        Key.Enter
                                     ) {
-                                        chatViewModel?.onSendMessage()
+                                        if (dashboardChat?.isTribe() == true &&
+                                            chatViewModel?.aliasMatcherState?.isOn?.value == true) {
+                                                chatViewModel.onSelectAlias()
+                                                chatViewModel.resetAliasMatcher()
+                                        } else {
+                                            chatViewModel?.onSendMessage()
+                                        }
                                     }
                                 )
                                 .onKeyEvent(
@@ -429,6 +436,14 @@ fun SphinxChatDetailBottomAppBar(
                                     ) {
                                         chatViewModel?.onAliasPreviousFocus()
                                     }
+                                )
+                                .onKeyEvent(
+                                    onKeyUp(
+                                        Key.Tab
+                                    ) {
+                                        chatViewModel?.onSelectAlias()
+                                        chatViewModel?.resetAliasMatcher()
+                                    }
                                 ),
                             color = Color.White,
                             fontSize = 16.sp,
@@ -437,7 +452,12 @@ fun SphinxChatDetailBottomAppBar(
                             maxLines = 4,
                             onValueChange = {
                                 if (chatViewModel != null) run {
-                                    chatViewModel.onMessageTextChanged(it)
+                                    if(dashboardChat?.isTribe() == true) {
+                                        chatViewModel.onTribeMessageTextChanged(it)
+                                    }
+                                    else {
+                                        chatViewModel.onMessageTextChanged(it)
+                                    }
                                 }
                             },
                             value = chatViewModel?.editMessageState?.messageText?.value ?: "",
@@ -495,37 +515,41 @@ fun SphinxChatDetailBottomAppBar(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SuggestedAliasListBar(
-    chatViewModel: ChatViewModel?
+    chatViewModel: ChatViewModel
 ) {
-    chatViewModel?.let { viewModel ->
 
-        if (viewModel.aliasMatcherState.isOn.value) {
-            AnimatedContainer(
-                fromTopToBottom = 20,
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .background(color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
-            ) {
-                Box(modifier = Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
-                    Column() {
-                        viewModel.aliasMatcherState.suggestedAliasList.value.forEachIndexed() { index, alias ->
-                            if (index < 3) {
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(modifier = Modifier.height(25.dp),
-                                verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        alias,
-                                        color = if(index == viewModel.aliasMatcherState.focus.value) Color.Black else androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                                        fontSize = 12.sp,
-                                        fontFamily = Roboto,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Divider(color = light_divider)
+    if (chatViewModel.aliasMatcherState.visibility.value) {
+        AnimatedContainer(
+            fromTopToBottom = 20,
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .background(color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer)
+        ) {
+
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Column() {
+                    chatViewModel.aliasMatcherState.suggestedAliasList.value.forEachIndexed() { index, alias ->
+                        val backgrondColor = if (index == chatViewModel.aliasMatcherState.selectedItem.value) androidx.compose.material3.MaterialTheme.colorScheme.background else androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                modifier = Modifier
+                                    .height(25.dp)
+                                    .fillMaxWidth()
+                                    .background(backgrondColor)
+                                    .padding(start = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    alias,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                                    fontSize = 12.sp,
+                                    fontFamily = Roboto,
+                                    fontWeight = FontWeight.Medium
+                                )
                             }
-                        }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Divider(color = light_divider)
                     }
                 }
             }
