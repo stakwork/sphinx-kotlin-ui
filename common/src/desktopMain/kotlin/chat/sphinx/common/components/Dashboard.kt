@@ -527,7 +527,7 @@ fun SuggestedAliasListBar(
     chatViewModel: ChatViewModel
 ) {
 
-    if (chatViewModel.aliasMatcherState.visibility.value) {
+    if (chatViewModel.aliasMatcherState.isOn.value) {
         AnimatedContainer(
             fromTopToBottom = 20,
             modifier = Modifier

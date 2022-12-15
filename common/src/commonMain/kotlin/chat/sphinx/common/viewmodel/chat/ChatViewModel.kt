@@ -596,6 +596,9 @@ abstract class ChatViewModel(
 
     private fun aliasMatcher(text: String) {
         if (text.isNotEmpty()) {
+            if (text.takeLast(2).contains(regex = Regex("@."))) {
+                aliasMatcherState.isOn.value = true
+            }
             if (aliasMatcherState.isOn.value) {
                 text.substringAfterLastOrNull('@')?.let {
                     aliasMatcherState.inputText.value = it
@@ -604,19 +607,10 @@ abstract class ChatViewModel(
                     resetAliasMatcher()
                 }
             }
-            if (text.last() == '@') {
-                aliasMatcherState.isOn.value = true
-            }
             if (aliasMatcherState.inputText.value.contains(' ') ||
                     aliasMatcherState.inputText.value.length > 4)
             {
                 resetAliasMatcher()
-            }
-            if (aliasMatcherState.inputText.value.isNotEmpty()) {
-                aliasMatcherState.visibility.value = true
-            }
-            if (aliasMatcherState.inputText.value.isEmpty()) {
-                aliasMatcherState.visibility.value = false
             }
         }
         else {
@@ -626,7 +620,6 @@ abstract class ChatViewModel(
 
     fun resetAliasMatcher() {
         aliasMatcherState.isOn.value = false
-        aliasMatcherState.visibility.value = false
         aliasMatcherState.inputText.value = ""
         aliasMatcherState.selectedItem.value = 0
     }
