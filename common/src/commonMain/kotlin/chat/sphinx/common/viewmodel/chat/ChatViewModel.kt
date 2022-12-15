@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import chat.sphinx.common.components.AudioPlayer
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.models.DashboardChat
@@ -562,11 +564,11 @@ abstract class ChatViewModel(
     }
 
     fun onMessageTextChanged(text: String) {
-        editMessageState.messageText.value = text
+        editMessageState.messageText.value = TextFieldValue(text)
     }
 
     fun onTribeMessageTextChanged(text: String) {
-        editMessageState.messageText.value = text
+        editMessageState.messageText.value = TextFieldValue(text)
         aliasMatcher(text)
     }
 
@@ -648,7 +650,8 @@ abstract class ChatViewModel(
     fun onSelectAlias() {
         val oldString = "@" + aliasMatcherState.inputText.value
         val newString = "@" + aliasMatcherState.suggestedAliasList.value.get(aliasMatcherState.selectedItem.value)
-        editMessageState.messageText.value = editMessageState.messageText.value.replace(oldString, newString)
+        val replacedString = editMessageState.messageText.value.text.replace(oldString, newString)
+        editMessageState.messageText.value = TextFieldValue(replacedString, TextRange(0))
     }
 
     fun onPriceTextChanged(text: String) {
@@ -670,6 +673,7 @@ abstract class ChatViewModel(
 
     fun resetMessageFile() {
         editMessageState.attachmentInfo.value = null
+
     }
 
     private var sendMessageJob: Job? = null
@@ -682,7 +686,7 @@ abstract class ChatViewModel(
             val sendMessageBuilder = SendMessage.Builder()
                 .setChatId(editMessageState.chatId)
                 .setContactId(editMessageState.contactId)
-                .setText(editMessageState.messageText.value.trim())
+                .setText(editMessageState.messageText.value.text.trim())
                 .setPaidMessagePrice(editMessageState.price.value?.toSat())
                 .also { builder ->
                     editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
@@ -692,10 +696,10 @@ abstract class ChatViewModel(
 
             if (
                 editMessageState.price?.value ?: 0 > 0 &&
-                editMessageState.messageText.value.isNotEmpty()
+                editMessageState.messageText.value.text.isNotEmpty()
             ) {
                 //Paid text message
-                createPaidMessageFile(editMessageState.messageText.value.trim())?.let { path ->
+                createPaidMessageFile(editMessageState.messageText.value.text.trim())?.let { path ->
                     sendMessageBuilder.setAttachmentInfo(
                         AttachmentInfo(
                             filePath = path,
@@ -732,7 +736,7 @@ abstract class ChatViewModel(
 
     fun sendCallInvite(audioOnly: Boolean) {
         SphinxCallLink.newCallInvite(null, audioOnly)?.value?.let { newCallLink ->
-            editMessageState.messageText.value = newCallLink
+            editMessageState.messageText.value = TextFieldValue(newCallLink)
             editMessageState.price.value = null
 
             onSendMessage()

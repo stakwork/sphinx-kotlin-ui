@@ -25,6 +25,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -337,6 +338,14 @@ fun SphinxChatDetailBottomAppBar(
 ) {
     val scope = rememberCoroutineScope()
 
+    var textFieldValueState by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = ""
+            )
+        )
+    }
+
     Surface(
         color = androidx.compose.material3.MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth().wrapContentHeight(),
@@ -460,7 +469,7 @@ fun SphinxChatDetailBottomAppBar(
                                     }
                                 }
                             },
-                            value = chatViewModel?.editMessageState?.messageText?.value ?: "",
+                            value = chatViewModel?.editMessageState?.messageText?.value?.text ?: "",
                             cursorBrush = primary_blue,
                             enabled = !(dashboardChat?.getChatOrNull()?.isPrivateTribe() == true && dashboardChat?.getChatOrNull()?.status?.isPending() == true)
                         )
