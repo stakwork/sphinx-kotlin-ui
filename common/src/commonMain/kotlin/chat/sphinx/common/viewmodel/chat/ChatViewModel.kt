@@ -45,7 +45,10 @@ import chat.sphinx.wrapper.tribe.TribeJoinLink
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import chat.sphinx.wrapper_chat.NotificationLevel
 import chat.sphinx.wrapper_chat.isMuteChat
+import com.soywiz.korio.lang.substr
 import com.soywiz.korio.util.substringAfterLastOrNull
+import com.soywiz.korio.util.substringBeforeLastOrNull
+import com.soywiz.korio.util.substringBeforeOrNull
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -599,17 +602,17 @@ abstract class ChatViewModel(
         if (text.isNotEmpty() && cursorPosition > 1) {
             if (text[cursorPosition-2] == '@') {
                 aliasMatcherState.isOn.value = true
+                aliasMatcherState.atPosition.value = cursorPosition - 2
             }
             if (aliasMatcherState.isOn.value) {
-                text.substringAfterLastOrNull('@')?.let {
+                text.substring(aliasMatcherState.atPosition.value + 1).substringBefore(" ").let {
                     aliasMatcherState.inputText.value = it
                     generateSuggestedAliasList()
-                } ?: run {
-                    resetAliasMatcher()
                 }
             }
             if (aliasMatcherState.inputText.value.contains(' ') ||
-                    aliasMatcherState.inputText.value.length > 4)
+                    aliasMatcherState.inputText.value.length > 4 ||
+                    text[aliasMatcherState.atPosition.value] != '@')
             {
                 resetAliasMatcher()
             }
@@ -619,10 +622,11 @@ abstract class ChatViewModel(
         }
     }
 
-    fun resetAliasMatcher() {
+    private fun resetAliasMatcher() {
         aliasMatcherState.isOn.value = false
         aliasMatcherState.inputText.value = ""
         aliasMatcherState.selectedItem.value = 0
+        aliasMatcherState.atPosition.value = 0
     }
 
     private fun generateSuggestedAliasList() {
@@ -642,11 +646,14 @@ abstract class ChatViewModel(
     }
 
     fun onSelectAlias() {
-        val oldString = "@" + aliasMatcherState.inputText.value
-        val newString = "@" + aliasMatcherState.suggestedAliasList.value[aliasMatcherState.selectedItem.value]
-        val replacedString = editMessageState.messageText.value.text.replace(oldString, newString)
-        val cursorPosition = replacedString.lastIndexOf(newString) + newString.length
-        editMessageState.messageText.value = TextFieldValue(replacedString, TextRange(cursorPosition))
+        if(aliasMatcherState.isOn.value) {
+            val oldString = "@" + aliasMatcherState.inputText.value
+            val newString = "@" + aliasMatcherState.suggestedAliasList.value[aliasMatcherState.selectedItem.value]
+            val replacedString = editMessageState.messageText.value.text.replace(oldString, newString)
+            val cursorPosition = replacedString.lastIndexOf(newString) + newString.length
+            editMessageState.messageText.value = TextFieldValue(replacedString, TextRange(cursorPosition))
+            resetAliasMatcher()
+        }
     }
 
     fun onPriceTextChanged(text: String) {

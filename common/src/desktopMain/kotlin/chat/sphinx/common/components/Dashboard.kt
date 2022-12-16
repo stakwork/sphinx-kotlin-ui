@@ -426,7 +426,6 @@ fun SphinxChatDetailBottomAppBar(
                                         if (dashboardChat?.isTribe() == true &&
                                             chatViewModel?.aliasMatcherState?.isOn?.value == true) {
                                                 chatViewModel.onSelectAlias()
-                                                chatViewModel.resetAliasMatcher()
                                         } else {
                                             chatViewModel?.onSendMessage()
                                         }
@@ -451,7 +450,6 @@ fun SphinxChatDetailBottomAppBar(
                                         Key.Tab
                                     ) {
                                         chatViewModel?.onSelectAlias()
-                                        chatViewModel?.resetAliasMatcher()
                                     }
                                 ),
                             color = Color.White,
@@ -539,13 +537,13 @@ fun SuggestedAliasListBar(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column() {
                     chatViewModel.aliasMatcherState.suggestedAliasList.value.forEachIndexed() { index, alias ->
-                        val backgrondColor = if (index == chatViewModel.aliasMatcherState.selectedItem.value) androidx.compose.material3.MaterialTheme.colorScheme.background else androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
+                        val backgroundColor = if (index == chatViewModel.aliasMatcherState.selectedItem.value) androidx.compose.material3.MaterialTheme.colorScheme.background else androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(
                                 modifier = Modifier
                                     .height(25.dp)
                                     .fillMaxWidth()
-                                    .background(backgrondColor)
+                                    .background(backgroundColor)
                                     .padding(start = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -655,7 +653,7 @@ fun MessageReplyingBar(
                                     onClick = {
                                         chatViewModel?.editMessageState?.replyToMessage?.value = null
                                     }
-                                ),
+                                )
                         )
                     }
                 }
