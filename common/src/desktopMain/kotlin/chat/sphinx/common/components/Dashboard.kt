@@ -469,7 +469,7 @@ fun SphinxChatDetailBottomAppBar(
                                     }
                                 }
                             },
-                            value = chatViewModel?.editMessageState?.messageText?.value?.text ?: "",
+                            value = chatViewModel?.editMessageState?.messageText?.value ?: TextFieldValue(""),
                             cursorBrush = primary_blue,
                             enabled = !(dashboardChat?.getChatOrNull()?.isPrivateTribe() == true && dashboardChat?.getChatOrNull()?.status?.isPending() == true)
                         )

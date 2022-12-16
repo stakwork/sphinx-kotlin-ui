@@ -563,13 +563,13 @@ abstract class ChatViewModel(
         editMessageState = editMessageState.update()
     }
 
-    fun onMessageTextChanged(text: String) {
-        editMessageState.messageText.value = TextFieldValue(text)
+    fun onMessageTextChanged(text: TextFieldValue) {
+        editMessageState.messageText.value = text
     }
 
-    fun onTribeMessageTextChanged(text: String) {
-        editMessageState.messageText.value = TextFieldValue(text)
-        aliasMatcher(text)
+    fun onTribeMessageTextChanged(text: TextFieldValue) {
+        editMessageState.messageText.value = text
+        aliasMatcher(text.text)
     }
 
     var aliasMatcherState: AliasMatcherState by mutableStateOf(initialAliasMatcherState())
@@ -595,8 +595,9 @@ abstract class ChatViewModel(
     }
 
     private fun aliasMatcher(text: String) {
-        if (text.isNotEmpty()) {
-            if (text.takeLast(2).contains(regex = Regex("@."))) {
+        val cursorPosition = editMessageState.messageText.value.selection.start
+        if (text.isNotEmpty() && cursorPosition > 1) {
+            if (text[cursorPosition-2] == '@') {
                 aliasMatcherState.isOn.value = true
             }
             if (aliasMatcherState.isOn.value) {
@@ -642,9 +643,10 @@ abstract class ChatViewModel(
 
     fun onSelectAlias() {
         val oldString = "@" + aliasMatcherState.inputText.value
-        val newString = "@" + aliasMatcherState.suggestedAliasList.value.get(aliasMatcherState.selectedItem.value)
+        val newString = "@" + aliasMatcherState.suggestedAliasList.value[aliasMatcherState.selectedItem.value]
         val replacedString = editMessageState.messageText.value.text.replace(oldString, newString)
-        editMessageState.messageText.value = TextFieldValue(replacedString, TextRange(0))
+        val cursorPosition = replacedString.lastIndexOf(newString) + newString.length
+        editMessageState.messageText.value = TextFieldValue(replacedString, TextRange(cursorPosition))
     }
 
     fun onPriceTextChanged(text: String) {

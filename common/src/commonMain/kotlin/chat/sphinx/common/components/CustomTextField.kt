@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import theme.place_holder_text
@@ -20,9 +21,9 @@ fun CustomTextField(
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     placeholderText: String = "Placeholder",
-    value: String,
+    value: TextFieldValue,
     color: Color? = null,
-    onValueChange: (String) -> Unit,
+    onValueChange: (TextFieldValue) -> Unit,
     fontSize: TextUnit = MaterialTheme.typography.body2.fontSize,
     singleLine: Boolean = true,
     maxLines: Int = 4,
@@ -50,7 +51,7 @@ fun CustomTextField(
             ) {
                 if (leadingIcon != null) leadingIcon()
                 Box(Modifier.weight(1f)) {
-                    if (value.isEmpty())
+                    if (value.text.isEmpty())
                         Text(
                             placeholderText,
                             style = LocalTextStyle.current.copy(

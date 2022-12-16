@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -150,9 +151,9 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                         fontSize = 14.sp,
                         placeholderText = "Search",
                         onValueChange = { input ->
-                            chatListViewModel.filterChats(input)
+                            chatListViewModel.filterChats(input.text)
                         },
-                        value = chatListViewModel.searchText.value
+                        value = TextFieldValue(chatListViewModel.searchText.value)
                     )
                 },
                 elevation = 8.dp,
