@@ -95,26 +95,24 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Spacer(Modifier.width(8.dp))
-                        IconButton(onClick = dashboardViewModel::networkRefresh) {
-                            Button(
-                                shape = RoundedCornerShape(23.dp),
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(backgroundColor = sphinx_orange),
-                                onClick = {
-                                    uriHandler.openUri("https://buy.sphinx.chat/")
-                                }
-                            ) {
-                                Box {
-                                    Text(
-                                        text = "UPGRADE",
-                                        fontSize = 10.sp,
-                                        fontFamily = Roboto,
-                                        color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
-                                        maxLines = 1,
-                                        modifier = Modifier.fillMaxWidth().align(Alignment.Center),
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
+                        Button(
+                            shape = RoundedCornerShape(23.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = sphinx_orange),
+                            onClick = {
+                                uriHandler.openUri("https://buy.sphinx.chat/")
+                            }
+                        ) {
+                            Box {
+                                Text(
+                                    text = "UPGRADE",
+                                    fontSize = 10.sp,
+                                    fontFamily = Roboto,
+                                    color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
+                                    maxLines = 1,
+                                    modifier = Modifier.fillMaxWidth().align(Alignment.Center),
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
                     }

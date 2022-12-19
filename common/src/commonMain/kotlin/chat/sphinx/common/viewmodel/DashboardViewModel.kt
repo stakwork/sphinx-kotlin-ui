@@ -172,27 +172,28 @@ class DashboardViewModel: WindowFocusListener {
     }
 
     private fun getPackageVersion(){
-        val currentAppVersion = "1.0.14"
+        val currentAppVersion = System.getProperty("jpackage.app-version") ?: "1.0.14"
 
         viewModelScope.launch(dispatchers.mainImmediate) {
             networkQueryVersion.getAppVersions().collect { loadResponse ->
-
                 when (loadResponse) {
                     is Response.Error -> {
                         _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
                     }
                     is Response.Success -> {
                         val serverHubVersion = loadResponse.value.kmm
-                        val currentVersion = currentAppVersion.replace(".", "").toInt()
 
-                        if (serverHubVersion > currentVersion) {
-                            _packageVersionAndUpgrade.value = Pair(currentAppVersion, true)
-                        }
-                        else {
-                            _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
+                        currentAppVersion.replace(".", "").toIntOrNull()?.let { currentVersion ->
+                            if (serverHubVersion > currentVersion) {
+                                _packageVersionAndUpgrade.value = Pair(currentAppVersion, true)
+                            }
+                            else {
+                                _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
+                            }
                         }
                     }
                     is LoadResponse.Loading -> {
+
                     }
                 }
             }
