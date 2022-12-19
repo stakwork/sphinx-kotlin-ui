@@ -61,8 +61,7 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
-            // Set the packageVersion in currentAppVersion val on getPackageVersion() in DashboardViewModel.kt as well
-            packageVersion = "1.0.13"
+            packageVersion = "1.0.14"
 
             val iconsRoot = project.file("../common/src/desktopMain/resources/images")
             val sphinxProperties = Properties().apply {
@@ -90,7 +89,6 @@ compose.desktop {
             }
             windows {
                 iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
-                console = true
                 dirChooser = true
             }
             linux {
