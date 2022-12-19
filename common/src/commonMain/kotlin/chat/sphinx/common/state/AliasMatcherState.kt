@@ -1,12 +1,8 @@
 package chat.sphinx.common.state
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-
 data class AliasMatcherState(
-    val isOn:  MutableState<Boolean> = mutableStateOf(false),
-    val inputText: MutableState<String> = mutableStateOf(""),
-    val suggestedAliasList: MutableState<List<String>> = mutableStateOf(listOf("")),
-    val selectedItem: MutableState<Int> = mutableStateOf(0),
-    val atPosition: MutableState<Int> = mutableStateOf(0)
-    )
+    val isOn:  Boolean = false,
+    val inputText: String = "",
+    val suggestedAliasList: List<String> = listOf(""),
+    val selectedItem: Int = 0,
+)

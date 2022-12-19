@@ -567,10 +567,13 @@ abstract class ChatViewModel(
     }
 
     fun onMessageTextChanged(text: TextFieldValue) {
-        editMessageState.messageText.value = text
-    }
-
-    fun onTribeMessageTextChanged(text: TextFieldValue) {
+        if (
+            editMessageState.messageText.value.text == text.text &&
+            (text.selection.start == 0 || text.selection.start == text.text.length) &&
+            aliasMatcherState.isOn
+        ) {
+            return
+        }
         editMessageState.messageText.value = text
         aliasMatcher(text.text)
     }
@@ -579,82 +582,17 @@ abstract class ChatViewModel(
 
     private fun initialAliasMatcherState(): AliasMatcherState = AliasMatcherState()
 
-    fun onAliasNextFocus() {
-        if (aliasMatcherState.selectedItem.value < aliasMatcherState.suggestedAliasList.value.lastIndex) {
-            aliasMatcherState.selectedItem.value++
-        }
-        else {
-            aliasMatcherState.selectedItem.value = 0
-        }
+    inline fun setAliasMatcherState(update: AliasMatcherState.() -> AliasMatcherState) {
+        aliasMatcherState = aliasMatcherState.update()
     }
 
-    fun onAliasPreviousFocus() {
-        if (aliasMatcherState.selectedItem.value > 0) {
-            aliasMatcherState.selectedItem.value--
-        }
-        else {
-            aliasMatcherState.selectedItem.value = aliasMatcherState.suggestedAliasList.value.lastIndex
-        }
-    }
+    open fun aliasMatcher(text: String) {}
 
-    private fun aliasMatcher(text: String) {
-        val cursorPosition = editMessageState.messageText.value.selection.start
-        if (text.isNotEmpty() && cursorPosition > 1) {
-            if (text[cursorPosition-2] == '@') {
-                aliasMatcherState.isOn.value = true
-                aliasMatcherState.atPosition.value = cursorPosition - 2
-            }
-            if (aliasMatcherState.isOn.value) {
-                text.substring(aliasMatcherState.atPosition.value + 1).substringBefore(" ").let {
-                    aliasMatcherState.inputText.value = it
-                    generateSuggestedAliasList()
-                }
-            }
-            if (aliasMatcherState.inputText.value.contains(' ') ||
-                    aliasMatcherState.inputText.value.length > 4 ||
-                    text[aliasMatcherState.atPosition.value] != '@')
-            {
-                resetAliasMatcher()
-            }
-        }
-        else {
-            resetAliasMatcher()
-        }
-    }
+    open fun onAliasNextFocus() {}
 
-    private fun resetAliasMatcher() {
-        aliasMatcherState.isOn.value = false
-        aliasMatcherState.inputText.value = ""
-        aliasMatcherState.selectedItem.value = 0
-        aliasMatcherState.atPosition.value = 0
-    }
+    open fun onAliasPreviousFocus() {}
 
-    private fun generateSuggestedAliasList() {
-        val messageListData = MessageListState.screenState()
-        if (messageListData is MessageListData.PopulatedMessageListData) {
-            val inputText = aliasMatcherState.inputText.value.replace("\t", "").replace("\n", "")
-            val aliasList = messageListData.messages.map { it.message.senderAlias?.value ?: "" }.distinct()
-            val suggestedList = aliasList.filter { it.startsWith(inputText, ignoreCase = true) }.reversed()
-
-            if (suggestedList.size > 3) {
-                aliasMatcherState.suggestedAliasList.value = suggestedList.slice(0..2)
-            }
-            else {
-                aliasMatcherState.suggestedAliasList.value = suggestedList
-            }
-        }
-    }
-
-    fun onSelectAlias() {
-        if(aliasMatcherState.isOn.value) {
-            val oldString = "@" + aliasMatcherState.inputText.value
-            val newString = "@" + aliasMatcherState.suggestedAliasList.value[aliasMatcherState.selectedItem.value]
-            val replacedString = editMessageState.messageText.value.text.replace(oldString, newString)
-            val cursorPosition = replacedString.lastIndexOf(newString) + newString.length
-            editMessageState.messageText.value = TextFieldValue(replacedString, TextRange(cursorPosition))
-            resetAliasMatcher()
-        }
-    }
+    open fun onAliasSelected() {}
 
     fun onPriceTextChanged(text: String) {
         try {
@@ -758,7 +696,8 @@ abstract class ChatViewModel(
                     return@launch
                 }
 
-                val newLevel = if (chat.notifyActualValue().isMuteChat()) NotificationLevel.SeeAll else NotificationLevel.MuteChat
+                val newLevel =
+                    if (chat.notifyActualValue().isMuteChat()) NotificationLevel.SeeAll else NotificationLevel.MuteChat
 
                 Exhaustive@
                 when (val response = chatRepository.setNotificationLevel(chat, newLevel)) {
@@ -848,8 +787,10 @@ abstract class ChatViewModel(
             Exhaustive@
             when (link.tag) {
                 LinkTag.LightningNodePublicKey.name, LinkTag.VirtualNodePublicKey.name -> {
-                    (link.url.toLightningNodePubKey() ?: link.url.toVirtualLightningNodeAddress())?.let { nodeDescriptor ->
-                        ((nodeDescriptor as? LightningNodePubKey) ?: (nodeDescriptor as? VirtualLightningNodeAddress)?.getPubKey())?.let { pubKey ->
+                    (link.url.toLightningNodePubKey()
+                        ?: link.url.toVirtualLightningNodeAddress())?.let { nodeDescriptor ->
+                        ((nodeDescriptor as? LightningNodePubKey)
+                            ?: (nodeDescriptor as? VirtualLightningNodeAddress)?.getPubKey())?.let { pubKey ->
                             val existingContact: Contact? = contactRepository.getContactByPubKey(pubKey).firstOrNull()
 
                             if (existingContact != null) {

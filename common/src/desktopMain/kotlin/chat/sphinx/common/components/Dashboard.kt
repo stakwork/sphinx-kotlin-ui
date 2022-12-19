@@ -423,12 +423,7 @@ fun SphinxChatDetailBottomAppBar(
                                     onKeyUp(
                                         Key.Enter
                                     ) {
-                                        if (dashboardChat?.isTribe() == true &&
-                                            chatViewModel?.aliasMatcherState?.isOn?.value == true) {
-                                                chatViewModel.onSelectAlias()
-                                        } else {
-                                            chatViewModel?.onSendMessage()
-                                        }
+                                        chatViewModel?.onSendMessage()
                                     }
                                 )
                                 .onKeyEvent(
@@ -449,7 +444,7 @@ fun SphinxChatDetailBottomAppBar(
                                     onKeyUp(
                                         Key.Tab
                                     ) {
-                                        chatViewModel?.onSelectAlias()
+                                        chatViewModel?.onAliasSelected()
                                     }
                                 ),
                             color = Color.White,
@@ -459,12 +454,7 @@ fun SphinxChatDetailBottomAppBar(
                             maxLines = 4,
                             onValueChange = {
                                 if (chatViewModel != null) run {
-                                    if(dashboardChat?.isTribe() == true) {
-                                        chatViewModel.onTribeMessageTextChanged(it)
-                                    }
-                                    else {
-                                        chatViewModel.onMessageTextChanged(it)
-                                    }
+                                    chatViewModel.onMessageTextChanged(it)
                                 }
                             },
                             value = chatViewModel?.editMessageState?.messageText?.value ?: TextFieldValue(""),
@@ -525,7 +515,7 @@ fun SuggestedAliasListBar(
     chatViewModel: ChatViewModel
 ) {
 
-    if (chatViewModel.aliasMatcherState.isOn.value) {
+    if (chatViewModel.aliasMatcherState.isOn) {
         AnimatedContainer(
             fromTopToBottom = 20,
             modifier = Modifier
@@ -536,12 +526,11 @@ fun SuggestedAliasListBar(
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column() {
-                    chatViewModel.aliasMatcherState.suggestedAliasList.value.forEachIndexed() { index, alias ->
-                        val backgroundColor = if (index == chatViewModel.aliasMatcherState.selectedItem.value) androidx.compose.material3.MaterialTheme.colorScheme.background else androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
-                            Spacer(modifier = Modifier.height(4.dp))
+                    chatViewModel.aliasMatcherState.suggestedAliasList.forEachIndexed() { index, alias ->
+                        val backgroundColor = if (index == chatViewModel.aliasMatcherState.selectedItem) androidx.compose.material3.MaterialTheme.colorScheme.background else androidx.compose.material3.MaterialTheme.colorScheme.onSecondaryContainer
                             Row(
                                 modifier = Modifier
-                                    .height(25.dp)
+                                    .height(40.dp)
                                     .fillMaxWidth()
                                     .background(backgroundColor)
                                     .padding(start = 12.dp),
@@ -555,7 +544,6 @@ fun SuggestedAliasListBar(
                                     fontWeight = FontWeight.Medium
                                 )
                             }
-                            Spacer(modifier = Modifier.height(4.dp))
                             Divider(color = light_divider)
                     }
                 }
