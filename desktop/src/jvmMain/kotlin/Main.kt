@@ -89,7 +89,9 @@ fun main() = application {
 
                 MenuBar {
                     Menu("Sphinx") {
-                        Item("About", icon = sphinxIcon, onClick = { })
+                        Item("About Sphinx", icon = sphinxIcon, onClick = {
+                            dashboardViewModel.toggleAboutSphinxWindow(true)
+                        })
                         when (DashboardScreenState.screenState()) {
                             DashboardScreenType.Unlocked ->{
                                 Item("Profile", onClick = {dashboardViewModel.toggleProfileWindow(true)})

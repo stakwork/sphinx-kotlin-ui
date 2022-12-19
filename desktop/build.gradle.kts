@@ -6,7 +6,6 @@ import java.util.*
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.1.0"
-
 }
 
 group = "chat.sphinx"
