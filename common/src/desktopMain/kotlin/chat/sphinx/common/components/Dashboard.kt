@@ -423,7 +423,12 @@ fun SphinxChatDetailBottomAppBar(
                                     onKeyUp(
                                         Key.Enter
                                     ) {
-                                        chatViewModel?.onSendMessage()
+                                        if (chatViewModel?.aliasMatcherState?.isOn == true) {
+                                            chatViewModel?.onAliasSelected()
+                                        } else {
+                                            chatViewModel?.onSendMessage()
+                                        }
+
                                     }
                                 )
                                 .onKeyEvent(
