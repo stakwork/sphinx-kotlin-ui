@@ -4,6 +4,7 @@ import androidx.annotation.ColorInt
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.TextFieldValue
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.ChatDetailData
 import chat.sphinx.common.state.ChatDetailState
@@ -63,7 +64,7 @@ class ChatListViewModel {
     private suspend fun getAccountBalance(): StateFlow<NodeBalance?> =
         repositoryDashboard.getAccountBalanceStateFlow()
 
-    var searchText: MutableState<String> = mutableStateOf("")
+    var searchText: MutableState<TextFieldValue?> = mutableStateOf(null)
 
     private var contactsCollectionInitialized: Boolean = false
     private var chatsCollectionInitialized: Boolean = false
@@ -224,12 +225,14 @@ class ChatListViewModel {
         }
     }
 
-    fun filterChats(filter: String) {
+    fun filterChats(filter: TextFieldValue?) {
         searchText.value = filter
 
         val currentChatListState = ChatListState.screenState()
 
-        if (filter.isEmpty()) {
+        val filterText = filter?.text ?: ""
+
+        if (filterText.isEmpty()) {
             ChatListState.screenState(
                 ChatListData.PopulatedChatListData(
                     dashboardChats,
@@ -238,7 +241,7 @@ class ChatListViewModel {
             )
         } else {
             val filteredChats = dashboardChats.filterDashboardChats(
-                filter
+                filterText
             )
 
             ChatListState.screenState(

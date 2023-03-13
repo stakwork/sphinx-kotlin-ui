@@ -61,7 +61,7 @@ class ProfileViewModel {
     private fun getNodeDescriptor(owner: Contact): LightningNodeDescriptor? {
         owner.routeHint?.let {
             if (it.value.isNotEmpty()) {
-                return VirtualLightningNodeAddress("${owner.nodePubKey?.value ?: ""}:${it}")
+                return VirtualLightningNodeAddress("${owner.nodePubKey?.value ?: ""}:${it.value}")
             }
         }
         return owner.nodePubKey

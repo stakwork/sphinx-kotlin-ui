@@ -166,13 +166,13 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                             )
                         },
                         trailingIcon = {
-                             if (chatListViewModel.searchText.value.isNotEmpty()) {
+                             if (chatListViewModel.searchText.value?.text?.isNotEmpty() == true) {
                                  Icon(
                                      Icons.Filled.Cancel,
                                      null,
                                      tint = place_holder_text,
                                      modifier = Modifier.width(16.dp).clickable {
-                                         chatListViewModel.filterChats("")
+                                         chatListViewModel.filterChats(TextFieldValue(""))
                                      },
                                  )
                              }
@@ -187,9 +187,9 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                         fontSize = 14.sp,
                         placeholderText = "Search",
                         onValueChange = { input ->
-                            chatListViewModel.filterChats(input.text)
+                            chatListViewModel.filterChats(input)
                         },
-                        value = TextFieldValue(chatListViewModel.searchText.value)
+                        value = chatListViewModel.searchText.value ?: TextFieldValue("")
                     )
                 },
                 elevation = 8.dp,
