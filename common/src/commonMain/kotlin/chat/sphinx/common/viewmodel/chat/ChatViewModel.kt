@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import chat.sphinx.common.components.AudioPlayer
@@ -623,10 +624,14 @@ abstract class ChatViewModel(
         }
 
         sendMessageJob = scope.launch(dispatchers.mainImmediate) {
+            val messageText = editMessageState.messageText.value.text.trim()
+            val isCallMessage = messageText.toCallLinkMessageOrNull() != null
+
             val sendMessageBuilder = SendMessage.Builder()
                 .setChatId(editMessageState.chatId)
+                .setIsCall(isCallMessage)
                 .setContactId(editMessageState.contactId)
-                .setText(editMessageState.messageText.value.text.trim())
+                .setText(messageText)
                 .setPaidMessagePrice(editMessageState.price.value?.toSat())
                 .also { builder ->
                     editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
@@ -674,12 +679,29 @@ abstract class ChatViewModel(
         }
     }
 
-    fun sendCallInvite(audioOnly: Boolean) {
-        SphinxCallLink.newCallInvite(null, audioOnly)?.value?.let { newCallLink ->
-            editMessageState.messageText.value = TextFieldValue(newCallLink)
-            editMessageState.price.value = null
+    fun sendCallInvite(
+        audioOnly: Boolean,
+        callback:(String) -> Unit
+    ) {
+        scope.launch(dispatchers.mainImmediate) {
+            val messageText = if (getChat()?.isConversation() == true) {
+                SphinxCallLink.newCallLinkMessage(null, audioOnly)
+            } else {
+                SphinxCallLink.newCallLink(null, audioOnly)
+            }
 
-            onSendMessage()
+            messageText?.let {
+                editMessageState.messageText.value = TextFieldValue(messageText)
+                editMessageState.price.value = null
+
+                onSendMessage()
+
+                (messageText.toSphinxCallLink() ?: messageText.toCallLinkMessageOrNull()?.link)?.let {
+                    callback(
+                        if (audioOnly) it.audioCallLink else it.videoCallLink
+                    )
+                }
+            }
         }
     }
 

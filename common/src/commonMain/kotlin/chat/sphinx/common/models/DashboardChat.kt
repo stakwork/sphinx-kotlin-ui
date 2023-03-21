@@ -191,6 +191,9 @@ sealed class DashboardChat {
 
                     "${getMessageSender(message, true)} boost ${amount}"
                 }
+                message.type.isCallLink() -> {
+                    "${getMessageSender(message, true)}: Join Call"
+                }
                 message.messageDecryptionError -> {
                     "DECRYPTION ERROR..."
                 }

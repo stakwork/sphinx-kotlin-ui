@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.utils.SphinxFonts
+import chat.sphinx.wrapper.message.retrieveSphinxCallLink
 import theme.primary_green
 import chat.sphinx.wrapper.message.toSphinxCallLink
 
@@ -21,7 +22,7 @@ fun JitsiAudioVideoCall(
     chatMessage: ChatMessage
 ) {
     val uriHandler = LocalUriHandler.current
-    val sphinxCallLink = chatMessage.message.messageContentDecrypted?.value?.toSphinxCallLink()
+    val sphinxCallLink = chatMessage.message.retrieveSphinxCallLink()
 
     Column(
         verticalArrangement = Arrangement.Center,

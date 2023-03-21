@@ -24,6 +24,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -197,6 +198,8 @@ fun SphinxChatDetailTopAppBar(
     chatViewModel: ChatViewModel?,
     dashboardViewModel: DashboardViewModel?
 ) {
+    val uriHandler = LocalUriHandler.current
+
     if (dashboardChat == null) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -318,7 +321,9 @@ fun SphinxChatDetailTopAppBar(
                 }
             }
             IconButton(onClick = {
-                chatViewModel?.sendCallInvite(false)
+                chatViewModel?.sendCallInvite(false) { link ->
+                    uriHandler.openUri(link)
+                }
             }) {
                 Icon(
                     Icons.Default.Phone,
@@ -428,7 +433,6 @@ fun SphinxChatDetailBottomAppBar(
                                         } else {
                                             chatViewModel?.onSendMessage()
                                         }
-
                                     }
                                 )
                                 .onKeyEvent(
