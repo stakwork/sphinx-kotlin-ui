@@ -5,7 +5,7 @@ import java.util.*
 
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.compose") version "1.1.0"
+    id("org.jetbrains.compose") version "1.3.1"
 }
 
 group = "chat.sphinx"
@@ -18,14 +18,12 @@ repositories {
 
 kotlin {
     jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = JavaVersion.VERSION_15.toString()
-        }
         withJava()
+        version = "1.8.10"
     }
     sourceSets {
         val jvmMain by getting {
-            val kmpTorBinaryVersion = "0.4.7.8"
+            val kmpTorBinaryVersion = "4.7.13-2"
             val korauVersion = "3.2.0"
             val korioVersion = "3.2.0"
 

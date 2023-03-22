@@ -3,7 +3,7 @@ import org.jetbrains.compose.compose
 plugins {
     id("com.android.library")
     kotlin("multiplatform")
-    id("org.jetbrains.compose") version "1.1.0"
+    id("org.jetbrains.compose") version "1.3.1"
 
 }
 
@@ -18,12 +18,10 @@ repositories {
 kotlin {
     android()
     jvm("desktop") {
-        compilations.all {
+        version = "1.8.10"
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
         }
-    }
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
     }
     sourceSets {
         val klockVersion = "2.5.1"

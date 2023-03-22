@@ -910,7 +910,7 @@ abstract class ChatViewModel(
                         getDashboardChatFor(contact, chat)?.let { dashboardChat ->
                             ChatDetailState.screenState(
                                 ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
-                                    chat?.id,
+                                    chat.id,
                                     contact.id,
                                     dashboardChat
                                 )

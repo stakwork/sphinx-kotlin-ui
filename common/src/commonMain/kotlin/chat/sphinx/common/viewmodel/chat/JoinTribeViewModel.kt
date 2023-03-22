@@ -7,11 +7,13 @@ import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.state.JoinTribeState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
+import chat.sphinx.concepts.network.query.chat.model.ChatDto
 import chat.sphinx.concepts.network.query.chat.model.TribeDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.ChatHost
@@ -22,9 +24,12 @@ import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.toPhotoUrl
 import chat.sphinx.wrapper.tribe.TribeJoinLink
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okio.Path
 import theme.primary_green
@@ -95,6 +100,7 @@ class JoinTribeViewModel(
                         }
                         toast("There was an error loading the tribe. Please try again later", primary_red)
                     }
+                    else -> {}
                 }
             }
         }
@@ -147,6 +153,7 @@ class JoinTribeViewModel(
                         is Response.Error -> {
                             toast("There was an error joining the tribe. Please try again later", primary_red)
                         }
+                        else -> {}
                     }
                 }
             }
