@@ -38,6 +38,7 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.material3)
                 api(project(":sphinx-kotlin-core"))
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-Beta")
                 implementation("com.soywiz.korlibs.klock:klock:$klockVersion")
                 implementation("com.alialbaali.kamel:kamel-image:0.3.0")
                 implementation("com.google.zxing:core:3.5.0")
@@ -98,4 +99,7 @@ dependencies {
     implementation("com.google.android.material:material:1.6.1")
     implementation ("io.coil-kt:coil-compose:1.4.0")
     implementation("androidx.compose.material:material:1.0.0-beta04")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.0-Beta")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.0-Beta")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.0-Beta")
 }

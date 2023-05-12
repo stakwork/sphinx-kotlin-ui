@@ -32,6 +32,9 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 api(compose.preview)
 
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.0-Beta")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.7.0-Beta")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.0-Beta")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorBinaryVersion")
