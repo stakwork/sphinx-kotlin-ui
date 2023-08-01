@@ -46,6 +46,7 @@ import chat.sphinx.wrapper.tribe.TribeJoinLink
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import chat.sphinx.wrapper_chat.NotificationLevel
 import chat.sphinx.wrapper_chat.isMuteChat
+import chat.sphinx.wrapper_message.toThreadUUID
 import com.soywiz.korio.lang.substr
 import com.soywiz.korio.util.substringAfterLastOrNull
 import com.soywiz.korio.util.substringBeforeLastOrNull
@@ -55,6 +56,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import okio.Path
+import org.jetbrains.skia.impl.Log
 import theme.primary_green
 import theme.primary_red
 import utils.deduceMediaType
@@ -634,8 +636,13 @@ abstract class ChatViewModel(
                 .setText(messageText)
                 .setPaidMessagePrice(editMessageState.price.value?.toSat())
                 .also { builder ->
-                    editMessageState.replyToMessage.value?.message?.uuid?.value?.toReplyUUID().let { replyUUID ->
-                        builder.setReplyUUID(replyUUID)
+                    editMessageState.replyToMessage.value?.message?.uuid?.value?.let { uuid ->
+                        val threadUUID = editMessageState.replyToMessage.value?.message?.threadUUID
+
+                        builder.setReplyUUID(uuid.toReplyUUID())
+                        builder.setThreadUUID(threadUUID ?: uuid.toThreadUUID())
+
+                    println("pimmmmm $threadUUID")
                     }
                 }
 
