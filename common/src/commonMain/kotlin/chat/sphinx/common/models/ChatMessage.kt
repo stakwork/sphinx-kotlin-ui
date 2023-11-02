@@ -77,6 +77,15 @@ class ChatMessage(
         }
     }
 
+    val botResponse: String? by lazy {
+        if (message.type.isBotRes()) {
+            message.retrieveTextToShow()
+        }
+        else {
+            null
+        }
+    }
+
     val boostsLayoutState: BoostLayoutState? by lazy {
         if (message == null) {
             null
