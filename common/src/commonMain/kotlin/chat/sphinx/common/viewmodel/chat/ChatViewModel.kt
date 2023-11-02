@@ -50,6 +50,7 @@ import com.soywiz.korio.lang.substr
 import com.soywiz.korio.util.substringAfterLastOrNull
 import com.soywiz.korio.util.substringBeforeLastOrNull
 import com.soywiz.korio.util.substringBeforeOrNull
+import io.ktor.utils.io.bits.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -932,7 +933,7 @@ abstract class ChatViewModel(
                         getDashboardChatFor(contact, chat)?.let { dashboardChat ->
                             ChatDetailState.screenState(
                                 ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
-                                    chat?.id,
+                                    chat?.id ?: ChatId(ChatId.NULL_CHAT_ID.toLong()),
                                     contact.id,
                                     dashboardChat
                                 )

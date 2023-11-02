@@ -5,7 +5,7 @@ import java.util.*
 
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.compose") version "1.1.0"
+    id("org.jetbrains.compose") version "1.5.1"
 }
 
 group = "chat.sphinx"
@@ -19,7 +19,7 @@ repositories {
 kotlin {
     jvm {
         compilations.all {
-            kotlinOptions.jvmTarget = JavaVersion.VERSION_15.toString()
+            kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
         }
         withJava()
     }

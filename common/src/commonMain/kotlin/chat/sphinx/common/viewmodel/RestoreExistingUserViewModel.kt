@@ -139,6 +139,7 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
                                     handleRestoreKeysError(response)
                                     LandingScreenState.screenState(LandingScreenType.ExistingUserPIN)
                                 }
+                                else -> {}
                             }
                         }
 
@@ -261,6 +262,7 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
                     )
                 }
             }
+            else -> {}
         }
     }
 

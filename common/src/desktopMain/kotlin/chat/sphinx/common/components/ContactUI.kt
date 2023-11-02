@@ -62,6 +62,7 @@ fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
                 is ContactScreenState.NewToSphinx -> AddNewContactOnSphinx(dashboardViewModel)
                 is ContactScreenState.AlreadyOnSphinx -> ContactForm(dashboardViewModel, null, screenState.pubKey)
                 is ContactScreenState.EditContact -> ContactForm(dashboardViewModel, screenState.contactId)
+                else -> {}
             }
             DesktopSphinxToast("Add New Friend")
         }

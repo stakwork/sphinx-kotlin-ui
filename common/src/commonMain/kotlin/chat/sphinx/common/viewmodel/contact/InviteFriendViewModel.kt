@@ -57,6 +57,8 @@ class InviteFriendViewModel(
                             }
                         }
                     }
+
+                    else -> {}
                 }
             }
         }
