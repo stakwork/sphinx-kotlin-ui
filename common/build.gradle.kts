@@ -16,7 +16,7 @@ repositories {
 }
 
 kotlin {
-    android()
+    androidTarget()
     jvm("desktop") {
         compilations.all {
             kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
@@ -57,8 +57,8 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.appcompat:appcompat:1.3.1")
-                api("androidx.core:core-ktx:1.3.1")
+                api("androidx.appcompat:appcompat:1.6.1")
+                api("androidx.core:core-ktx:1.12.0")
             }
         }
         val androidUnitTest by getting {
@@ -96,9 +96,9 @@ android {
     }
 }
 dependencies {
-    implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
-    implementation("androidx.compose.ui:ui-text:1.1.1")
-    implementation("com.google.android.material:material:1.6.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.4")
+    implementation("androidx.compose.ui:ui-text:1.5.4")
+    implementation("com.google.android.material:material:1.10.0")
     implementation ("io.coil-kt:coil-compose:1.4.0")
-    implementation("androidx.compose.material:material:1.0.0-beta04")
+    implementation("androidx.compose.material:material:1.6.0-alpha08")
 }

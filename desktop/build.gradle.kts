@@ -39,7 +39,7 @@ kotlin {
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorBinaryVersion")
                 implementation("com.soywiz.korlibs.korio:korio:$korioVersion")
                 implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
-                implementation("org.jetbrains.compose.ui:ui-graphics:1.1.1")
+                implementation("org.jetbrains.compose.ui:ui-graphics:1.5.1")
                 implementation("uk.co.caprica:vlcj:4.7.1")
 
 
