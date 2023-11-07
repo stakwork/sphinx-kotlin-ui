@@ -1,6 +1,11 @@
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
@@ -22,10 +27,17 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
+import com.multiplatform.webview.web.Cef
+import com.multiplatform.webview.web.WebView
+import com.multiplatform.webview.web.rememberWebViewState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import theme.LocalSpacing
 import theme.Spacing
+import java.io.File
+import kotlin.math.max
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -121,6 +133,49 @@ fun main() = application {
                         icon = sphinxIcon
                     )
                 }
+
+                // Init WebView
+
+                var restartRequired by remember { mutableStateOf(false) }
+                var downloading by remember { mutableStateOf(0F) }
+                var initialized by remember { mutableStateOf(false) }
+
+                LaunchedEffect(Unit) {
+                    withContext(Dispatchers.IO) {
+                        Cef.init(builder = {
+                            installDir = File("jcef-bundle")
+                            settings {
+                                cachePath = File("cache").absolutePath
+                            }
+                        }, initProgress = {
+                            onDownloading {
+                                downloading = max(it, 0F)
+                            }
+                            onInitialized {
+                                initialized = true
+                            }
+                        }, onError = {
+                            it.printStackTrace()
+                        }, onRestartRequired = {
+                            restartRequired = true
+                        })
+                    }
+                }
+
+                if (restartRequired) {
+                    Text(text = "Restart required.")
+                } else {
+                    if (initialized) {
+                    } else {
+                        Text(text = "Downloading $downloading%")
+                    }
+                }
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        Cef.dispose()
+                    }
+                }
             }
         }
         ScreenType.LandingScreen -> {
@@ -182,6 +237,8 @@ fun main() = application {
         }
     }
 
+
+
 //    Window(
 //        onCloseRequest = ::exitApplication,
 //        title = "Video Player",
@@ -207,3 +264,4 @@ fun main() = application {
 //        }
 //    }
 }
+

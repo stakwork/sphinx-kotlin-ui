@@ -75,7 +75,6 @@ fun ChatCard(
             chatMessage.message.type == MessageType.BotRes -> {
                 BotResponse(chatMessage, chatViewModel)
                 // create a component with WebView
-
             }
             else -> {
                 Column(modifier = Modifier.onSizeChanged {
