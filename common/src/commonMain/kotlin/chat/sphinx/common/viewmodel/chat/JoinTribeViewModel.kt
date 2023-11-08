@@ -95,6 +95,8 @@ class JoinTribeViewModel(
                         }
                         toast("There was an error loading the tribe. Please try again later", primary_red)
                     }
+
+                    else -> {}
                 }
             }
         }
@@ -147,6 +149,7 @@ class JoinTribeViewModel(
                         is Response.Error -> {
                             toast("There was an error joining the tribe. Please try again later", primary_red)
                         }
+                        else -> {}
                     }
                 }
             }

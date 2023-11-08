@@ -72,6 +72,7 @@ fun OnBoardSignUpScreen(viewModel: SignUpViewModel) {
                     LandingScreenType.OnBoardLightningReady -> {
                         EndScreen(viewModel)
                     }
+                    else -> {}
                 }
             }
         }

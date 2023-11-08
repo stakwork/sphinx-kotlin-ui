@@ -46,6 +46,7 @@ import chat.sphinx.wrapper.message.isSphinxCallLink
 import chat.sphinx.wrapper.message.media.*
 import chat.sphinx.wrapper.message.retrieveTextToShow
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
+import com.multiplatform.webview.web.WebView
 import theme.sphinx_orange
 
 @Composable
@@ -70,6 +71,11 @@ fun ChatCard(
             }
             chatMessage.message.type == MessageType.DirectPayment -> {
                 DirectPaymentUI(chatMessage, chatViewModel)
+            }
+            chatMessage.message.type == MessageType.BotRes -> {
+                BotResponse(chatMessage, chatViewModel)
+                // create a component with WebView
+
             }
             else -> {
                 Column(modifier = Modifier.onSizeChanged {

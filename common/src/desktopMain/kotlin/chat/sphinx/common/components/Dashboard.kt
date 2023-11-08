@@ -240,7 +240,7 @@ fun SphinxChatDetailTopAppBar(
                     )
 
                     Icon(
-                        if (dashboardChat?.isEncrypted()) Icons.Default.Lock else Icons.Default.LockOpen,
+                        if (dashboardChat?.isEncrypted() == true) Icons.Default.Lock else Icons.Default.LockOpen,
                         "Lock",
                         tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(23.dp).padding(4.dp, 0.dp, 4.dp, 2.dp)
