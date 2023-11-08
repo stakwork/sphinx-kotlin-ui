@@ -167,7 +167,7 @@ class DashboardViewModel: WindowFocusListener {
     private fun getRelayKeys() {
         viewModelScope.launch(dispatchers.io) {
             repositoryDashboard.getAndSaveTransportKey()
-            repositoryDashboard.getOrCreateHMacKey()
+            repositoryDashboard.getOrCreateHMacKey(forceGet = true)
         }
     }
 
