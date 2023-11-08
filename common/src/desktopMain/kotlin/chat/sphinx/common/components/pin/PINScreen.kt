@@ -70,7 +70,7 @@ actual fun PINScreen(
                Spacer(modifier = Modifier.height(16.dp))
                AnimatedContainer(fromBottomToTop = 10) {
                    Row(
-                       modifier = Modifier.width(260.dp).height(68.dp)
+                       modifier = Modifier.width(260.dp).height(80.dp)
                    ) {
                        val focusRequester = remember { FocusRequester() }
                        OutlinedTextField(
@@ -93,7 +93,7 @@ actual fun PINScreen(
                                .focusRequester(focusRequester),
                            visualTransformation = PasswordVisualTransformation(),
                            onValueChange = {
-                               if (!pinHandlingViewModel.pinState.loading) {
+                               if (it.length <= 6 && !pinHandlingViewModel.pinState.loading) {
                                    pinHandlingViewModel.onPINTextChanged(it)
                                }
                            },
