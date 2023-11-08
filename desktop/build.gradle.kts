@@ -3,9 +3,11 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.io.FileInputStream
 import java.util.*
 
+var platform = ""
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.5.1"
+    id("org.openjfx.javafxplugin") version "0.0.13"
 }
 
 group = "chat.sphinx"
@@ -16,6 +18,11 @@ repositories {
     maven(url = "https://jitpack.io")
 }
 
+javafx {
+    version = "19"
+    modules("javafx.swing", "javafx.web")
+}
+
 kotlin {
     jvm {
         compilations.all {
@@ -23,6 +30,7 @@ kotlin {
         }
         withJava()
     }
+
     sourceSets {
         val jvmMain by getting {
             val kmpTorBinaryVersion = "0.4.7.8"
@@ -41,7 +49,7 @@ kotlin {
                 implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
                 implementation("org.jetbrains.compose.ui:ui-graphics:1.5.1")
                 implementation("uk.co.caprica:vlcj:4.7.1")
-
+                
 
 //                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
 //                implementation ("io.coil-kt:coil-compose:1.4.0")
@@ -57,11 +65,11 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             // Modules suggested by suggestRuntimeModules (avoids the ClassNotFoundException)
-            modules("java.instrument", "java.management", "java.prefs", "java.sql", "jdk.unsupported")
+            modules("java.instrument", "java.net.http", "jdk.jfr", "jdk.jsobject", "java.management", "java.prefs", "java.sql", "jdk.unsupported", "jdk.unsupported.desktop", "jdk.xml.dom")
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
-            packageVersion = "1.0.17"
+            packageVersion = "1.0.18"
 
             val iconsRoot = project.file("../common/src/desktopMain/resources/images")
             val sphinxProperties = Properties().apply {
@@ -86,13 +94,16 @@ compose.desktop {
                     }
                 }
                 iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
+                platform = "cocoa.macosx"
             }
             windows {
                 iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
                 dirChooser = true
+                platform = "win32.win32"
             }
             linux {
                 iconFile.set(iconsRoot.resolve("sphinx-logo.png"))
+                platform = "gtk.linux"
             }
         }
     }

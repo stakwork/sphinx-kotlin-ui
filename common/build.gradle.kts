@@ -72,6 +72,7 @@ kotlin {
                 api(compose.desktop.common)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 api(compose.desktop.components.splitPane)
+                implementation ("me.friwi:jcefmaven:107.1.9.1")
             }
         }
         val desktopTest by getting
