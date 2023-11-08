@@ -3,11 +3,9 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.io.FileInputStream
 import java.util.*
 
-var platform = ""
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose") version "1.5.1"
-    id("org.openjfx.javafxplugin") version "0.0.13"
 }
 
 group = "chat.sphinx"
@@ -16,11 +14,6 @@ version = "1.0"
 repositories {
     mavenCentral()
     maven(url = "https://jitpack.io")
-}
-
-javafx {
-    version = "19"
-    modules("javafx.swing", "javafx.web")
 }
 
 kotlin {
@@ -65,7 +58,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             // Modules suggested by suggestRuntimeModules (avoids the ClassNotFoundException)
-            modules("java.instrument", "java.net.http", "jdk.jfr", "jdk.jsobject", "java.management", "java.prefs", "java.sql", "jdk.unsupported", "jdk.unsupported.desktop", "jdk.xml.dom")
+            modules("java.instrument", "java.management", "java.prefs", "java.sql", "jdk.unsupported")
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
@@ -94,16 +87,13 @@ compose.desktop {
                     }
                 }
                 iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
-                platform = "cocoa.macosx"
             }
             windows {
                 iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
                 dirChooser = true
-                platform = "win32.win32"
             }
             linux {
                 iconFile.set(iconsRoot.resolve("sphinx-logo.png"))
-                platform = "gtk.linux"
             }
         }
     }

@@ -47,8 +47,6 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.onKeyUp
-import chat.sphinx.webview.CefBrowser
-import chat.sphinx.webview.CefBrowser.Companion.SECOND_BRAIN
 import chat.sphinx.wrapper.chat.isMuted
 import chat.sphinx.wrapper.chat.isPending
 import chat.sphinx.wrapper.chat.isPrivateTribe
@@ -308,19 +306,6 @@ fun SphinxChatDetailTopAppBar(
             )
         },
         actions = {
-            IconButton(
-                onClick = {
-                    CefBrowser(SECOND_BRAIN, useOSR = false, isTransparent = false)
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Web,
-                    contentDescription = null,
-                    tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                )
-            }
-
-
             IconButton(onClick = {
                 chatViewModel?.toggleChatMuted()
             }) {
