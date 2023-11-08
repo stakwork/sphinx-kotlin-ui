@@ -94,6 +94,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                         reloadAccountData()
                         LandingScreenState.screenState(LandingScreenType.OnBoardLightningReady)
                     }
+                    else -> {}
                 }
             }
         }
