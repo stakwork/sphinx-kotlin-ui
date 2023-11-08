@@ -136,12 +136,12 @@ object SphinxLinkify {
                 null,
             )
         }
-        if (mask and BITCOIN_ADDRESS != 0) {
-            gatherLinks(
-                links, text, SphinxPatterns.BITCOIN_BIP21_URI, arrayOf("bitcoin:"),
-                null,
-            )
-        }
+//        if (mask and BITCOIN_ADDRESS != 0) {
+//            gatherLinks(
+//                links, text, SphinxPatterns.BITCOIN_BIP21_URI, arrayOf("bitcoin:"),
+//                null,
+//            )
+//        }
         if (mask and TRIBE_LINK != 0) {
             gatherLinks(
                 links, text, SphinxPatterns.JOIN_TRIBE_LINK, arrayOf(),
