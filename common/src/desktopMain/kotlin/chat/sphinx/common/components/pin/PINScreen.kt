@@ -70,16 +70,16 @@ actual fun PINScreen(
                Spacer(modifier = Modifier.height(16.dp))
                AnimatedContainer(fromBottomToTop = 10) {
                    Row(
-                       modifier = Modifier.width(260.dp).height(80.dp)
+                       modifier = Modifier.width(260.dp).height(60.dp)
                    ) {
                        val focusRequester = remember { FocusRequester() }
                        OutlinedTextField(
-                           shape = RoundedCornerShape(68.dp),
+                           shape = RoundedCornerShape(30.dp),
                            textStyle = TextStyle(
-                               fontSize = 32.sp,
+                               fontSize = 24.sp,
                                textAlign = TextAlign.Center,
                                letterSpacing = 15.sp,
-                               lineHeight = 50.sp
+                               lineHeight = 24.sp
                            ),
                            colors = TextFieldDefaults.outlinedTextFieldColors(
                                focusedBorderColor = MaterialTheme.colorScheme.secondary,

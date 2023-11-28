@@ -83,7 +83,7 @@ actual fun Dashboard(
             HorizontalSplitPane(
                 splitPaneState = splitterState
             ) {
-                first(600.dp) {
+                first(300.dp) {
                     DashboardSidebarUI(dashboardViewModel)
                 }
                 second(700.dp) {
