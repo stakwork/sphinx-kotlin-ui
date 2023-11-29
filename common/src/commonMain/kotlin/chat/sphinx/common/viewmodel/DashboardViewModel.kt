@@ -120,6 +120,17 @@ class DashboardViewModel: WindowFocusListener {
         _transactionsStateFlow.value = open
     }
 
+    private val _webAppStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
+    val webAppStateFlow: StateFlow<Boolean>
+        get() = _webAppStateFlow.asStateFlow()
+
+    fun toggleWebAppWindow(open: Boolean) {
+        _webAppStateFlow.value = open
+    }
+
     private val _createTribeStateFlow: MutableStateFlow<Pair<Boolean, ChatId?>> by lazy {
         MutableStateFlow(Pair(false, null))
     }

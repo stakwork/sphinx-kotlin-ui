@@ -23,11 +23,13 @@ import chat.sphinx.common.components.tribe.CreateTribeView
 import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.ContactScreenState
+import chat.sphinx.common.state.ContentState.scope
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import kotlinx.coroutines.launch
 import theme.place_holder_text
 import theme.primary_green
 import theme.primary_red
@@ -229,6 +231,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             val transactionsWindowState by dashboardViewModel.transactionsStateFlow.collectAsState()
             if (transactionsWindowState) {
                 TransactionsUI(dashboardViewModel)
+            }
+
+            val webAppWindowState by dashboardViewModel.webAppStateFlow.collectAsState()
+            if (webAppWindowState) {
+                WebAppUI(dashboardViewModel)
             }
 
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()

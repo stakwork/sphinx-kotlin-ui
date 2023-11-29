@@ -105,12 +105,15 @@ fun main() = application {
                             dashboardViewModel.toggleAboutSphinxWindow(true)
                         })
                         when (DashboardScreenState.screenState()) {
-                            DashboardScreenType.Unlocked ->{
+                            DashboardScreenType.Unlocked -> {
                                 Item("Profile", onClick = {
                                     dashboardViewModel.toggleProfileWindow(true)}
                                 )
                                 Item("Transactions", onClick = {
                                     dashboardViewModel.toggleTransactionsWindow(true)}
+                                )
+                                Item("Second Brain", onClick = {
+                                    dashboardViewModel.toggleWebAppWindow(true)}
                                 )
                                 Item("Create Tribe", onClick = {
                                     dashboardViewModel.toggleCreateTribeWindow(true, null)}
@@ -167,21 +170,21 @@ fun main() = application {
                         })
                     }
                 }
-//
-//                if (restartRequired) {
-//                    Text(text = "Restart required.")
-//                } else {
-//                    if (initialized) {
-//                    } else {
-//                        Text(text = "Downloading $downloading%")
-//                    }
-//                }
 
-                DisposableEffect(Unit) {
-                    onDispose {
-                        Cef.dispose()
+                if (restartRequired) {
+                    Text(text = "Restart required.")
+                } else {
+                    if (initialized) {
+                    } else {
+                        Text(text = "Downloading $downloading%")
                     }
                 }
+
+//                DisposableEffect(Unit) {
+//                    onDispose {
+//                        Cef.dispose()
+//                    }
+//                }
             }
         }
         ScreenType.LandingScreen -> {
