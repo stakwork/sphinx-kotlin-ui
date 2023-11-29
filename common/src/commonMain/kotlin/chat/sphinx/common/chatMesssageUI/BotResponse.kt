@@ -24,7 +24,6 @@ fun BotResponse(
     chatViewModel: ChatViewModel
 ) {
     chatMessage.botResponse?.let { contentHtml ->
-
         // Extracting the text from the HTML and reformatting it
         val formattedText = contentHtml
             .replace(Regex("<div style=\"[^\"]*\"><div style=\"[^\"]*\">"), "\n") // Matches the start of a label
