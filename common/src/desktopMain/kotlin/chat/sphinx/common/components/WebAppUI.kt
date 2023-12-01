@@ -1,10 +1,9 @@
 package chat.sphinx.common.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -16,7 +15,6 @@ import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import com.multiplatform.webview.web.*
 import com.multiplatform.webview.web.rememberWebViewState
-import com.soywiz.korio.serialization.xml.Xml.Companion.Text
 
 @Composable
 fun WebAppUI(dashboardViewModel: DashboardViewModel) {
@@ -31,29 +29,30 @@ fun WebAppUI(dashboardViewModel: DashboardViewModel) {
                 size = getPreferredWindowSize(1200, 800)
             )
         ) {
-
-            MaterialTheme {
-                val webViewState = rememberWebViewStateWithHTMLData(
-                    "<body><div background:red;></div></body>",
-                    null,
-                    "utf-8",
-                    "text/html",
-                    null
-                )
-
-                Column(Modifier.fillMaxSize()) {
-                    val text = webViewState.let {
-                        "${it.pageTitle ?: ""} ${it.loadingState} ${it.lastLoadedUrl ?: ""}"
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val webViewState by dashboardViewModel.webViewStateFlow.collectAsState()
+                    if (webViewState) {
+                        MaterialTheme {
+                            val webViewState = rememberWebViewState("https://second-brain.sphinx.chat")
+                            Column(Modifier.fillMaxSize()) {
+                                WebView(
+                                    state = webViewState,
+                                    modifier = Modifier.fillMaxSize(),
+                                    navigator = dashboardViewModel.customWebViewNavigator
+                                )
+                            }
+                        }
                     }
-                    Text(text)
-                    WebView(
-                        state = webViewState,
-                        modifier = Modifier.fillMaxSize()
-                    )
                 }
-
             }
-
         }
     }
 }

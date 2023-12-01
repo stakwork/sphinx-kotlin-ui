@@ -1,9 +1,7 @@
 package chat.sphinx.common.chatMesssageUI
 
 import Roboto
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -17,6 +15,8 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.wrapper.message.isPaidTextMessage
+import com.multiplatform.webview.web.WebView
+import com.multiplatform.webview.web.rememberWebViewState
 
 @Composable
 fun BotResponse(
@@ -49,6 +49,23 @@ fun BotResponse(
                     fontSize = 13.sp,
                     fontFamily = Roboto,
                 )
+            )
+        }
+    }
+}
+
+@Composable
+internal fun WebViewSample() {
+    MaterialTheme {
+        val webViewState = rememberWebViewState("https://google.com")
+        Column(Modifier.fillMaxSize().padding(16.dp)) {
+            val text = webViewState.let {
+                "${it.pageTitle ?: ""} ${it.loadingState} ${it.lastLoadedUrl ?: ""}"
+            }
+            Text(text)
+            WebView(
+                state = webViewState,
+                modifier = Modifier.height(280.dp).width(280.dp)
             )
         }
     }

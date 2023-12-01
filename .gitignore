@@ -61,3 +61,4 @@ dev.db
 *.hprof
 
 /desktop/jcef-bundle
+/desktop/cache

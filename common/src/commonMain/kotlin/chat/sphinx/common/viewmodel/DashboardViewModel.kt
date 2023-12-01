@@ -12,7 +12,9 @@ import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
 import chat.sphinx.wrapper.tribe.TribeJoinLink
+import com.multiplatform.webview.web.WebViewNavigator
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +23,7 @@ import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
 
 class DashboardViewModel: WindowFocusListener {
+    val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val viewModelScope = SphinxContainer.appModule.applicationScope
     private val sphinxNotificationManager = createSphinxNotificationManager()
@@ -124,11 +127,39 @@ class DashboardViewModel: WindowFocusListener {
         MutableStateFlow(false)
     }
 
+    private val _webViewStateFlow: MutableStateFlow<Boolean> by lazy {
+        MutableStateFlow(false)
+    }
+
     val webAppStateFlow: StateFlow<Boolean>
         get() = _webAppStateFlow.asStateFlow()
 
+    val webViewStateFlow: StateFlow<Boolean>
+        get() = _webViewStateFlow.asStateFlow()
+
     fun toggleWebAppWindow(open: Boolean) {
         _webAppStateFlow.value = open
+
+        viewModelScope.launch(dispatchers.io) {
+            delay(1000L)
+
+            toggleWebViewWindow(open)
+        }
+    }
+
+    val customWebViewNavigator : WebViewNavigator
+        get() {
+            return WebViewNavigator(viewModelScope.launch(dispatchers.io))
+        }
+
+    fun evaluateJavascript(script: String) {
+        customWebViewNavigator.evaluateJavaScript(script) { result ->
+            println(result)
+        }
+    }
+
+    private fun toggleWebViewWindow(open: Boolean) {
+        _webViewStateFlow.value = open
     }
 
     private val _createTribeStateFlow: MutableStateFlow<Pair<Boolean, ChatId?>> by lazy {
