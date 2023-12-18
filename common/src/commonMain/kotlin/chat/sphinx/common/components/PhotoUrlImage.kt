@@ -27,7 +27,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.config.Default
 import io.kamel.image.config.LocalKamelConfig
 import io.kamel.image.lazyPainterResource
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import io.ktor.http.*
 
 val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
@@ -35,10 +35,8 @@ val kamelConfig = KamelConfig { // TODO: Make this multiplatform...
     imageBitmapCacheSize = 1000
     httpFetcher {
         defaultRequest {
-            cacheControl(
-                CacheControl.MaxAge(
-                    maxAgeSeconds = 7_200
-                )
+            CacheControl.MaxAge(
+                maxAgeSeconds = 7_200
             )
         }
     }
@@ -126,8 +124,7 @@ fun KamelPhotoUrlImage(
             errorCallback()
         },
         contentScale = ContentScale.Crop,
-        modifier = modifier,
-        crossfade = false
+        modifier = modifier
     )
 }
 

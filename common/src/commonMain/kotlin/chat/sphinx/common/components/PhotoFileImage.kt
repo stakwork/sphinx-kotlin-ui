@@ -27,16 +27,9 @@ import chat.sphinx.common.Res
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.PhotoUrl
 import io.kamel.core.config.KamelConfig
-import io.kamel.core.config.httpFetcher
-import io.kamel.core.config.takeFrom
-import io.kamel.core.utils.cacheControl
 import io.kamel.image.KamelImage
-import io.kamel.image.config.Default
 import io.kamel.image.config.LocalKamelConfig
 import io.kamel.image.lazyPainterResource
-import io.ktor.client.features.*
-//import io.ktor.client.plugins.*
-import io.ktor.http.*
 import okio.Path
 import views.LoadingShimmerEffect
 import views.ShimmerGridItem
@@ -85,8 +78,7 @@ fun PhotoFileImage(
                 )
             },
             contentScale = contentScale,
-            modifier = modifier,
-            crossfade = false
+            modifier = modifier
         )
     }
 }

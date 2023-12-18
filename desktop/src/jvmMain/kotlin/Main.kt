@@ -27,9 +27,7 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
-import com.multiplatform.webview.web.Cef
-import com.multiplatform.webview.web.WebView
-import com.multiplatform.webview.web.rememberWebViewState
+import dev.datlag.kcef.KCEF
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -145,44 +143,40 @@ fun main() = application {
 
                 // Init WebView
 
-                var restartRequired by remember { mutableStateOf(false) }
-                var downloading by remember { mutableStateOf(0F) }
-                var initialized by remember { mutableStateOf(false) }
+                var downloadProgress by remember { mutableStateOf(-1F) }
+                var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
+                val bundleLocation = System.getProperty("compose.application.resources.dir")?.let { File(it) } ?: File(".")
 
                 LaunchedEffect(Unit) {
-                    withContext(Dispatchers.IO) {
-                        Cef.init(builder = {
-                            installDir = File("jcef-bundle")
-                            settings {
-                                cachePath = File("cache").absolutePath
-                            }
-                        }, initProgress = {
-                            onDownloading {
-                                downloading = max(it, 0F)
-                            }
-                            onInitialized {
-                                initialized = true
-                            }
-                        }, onError = {
-                            it.printStackTrace()
-                        }, onRestartRequired = {
-                            restartRequired = true
-                        })
-                    }
-                }
+                    withContext(Dispatchers.IO) { // IO scope recommended but not required
+                        KCEF.init(
+                            builder = {
+                                installDir(File(bundleLocation, "kcef-bundle")) // recommended, but not necessary
 
-                if (restartRequired) {
-                    Text(text = "Restart required.")
-                } else {
-                    if (initialized) {
-                    } else {
-                        Text(text = "Downloading $downloading%")
+                                progress {
+                                    onDownloading {
+                                        downloadProgress = it
+                                        // use this if you want to display a download progress for example
+                                    }
+                                    onInitialized {
+                                        initialized = true
+                                    }
+                                }
+                            },
+                            onError = {
+                                println("Error ${it?.localizedMessage ?: ""}")
+                                // error during initialization
+                            },
+                            onRestartRequired = {
+                                // all required CEF packages downloaded but the application needs a restart to load them (unlikely to happen)
+                            }
+                        )
                     }
                 }
 
 //                DisposableEffect(Unit) {
 //                    onDispose {
-//                        Cef.dispose()
+//                        KCEF.dispose()
 //                    }
 //                }
             }

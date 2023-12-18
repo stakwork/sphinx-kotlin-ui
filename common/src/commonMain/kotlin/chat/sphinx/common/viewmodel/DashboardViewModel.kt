@@ -13,12 +13,10 @@ import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import com.multiplatform.webview.web.WebViewNavigator
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
 
@@ -149,7 +147,7 @@ class DashboardViewModel: WindowFocusListener {
 
     val customWebViewNavigator : WebViewNavigator
         get() {
-            return WebViewNavigator(viewModelScope.launch(dispatchers.io))
+            return WebViewNavigator(CoroutineScope(Dispatchers.IO))
         }
 
     fun evaluateJavascript(script: String) {

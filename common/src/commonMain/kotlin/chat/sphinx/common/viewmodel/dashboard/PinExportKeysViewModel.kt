@@ -12,6 +12,7 @@ import io.ktor.util.*
 import kotlinx.coroutines.launch
 import org.cryptonode.jncryptor.AES256JNCryptor
 import org.cryptonode.jncryptor.CryptorException
+import kotlin.text.toCharArray
 
 class PinExportKeysViewModel : PinAuthenticationViewModel() {
 
