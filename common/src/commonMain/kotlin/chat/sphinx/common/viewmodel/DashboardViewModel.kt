@@ -6,6 +6,7 @@ import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.concepts.network.query.version.NetworkQueryVersion
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.logger.d
 import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.ChatId

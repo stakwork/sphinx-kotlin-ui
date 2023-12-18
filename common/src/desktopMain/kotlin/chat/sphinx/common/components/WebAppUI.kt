@@ -1,16 +1,21 @@
 package chat.sphinx.common.components
 
+import Roboto
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.state.ContentState.windowState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.JsMessageHandler
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -22,6 +27,7 @@ import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
 import com.multiplatform.webview.util.KLogSeverity
 import com.multiplatform.webview.web.*
 import com.multiplatform.webview.web.rememberWebViewState
+import kotlinx.coroutines.delay
 
 @Composable
 fun WebAppUI(
@@ -56,13 +62,14 @@ fun WebAppUI(
                                 val webViewNavigator = dashboardViewModel.customWebViewNavigator
                                 val jsBridge = dashboardViewModel.customJsBridge
 
-                                initWebView(webViewState)
-                                initJsBridge(jsBridge, dashboardViewModel)
-
+                                LaunchedEffect(Unit) {
+                                    initWebView(webViewState)
+                                    initJsBridge(jsBridge, dashboardViewModel)
+                                }
                                 Column(Modifier.fillMaxSize()) {
                                     WebView(
                                         state = webViewState,
-                                        modifier = Modifier.fillMaxSize(),
+                                        modifier = Modifier.fillMaxWidth(),
                                         navigator = webViewNavigator,
                                         webViewJsBridge = jsBridge
                                     )
@@ -80,7 +87,8 @@ fun initWebView(webViewState: WebViewState) {
     webViewState.webSettings.apply {
         zoomLevel = 1.0
         isJavaScriptEnabled = true
-        logSeverity = KLogSeverity.Debug
+        customUserAgentString = "Sphinx"
+        logSeverity = KLogSeverity.Verbose
         allowFileAccessFromFileURLs = true
         allowUniversalAccessFromFileURLs = true
         androidWebSettings.apply {
