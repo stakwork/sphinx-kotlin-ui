@@ -14,6 +14,7 @@ version = "1.0"
 repositories {
     mavenCentral()
     maven(url = "https://jitpack.io")
+    maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://jogamp.org/deployment/maven")
 }
 

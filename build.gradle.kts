@@ -6,6 +6,7 @@ buildscript {
         mavenCentral()
         maven(url = "https://jitpack.io")
         maven(url = "https://plugins.gradle.org/m2/")
+        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
@@ -21,5 +22,6 @@ allprojects {
         google()
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
     }
 }
