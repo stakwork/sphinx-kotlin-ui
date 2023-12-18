@@ -547,6 +547,8 @@ abstract class ChatViewModel(
 
     abstract val chatSharedFlow: SharedFlow<Chat?>
 
+    abstract val tribeDataStateFlow: StateFlow<TribeData?>
+
     suspend fun getChat(): Chat? {
         return chatId?.let { chatRepository.getChatById(it) }
     }

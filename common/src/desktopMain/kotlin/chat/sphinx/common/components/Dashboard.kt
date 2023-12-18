@@ -83,31 +83,32 @@ actual fun Dashboard(
             HorizontalSplitPane(
                 splitPaneState = splitterState
             ) {
+                val chatDetailState = ChatDetailState.screenState()
+                val dashboardChat = (chatDetailState as? ChatDetailData.SelectedChatDetailData)?.dashboardChat
+
+                chatViewModel?.readMessages()
+                chatViewModel?.cancelMessagesJob()
+
+                chatViewModel = when (chatDetailState) {
+                    is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
+                        ChatContactViewModel(null, chatDetailState.contactId!!, dashboardViewModel)
+                    }
+                    is ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail -> {
+                        ChatContactViewModel(chatDetailState.chatId!!, chatDetailState.contactId!!, dashboardViewModel)
+                    }
+                    is ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail -> {
+                        ChatTribeViewModel(chatDetailState.chatId!!, dashboardViewModel)
+                    }
+                    else -> {
+                        null
+                    }
+                }
+
                 first(300.dp) {
-                    DashboardSidebarUI(dashboardViewModel)
+                    DashboardSidebarUI(dashboardViewModel, chatViewModel)
                 }
                 second(700.dp) {
-                    val chatDetailState = ChatDetailState.screenState()
                     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
-                    val dashboardChat = (chatDetailState as? ChatDetailData.SelectedChatDetailData)?.dashboardChat
-
-                    chatViewModel?.readMessages()
-                    chatViewModel?.cancelMessagesJob()
-
-                    chatViewModel = when (chatDetailState) {
-                        is ChatDetailData.SelectedChatDetailData.SelectedContactDetail -> {
-                            ChatContactViewModel(null, chatDetailState.contactId!!, dashboardViewModel)
-                        }
-                        is ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail -> {
-                            ChatContactViewModel(chatDetailState.chatId!!, chatDetailState.contactId!!, dashboardViewModel)
-                        }
-                        is ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail -> {
-                            ChatTribeViewModel(chatDetailState.chatId!!, dashboardViewModel)
-                        }
-                        else -> {
-                            null
-                        }
-                    }
 
                     Scaffold(
                         scaffoldState = scaffoldState,
@@ -306,6 +307,21 @@ fun SphinxChatDetailTopAppBar(
             )
         },
         actions = {
+            chatViewModel?.let {
+                val tribeData by chatViewModel.tribeDataStateFlow.collectAsState(null)
+
+                tribeData?.let {
+                    IconButton(onClick = {
+                        dashboardViewModel?.toggleWebAppWindow(true)
+                    }) {
+                        Icon(
+                            Icons.Default.Apps,
+                            contentDescription = "WebApp",
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
+            }
             IconButton(onClick = {
                 chatViewModel?.toggleChatMuted()
             }) {

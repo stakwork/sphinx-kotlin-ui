@@ -12,11 +12,12 @@ import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.wrapper.PhotoUrl
-import chat.sphinx.wrapper.chat.Chat
-import chat.sphinx.wrapper.chat.ChatName
+import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
+import chat.sphinx.wrapper.feed.FeedType
+import chat.sphinx.wrapper.feed.FeedUrl
 import chat.sphinx.wrapper.message.MessageId
 import chat.sphinx.wrapper.message.MessageType
 import chat.sphinx.wrapper.message.isMemberApprove
@@ -32,6 +33,14 @@ class ChatTribeViewModel(
     chatId,
     dashboardViewModel
 ) {
+
+    private val _tribeDataStateFlow: MutableStateFlow<TribeData?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    override val tribeDataStateFlow: StateFlow<TribeData?>
+        get() = _tribeDataStateFlow.asStateFlow()
+
     override val chatSharedFlow: SharedFlow<Chat?> = flow {
         chatId?.let { emitAll(chatRepository.getChatByIdFlow(it)) }
     }.distinctUntilChanged().shareIn(
@@ -42,30 +51,23 @@ class ChatTribeViewModel(
 
     init {
         scope.launch(dispatchers.mainImmediate) {
-            chatRepository.getChatById(chatId)?.let { chat ->
+            chatRepository.getChatById(chatId)?.let { chat : Chat ->
+                chatRepository.updateTribeInfo(chat)?.let { tribeData : TribeData ->
 
-//                moreOptionsMenuStateFlow.value = if (chat.isTribeOwnedByAccount(getOwner().nodePubKey)) {
-//                    MoreMenuOptionsViewState.OwnTribe
-//                } else {
-//                    MoreMenuOptionsViewState.NotOwnTribe
-//                }
-
-                chatRepository.updateTribeInfo(chat)?.let { _ ->
-
-//                    _feedDataStateFlow.value = TribeFeedData.Result.FeedData(
-//                        tribeData.host,
-//                        tribeData.feedUrl,
-//                        tribeData.chatUUID,
-//                        tribeData.feedType,
-//                        chat.metaData,
-//                    )
+                    _tribeDataStateFlow.value = TribeData(
+                        tribeData.host,
+                        tribeData.chatUUID,
+                        tribeData.appUrl,
+                        tribeData.feedUrl,
+                        tribeData.feedType,
+                    )
 
                 } ?: run {
-//                    _feedDataStateFlow.value = TribeFeedData.Result.NoFeed
+                    _tribeDataStateFlow.value = null
                 }
 
             } ?: run {
-//                _feedDataStateFlow.value = TribeFeedData.Result.NoFeed
+                _tribeDataStateFlow.value = null
             }
         }
     }

@@ -25,6 +25,7 @@ import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.ContentState.scope
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.response.LoadResponse
@@ -36,7 +37,10 @@ import theme.primary_red
 import theme.sphinx_orange
 
 @Composable
-fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
+fun DashboardSidebarUI(
+    dashboardViewModel: DashboardViewModel,
+    chatViewModel: ChatViewModel?
+) {
 
     val chatListViewModel = remember { ChatListViewModel() }
     val uriHandler = LocalUriHandler.current
@@ -168,16 +172,16 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
                             )
                         },
                         trailingIcon = {
-                             if (chatListViewModel.searchText.value?.text?.isNotEmpty() == true) {
-                                 Icon(
-                                     Icons.Filled.Cancel,
-                                     null,
-                                     tint = place_holder_text,
-                                     modifier = Modifier.width(16.dp).clickable {
-                                         chatListViewModel.filterChats(TextFieldValue(""))
-                                     },
-                                 )
-                             }
+                            if (chatListViewModel.searchText.value?.text?.isNotEmpty() == true) {
+                                Icon(
+                                    Icons.Filled.Cancel,
+                                    null,
+                                    tint = place_holder_text,
+                                    modifier = Modifier.width(16.dp).clickable {
+                                        chatListViewModel.filterChats(TextFieldValue(""))
+                                    },
+                                )
+                            }
                         },
                         modifier = Modifier
                             .background(
@@ -235,7 +239,7 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
 
             val webAppWindowState by dashboardViewModel.webAppStateFlow.collectAsState()
             if (webAppWindowState) {
-                WebAppUI(dashboardViewModel)
+                WebAppUI(dashboardViewModel, chatViewModel)
             }
 
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
@@ -262,19 +266,11 @@ fun DashboardSidebarUI(dashboardViewModel: DashboardViewModel) {
             }
 
             val joinTribeWindowState by dashboardViewModel.joinTribeStateFlow.collectAsState()
-            if (joinTribeWindowState.first){
+            if (joinTribeWindowState.first) {
                 joinTribeWindowState.second?.let { joinTribeLink ->
                     JoinTribeView(dashboardViewModel, joinTribeLink)
                 }
             }
         }
-    }
-}
-
-@Preview
-@Composable
-fun DashboardSidebarPreview() {
-    MaterialTheme {
-        DashboardSidebarUI(DashboardViewModel())
     }
 }

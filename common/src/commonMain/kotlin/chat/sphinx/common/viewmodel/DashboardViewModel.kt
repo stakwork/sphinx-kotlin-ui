@@ -12,6 +12,9 @@ import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
 import chat.sphinx.wrapper.tribe.TribeJoinLink
+import com.multiplatform.webview.jsbridge.IJsMessageHandler
+import com.multiplatform.webview.jsbridge.JsMessage
+import com.multiplatform.webview.jsbridge.WebViewJsBridge
 import com.multiplatform.webview.web.WebViewNavigator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -150,10 +153,19 @@ class DashboardViewModel: WindowFocusListener {
             return WebViewNavigator(CoroutineScope(Dispatchers.IO))
         }
 
+    val customJsBridge : WebViewJsBridge
+        get() {
+            return WebViewJsBridge(customWebViewNavigator)
+        }
+
     fun evaluateJavascript(script: String) {
         customWebViewNavigator.evaluateJavaScript(script) { result ->
             println(result)
         }
+    }
+
+    fun onJsBridgeMessageReceived(message: JsMessage) {
+        println("Greet Handler Get Message: $message")
     }
 
     private fun toggleWebViewWindow(open: Boolean) {
@@ -364,5 +376,25 @@ class DashboardViewModel: WindowFocusListener {
 
             repositoryDashboard.didCancelRestore()
         }
+    }
+}
+
+class JsMessageHandler(
+    val dashboardViewModel: DashboardViewModel
+) : IJsMessageHandler {
+
+    override fun methodName(): String {
+        return "sphinx"
+    }
+
+    override fun canHandle(methodName: String): Boolean {
+        return super.canHandle(methodName)
+    }
+    override fun handle(
+        message: JsMessage,
+        navigator: WebViewNavigator?,
+        callback: (String) -> Unit
+    ) {
+        dashboardViewModel.onJsBridgeMessageReceived(message)
     }
 }

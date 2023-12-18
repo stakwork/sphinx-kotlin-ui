@@ -14,6 +14,7 @@ import chat.sphinx.response.ResponseError
 import chat.sphinx.wrapper.PhotoUrl
 import chat.sphinx.wrapper.chat.Chat
 import chat.sphinx.wrapper.chat.ChatName
+import chat.sphinx.wrapper.chat.TribeData
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.ContactAlias
 import chat.sphinx.wrapper.contact.getColorKey
@@ -49,6 +50,13 @@ class ChatContactViewModel(
         SharingStarted.WhileSubscribed(2_000),
         replay = 1,
     )
+
+    private val _tribeDataStateFlow: MutableStateFlow<TribeData?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    override val tribeDataStateFlow: StateFlow<TribeData?>
+        get() = _tribeDataStateFlow.asStateFlow()
 
     override suspend fun getChatInfo(): Triple<ChatName?, PhotoUrl?, String>? {
         contactSharedFlow.replayCache.firstOrNull()?.let { contact ->

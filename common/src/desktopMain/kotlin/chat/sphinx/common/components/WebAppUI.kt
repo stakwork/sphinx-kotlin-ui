@@ -12,12 +12,22 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.JsMessageHandler
+import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.getPreferredWindowSize
+import com.multiplatform.webview.jsbridge.IJsMessageHandler
+import com.multiplatform.webview.jsbridge.JsMessage
+import com.multiplatform.webview.jsbridge.WebViewJsBridge
+import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
+import com.multiplatform.webview.util.KLogSeverity
 import com.multiplatform.webview.web.*
 import com.multiplatform.webview.web.rememberWebViewState
 
 @Composable
-fun WebAppUI(dashboardViewModel: DashboardViewModel) {
+fun WebAppUI(
+    dashboardViewModel: DashboardViewModel,
+    chatViewModel: ChatViewModel?
+) {
     var isOpen by remember { mutableStateOf(true) }
 
     if (isOpen) {
@@ -40,14 +50,23 @@ fun WebAppUI(dashboardViewModel: DashboardViewModel) {
                 ) {
                     val webViewState by dashboardViewModel.webViewStateFlow.collectAsState()
                     if (webViewState) {
-                        MaterialTheme {
-                            val webViewState = rememberWebViewState("https://second-brain.sphinx.chat")
-                            Column(Modifier.fillMaxSize()) {
-                                WebView(
-                                    state = webViewState,
-                                    modifier = Modifier.fillMaxSize(),
-                                    navigator = dashboardViewModel.customWebViewNavigator
-                                )
+                        chatViewModel?.tribeDataStateFlow?.value?.appUrl?.value?.let { url ->
+                            MaterialTheme {
+                                val webViewState = rememberWebViewState(url)
+                                val webViewNavigator = dashboardViewModel.customWebViewNavigator
+                                val jsBridge = dashboardViewModel.customJsBridge
+
+                                initWebView(webViewState)
+                                initJsBridge(jsBridge, dashboardViewModel)
+
+                                Column(Modifier.fillMaxSize()) {
+                                    WebView(
+                                        state = webViewState,
+                                        modifier = Modifier.fillMaxSize(),
+                                        navigator = webViewNavigator,
+                                        webViewJsBridge = jsBridge
+                                    )
+                                }
                             }
                         }
                     }
@@ -55,4 +74,28 @@ fun WebAppUI(dashboardViewModel: DashboardViewModel) {
             }
         }
     }
+}
+
+fun initWebView(webViewState: WebViewState) {
+    webViewState.webSettings.apply {
+        zoomLevel = 1.0
+        isJavaScriptEnabled = true
+        logSeverity = KLogSeverity.Debug
+        allowFileAccessFromFileURLs = true
+        allowUniversalAccessFromFileURLs = true
+        androidWebSettings.apply {
+            isAlgorithmicDarkeningAllowed = true
+            safeBrowsingEnabled = true
+            allowFileAccess = true
+        }
+    }
+}
+
+fun initJsBridge(
+    webViewJsBridge: WebViewJsBridge,
+    dashboardViewModel: DashboardViewModel
+) {
+    webViewJsBridge.register(
+        JsMessageHandler(dashboardViewModel)
+    )
 }

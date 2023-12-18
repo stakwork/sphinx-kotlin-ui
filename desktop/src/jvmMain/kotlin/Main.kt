@@ -15,6 +15,7 @@ import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.components.LandingScreen
+import chat.sphinx.common.components.WebAppUI
 import chat.sphinx.common.components.chat.FilePickerDialog
 import chat.sphinx.common.components.chat.FilePickerMode
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
@@ -109,9 +110,6 @@ fun main() = application {
                                 )
                                 Item("Transactions", onClick = {
                                     dashboardViewModel.toggleTransactionsWindow(true)}
-                                )
-                                Item("Second Brain", onClick = {
-                                    dashboardViewModel.toggleWebAppWindow(true)}
                                 )
                                 Item("Create Tribe", onClick = {
                                     dashboardViewModel.toggleCreateTribeWindow(true, null)}
@@ -239,8 +237,6 @@ fun main() = application {
             }
         }
     }
-
-
 
 //    Window(
 //        onCloseRequest = ::exitApplication,
