@@ -14,6 +14,7 @@ version = "1.0"
 repositories {
     mavenCentral()
     maven(url = "https://jitpack.io")
+    maven(url = "https://jogamp.org/deployment/maven")
 }
 
 kotlin {
@@ -35,6 +36,7 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 api(compose.preview)
 
+                implementation("dev.datlag:kcef:2023.10.11.1")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorBinaryVersion")
