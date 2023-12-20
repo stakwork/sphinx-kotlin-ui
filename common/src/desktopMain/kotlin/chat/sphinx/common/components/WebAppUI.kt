@@ -62,14 +62,13 @@ fun WebAppUI(
                                 val webViewNavigator = dashboardViewModel.customWebViewNavigator
                                 val jsBridge = dashboardViewModel.customJsBridge
 
-                                LaunchedEffect(Unit) {
-                                    initWebView(webViewState)
-                                    initJsBridge(jsBridge, dashboardViewModel)
-                                }
+                                initWebView(webViewState)
+                                initJsBridge(jsBridge, dashboardViewModel)
+
                                 Column(Modifier.fillMaxSize()) {
                                     WebView(
                                         state = webViewState,
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier.fillMaxSize(),
                                         navigator = webViewNavigator,
                                         webViewJsBridge = jsBridge
                                     )
@@ -88,9 +87,6 @@ fun initWebView(webViewState: WebViewState) {
         zoomLevel = 1.0
         isJavaScriptEnabled = true
         customUserAgentString = "Sphinx"
-        logSeverity = KLogSeverity.Verbose
-        allowFileAccessFromFileURLs = true
-        allowUniversalAccessFromFileURLs = true
         androidWebSettings.apply {
             isAlgorithmicDarkeningAllowed = true
             safeBrowsingEnabled = true

@@ -385,7 +385,7 @@ class JsMessageHandler(
 ) : IJsMessageHandler {
 
     override fun methodName(): String {
-        return "sphinx"
+        return "sphinx-bridge"
     }
 
     override fun canHandle(methodName: String): Boolean {
