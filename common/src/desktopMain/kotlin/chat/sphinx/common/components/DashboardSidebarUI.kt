@@ -22,29 +22,28 @@ import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.tribe.CreateTribeView
 import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
+import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.ContentState.scope
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import kotlinx.coroutines.launch
-import theme.place_holder_text
-import theme.primary_green
-import theme.primary_red
-import theme.sphinx_orange
+import theme.*
 
 @Composable
 fun DashboardSidebarUI(
     dashboardViewModel: DashboardViewModel,
-    chatViewModel: ChatViewModel?
+    chatViewModel: ChatViewModel?,
+    webAppViewModel: WebAppViewModel,
 ) {
 
     val chatListViewModel = remember { ChatListViewModel() }
     val uriHandler = LocalUriHandler.current
-
 
     Box(
         Modifier
@@ -237,9 +236,15 @@ fun DashboardSidebarUI(
                 TransactionsUI(dashboardViewModel)
             }
 
-            val webAppWindowState by dashboardViewModel.webAppStateFlow.collectAsState()
+            val webAppWindowState by webAppViewModel.webAppWindowStateFlow.collectAsState()
             if (webAppWindowState) {
-                WebAppUI(dashboardViewModel, chatViewModel)
+                WebAppUI(webAppViewModel, chatViewModel)
+            }
+
+            val authorizeView by webAppViewModel.authorizeViewStateFlow.collectAsState()
+
+            (authorizeView as? AuthorizeViewState.Opened)?.let {
+                AuthorizeViewUI(webAppViewModel, it.budgetField)
             }
 
             val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()

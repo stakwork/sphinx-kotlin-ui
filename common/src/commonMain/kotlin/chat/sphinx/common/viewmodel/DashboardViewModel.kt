@@ -9,6 +9,9 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.logger.d
 import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.bridge.toBridgeAuthorizeMessage
+import chat.sphinx.wrapper.bridge.toBridgeAuthorizeMessageOrNull
+import chat.sphinx.wrapper.bridge.toBridgeSetBudgetMessageOrNull
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
@@ -48,6 +51,7 @@ class DashboardViewModel: WindowFocusListener {
 
     val packageVersionAndUpgrade: StateFlow<Pair<String?, Boolean>>
         get() = _packageVersionAndUpgrade.asStateFlow()
+
 
     private val _contactWindowStateFlow: MutableStateFlow<Pair<Boolean, ContactScreenState?>> by lazy {
         MutableStateFlow(Pair(false, null))
@@ -123,54 +127,6 @@ class DashboardViewModel: WindowFocusListener {
 
     fun toggleTransactionsWindow(open: Boolean) {
         _transactionsStateFlow.value = open
-    }
-
-    private val _webAppStateFlow: MutableStateFlow<Boolean> by lazy {
-        MutableStateFlow(false)
-    }
-
-    private val _webViewStateFlow: MutableStateFlow<Boolean> by lazy {
-        MutableStateFlow(false)
-    }
-
-    val webAppStateFlow: StateFlow<Boolean>
-        get() = _webAppStateFlow.asStateFlow()
-
-    val webViewStateFlow: StateFlow<Boolean>
-        get() = _webViewStateFlow.asStateFlow()
-
-    fun toggleWebAppWindow(open: Boolean) {
-        _webAppStateFlow.value = open
-
-        viewModelScope.launch(dispatchers.io) {
-            delay(1000L)
-
-            toggleWebViewWindow(open)
-        }
-    }
-
-    val customWebViewNavigator : WebViewNavigator
-        get() {
-            return WebViewNavigator(CoroutineScope(Dispatchers.IO))
-        }
-
-    val customJsBridge : WebViewJsBridge
-        get() {
-            return WebViewJsBridge(customWebViewNavigator)
-        }
-
-    fun evaluateJavascript(script: String) {
-        customWebViewNavigator.evaluateJavaScript(script) { result ->
-            println(result)
-        }
-    }
-
-    fun onJsBridgeMessageReceived(message: JsMessage) {
-        println("Greet Handler Get Message: $message")
-    }
-
-    private fun toggleWebViewWindow(open: Boolean) {
-        _webViewStateFlow.value = open
     }
 
     private val _createTribeStateFlow: MutableStateFlow<Pair<Boolean, ChatId?>> by lazy {
@@ -377,25 +333,5 @@ class DashboardViewModel: WindowFocusListener {
 
             repositoryDashboard.didCancelRestore()
         }
-    }
-}
-
-class JsMessageHandler(
-    val dashboardViewModel: DashboardViewModel
-) : IJsMessageHandler {
-
-    override fun methodName(): String {
-        return "sphinx-bridge"
-    }
-
-    override fun canHandle(methodName: String): Boolean {
-        return super.canHandle(methodName)
-    }
-    override fun handle(
-        message: JsMessage,
-        navigator: WebViewNavigator?,
-        callback: (String) -> Unit
-    ) {
-        dashboardViewModel.onJsBridgeMessageReceived(message)
     }
 }

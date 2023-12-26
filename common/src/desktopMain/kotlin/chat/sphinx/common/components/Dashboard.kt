@@ -40,6 +40,7 @@ import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
+import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
 import chat.sphinx.common.viewmodel.chat.ChatTribeViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -75,6 +76,8 @@ actual fun Dashboard(
     val splitterState = rememberSplitPaneState()
     var chatViewModel: ChatViewModel? = null
 
+    val webAppViewModel = remember { WebAppViewModel() }
+
     when (DashboardScreenState.screenState()) {
         DashboardScreenType.Unlocked -> {
 
@@ -105,7 +108,7 @@ actual fun Dashboard(
                 }
 
                 first(300.dp) {
-                    DashboardSidebarUI(dashboardViewModel, chatViewModel)
+                    DashboardSidebarUI(dashboardViewModel, chatViewModel, webAppViewModel)
                 }
                 second(700.dp) {
                     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -113,7 +116,8 @@ actual fun Dashboard(
                     Scaffold(
                         scaffoldState = scaffoldState,
                         topBar = {
-                            SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel) },
+                            SphinxChatDetailTopAppBar(dashboardChat, chatViewModel, dashboardViewModel, webAppViewModel)
+                        },
                         bottomBar = {
                             SphinxChatDetailBottomAppBar(dashboardChat, chatViewModel)
                         }
@@ -197,7 +201,8 @@ actual fun Dashboard(
 fun SphinxChatDetailTopAppBar(
     dashboardChat: DashboardChat?,
     chatViewModel: ChatViewModel?,
-    dashboardViewModel: DashboardViewModel?
+    dashboardViewModel: DashboardViewModel?,
+    webAppViewModel: WebAppViewModel
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -312,7 +317,7 @@ fun SphinxChatDetailTopAppBar(
 
                 tribeData?.let {
                     IconButton(onClick = {
-                        dashboardViewModel?.toggleWebAppWindow(true)
+                        webAppViewModel.toggleWebAppWindow(true, tribeData?.appUrl?.value)
                     }) {
                         Icon(
                             Icons.Default.Apps,
@@ -534,6 +539,7 @@ fun SphinxChatDetailBottomAppBar(
         }
     }
 }
+@Suppress("SuspiciousIndentation")
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SuggestedAliasListBar(

@@ -79,6 +79,7 @@ val lightning_network_point = Color(0xFF49C998)
 val lightning_network_point_alpha = Color(0x4D49C998)
 val selected_chat = Color(0xFF0e141a)
 val tribe_hyperlink = Color(0xFF048371)
+val semi_transparent_background = Color(0x33FFFFFF)
 
 
 val randomColor1 = Color(0xFF7077FF)
