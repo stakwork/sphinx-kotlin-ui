@@ -32,7 +32,7 @@ class WebAppViewModel {
 
         const val TYPE_AUTHORIZE = "AUTHORIZE"
         const val TYPE_SETBUDGET = "SETBUDGET"
-        const val TYPE_LSAT = "LSAT"
+        const val TYPE_LSAT = "GETLSAT"
         const val TYPE_KEYSEND = "KEYSEND"
     }
 
@@ -147,9 +147,9 @@ class WebAppViewModel {
             _webViewStateFlow.value = nnUrl
         }
 
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            openAuthorize()
-        }
+//        viewModelScope.launch(dispatchers.mainImmediate) {
+//            openAuthorize()
+//        }
     }
 
     private suspend fun openAuthorize() {
