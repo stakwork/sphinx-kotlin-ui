@@ -1,6 +1,7 @@
 package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.AuthorizeViewState
+import chat.sphinx.concepts.network.query.lightning.model.lightning.ActiveLsatDto
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
 import chat.sphinx.crypto.common.clazzes.PasswordGenerator
 import chat.sphinx.di.container.SphinxContainer
@@ -13,6 +14,7 @@ import com.multiplatform.webview.jsbridge.JsMessage
 import com.multiplatform.webview.jsbridge.WebViewJsBridge
 import com.multiplatform.webview.web.WebViewNavigator
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +25,7 @@ class WebAppViewModel {
     private val viewModelScope = SphinxContainer.appModule.applicationScope
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    private val lightningRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).lightningRepository
 
     companion object {
         const val APPLICATION_NAME = "Sphinx"
@@ -33,7 +36,8 @@ class WebAppViewModel {
         const val TYPE_KEYSEND = "KEYSEND"
     }
 
-    val password = generatePassword()
+    private val password = generatePassword()
+    var callback: ((String) -> Unit)? = null
 
     private val _webAppWindowStateFlow: MutableStateFlow<Boolean> by lazy {
         MutableStateFlow(false)
@@ -70,23 +74,15 @@ class WebAppViewModel {
     }
 
     private fun toggleAuthorizeView() {
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            authorizeApp()
+        _webViewStateFlow?.value?.let { url ->
+            _authorizeViewStateFlow.value = AuthorizeViewState.Opened(url, false)
         }
-
-//        _webViewStateFlow?.value?.let { url ->
-//            _authorizeViewStateFlow.value = AuthorizeViewState.Opened(url, false)
-//        }
     }
 
     private fun toggleSetBudgetView() {
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            setBudget(100)
+        _webViewStateFlow?.value?.let { url ->
+            _authorizeViewStateFlow.value = AuthorizeViewState.Opened(url, true)
         }
-
-//        _webViewStateFlow?.value?.let { url ->
-//            _authorizeViewStateFlow.value = AuthorizeViewState.Opened(url, true)
-//        }
     }
 
     fun closeAuthorizeView() {
@@ -104,25 +100,44 @@ class WebAppViewModel {
         }
 
     private fun evaluateJavascript(script: String) {
-        println("window.sphinxMessage($script)")
-
-        customWebViewNavigator.evaluateJavaScript("window.sphinxMessage(\'$script\')") { result ->
-            println(result)
-        }
+//        val completeScript = "window.sphinxMessage(\'$script\')"
+//
+//        println(completeScript)
+//
+//        customWebViewNavigator?.evaluateJavaScript(completeScript, ({ result ->
+//            println("EVALUATE JAVASCRIPT RESULT $result")
+//        }))
     }
 
-    fun onJsBridgeMessageReceived(message: JsMessage) {
+    fun onJsBridgeMessageReceived(
+        message: JsMessage,
+        callback: (String) -> Unit
+    ) {
+        this.callback = callback
+
         println("MESSAGE RECEIVED: $message")
 
-        message.params.toBridgeAuthorizeMessageOrNull()?.let {
-            if (it.type == TYPE_AUTHORIZE) {
-                toggleAuthorizeView()
-            }
-        }
+        viewModelScope.launch(dispatchers.mainImmediate) {
 
-        message.params.toBridgeSetBudgetMessageOrNull()?.let {
-            if (it.type == TYPE_SETBUDGET) {
-                toggleSetBudgetView()
+            message.params.toBridgeAuthorizeMessageOrNull()?.let {
+                if (it.type == TYPE_AUTHORIZE) {
+//                toggleAuthorizeView()
+                    authorizeApp()
+                }
+            }
+
+            message.params.toBridgeSetBudgetMessageOrNull()?.let {
+                if (it.type == TYPE_SETBUDGET) {
+//                    toggleSetBudgetView()
+                    setBudget(100)
+                }
+            }
+
+            message.params.toBridgeGetLSATMessageOrNull()?.let {
+                if (it.type == TYPE_LSAT) {
+                    getActiveLSAT(it.issuer ?: "")
+//                    toggleSetBudgetView()
+                }
             }
         }
     }
@@ -131,9 +146,21 @@ class WebAppViewModel {
         url?.let { nnUrl ->
             _webViewStateFlow.value = nnUrl
         }
+
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            openAuthorize()
+        }
+    }
+
+    private suspend fun openAuthorize() {
+        delay(15000L)
+
+        toggleAuthorizeView()
     }
 
     private suspend fun authorizeApp() {
+        delay(1000L)
+
         _webViewStateFlow?.value?.let { url ->
 
             getOwner().nodePubKey?.value?.let { pubkey ->
@@ -146,12 +173,18 @@ class WebAppViewModel {
                     signature = null
                 ).toJson()
 
-                evaluateJavascript(message)
+                callback?.let {
+                    it(message)
+                }
+
+                callback = null
             }
         }
     }
 
     private suspend fun setBudget(amount: Int) {
+        delay(1000L)
+
         _webViewStateFlow?.value?.let { url ->
 
             getOwner().nodePubKey?.value?.let { pubkey ->
@@ -164,8 +197,73 @@ class WebAppViewModel {
                     signature = null
                 ).toJson()
 
-                evaluateJavascript(message)
+                callback?.let {
+                    it(message)
+                }
+
+                callback = null
             }
+        }
+    }
+
+    private suspend fun getActiveLSAT(issuer: String) {
+        delay(1000L)
+
+        lightningRepository.getActiveLSat(issuer).collect { loadResponse: LoadResponse<ActiveLsatDto, ResponseError> ->
+            Exhaustive@
+            when (loadResponse) {
+                is LoadResponse.Loading -> {}
+                is Response.Error -> {
+                    sendActiveLSAT(null, true)
+                }
+                is Response.Success -> {
+                    (loadResponse.value as? ActiveLsatDto)?.let {
+                        sendActiveLSAT(it, true)
+                    } ?: run {
+                        sendActiveLSAT(null, true)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sendActiveLSAT(
+        activeLSatDto: ActiveLsatDto?,
+        success: Boolean
+    ) {
+        activeLSatDto?.let {
+            val message = LSatMessage(
+                TYPE_LSAT,
+                APPLICATION_NAME,
+                password,
+                it.macaroon,
+                it.paymentRequest,
+                it.preimage,
+                it.identifier,
+                it.issuer,
+                success,
+                it.status,
+                it.paths ?: ""
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
+        } ?: run {
+            val message = LSatFailedMessage(
+                TYPE_LSAT,
+                APPLICATION_NAME,
+                password,
+                success
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
         }
     }
 
@@ -210,6 +308,6 @@ class JsMessageHandler(
         navigator: WebViewNavigator?,
         callback: (String) -> Unit
     ) {
-        webAppViewModel.onJsBridgeMessageReceived(message)
+        webAppViewModel.onJsBridgeMessageReceived(message, callback)
     }
 }
