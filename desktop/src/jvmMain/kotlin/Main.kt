@@ -1,11 +1,7 @@
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
@@ -15,7 +11,6 @@ import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.SphinxSplash
 import chat.sphinx.common.components.Dashboard
 import chat.sphinx.common.components.LandingScreen
-import chat.sphinx.common.components.WebAppUI
 import chat.sphinx.common.components.chat.FilePickerDialog
 import chat.sphinx.common.components.chat.FilePickerMode
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
@@ -31,12 +26,10 @@ import com.example.compose.AppTheme
 import dev.datlag.kcef.KCEF
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import theme.LocalSpacing
 import theme.Spacing
 import java.io.File
-import kotlin.math.max
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -140,7 +133,6 @@ fun main() = application {
                 }
 
                 // Init WebView
-
                 var downloadProgress by remember { mutableStateOf(-1F) }
                 var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
                 val bundleLocation = System.getProperty("compose.application.resources.dir")?.let { File(it) } ?: File(".")
@@ -172,11 +164,11 @@ fun main() = application {
                     }
                 }
 
-//                DisposableEffect(Unit) {
-//                    onDispose {
-//                        KCEF.dispose()
-//                    }
-//                }
+                DisposableEffect(Unit) {
+                    onDispose {
+                        KCEF.disposeBlocking()
+                    }
+                }
             }
         }
         ScreenType.LandingScreen -> {

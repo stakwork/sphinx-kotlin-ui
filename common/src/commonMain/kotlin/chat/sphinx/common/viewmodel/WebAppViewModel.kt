@@ -2,6 +2,7 @@ package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.concepts.network.query.lightning.model.lightning.ActiveLsatDto
+import chat.sphinx.concepts.network.query.lightning.model.lightning.SignChallengeDto
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
 import chat.sphinx.crypto.common.clazzes.PasswordGenerator
 import chat.sphinx.di.container.SphinxContainer
@@ -33,6 +34,7 @@ class WebAppViewModel {
         const val TYPE_AUTHORIZE = "AUTHORIZE"
         const val TYPE_SETBUDGET = "SETBUDGET"
         const val TYPE_LSAT = "GETLSAT"
+        const val TYPE_SIGN = "SIGN"
         const val TYPE_KEYSEND = "KEYSEND"
     }
 
@@ -64,7 +66,13 @@ class WebAppViewModel {
         open: Boolean,
         url: String?
     ) {
-        _webAppWindowStateFlow.value = open
+        if (_webAppWindowStateFlow.value != open) {
+            _webAppWindowStateFlow.value = open
+        }
+
+        if (!open) {
+            return
+        }
 
         viewModelScope.launch(dispatchers.io) {
             delay(1000L)
@@ -137,6 +145,12 @@ class WebAppViewModel {
                 if (it.type == TYPE_LSAT) {
                     getActiveLSAT(it.issuer ?: "")
 //                    toggleSetBudgetView()
+                }
+            }
+
+            message.params.toBridgeSignMessageOrNull()?.let {
+                if (it.type == TYPE_SIGN) {
+                    signChallenge(it.message)
                 }
             }
         }
@@ -256,6 +270,59 @@ class WebAppViewModel {
                 TYPE_LSAT,
                 APPLICATION_NAME,
                 password,
+                success
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
+        }
+    }
+
+    private suspend fun signChallenge(challenge: String) {
+        delay(1000L)
+
+        lightningRepository.signChallenge(challenge).collect { loadResponse: LoadResponse<SignChallengeDto, ResponseError> ->
+            Exhaustive@
+            when (loadResponse) {
+                is LoadResponse.Loading -> {}
+                is Response.Error -> {
+                    sendActiveLSAT(null, true)
+                }
+                is Response.Success -> {
+                    (loadResponse.value as? SignChallengeDto)?.let {
+                        sendSignMessage(it, true)
+                    } ?: run {
+                        sendSignMessage(null, true)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sendSignMessage(
+        signChallengeDto: SignChallengeDto?,
+        success: Boolean
+    ) {
+        signChallengeDto?.let {
+            val message = SendSignMessage(
+                TYPE_SIGN,
+                APPLICATION_NAME,
+                it.sig,
+                success
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
+        } ?: run {
+            val message = SendFailedSignMessage(
+                TYPE_LSAT,
+                APPLICATION_NAME,
                 success
             ).toJson()
 

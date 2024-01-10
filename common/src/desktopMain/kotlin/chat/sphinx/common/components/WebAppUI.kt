@@ -2,36 +2,27 @@ package chat.sphinx.common.components
 
 import Roboto
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.material3.ColorScheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import chat.sphinx.common.state.AuthorizeViewState
-import chat.sphinx.common.state.ContentState.windowState
-import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.JsMessageHandler
 import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.getPreferredWindowSize
-import com.multiplatform.webview.jsbridge.IJsMessageHandler
-import com.multiplatform.webview.jsbridge.JsMessage
 import com.multiplatform.webview.jsbridge.WebViewJsBridge
-import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
-import com.multiplatform.webview.util.KLogSeverity
-import com.multiplatform.webview.web.*
+import com.multiplatform.webview.web.WebView
+import com.multiplatform.webview.web.WebViewState
 import com.multiplatform.webview.web.rememberWebViewState
-import kotlinx.coroutines.delay
-import theme.semi_transparent_background
 
 @Composable
 fun WebAppUI(
@@ -41,6 +32,7 @@ fun WebAppUI(
     var isOpen by remember { mutableStateOf(true) }
 
     if (isOpen) {
+        println("WebViewWindow recompose")
         Window(
             onCloseRequest = {
                 webAppViewModel.toggleWebAppWindow(false, null)

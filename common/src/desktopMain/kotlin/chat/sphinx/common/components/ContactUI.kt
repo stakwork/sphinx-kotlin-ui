@@ -42,7 +42,7 @@ import theme.badge_red
 import theme.light_divider
 
 @Composable
-fun AddContactWindow(dashboardViewModel: DashboardViewModel) {
+fun AddContactWindowUI(dashboardViewModel: DashboardViewModel) {
     var isOpen by remember { mutableStateOf(true) }
     if (isOpen) {
         Window(

@@ -2,7 +2,6 @@ package chat.sphinx.common.components
 
 
 import Roboto
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,8 +12,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,7 +23,6 @@ import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.common.state.ContactScreenState
-import chat.sphinx.common.state.ContentState.scope
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
@@ -32,8 +30,10 @@ import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
-import kotlinx.coroutines.launch
-import theme.*
+import theme.place_holder_text
+import theme.primary_green
+import theme.primary_red
+import theme.sphinx_orange
 
 @Composable
 fun DashboardSidebarUI(
@@ -216,66 +216,127 @@ fun DashboardSidebarUI(
                 dashboardViewModel
             )
 
-            val aboutSphinxWindowState by dashboardViewModel.aboutSphinxStateFlow.collectAsState()
-            if (aboutSphinxWindowState) {
-                AboutSphinx(dashboardViewModel)
-            }
-
-            val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
-            if (addContactWindowState.first) {
-                AddContactWindow(dashboardViewModel)
-            }
-
-            val profileWindowState by dashboardViewModel.profileStateFlow.collectAsState()
-            if (profileWindowState) {
-                Profile(dashboardViewModel)
-            }
-
-            val transactionsWindowState by dashboardViewModel.transactionsStateFlow.collectAsState()
-            if (transactionsWindowState) {
-                TransactionsUI(dashboardViewModel)
-            }
-
-            val webAppWindowState by webAppViewModel.webAppWindowStateFlow.collectAsState()
-            if (webAppWindowState) {
-                WebAppUI(webAppViewModel, chatViewModel)
-            }
-
-            val authorizeView by webAppViewModel.authorizeViewStateFlow.collectAsState()
-
-            (authorizeView as? AuthorizeViewState.Opened)?.let {
-                AuthorizeViewUI(webAppViewModel, it.budgetField)
-            }
-
-            val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
-            if (tribeWindowState.first) {
-                tribeWindowState.second?.let { chatId ->
-                    TribeDetailView(dashboardViewModel, chatId)
-                }
-            }
-
-            val createTribeWindowState by dashboardViewModel.createTribeStateFlow.collectAsState()
-            if (createTribeWindowState.first) {
-                if (createTribeWindowState.second != null) {
-                    CreateTribeView(dashboardViewModel, createTribeWindowState.second)
-                } else {
-                    CreateTribeView(dashboardViewModel, null)
-                }
-            }
-
-            val qrWindowState by dashboardViewModel.qrWindowStateFlow.collectAsState()
-            if (qrWindowState.first) {
-                qrWindowState.second?.let { titleAndValue ->
-                    QRDetail(dashboardViewModel, QRCodeViewModel(titleAndValue.first, titleAndValue.second))
-                }
-            }
-
-            val joinTribeWindowState by dashboardViewModel.joinTribeStateFlow.collectAsState()
-            if (joinTribeWindowState.first) {
-                joinTribeWindowState.second?.let { joinTribeLink ->
-                    JoinTribeView(dashboardViewModel, joinTribeLink)
-                }
-            }
+            AboutSphinxWindow(dashboardViewModel)
+            AddContactWindow(dashboardViewModel)
+            ProfileWindow(dashboardViewModel)
+            TransactionsWindow(dashboardViewModel)
+            TribeDetailWindow(dashboardViewModel)
+            CreateTribeWindow(dashboardViewModel)
+            QRWindow(dashboardViewModel)
+            JoinTribeWindow(dashboardViewModel)
+            WebAppWindow(webAppViewModel, chatViewModel)
+            AuthorizeWindow(webAppViewModel)
         }
+    }
+}
+
+@Composable
+fun AboutSphinxWindow(
+    dashboardViewModel: DashboardViewModel
+) {
+    val aboutSphinxWindowState by dashboardViewModel.aboutSphinxStateFlow.collectAsState()
+    if (aboutSphinxWindowState) {
+        AboutSphinx(dashboardViewModel)
+    }
+}
+
+@Composable
+fun AddContactWindow(
+    dashboardViewModel: DashboardViewModel
+) {
+    val addContactWindowState by dashboardViewModel.contactWindowStateFlow.collectAsState()
+    if (addContactWindowState.first) {
+        AddContactWindowUI(dashboardViewModel)
+    }
+}
+
+@Composable
+fun ProfileWindow(
+    dashboardViewModel: DashboardViewModel
+) {
+    val profileWindowState by dashboardViewModel.profileStateFlow.collectAsState()
+    if (profileWindowState) {
+        Profile(dashboardViewModel)
+    }
+}
+
+@Composable
+fun TransactionsWindow(
+    dashboardViewModel: DashboardViewModel
+) {
+    val transactionsWindowState by dashboardViewModel.transactionsStateFlow.collectAsState()
+    if (transactionsWindowState) {
+        TransactionsUI(dashboardViewModel)
+    }
+}
+
+@Composable
+fun TribeDetailWindow(
+    dashboardViewModel: DashboardViewModel
+) {
+    val tribeWindowState by dashboardViewModel.tribeDetailStateFlow.collectAsState()
+    if (tribeWindowState.first) {
+        tribeWindowState.second?.let { chatId ->
+            TribeDetailView(dashboardViewModel, chatId)
+        }
+    }
+}
+
+@Composable
+fun CreateTribeWindow(
+    dashboardViewModel: DashboardViewModel
+) {
+    val createTribeWindowState by dashboardViewModel.createTribeStateFlow.collectAsState()
+    if (createTribeWindowState.first) {
+        if (createTribeWindowState.second != null) {
+            CreateTribeView(dashboardViewModel, createTribeWindowState.second)
+        } else {
+            CreateTribeView(dashboardViewModel, null)
+        }
+    }
+}
+
+@Composable
+fun QRWindow(
+    dashboardViewModel: DashboardViewModel
+) {
+    val qrWindowState by dashboardViewModel.qrWindowStateFlow.collectAsState()
+    if (qrWindowState.first) {
+        qrWindowState.second?.let { titleAndValue ->
+            QRDetail(dashboardViewModel, QRCodeViewModel(titleAndValue.first, titleAndValue.second))
+        }
+    }
+}
+
+@Composable
+fun JoinTribeWindow(
+    dashboardViewModel: DashboardViewModel
+) {
+    val joinTribeWindowState by dashboardViewModel.joinTribeStateFlow.collectAsState()
+    if (joinTribeWindowState.first) {
+        joinTribeWindowState.second?.let { joinTribeLink ->
+            JoinTribeView(dashboardViewModel, joinTribeLink)
+        }
+    }
+}
+
+@Composable
+fun WebAppWindow(
+    webAppViewModel: WebAppViewModel,
+    chatViewModel: ChatViewModel?
+) {
+    val webAppWindowState by webAppViewModel.webAppWindowStateFlow.collectAsState()
+    if (webAppWindowState) {
+        WebAppUI(webAppViewModel, chatViewModel)
+    }
+}
+
+@Composable
+fun AuthorizeWindow(
+    webAppViewModel: WebAppViewModel
+) {
+    val authorizeView by webAppViewModel.authorizeViewStateFlow.collectAsState()
+    (authorizeView as? AuthorizeViewState.Opened)?.let {
+        AuthorizeViewUI(webAppViewModel, it.budgetField)
     }
 }
