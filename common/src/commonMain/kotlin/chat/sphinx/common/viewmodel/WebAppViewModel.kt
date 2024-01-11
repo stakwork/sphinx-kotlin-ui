@@ -2,6 +2,7 @@ package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.concepts.network.query.lightning.model.lightning.*
+import chat.sphinx.concepts.network.query.message.model.PutPaymentRequestDto
 import chat.sphinx.concepts.repository.message.model.SendPayment
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
 import chat.sphinx.crypto.common.clazzes.PasswordGenerator
@@ -44,6 +45,7 @@ class WebAppViewModel {
         const val TYPE_SIGN = "SIGN"
         const val TYPE_KEYSEND = "KEYSEND"
         const val TYPE_UPDATELSAT = "UPDATELSAT"
+        const val TYPE_PAYMENT = "PAYMENT"
     }
 
     private val sendPaymentBuilder = SendPayment.Builder()
@@ -187,6 +189,12 @@ class WebAppViewModel {
             message.params.toBridgeUpdateLSatMessageOrNull()?.let {
                 if (it.type == TYPE_UPDATELSAT) {
                     updateLSat(it)
+                }
+            }
+
+            message.params.toBridgePaymentMessageOrNull()?.let {
+                if (it.type == TYPE_PAYMENT) {
+                    sendPayment(it)
                 }
             }
         }
@@ -464,7 +472,7 @@ class WebAppViewModel {
                         }
                     }
                 } else {
-                    sendLSat(null, false)
+                    sendLSat(lSatMessage,null, false)
                 }
             }
         }
@@ -536,7 +544,7 @@ class WebAppViewModel {
     ) {
         if (lsat != null && success) {
             val message = SendUpdateLSatMessage(
-                TYPE_LSAT,
+                TYPE_UPDATELSAT,
                 APPLICATION_NAME,
                 updateLSatMessage.identifier,
                 updateLSatMessage.status,
@@ -551,7 +559,7 @@ class WebAppViewModel {
             callback = null
         } else {
             val message = SendUpdateLSatFailedMessage(
-                TYPE_LSAT,
+                TYPE_UPDATELSAT,
                 APPLICATION_NAME,
                 updateLSatMessage.identifier,
                 updateLSatMessage.status,
@@ -564,6 +572,53 @@ class WebAppViewModel {
 
             callback = null
         }
+    }
+
+    private fun sendPayment(bridgePaymentMessage: BridgePaymentMessage) {
+        bridgePaymentMessage.paymentRequest.toLightningPaymentRequestOrNull()?.let {
+            val decodedPaymentRequest = Bolt11.decode(it)
+
+            decodedPaymentRequest.getSatsAmount()?.value?.toInt()?.let {amount ->
+                if (checkCanPay(amount)) {
+                    val putPaymentRequestDto = PutPaymentRequestDto(
+                        bridgePaymentMessage.paymentRequest
+                    )
+
+                    messageRepository.payPaymentRequest(putPaymentRequestDto).collect { loadResponse: LoadResponse<Any, ResponseError> ->
+                        Exhaustive@
+                        when (loadResponse) {
+                            is LoadResponse.Loading -> {}
+                            is Response.Error -> {
+                                sendPaymentMessage(bridgePaymentMessage,false)
+                            }
+                            is Response.Success -> {
+                                sendPaymentMessage(bridgePaymentMessage,true)
+                            }
+                        }
+                    }
+                } else {
+                    sendPaymentMessage(bridgePaymentMessage,false)
+                }
+            }
+        }
+    }
+
+    private fun sendPaymentMessage(
+        bridgePaymentMessage: BridgePaymentMessage,
+        success: Boolean
+    ) {
+        val message = SendPaymentMessage(
+            TYPE_PAYMENT,
+            APPLICATION_NAME,
+            bridgePaymentMessage.paymentRequest,
+            success
+        ).toJson()
+
+        callback?.let {
+            it(message)
+        }
+
+        callback = null
     }
 
     private fun generatePassword(): String {
