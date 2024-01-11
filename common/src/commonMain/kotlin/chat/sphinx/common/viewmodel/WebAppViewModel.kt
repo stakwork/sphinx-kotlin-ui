@@ -1,6 +1,7 @@
 package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.AuthorizeViewState
+import chat.sphinx.concepts.network.query.contact.model.PersonDataDto
 import chat.sphinx.concepts.network.query.lightning.model.lightning.*
 import chat.sphinx.concepts.network.query.message.model.PutPaymentRequestDto
 import chat.sphinx.concepts.repository.message.model.SendPayment
@@ -47,6 +48,7 @@ class WebAppViewModel {
         const val TYPE_UPDATELSAT = "UPDATELSAT"
         const val TYPE_PAYMENT = "PAYMENT"
         const val TYPE_UPDATED = "UPDATED"
+        const val TYPE_GETPERSONDATA = "GETPERSONDATA"
     }
 
     private val sendPaymentBuilder = SendPayment.Builder()
@@ -202,6 +204,12 @@ class WebAppViewModel {
             message.params.toBridgeUpdatedMessageOrNull()?.let {
                 if (it.type == TYPE_UPDATED) {
                     sendUpdatedMessage()
+                }
+            }
+
+            message.params.toBridgeGetPersonDataMessageOrNull()?.let {
+                if (it.type == TYPE_GETPERSONDATA) {
+                    getPersonData()
                 }
             }
         }
@@ -676,6 +684,56 @@ class WebAppViewModel {
         }
 
         callback = null
+    }
+
+    private fun getPersonData() {
+        contactRepository.getPersonData().collect { loadResponse: LoadResponse<PersonDataDto, ResponseError> ->
+            Exhaustive@
+            when (loadResponse) {
+                is LoadResponse.Loading -> {}
+                is Response.Error -> {
+                    sendPersonDataMessage(null, false)
+                }
+                is Response.Success -> {
+                    sendPersonDataMessage(loadResponse.value, true)
+                }
+            }
+        }
+    }
+
+    private fun sendPersonDataMessage(personData: PersonDataDto?, success: Boolean) {
+        this.password = generatePassword()
+
+        if (personData != null && success) {
+            val message = SendPersonDataMessage(
+                TYPE_GETPERSONDATA,
+                APPLICATION_NAME,
+                password,
+                personData!!.publicKey,
+                personData!!.alias,
+                personData!!.photoUrl ?: "",
+                success
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
+        } else {
+            val message = SendPersonDataFailedMessage(
+                TYPE_GETPERSONDATA,
+                APPLICATION_NAME,
+                password,
+                success
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
+        }
     }
 
     private fun generatePassword(): String {
