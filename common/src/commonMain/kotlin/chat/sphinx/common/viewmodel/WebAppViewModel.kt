@@ -3,6 +3,7 @@ package chat.sphinx.common.viewmodel
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.concepts.network.query.lightning.model.lightning.ActiveLsatDto
 import chat.sphinx.concepts.network.query.lightning.model.lightning.SignChallengeDto
+import chat.sphinx.concepts.repository.message.model.SendPayment
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
 import chat.sphinx.crypto.common.clazzes.PasswordGenerator
 import chat.sphinx.di.container.SphinxContainer
@@ -10,6 +11,7 @@ import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.bridge.*
 import chat.sphinx.wrapper.contact.Contact
+import chat.sphinx.wrapper.lightning.LightningNodePubKey
 import com.multiplatform.webview.jsbridge.IJsMessageHandler
 import com.multiplatform.webview.jsbridge.JsMessage
 import com.multiplatform.webview.jsbridge.WebViewJsBridge
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import theme.badge_red
 
 class WebAppViewModel {
     val scope = SphinxContainer.appModule.applicationScope
@@ -27,6 +30,7 @@ class WebAppViewModel {
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val lightningRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).lightningRepository
+    private val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
 
     companion object {
         const val APPLICATION_NAME = "Sphinx"
@@ -38,7 +42,11 @@ class WebAppViewModel {
         const val TYPE_KEYSEND = "KEYSEND"
     }
 
+    private val sendPaymentBuilder = SendPayment.Builder()
+
     private val password = generatePassword()
+    private var budget: Int = 0
+
     var callback: ((String) -> Unit)? = null
 
     private val _webAppWindowStateFlow: MutableStateFlow<Boolean> by lazy {
@@ -143,14 +151,20 @@ class WebAppViewModel {
 
             message.params.toBridgeGetLSATMessageOrNull()?.let {
                 if (it.type == TYPE_LSAT) {
-                    getActiveLSAT(it.issuer ?: "")
+                    getActiveLSAT(it)
 //                    toggleSetBudgetView()
                 }
             }
 
             message.params.toBridgeSignMessageOrNull()?.let {
                 if (it.type == TYPE_SIGN) {
-                    signChallenge(it.message)
+                    signChallenge(it)
+                }
+            }
+
+            message.params.toBridgeKeysendMessageOrNull()?.let {
+                if (it.type == TYPE_KEYSEND) {
+                    sendKeysend(it)
                 }
             }
         }
@@ -202,6 +216,8 @@ class WebAppViewModel {
         _webViewStateFlow?.value?.let { url ->
 
             getOwner().nodePubKey?.value?.let { pubkey ->
+                this.budget = amount
+
                 val message = BridgeMessage(
                     pubkey = pubkey,
                     type = TYPE_SETBUDGET,
@@ -220,21 +236,23 @@ class WebAppViewModel {
         }
     }
 
-    private suspend fun getActiveLSAT(issuer: String) {
+    private suspend fun getActiveLSAT(getLSATMessage: BridgeGetLSATMessage) {
         delay(1000L)
 
-        lightningRepository.getActiveLSat(issuer).collect { loadResponse: LoadResponse<ActiveLsatDto, ResponseError> ->
-            Exhaustive@
-            when (loadResponse) {
-                is LoadResponse.Loading -> {}
-                is Response.Error -> {
-                    sendActiveLSAT(null, true)
-                }
-                is Response.Success -> {
-                    (loadResponse.value as? ActiveLsatDto)?.let {
-                        sendActiveLSAT(it, true)
-                    } ?: run {
+        getLSATMessage.issuer?.let {
+            lightningRepository.getActiveLSat(it).collect { loadResponse: LoadResponse<ActiveLsatDto, ResponseError> ->
+                Exhaustive@
+                when (loadResponse) {
+                    is LoadResponse.Loading -> {}
+                    is Response.Error -> {
                         sendActiveLSAT(null, true)
+                    }
+                    is Response.Success -> {
+                        (loadResponse.value as? ActiveLsatDto)?.let {
+                            sendActiveLSAT(it, true)
+                        } ?: run {
+                            sendActiveLSAT(null, true)
+                        }
                     }
                 }
             }
@@ -246,7 +264,7 @@ class WebAppViewModel {
         success: Boolean
     ) {
         activeLSatDto?.let {
-            val message = LSatMessage(
+            val message = SendLSatMessage(
                 TYPE_LSAT,
                 APPLICATION_NAME,
                 password,
@@ -266,7 +284,7 @@ class WebAppViewModel {
 
             callback = null
         } ?: run {
-            val message = LSatFailedMessage(
+            val message = SendLSatFailedMessage(
                 TYPE_LSAT,
                 APPLICATION_NAME,
                 password,
@@ -281,10 +299,12 @@ class WebAppViewModel {
         }
     }
 
-    private suspend fun signChallenge(challenge: String) {
+    private suspend fun signChallenge(
+        bridgeSignMessage: BridgeSignMessage
+    ) {
         delay(1000L)
 
-        lightningRepository.signChallenge(challenge).collect { loadResponse: LoadResponse<SignChallengeDto, ResponseError> ->
+        lightningRepository.signChallenge(bridgeSignMessage.message).collect { loadResponse: LoadResponse<SignChallengeDto, ResponseError> ->
             Exhaustive@
             when (loadResponse) {
                 is LoadResponse.Loading -> {}
@@ -300,6 +320,58 @@ class WebAppViewModel {
                 }
             }
         }
+    }
+
+    private suspend fun sendKeysend(
+        keysendMessage: BridgeKeysendMessage
+    ) {
+        if (checkCanPay(keysendMessage)) {
+            sendPaymentBuilder.setAmount(keysendMessage.amt.toLong())
+            sendPaymentBuilder.setDestinationKey(LightningNodePubKey(keysendMessage.dest))
+
+            val sendPayment = sendPaymentBuilder.build()
+            val response : Response<Any, ResponseError> = messageRepository.sendPayment(sendPayment)
+
+            when (response) {
+                is Response.Error -> {
+                    sendKeysendMessage(keysendMessage, false)
+                }
+                is Response.Success -> {
+                    sendKeysendMessage(keysendMessage, true)
+                }
+            }
+        } else {
+            sendKeysendMessage(keysendMessage, false)
+        }
+    }
+
+    private suspend fun sendKeysendMessage(
+        keysendMessage: BridgeKeysendMessage,
+        success: Boolean
+    ) {
+        keysendMessage?.let {
+            val message = SendKeysendMessage(
+                TYPE_KEYSEND,
+                APPLICATION_NAME,
+                success
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
+        }
+    }
+
+    private fun checkCanPay(
+        keysendMessage: BridgeKeysendMessage
+    ) : Boolean {
+        if (budget > keysendMessage.amt) {
+            budget -= keysendMessage.amt
+            return true
+        }
+        return false
     }
 
     private fun sendSignMessage(
