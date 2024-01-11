@@ -37,6 +37,7 @@ class WebAppViewModel {
 
         const val TYPE_AUTHORIZE = "AUTHORIZE"
         const val TYPE_SETBUDGET = "SETBUDGET"
+        const val TYPE_GETBUDGET = "GETBUDGET"
         const val TYPE_LSAT = "GETLSAT"
         const val TYPE_SIGN = "SIGN"
         const val TYPE_KEYSEND = "KEYSEND"
@@ -151,8 +152,8 @@ class WebAppViewModel {
 
             message.params.toBridgeGetLSATMessageOrNull()?.let {
                 if (it.type == TYPE_LSAT) {
-                    getActiveLSAT(it)
 //                    toggleSetBudgetView()
+                    getActiveLSAT(it)
                 }
             }
 
@@ -165,6 +166,12 @@ class WebAppViewModel {
             message.params.toBridgeKeysendMessageOrNull()?.let {
                 if (it.type == TYPE_KEYSEND) {
                     sendKeysend(it)
+                }
+            }
+
+            message.params.toBridgeGetBudgetMessageOrNull()?.let {
+                if (it.type == TYPE_GETBUDGET) {
+                    sendGetBudgetMessage()
                 }
             }
         }
@@ -343,6 +350,21 @@ class WebAppViewModel {
         } else {
             sendKeysendMessage(keysendMessage, false)
         }
+    }
+
+    private fun sendGetBudgetMessage() {
+        val message = SendGetBudgetMessage(
+            TYPE_GETBUDGET,
+            APPLICATION_NAME,
+            budget,
+            true
+        ).toJson()
+
+        callback?.let {
+            it(message)
+        }
+
+        callback = null
     }
 
     private suspend fun sendKeysendMessage(
