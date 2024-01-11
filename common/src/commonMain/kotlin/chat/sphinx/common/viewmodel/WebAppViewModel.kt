@@ -46,11 +46,12 @@ class WebAppViewModel {
         const val TYPE_KEYSEND = "KEYSEND"
         const val TYPE_UPDATELSAT = "UPDATELSAT"
         const val TYPE_PAYMENT = "PAYMENT"
+        const val TYPE_UPDATED = "UPDATED"
     }
 
     private val sendPaymentBuilder = SendPayment.Builder()
 
-    private val password = generatePassword()
+    private var password = generatePassword()
     private var budget: Int? = null
 
     var callback: ((String) -> Unit)? = null
@@ -197,6 +198,12 @@ class WebAppViewModel {
                     sendPayment(it)
                 }
             }
+
+            message.params.toBridgeUpdatedMessageOrNull()?.let {
+                if (it.type == TYPE_UPDATED) {
+                    sendUpdatedMessage()
+                }
+            }
         }
     }
 
@@ -222,6 +229,8 @@ class WebAppViewModel {
         _webViewStateFlow?.value?.let { url ->
 
             getOwner().nodePubKey?.value?.let { pubkey ->
+                this.password = generatePassword()
+
                 val message = BridgeMessage(
                     budget = null,
                     pubkey = pubkey,
@@ -247,6 +256,7 @@ class WebAppViewModel {
 
             getOwner().nodePubKey?.value?.let { pubkey ->
                 this.budget = amount
+                this.password = generatePassword()
 
                 val message = BridgeMessage(
                     pubkey = pubkey,
@@ -292,6 +302,8 @@ class WebAppViewModel {
         success: Boolean
     ) {
         activeLSatDto?.let {
+            this.password = generatePassword()
+
             val message = SendActiveLSatMessage(
                 TYPE_GETLSAT,
                 APPLICATION_NAME,
@@ -312,6 +324,8 @@ class WebAppViewModel {
 
             callback = null
         } ?: run {
+            this.password = generatePassword()
+
             val message = SendActiveLSatFailedMessage(
                 TYPE_GETLSAT,
                 APPLICATION_NAME,
@@ -372,9 +386,12 @@ class WebAppViewModel {
     }
 
     private fun sendGetBudgetMessage() {
+        this.password = generatePassword()
+
         val message = SendGetBudgetMessage(
             TYPE_GETBUDGET,
             APPLICATION_NAME,
+            password,
             budget ?: 0,
             true
         ).toJson()
@@ -391,9 +408,12 @@ class WebAppViewModel {
         success: Boolean
     ) {
         keysendMessage?.let {
+            this.password = generatePassword()
+
             val message = SendKeysendMessage(
                 TYPE_KEYSEND,
                 APPLICATION_NAME,
+                password,
                 success
             ).toJson()
 
@@ -420,9 +440,12 @@ class WebAppViewModel {
         success: Boolean
     ) {
         signChallengeDto?.let {
+            this.password = generatePassword()
+
             val message = SendSignMessage(
                 TYPE_SIGN,
                 APPLICATION_NAME,
+                password,
                 it.sig,
                 success
             ).toJson()
@@ -433,9 +456,12 @@ class WebAppViewModel {
 
             callback = null
         } ?: run {
+            this.password = generatePassword()
+
             val message = SendFailedSignMessage(
                 TYPE_SIGN,
                 APPLICATION_NAME,
+                password,
                 false
             ).toJson()
 
@@ -484,9 +510,12 @@ class WebAppViewModel {
         success: Boolean
     ) {
         if (lsat != null && success) {
+            this.password = generatePassword()
+
             val message = SendLSatMessage(
                 TYPE_LSAT,
                 APPLICATION_NAME,
+                password,
                 lsat,
                 lSatMessage.paymentRequest,
                 lSatMessage.macaroon,
@@ -501,9 +530,12 @@ class WebAppViewModel {
 
             callback = null
         } else {
+            this.password = generatePassword()
+
             val message = SendLSatFailedMessage(
                 TYPE_LSAT,
                 APPLICATION_NAME,
+                password,
                 lSatMessage.paymentRequest,
                 lSatMessage.macaroon,
                 lSatMessage.issuer,
@@ -543,9 +575,12 @@ class WebAppViewModel {
         success: Boolean
     ) {
         if (lsat != null && success) {
+            this.password = generatePassword()
+
             val message = SendUpdateLSatMessage(
                 TYPE_UPDATELSAT,
                 APPLICATION_NAME,
+                password,
                 updateLSatMessage.identifier,
                 updateLSatMessage.status,
                 lsat,
@@ -558,9 +593,12 @@ class WebAppViewModel {
 
             callback = null
         } else {
+            this.password = generatePassword()
+
             val message = SendUpdateLSatFailedMessage(
                 TYPE_UPDATELSAT,
                 APPLICATION_NAME,
+                password,
                 updateLSatMessage.identifier,
                 updateLSatMessage.status,
                 false
@@ -607,11 +645,30 @@ class WebAppViewModel {
         bridgePaymentMessage: BridgePaymentMessage,
         success: Boolean
     ) {
+        this.password = generatePassword()
+
         val message = SendPaymentMessage(
             TYPE_PAYMENT,
             APPLICATION_NAME,
+            password,
             bridgePaymentMessage.paymentRequest,
             success
+        ).toJson()
+
+        callback?.let {
+            it(message)
+        }
+
+        callback = null
+    }
+
+    private fun sendUpdatedMessage() {
+        this.password = generatePassword()
+
+        val message = SendUpdatedMessage(
+            TYPE_UPDATED,
+            APPLICATION_NAME,
+            password
         ).toJson()
 
         callback?.let {
