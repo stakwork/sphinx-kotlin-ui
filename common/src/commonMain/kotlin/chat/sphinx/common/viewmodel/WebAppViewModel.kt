@@ -2,6 +2,8 @@ package chat.sphinx.common.viewmodel
 
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.concepts.network.query.lightning.model.lightning.ActiveLsatDto
+import chat.sphinx.concepts.network.query.lightning.model.lightning.PayLsatDto
+import chat.sphinx.concepts.network.query.lightning.model.lightning.PayLsatResponseDto
 import chat.sphinx.concepts.network.query.lightning.model.lightning.SignChallengeDto
 import chat.sphinx.concepts.repository.message.model.SendPayment
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
@@ -11,7 +13,9 @@ import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.bridge.*
 import chat.sphinx.wrapper.contact.Contact
+import chat.sphinx.wrapper.lightning.Bolt11
 import chat.sphinx.wrapper.lightning.LightningNodePubKey
+import chat.sphinx.wrapper.lightning.toLightningPaymentRequestOrNull
 import com.multiplatform.webview.jsbridge.IJsMessageHandler
 import com.multiplatform.webview.jsbridge.JsMessage
 import com.multiplatform.webview.jsbridge.WebViewJsBridge
@@ -38,7 +42,8 @@ class WebAppViewModel {
         const val TYPE_AUTHORIZE = "AUTHORIZE"
         const val TYPE_SETBUDGET = "SETBUDGET"
         const val TYPE_GETBUDGET = "GETBUDGET"
-        const val TYPE_LSAT = "GETLSAT"
+        const val TYPE_LSAT = "LSAT"
+        const val TYPE_GETLSAT = "GETLSAT"
         const val TYPE_SIGN = "SIGN"
         const val TYPE_KEYSEND = "KEYSEND"
     }
@@ -151,7 +156,7 @@ class WebAppViewModel {
             }
 
             message.params.toBridgeGetLSATMessageOrNull()?.let {
-                if (it.type == TYPE_LSAT) {
+                if (it.type == TYPE_GETLSAT) {
 //                    toggleSetBudgetView()
                     getActiveLSAT(it)
                 }
@@ -172,6 +177,12 @@ class WebAppViewModel {
             message.params.toBridgeGetBudgetMessageOrNull()?.let {
                 if (it.type == TYPE_GETBUDGET) {
                     sendGetBudgetMessage()
+                }
+            }
+
+            message.params.toBridgeLSatMessage()?.let {
+                if (it.type == TYPE_LSAT) {
+                    payLSat(it)
                 }
             }
         }
@@ -271,8 +282,8 @@ class WebAppViewModel {
         success: Boolean
     ) {
         activeLSatDto?.let {
-            val message = SendLSatMessage(
-                TYPE_LSAT,
+            val message = SendActiveLSatMessage(
+                TYPE_GETLSAT,
                 APPLICATION_NAME,
                 password,
                 it.macaroon,
@@ -291,8 +302,8 @@ class WebAppViewModel {
 
             callback = null
         } ?: run {
-            val message = SendLSatFailedMessage(
-                TYPE_LSAT,
+            val message = SendActiveLSatFailedMessage(
+                TYPE_GETLSAT,
                 APPLICATION_NAME,
                 password,
                 success
@@ -332,7 +343,7 @@ class WebAppViewModel {
     private suspend fun sendKeysend(
         keysendMessage: BridgeKeysendMessage
     ) {
-        if (checkCanPay(keysendMessage)) {
+        if (checkCanPay(keysendMessage.amt)) {
             sendPaymentBuilder.setAmount(keysendMessage.amt.toLong())
             sendPaymentBuilder.setDestinationKey(LightningNodePubKey(keysendMessage.dest))
 
@@ -367,7 +378,7 @@ class WebAppViewModel {
         callback = null
     }
 
-    private suspend fun sendKeysendMessage(
+    private fun sendKeysendMessage(
         keysendMessage: BridgeKeysendMessage,
         success: Boolean
     ) {
@@ -387,10 +398,10 @@ class WebAppViewModel {
     }
 
     private fun checkCanPay(
-        keysendMessage: BridgeKeysendMessage
+        amount: Int
     ) : Boolean {
-        if (budget > keysendMessage.amt) {
-            budget -= keysendMessage.amt
+        if (budget > amount) {
+            budget -= amount
             return true
         }
         return false
@@ -415,9 +426,73 @@ class WebAppViewModel {
             callback = null
         } ?: run {
             val message = SendFailedSignMessage(
+                TYPE_SIGN,
+                APPLICATION_NAME,
+                false
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
+        }
+    }
+
+    private fun payLSat(lSatMessage: BridgeLSatMessage) {
+        lSatMessage.paymentRequest.toLightningPaymentRequestOrNull()?.let {
+            val decodedPaymentRequest = Bolt11.decode(it)
+
+            decodedPaymentRequest.getSatsAmount()?.value?.toInt()?.let {amount ->
+                if (checkCanPay(amount)) {
+                    val payLsatSto = PayLsatDto(
+                        lSatMessage.macaroon,
+                        lSatMessage.paymentRequest,
+                        lSatMessage.issuer
+                    )
+
+                    lightningRepository.payLSat(payLsatSto).collect { loadResponse: LoadResponse<PayLsatResponseDto, ResponseError> ->
+                        Exhaustive@
+                        when (loadResponse) {
+                            is LoadResponse.Loading -> {}
+                            is Response.Error -> {
+                                sendLSat(null, false)
+                            }
+                            is Response.Success -> {
+                                sendLSat(loadResponse.value.lsat, false)
+                            }
+                        }
+                    }
+                } else {
+                    sendLSat(null, false)
+                }
+            }
+        }
+    }
+
+    private fun sendLSat(
+        lsat: String?,
+        success: Boolean
+    ) {
+        if (lsat != null && success) {
+            val message = SendLSatMessage(
                 TYPE_LSAT,
                 APPLICATION_NAME,
-                success
+                lsat,
+                budget,
+                false
+            ).toJson()
+
+            callback?.let {
+                it(message)
+            }
+
+            callback = null
+        } else {
+            val message = SendLSatFailedMessage(
+                TYPE_LSAT,
+                APPLICATION_NAME,
+                false
             ).toJson()
 
             callback?.let {
