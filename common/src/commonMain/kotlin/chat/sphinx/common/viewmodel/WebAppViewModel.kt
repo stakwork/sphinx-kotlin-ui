@@ -1,6 +1,10 @@
 package chat.sphinx.common.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.AuthorizeViewState
+import chat.sphinx.common.state.ChatPaymentState
 import chat.sphinx.concepts.network.query.contact.model.PersonDataDto
 import chat.sphinx.concepts.network.query.lightning.model.lightning.*
 import chat.sphinx.concepts.network.query.message.model.PutPaymentRequestDto
@@ -79,6 +83,21 @@ class WebAppViewModel {
     val authorizeViewStateFlow: StateFlow<AuthorizeViewState>
         get() = _authorizeViewStateFlow.asStateFlow()
 
+    var budgetState: Int? by mutableStateOf(null)
+
+    fun onAmountTextChanged(text: String) {
+        var amount: Int? = try {
+            text.toInt()
+        } catch (e: NumberFormatException) {
+            null
+        }
+        setBudgetValue(amount)
+    }
+
+    private fun setBudgetValue(budget: Int?) {
+        budgetState = budget
+    }
+
     fun toggleWebAppWindow(
         open: Boolean,
         url: String?
@@ -98,7 +117,7 @@ class WebAppViewModel {
         }
     }
 
-    private fun toggleAuthorizeView() {
+    private fun openAuthorizeView() {
         _webViewStateFlow?.value?.let { url ->
             _authorizeViewStateFlow.value = AuthorizeViewState.Opened(url, false)
         }
@@ -124,16 +143,6 @@ class WebAppViewModel {
             return WebViewJsBridge(customWebViewNavigator)
         }
 
-    private fun evaluateJavascript(script: String) {
-//        val completeScript = "window.sphinxMessage(\'$script\')"
-//
-//        println(completeScript)
-//
-//        customWebViewNavigator?.evaluateJavaScript(completeScript, ({ result ->
-//            println("EVALUATE JAVASCRIPT RESULT $result")
-//        }))
-    }
-
     fun onJsBridgeMessageReceived(
         message: JsMessage,
         callback: (String) -> Unit
@@ -146,21 +155,18 @@ class WebAppViewModel {
 
             message.params.toBridgeAuthorizeMessageOrNull()?.let {
                 if (it.type == TYPE_AUTHORIZE) {
-//                toggleAuthorizeView()
-                    authorizeApp()
+                    openAuthorizeView()
                 }
             }
 
             message.params.toBridgeSetBudgetMessageOrNull()?.let {
                 if (it.type == TYPE_SETBUDGET) {
-//                    toggleSetBudgetView()
-                    setBudget(100)
+                    toggleSetBudgetView()
                 }
             }
 
             message.params.toBridgeGetLSATMessageOrNull()?.let {
                 if (it.type == TYPE_GETLSAT) {
-//                    toggleSetBudgetView()
                     getActiveLSAT(it)
                 }
             }
@@ -225,66 +231,68 @@ class WebAppViewModel {
 //        }
     }
 
-    private suspend fun openAuthorize() {
-        delay(15000L)
+    fun authorizeApp() {
+        closeAuthorizeView()
 
-        toggleAuthorizeView()
-    }
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            delay(1000L)
 
-    private suspend fun authorizeApp() {
-        delay(1000L)
+            _webViewStateFlow?.value?.let { url ->
 
-        _webViewStateFlow?.value?.let { url ->
+                getOwner().nodePubKey?.value?.let { pubkey ->
+                    password = generatePassword()
 
-            getOwner().nodePubKey?.value?.let { pubkey ->
-                this.password = generatePassword()
+                    val message = BridgeMessage(
+                        budget = null,
+                        pubkey = pubkey,
+                        type = TYPE_AUTHORIZE,
+                        password = password,
+                        application = APPLICATION_NAME,
+                        signature = null
+                    ).toJson()
 
-                val message = BridgeMessage(
-                    budget = null,
-                    pubkey = pubkey,
-                    type = TYPE_AUTHORIZE,
-                    password = password,
-                    application = APPLICATION_NAME,
-                    signature = null
-                ).toJson()
+                    callback?.let {
+                        it(message)
+                    }
 
-                callback?.let {
-                    it(message)
+                    callback = null
                 }
-
-                callback = null
             }
         }
     }
 
-    private suspend fun setBudget(amount: Int) {
-        delay(1000L)
+    fun authorizeBudget() {
+        closeAuthorizeView()
 
-        _webViewStateFlow?.value?.let { url ->
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            delay(1000L)
 
-            getOwner().nodePubKey?.value?.let { pubkey ->
-                this.budget = amount
-                this.password = generatePassword()
+            _webViewStateFlow?.value?.let { url ->
 
-                val message = BridgeMessage(
-                    pubkey = pubkey,
-                    type = TYPE_SETBUDGET,
-                    password = password,
-                    application = APPLICATION_NAME,
-                    budget = amount,
-                    signature = null
-                ).toJson()
+                getOwner().nodePubKey?.value?.let { pubkey ->
+                    budget = (budget ?: 0) + (budgetState ?: 0)
+                    password = generatePassword()
 
-                callback?.let {
-                    it(message)
+                    val message = BridgeMessage(
+                        pubkey = pubkey,
+                        type = TYPE_SETBUDGET,
+                        password = password,
+                        application = APPLICATION_NAME,
+                        budget = (budgetState ?: 0),
+                        signature = null
+                    ).toJson()
+
+                    callback?.let {
+                        it(message)
+                    }
+
+                    callback = null
                 }
-
-                callback = null
             }
         }
     }
 
-    private fun getActiveLSAT(getLSATMessage: BridgeGetLSATMessage) {
+    private suspend fun getActiveLSAT(getLSATMessage: BridgeGetLSATMessage) {
         getLSATMessage.issuer?.let {
             lightningRepository.getActiveLSat(it).collect { loadResponse: LoadResponse<ActiveLsatDto, ResponseError> ->
                 Exhaustive@
@@ -349,7 +357,7 @@ class WebAppViewModel {
         }
     }
 
-    private fun signChallenge(
+    private suspend fun signChallenge(
         bridgeSignMessage: BridgeSignMessage
     ) {
         lightningRepository.signChallenge(bridgeSignMessage.message).collect { loadResponse: LoadResponse<SignChallengeDto, ResponseError> ->
@@ -370,7 +378,7 @@ class WebAppViewModel {
         }
     }
 
-    private fun sendKeysend(
+    private suspend fun sendKeysend(
         keysendMessage: BridgeKeysendMessage
     ) {
         if (checkCanPay(keysendMessage.amt)) {
@@ -481,7 +489,7 @@ class WebAppViewModel {
         }
     }
 
-    private fun payLSat(lSatMessage: BridgeLSatMessage) {
+    private suspend fun payLSat(lSatMessage: BridgeLSatMessage) {
         lSatMessage.paymentRequest.toLightningPaymentRequestOrNull()?.let {
             val decodedPaymentRequest = Bolt11.decode(it)
 
@@ -558,12 +566,15 @@ class WebAppViewModel {
         }
     }
 
-    private fun updateLSat(updateLSatMessage: BridgeUpdateLSatMessage) {
+    private suspend fun updateLSat(updateLSatMessage: BridgeUpdateLSatMessage) {
         val updateLsatSto = UpdateLsatDto(
             updateLSatMessage.status
         )
 
-        lightningRepository.updateLSat(updateLsatSto).collect { loadResponse: LoadResponse<PayLsatResponseDto, ResponseError> ->
+        lightningRepository.updateLSat(
+            updateLSatMessage.identifier,
+            updateLsatSto
+        ).collect { loadResponse: LoadResponse<PayLsatResponseDto, ResponseError> ->
             Exhaustive@
             when (loadResponse) {
                 is LoadResponse.Loading -> {}
@@ -620,7 +631,7 @@ class WebAppViewModel {
         }
     }
 
-    private fun sendPayment(bridgePaymentMessage: BridgePaymentMessage) {
+    private suspend fun sendPayment(bridgePaymentMessage: BridgePaymentMessage) {
         bridgePaymentMessage.paymentRequest.toLightningPaymentRequestOrNull()?.let {
             val decodedPaymentRequest = Bolt11.decode(it)
 
@@ -686,7 +697,7 @@ class WebAppViewModel {
         callback = null
     }
 
-    private fun getPersonData() {
+    private suspend fun getPersonData() {
         contactRepository.getPersonData().collect { loadResponse: LoadResponse<PersonDataDto, ResponseError> ->
             Exhaustive@
             when (loadResponse) {
