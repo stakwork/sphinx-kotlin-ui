@@ -119,13 +119,15 @@ class WebAppViewModel {
 
     private fun openAuthorizeView() {
         _webViewStateFlow?.value?.let { url ->
-            _authorizeViewStateFlow.value = AuthorizeViewState.Opened(url, false)
+            val formattedUrl = url.replace("http://", "").replace("https://", "")
+            _authorizeViewStateFlow.value = AuthorizeViewState.Opened(formattedUrl, false)
         }
     }
 
     private fun toggleSetBudgetView() {
         _webViewStateFlow?.value?.let { url ->
-            _authorizeViewStateFlow.value = AuthorizeViewState.Opened(url, true)
+            val formattedUrl = url.replace("http://", "").replace("https://", "")
+            _authorizeViewStateFlow.value = AuthorizeViewState.Opened(formattedUrl, true)
         }
     }
 
@@ -189,7 +191,7 @@ class WebAppViewModel {
                 }
             }
 
-            message.params.toBridgeLSatMessage()?.let {
+            message.params.toBridgeLSatMessageOrNull()?.let {
                 if (it.type == TYPE_LSAT) {
                     payLSat(it)
                 }
@@ -299,7 +301,7 @@ class WebAppViewModel {
                 when (loadResponse) {
                     is LoadResponse.Loading -> {}
                     is Response.Error -> {
-                        sendActiveLSAT(null, true)
+                        sendActiveLSAT(null, false)
                     }
                     is Response.Success -> {
                         (loadResponse.value as? ActiveLsatDto)?.let {
@@ -365,7 +367,7 @@ class WebAppViewModel {
             when (loadResponse) {
                 is LoadResponse.Loading -> {}
                 is Response.Error -> {
-                    sendActiveLSAT(null, true)
+                    sendActiveLSAT(null, false)
                 }
                 is Response.Success -> {
                     (loadResponse.value as? SignChallengeDto)?.let {
@@ -444,7 +446,10 @@ class WebAppViewModel {
     private fun checkCanPay(
         amount: Int
     ) : Boolean {
-        if (budget != null && budget!! > amount) {
+        if (amount == -1) {
+            return false
+        }
+        if (budget != null && budget!! >= amount) {
             budget = budget!! - amount
             return true
         }
@@ -509,7 +514,7 @@ class WebAppViewModel {
                                 sendLSat(lSatMessage, null, false)
                             }
                             is Response.Success -> {
-                                sendLSat(lSatMessage, loadResponse.value.lsat, false)
+                                sendLSat(lSatMessage, loadResponse.value.lsat, true)
                             }
                         }
                     }
@@ -532,10 +537,10 @@ class WebAppViewModel {
                 TYPE_LSAT,
                 APPLICATION_NAME,
                 password,
-                lsat,
                 lSatMessage.paymentRequest,
                 lSatMessage.macaroon,
                 lSatMessage.issuer,
+                lsat,
                 budget,
                 true
             ).toJson()
@@ -574,7 +579,7 @@ class WebAppViewModel {
         lightningRepository.updateLSat(
             updateLSatMessage.identifier,
             updateLsatSto
-        ).collect { loadResponse: LoadResponse<PayLsatResponseDto, ResponseError> ->
+        ).collect { loadResponse: LoadResponse<String, ResponseError> ->
             Exhaustive@
             when (loadResponse) {
                 is LoadResponse.Loading -> {}
@@ -582,7 +587,11 @@ class WebAppViewModel {
                     sendUpdateLSat(updateLSatMessage, null, false)
                 }
                 is Response.Success -> {
-                    sendUpdateLSat(updateLSatMessage, loadResponse.value.lsat, false)
+                    loadResponse.value.toPayLsatResponseDtoOrNull()?.let {
+                        sendUpdateLSat(updateLSatMessage, it.lsat, true)
+                    } ?: run {
+                        sendUpdateLSat(updateLSatMessage, null, true)
+                    }
                 }
             }
         }
@@ -620,7 +629,7 @@ class WebAppViewModel {
                 password,
                 updateLSatMessage.identifier,
                 updateLSatMessage.status,
-                false
+                success
             ).toJson()
 
             callback?.let {

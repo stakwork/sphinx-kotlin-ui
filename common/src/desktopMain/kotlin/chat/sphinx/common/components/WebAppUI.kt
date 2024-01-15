@@ -146,7 +146,7 @@ fun AuthorizeViewUI(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = (webAppViewModel.authorizeViewStateFlow.value as? AuthorizeViewState.Opened)?.url ?: "test",
+                        text = (webAppViewModel.authorizeViewStateFlow.value as? AuthorizeViewState.Opened)?.url ?: "second-brain.sphinx.chat",
                         fontSize = 17.sp,
                         color = md_theme_dark_tertiary,
                         fontWeight = FontWeight.W400,
@@ -209,6 +209,8 @@ fun AuthorizeViewUI(
                                 textAlign = TextAlign.Center
                             )
                         }
+                    } else {
+                        Spacer(modifier = Modifier.height(50.dp))
                     }
                     Column(
                         modifier = Modifier.fillMaxWidth().height(48.dp),
