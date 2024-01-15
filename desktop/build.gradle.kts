@@ -1,4 +1,4 @@
-import org.jetbrains.compose.compose
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.io.FileInputStream
 import java.util.*
@@ -93,7 +93,7 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
-            packageVersion = "1.0.20"
+            packageVersion = "1.0.21"
 
             val iconsRoot = project.file("../common/src/desktopMain/resources/images")
             val sphinxProperties = Properties().apply {
