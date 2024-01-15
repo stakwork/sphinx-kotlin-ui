@@ -227,10 +227,6 @@ class WebAppViewModel {
         url?.let { nnUrl ->
             _webViewStateFlow.value = nnUrl
         }
-
-//        viewModelScope.launch(dispatchers.mainImmediate) {
-//            openAuthorize()
-//        }
     }
 
     fun authorizeApp() {
