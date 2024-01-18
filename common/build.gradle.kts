@@ -49,7 +49,7 @@ kotlin {
                 implementation("org.cryptonode.jncryptor:jncryptor:1.2.0")
                 implementation("com.soywiz.korlibs.korio:korio:$korioVersion")
                 implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
-                api("io.github.kevinnzou:compose-webview-multiplatform:1.8.0-SNAPSHOT")
+                api("io.github.kevinnzou:compose-webview-multiplatform:1.8.0")
             }
         }
         val commonTest by getting {
