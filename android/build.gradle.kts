@@ -8,7 +8,7 @@ group = "chat.sphinx"
 version = "1.0"
 
 repositories {
-    jcenter()
+//    jcenter()
 }
 
 dependencies {
