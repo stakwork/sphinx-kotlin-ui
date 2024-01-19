@@ -37,7 +37,7 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 api(compose.preview)
 
-                implementation("dev.datlag:kcef:2023.10.11.1")
+                implementation("dev.datlag:kcef:2024.01.07")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorBinaryVersion")
@@ -61,7 +61,7 @@ compose.desktop {
         mainClass = "MainKt"
 
         jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
-        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED") // recommended but not necessary
+        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
 
         afterEvaluate {
             tasks.withType<JavaExec> {

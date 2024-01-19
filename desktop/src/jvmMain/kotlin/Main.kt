@@ -16,6 +16,7 @@ import chat.sphinx.common.components.chat.FilePickerMode
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
+import chat.sphinx.common.components.toast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
@@ -133,7 +134,9 @@ fun main() = application {
                 }
 
                 // Init WebView
-                var downloadProgress by remember { mutableStateOf(-1F) }
+                var restartRequired by remember { mutableStateOf(false) }
+                var error by remember { mutableStateOf("") }
+                var downloading by remember { mutableStateOf(0F) }
                 var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
                 val bundleLocation = System.getProperty("compose.application.resources.dir")?.let { File(it) } ?: File(".")
 
@@ -145,7 +148,7 @@ fun main() = application {
 
                                 progress {
                                     onDownloading {
-                                        downloadProgress = it
+                                        downloading = it
                                         // use this if you want to display a download progress for example
                                     }
                                     onInitialized {
@@ -154,13 +157,22 @@ fun main() = application {
                                 }
                             },
                             onError = {
-                                println("Error ${it?.localizedMessage ?: ""}")
-                                // error during initialization
+                                error = it?.localizedMessage ?: ""
                             },
                             onRestartRequired = {
-                                // all required CEF packages downloaded but the application needs a restart to load them (unlikely to happen)
+                                restartRequired = true
                             }
                         )
+                    }
+                }
+
+                if (restartRequired) {
+                    toast("Restart Required")
+                } else if (error.isNotEmpty()) {
+                    toast(error)
+                } else {
+                    if (!initialized) {
+                        toast("Downloading $downloading%")
                     }
                 }
 
