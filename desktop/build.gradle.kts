@@ -37,7 +37,9 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 api(compose.preview)
 
-                implementation("dev.datlag:kcef:2024.01.07")
+                implementation("net.harawata:appdirs:1.2.2")
+                implementation("org.apache.commons:commons-lang3:3.6")
+                implementation("dev.datlag:kcef:2023.10.13")
                 implementation("dev.datlag.tooling:tooling:1.1.0")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorBinaryVersion")
