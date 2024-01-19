@@ -38,6 +38,7 @@ kotlin {
                 api(compose.preview)
 
                 implementation("dev.datlag:kcef:2024.01.07")
+                implementation("dev.datlag.tooling:tooling:1.1.0")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-macosx64:$kmpTorBinaryVersion")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-mingwx64:$kmpTorBinaryVersion")
@@ -60,7 +61,9 @@ compose.desktop {
     application {
         mainClass = "MainKt"
 
+        jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
         jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+        jvmArgs("--add-opens", "java.desktop/sun.java2d=ALL-UNNAMED")
         jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
 
         afterEvaluate {
