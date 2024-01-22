@@ -16,7 +16,6 @@ import chat.sphinx.common.components.chat.FilePickerMode
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxNotifications
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
-import chat.sphinx.common.components.toast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
@@ -138,12 +137,21 @@ fun main() = application {
                 var error by remember { mutableStateOf("") }
                 var downloading by remember { mutableStateOf(0F) }
                 var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
+                val isDebug = true
 
                 LaunchedEffect(Unit) {
                     withContext(Dispatchers.IO) { // IO scope recommended but not required
+
+                        val kcefInstallDir = if (isDebug) {
+                            File("kcef-bundle")
+                        } else {
+                            val rootFolder = AppIO.getWriteableExecutableFolder()
+                            File(rootFolder, "kcef-bundle")
+                        }
+
                         KCEF.init(
                             builder = {
-                                installDir(File(AppIO.getWriteableExecutableFolder(), "kcef-bundle"))
+                                installDir(kcefInstallDir)
 
                                 progress {
                                     onDownloading {
@@ -165,16 +173,16 @@ fun main() = application {
                     }
                 }
 
-                if (restartRequired) {
-                    toast("Restart Required")
-                } else if (error.isNotEmpty()) {
-                    toast(error)
-                    println("ERROR KCEF $error")
-                } else {
-                    if (!initialized) {
-//                        toast("Downloading $downloading%")
-                    }
-                }
+//                if (restartRequired) {
+//                    toast("Restart Required")
+//                } else if (error.isNotEmpty()) {
+//                    toast(error)
+//                    println("ERROR KCEF $error")
+//                } else {
+//                    if (!initialized) {
+////                        toast("Downloading $downloading%")
+//                    }
+//                }
 
                 DisposableEffect(Unit) {
                     onDispose {
