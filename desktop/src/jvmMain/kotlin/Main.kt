@@ -24,6 +24,8 @@ import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.example.compose.AppTheme
 import dev.datlag.kcef.KCEF
+import dev.datlag.tooling.Tooling
+import dev.datlag.tooling.getApplicationWriteableRootFolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -137,7 +139,7 @@ fun main() = application {
                 var error by remember { mutableStateOf("") }
                 var downloading by remember { mutableStateOf(0F) }
                 var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
-                val isDebug = true
+                val isDebug = false
 
                 LaunchedEffect(Unit) {
                     withContext(Dispatchers.IO) { // IO scope recommended but not required
@@ -145,7 +147,7 @@ fun main() = application {
                         val kcefInstallDir = if (isDebug) {
                             File("kcef-bundle")
                         } else {
-                            val rootFolder = AppIO.getWriteableExecutableFolder()
+                            val rootFolder = Tooling.getApplicationWriteableRootFolder("Sphinx") ?: File("./")
                             File(rootFolder, "kcef-bundle")
                         }
 
@@ -172,17 +174,6 @@ fun main() = application {
                         )
                     }
                 }
-
-//                if (restartRequired) {
-//                    toast("Restart Required")
-//                } else if (error.isNotEmpty()) {
-//                    toast(error)
-//                    println("ERROR KCEF $error")
-//                } else {
-//                    if (!initialized) {
-////                        toast("Downloading $downloading%")
-//                    }
-//                }
 
                 DisposableEffect(Unit) {
                     onDispose {

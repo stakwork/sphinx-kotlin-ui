@@ -60,5 +60,6 @@ desktop/sphinx.db-journal
 dev.db
 *.hprof
 
-/desktop/jcef-bundle
 /desktop/cache
+/desktop/kcef-bundle
+/desktop/jcef-bundle
