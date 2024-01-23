@@ -36,9 +36,7 @@ kotlin {
                 implementation(project(":common"))
                 implementation(compose.desktop.currentOs)
                 api(compose.preview)
-
-                implementation("net.harawata:appdirs:1.2.2")
-                implementation("org.apache.commons:commons-lang3:3.6")
+                
                 implementation("dev.datlag:kcef:2023.10.13")
                 implementation("dev.datlag.tooling:tooling:1.1.0")
                 implementation("io.matthewnelson.kotlin-components:kmp-tor-binary-linuxx64:$kmpTorBinaryVersion")
@@ -63,20 +61,8 @@ compose.desktop {
     application {
         mainClass = "MainKt"
 
-        jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
         jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
-        jvmArgs("--add-opens", "java.desktop/sun.java2d=ALL-UNNAMED")
-        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
-
-        afterEvaluate {
-            tasks.withType<JavaExec> {
-                if (System.getProperty("os.name").contains("Mac")) {
-                    jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
-                    jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
-                    jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
-                }
-            }
-        }
+        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED") // recommended but not necessary
 
         if (System.getProperty("os.name").contains("Mac")) {
             jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
