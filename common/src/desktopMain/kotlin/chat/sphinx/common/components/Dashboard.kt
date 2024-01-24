@@ -108,7 +108,7 @@ actual fun Dashboard(
                 }
 
                 first(300.dp) {
-                    DashboardSidebarUI(dashboardViewModel, chatViewModel, webAppViewModel)
+                    DashboardSidebarUI(dashboardViewModel, webAppViewModel)
                 }
                 second(700.dp) {
                     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -316,14 +316,16 @@ fun SphinxChatDetailTopAppBar(
                 val tribeData by chatViewModel.tribeDataStateFlow.collectAsState(null)
 
                 tribeData?.let {
-                    IconButton(onClick = {
-                        webAppViewModel.toggleWebAppWindow(true, tribeData?.appUrl?.value)
-                    }) {
-                        Icon(
-                            Icons.Default.Apps,
-                            contentDescription = "WebApp",
-                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
-                        )
+                    if (it.appUrl != null) {
+                        IconButton(onClick = {
+                            webAppViewModel.toggleWebAppWindow(true, tribeData?.appUrl?.value)
+                        }) {
+                            Icon(
+                                Icons.Default.Apps,
+                                contentDescription = "WebApp",
+                                tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                     }
                 }
             }

@@ -25,7 +25,6 @@ import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.WebAppViewModel
-import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.response.LoadResponse
@@ -38,7 +37,6 @@ import theme.sphinx_orange
 @Composable
 fun DashboardSidebarUI(
     dashboardViewModel: DashboardViewModel,
-    chatViewModel: ChatViewModel?,
     webAppViewModel: WebAppViewModel,
 ) {
 
@@ -224,7 +222,7 @@ fun DashboardSidebarUI(
             CreateTribeWindow(dashboardViewModel)
             QRWindow(dashboardViewModel)
             JoinTribeWindow(dashboardViewModel)
-            WebAppWindow(webAppViewModel, chatViewModel)
+            WebAppWindow(webAppViewModel)
             AuthorizeWindow(webAppViewModel)
         }
     }
@@ -322,12 +320,11 @@ fun JoinTribeWindow(
 
 @Composable
 fun WebAppWindow(
-    webAppViewModel: WebAppViewModel,
-    chatViewModel: ChatViewModel?
+    webAppViewModel: WebAppViewModel
 ) {
     val webAppWindowState by webAppViewModel.webAppWindowStateFlow.collectAsState()
     if (webAppWindowState) {
-        WebAppUI(webAppViewModel, chatViewModel)
+        WebAppUI(webAppViewModel)
     }
 }
 
