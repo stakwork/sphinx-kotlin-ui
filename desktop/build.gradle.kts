@@ -110,7 +110,7 @@ compose.desktop {
                 iconFile.set(project.file("sphinx-logo.icns"))
             }
             windows {
-                iconFile.set(project.file("sphinx-logo-64.png"))
+                iconFile.set(project.file("sphinx-logo-64.icon"))
                 dirChooser = true
             }
             linux {
