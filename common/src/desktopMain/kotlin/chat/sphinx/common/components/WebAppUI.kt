@@ -23,7 +23,6 @@ import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.common.viewmodel.JsMessageHandler
 import chat.sphinx.common.viewmodel.WebAppViewModel
-import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.getPreferredWindowSize
 import com.multiplatform.webview.jsbridge.WebViewJsBridge
 import com.multiplatform.webview.web.WebView
@@ -33,8 +32,7 @@ import theme.*
 
 @Composable
 fun WebAppUI(
-    webAppViewModel: WebAppViewModel,
-    chatViewModel: ChatViewModel?
+    webAppViewModel: WebAppViewModel
 ) {
     var isOpen by remember { mutableStateOf(true) }
 
@@ -236,11 +234,6 @@ fun initWebView(webViewState: WebViewState) {
         zoomLevel = 1.0
         isJavaScriptEnabled = true
         customUserAgentString = "Sphinx"
-        androidWebSettings.apply {
-            isAlgorithmicDarkeningAllowed = true
-            safeBrowsingEnabled = true
-            allowFileAccess = true
-        }
     }
 }
 
