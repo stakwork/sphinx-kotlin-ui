@@ -77,6 +77,47 @@ fun main() = application {
                     }
                 }
             }
+
+            // Init WebView
+            var restartRequired by remember { mutableStateOf(false) }
+            var error by remember { mutableStateOf("") }
+            var downloading by remember { mutableStateOf(0F) }
+            var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
+            val isDebug = false
+
+            LaunchedEffect(Unit) {
+                withContext(Dispatchers.IO) { // IO scope recommended but not required
+
+                    val kcefInstallDir = if (isDebug) {
+                        File("kcef-bundle")
+                    } else {
+                        val rootFolder = Tooling.getApplicationWriteableRootFolder("Sphinx") ?: File("./")
+                        File(rootFolder, "kcef-bundle")
+                    }
+
+                    KCEF.init(
+                        builder = {
+                            installDir(kcefInstallDir)
+
+                            progress {
+                                onDownloading {
+                                    downloading = it
+                                    // use this if you want to display a download progress for example
+                                }
+                                onInitialized {
+                                    initialized = true
+                                }
+                            }
+                        },
+                        onError = {
+                            error = it?.localizedMessage ?: ""
+                        },
+                        onRestartRequired = {
+                            restartRequired = true
+                        }
+                    )
+                }
+            }
         }
         ScreenType.DashboardScreen -> {
             Window(
@@ -132,53 +173,6 @@ fun main() = application {
                         window,
                         icon = sphinxIcon
                     )
-                }
-
-                // Init WebView
-                var restartRequired by remember { mutableStateOf(false) }
-                var error by remember { mutableStateOf("") }
-                var downloading by remember { mutableStateOf(0F) }
-                var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
-                val isDebug = false
-
-                LaunchedEffect(Unit) {
-                    withContext(Dispatchers.IO) { // IO scope recommended but not required
-
-                        val kcefInstallDir = if (isDebug) {
-                            File("kcef-bundle")
-                        } else {
-                            val rootFolder = Tooling.getApplicationWriteableRootFolder("Sphinx") ?: File("./")
-                            File(rootFolder, "kcef-bundle")
-                        }
-
-                        KCEF.init(
-                            builder = {
-                                installDir(kcefInstallDir)
-
-                                progress {
-                                    onDownloading {
-                                        downloading = it
-                                        // use this if you want to display a download progress for example
-                                    }
-                                    onInitialized {
-                                        initialized = true
-                                    }
-                                }
-                            },
-                            onError = {
-                                error = it?.localizedMessage ?: ""
-                            },
-                            onRestartRequired = {
-                                restartRequired = true
-                            }
-                        )
-                    }
-                }
-
-                DisposableEffect(Unit) {
-                    onDispose {
-                        KCEF.disposeBlocking()
-                    }
                 }
             }
         }
