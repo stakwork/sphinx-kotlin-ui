@@ -86,7 +86,6 @@ compose.desktop {
             packageName = "Sphinx"
             packageVersion = "1.0.22"
 
-            val iconsRoot = project.file("../common/src/desktopMain/resources/images")
             val sphinxProperties = Properties().apply {
                 val localPropertiesFile = project.file("../local.properties")
                 if (localPropertiesFile.exists()) {
@@ -108,14 +107,14 @@ compose.desktop {
                         identity.set(macOsSigningIdentity)
                     }
                 }
-                iconFile.set(iconsRoot.resolve("sphinx-logo.icns"))
+                iconFile.set(project.file("sphinx-logo.icns"))
             }
             windows {
-                iconFile.set(iconsRoot.resolve("sphinx-logo-64.png"))
+                iconFile.set(project.file("sphinx-logo-64.png"))
                 dirChooser = true
             }
             linux {
-                iconFile.set(iconsRoot.resolve("sphinx-logo.png"))
+                iconFile.set(project.file("sphinx-logo.png"))
             }
         }
     }
