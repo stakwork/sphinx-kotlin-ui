@@ -37,6 +37,10 @@ class DashboardViewModel: WindowFocusListener {
     private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
     private val networkQueryVersion: NetworkQueryVersion = SphinxContainer.networkModule.networkQueryVersion
 
+    private val webViewDownload: MutableStateFlow<Int> by lazy {
+        MutableStateFlow(0)
+    }
+
     private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
         MutableStateFlow(null)
     }
@@ -59,6 +63,18 @@ class DashboardViewModel: WindowFocusListener {
 
     val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
         get() = _contactWindowStateFlow.asStateFlow()
+
+    fun setDownloadingWebViewLibraryProgress(progress: Int) {
+        webViewDownload.value = progress
+    }
+
+    fun isDownloadingWebViewLibrary() : Boolean {
+        return webViewDownload.value > 0
+    }
+
+    fun didFinishDownloadingWebViewLibrary() : Boolean {
+        return webViewDownload.value >= 100
+    }
 
     fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
         _contactWindowStateFlow.value = Pair(open, screen)

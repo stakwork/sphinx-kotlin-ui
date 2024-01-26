@@ -222,7 +222,7 @@ fun DashboardSidebarUI(
             CreateTribeWindow(dashboardViewModel)
             QRWindow(dashboardViewModel)
             JoinTribeWindow(dashboardViewModel)
-            WebAppWindow(webAppViewModel)
+            WebAppWindow(dashboardViewModel, webAppViewModel)
             AuthorizeWindow(webAppViewModel)
         }
     }
@@ -320,11 +320,12 @@ fun JoinTribeWindow(
 
 @Composable
 fun WebAppWindow(
+    dashboardViewModel: DashboardViewModel,
     webAppViewModel: WebAppViewModel
 ) {
     val webAppWindowState by webAppViewModel.webAppWindowStateFlow.collectAsState()
     if (webAppWindowState) {
-        WebAppUI(webAppViewModel)
+        WebAppUI(dashboardViewModel, webAppViewModel)
     }
 }
 

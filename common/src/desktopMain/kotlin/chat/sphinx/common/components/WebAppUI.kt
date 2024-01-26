@@ -22,6 +22,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.state.AuthorizeViewState
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.JsMessageHandler
 import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.platform.imageResource
@@ -34,12 +35,13 @@ import theme.*
 
 @Composable
 fun WebAppUI(
+    dashboardViewModel: DashboardViewModel,
     webAppViewModel: WebAppViewModel
 ) {
     var isOpen by remember { mutableStateOf(true) }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
 
-    if (isOpen) {
+    if (isOpen && dashboardViewModel.didFinishDownloadingWebViewLibrary()) {
         println("WebViewWindow recompose")
         Window(
             onCloseRequest = {

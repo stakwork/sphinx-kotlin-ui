@@ -80,7 +80,8 @@ fun main() = application {
             }
         }
         ScreenType.DashboardScreen -> {
-            WebViewInitializing()
+            val dashboardViewModel = remember { DashboardViewModel() }
+            WebViewInitializing(dashboardViewModel)
 
             Window(
                 onCloseRequest = ::exitApplication,
@@ -93,7 +94,6 @@ fun main() = application {
             ) {
                 currentWindow.value = window
 
-                val dashboardViewModel = remember { DashboardViewModel() }
                 this.window.addWindowFocusListener(dashboardViewModel)
 
                 MenuBar {
@@ -224,7 +224,13 @@ fun main() = application {
 }
 
 @Composable
-fun WebViewInitializing() {
+fun WebViewInitializing(
+    dashboardViewModel: DashboardViewModel
+) {
+    if (dashboardViewModel.isDownloadingWebViewLibrary()) {
+        return
+    }
+
     println("WEBVIEW LOADING")
 
     // Init WebView
@@ -251,10 +257,12 @@ fun WebViewInitializing() {
                     progress {
                         onDownloading {
                             downloading = it
-                            toast("Downloading $downloading%")
-                            // use this if you want to display a download progress for example
+                            dashboardViewModel.setDownloadingWebViewLibraryProgress(it.toInt())
+                            toast("Downloading WebView library: $downloading%")
                         }
                         onInitialized {
+                            dashboardViewModel.setDownloadingWebViewLibraryProgress(100)
+                            toast("Finished downloading WebView library")
                             initialized = true
                         }
                     }
