@@ -78,61 +78,10 @@ fun main() = application {
                     }
                 }
             }
-
-            // Init WebView
-            var restartRequired by remember { mutableStateOf(false) }
-            var error by remember { mutableStateOf("") }
-            var downloading by remember { mutableStateOf(0F) }
-            var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
-            val isDebug = true
-
-            LaunchedEffect(Unit) {
-                withContext(Dispatchers.IO) { // IO scope recommended but not required
-
-                    val kcefInstallDir = if (isDebug) {
-                        File("kcef-bundle")
-                    } else {
-                        val rootFolder = Tooling.getApplicationWriteableRootFolder("Sphinx") ?: File("./")
-                        File(rootFolder, "kcef-bundle")
-                    }
-
-                    KCEF.init(
-                        builder = {
-                            installDir(kcefInstallDir)
-
-                            progress {
-                                onDownloading {
-                                    downloading = it
-                                    // use this if you want to display a download progress for example
-                                }
-                                onInitialized {
-                                    initialized = true
-                                }
-                            }
-                        },
-                        onError = {
-                            error = it?.localizedMessage ?: ""
-                        },
-                        onRestartRequired = {
-                            restartRequired = true
-                        }
-                    )
-                }
-            }
-
-            if (restartRequired) {
-                toast("Restart Required")
-            } else if (error.isNotEmpty()) {
-                toast(error)
-                println("ERROR KCEF $error")
-            } else {
-                if (!initialized) {
-                    toast("Downloading $downloading%")
-                }
-            }
-
         }
         ScreenType.DashboardScreen -> {
+            WebViewInitializing()
+
             Window(
                 onCloseRequest = ::exitApplication,
                 title = "Sphinx",
@@ -272,5 +221,54 @@ fun main() = application {
 //            )
 //        }
 //    }
+}
+
+@Composable
+fun WebViewInitializing() {
+    println("WEBVIEW LOADING")
+
+    // Init WebView
+    var restartRequired by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf("") }
+    var downloading by remember { mutableStateOf(0F) }
+    var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
+    val isDebug = true
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) { // IO scope recommended but not required
+
+            val kcefInstallDir = if (isDebug) {
+                File("kcef-bundle")
+            } else {
+                val rootFolder = Tooling.getApplicationWriteableRootFolder("Sphinx") ?: File("./")
+                File(rootFolder, "kcef-bundle")
+            }
+
+            KCEF.init(
+                builder = {
+                    installDir(kcefInstallDir)
+
+                    progress {
+                        onDownloading {
+                            downloading = it
+                            toast("Downloading $downloading%")
+                            // use this if you want to display a download progress for example
+                        }
+                        onInitialized {
+                            initialized = true
+                        }
+                    }
+                },
+                onError = {
+                    error = it?.localizedMessage ?: ""
+                    toast(error)
+                },
+                onRestartRequired = {
+                    restartRequired = true
+                    toast("Restart Required")
+                }
+            )
+        }
+    }
 }
 

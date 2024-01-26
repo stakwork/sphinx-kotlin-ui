@@ -20,9 +20,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.common.viewmodel.JsMessageHandler
 import chat.sphinx.common.viewmodel.WebAppViewModel
+import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.multiplatform.webview.jsbridge.WebViewJsBridge
 import com.multiplatform.webview.web.WebView
@@ -35,6 +37,7 @@ fun WebAppUI(
     webAppViewModel: WebAppViewModel
 ) {
     var isOpen by remember { mutableStateOf(true) }
+    val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
 
     if (isOpen) {
         println("WebViewWindow recompose")
@@ -46,7 +49,8 @@ fun WebAppUI(
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(1200, 800)
-            )
+            ),
+            icon = sphinxIcon
         ) {
             Box(
                 modifier = Modifier.fillMaxSize()
