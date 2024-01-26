@@ -227,7 +227,7 @@ fun main() = application {
 fun WebViewInitializing(
     dashboardViewModel: DashboardViewModel
 ) {
-    if (dashboardViewModel.isDownloadingWebViewLibrary()) {
+    if (dashboardViewModel.isWebViewLoading()) {
         return
     }
 
@@ -257,22 +257,23 @@ fun WebViewInitializing(
                     progress {
                         onDownloading {
                             downloading = it
-                            dashboardViewModel.setDownloadingWebViewLibraryProgress(it.toInt())
-                            toast("Downloading WebView library: $downloading%")
+                            dashboardViewModel.setWebViewState(DashboardViewModel.WebViewState.Loading)
                         }
                         onInitialized {
-                            dashboardViewModel.setDownloadingWebViewLibraryProgress(100)
-                            toast("Finished downloading WebView library")
+                            dashboardViewModel.setWebViewState(DashboardViewModel.WebViewState.Initialized)
+                            toast("Finished loading WebView library")
                             initialized = true
                         }
                     }
                 },
                 onError = {
                     error = it?.localizedMessage ?: ""
+                    dashboardViewModel.setWebViewState(DashboardViewModel.WebViewState.Failed)
                     toast(error)
                 },
                 onRestartRequired = {
                     restartRequired = true
+                    dashboardViewModel.setWebViewState(DashboardViewModel.WebViewState.Failed)
                     toast("Restart Required")
                 }
             )

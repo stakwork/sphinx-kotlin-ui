@@ -38,11 +38,28 @@ fun WebAppUI(
     dashboardViewModel: DashboardViewModel,
     webAppViewModel: WebAppViewModel
 ) {
+    when (dashboardViewModel.getWebViewState()) {
+        DashboardViewModel.WebViewState.Loading -> {
+            toast("WebView Library is loading, please try again in a few minutes", primary_red)
+        }
+        DashboardViewModel.WebViewState.NonInitialized -> {
+            toast("Failed to start WebView Library", primary_red)
+        }
+        DashboardViewModel.WebViewState.Failed -> {
+            toast("Failed to load WebView Library", primary_red)
+        }
+        else -> {}
+    }
+
+    if (!dashboardViewModel.isWebViewLoaded()) {
+        webAppViewModel.toggleWebAppWindow(false, null)
+        return
+    }
+
     var isOpen by remember { mutableStateOf(true) }
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
 
-    if (isOpen && dashboardViewModel.didFinishDownloadingWebViewLibrary()) {
-        println("WebViewWindow recompose")
+    if (isOpen) {
         Window(
             onCloseRequest = {
                 webAppViewModel.toggleWebAppWindow(false, null)
