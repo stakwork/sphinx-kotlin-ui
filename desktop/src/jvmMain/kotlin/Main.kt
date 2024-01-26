@@ -238,7 +238,7 @@ fun WebViewInitializing(
     var error by remember { mutableStateOf("") }
     var downloading by remember { mutableStateOf(0F) }
     var initialized by remember { mutableStateOf(false) } // if true, KCEF can be used to create clients, browsers etc
-    val isDebug = true
+    val isDebug = false
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) { // IO scope recommended but not required
