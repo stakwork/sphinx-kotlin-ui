@@ -1,15 +1,12 @@
 package chat.sphinx.common.components
 
 import Roboto
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.VerticalScrollbar
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -26,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
@@ -111,26 +109,50 @@ fun TransactionsUI(dashboardViewModel: DashboardViewModel) {
 @Composable
 fun TransactionRow(transaction: TransactionState) {
 
-    val background = if (transaction.transactionType is TransactionType.Incoming) {
-        MaterialTheme.colorScheme.onSecondaryContainer
-    } else {
-        MaterialTheme.colorScheme.background
+    val background = when (transaction.transactionType) {
+        is TransactionType.Incoming -> {
+            md_theme_dark_background
+        }
+
+        is TransactionType.Outgoing -> {
+            md_theme_dark_shadow
+        }
+
+        else -> {
+            md_theme_light_shadow
+        }
     }
 
-    val arrowImage = if (transaction.transactionType is TransactionType.Incoming) {
-        imageResource(Res.drawable.ic_transaction_payment_received)
-    } else {
-        imageResource(Res.drawable.ic_transaction_payment_sent)
+    val arrowImage = when (transaction.transactionType) {
+        is TransactionType.Incoming -> {
+            imageResource(Res.drawable.ic_received)
+        }
+
+        is TransactionType.Outgoing -> {
+            imageResource(Res.drawable.ic_sent)
+        }
+
+        else -> {
+            imageResource(Res.drawable.ic_warning)
+        }
     }
 
-    val iconColor = if (transaction.transactionType is TransactionType.Incoming) {
-        MaterialTheme.colorScheme.inverseSurface
-    } else {
-        secondary_red
+    val iconColor = when (transaction.transactionType) {
+        is TransactionType.Incoming -> {
+            primary_green
+        }
+
+        is TransactionType.Outgoing -> {
+            randomColor4
+        }
+
+        else -> {
+            secondary_red
+        }
     }
 
     val textColor = if (transaction.transactionType is TransactionType.Incoming) {
-        MaterialTheme.colorScheme.inverseSurface
+        wash_out_received
     } else {
         wash_out_received
     }
@@ -141,83 +163,105 @@ fun TransactionRow(transaction: TransactionState) {
         light_divider
     }
 
-    Box(
-        modifier = Modifier.fillMaxWidth().height(80.dp).background(background),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Box(
-                modifier = Modifier.width(60.dp).fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = arrowImage,
-                    contentDescription = "Arrow",
-                    modifier = Modifier.size(12.dp),
-                    colorFilter = ColorFilter.tint(color = iconColor)
-                )
-            }
-            Box(
-                modifier = Modifier.width(45.dp).fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = imageResource(Res.drawable.ic_transaction_item),
-                    contentDescription = "Receipt",
-                    modifier = Modifier.size(17.dp),
-                    colorFilter = ColorFilter.tint(color = textColor)
-                )
-            }
-            Text(
-                text = transaction.senderReceiverName,
-                maxLines = 1,
-                fontSize = 14.sp,
-                fontFamily = Roboto,
-                color = textColor,
-            )
+    var showErrorMessage by remember { mutableStateOf(false) }
 
-            Column(
-                modifier = Modifier.fillMaxSize().padding(top = 16.dp),
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.Center
+    Box(
+        modifier = Modifier.clickable { showErrorMessage = !showErrorMessage },
+    ) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
             ) {
-                Row() {
+                Box(
+                    modifier = Modifier.width(60.dp).fillMaxHeight(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (transaction.transactionType is TransactionType.Failed) {
+                        Image(
+                            painter = arrowImage,
+                            contentDescription = "Arrow",
+                            modifier = Modifier.requiredSize(20.dp),
+                            colorFilter = ColorFilter.tint(color = iconColor)
+                        )
+                    } else {
+                        Image(
+                            painter = arrowImage,
+                            contentDescription = "Warning",
+                            modifier = Modifier.size(30.dp),
+                            colorFilter = ColorFilter.tint(color = iconColor)
+
+                        )
+                    }
+                }
+                Column {
                     Text(
-                        text = transaction.amount,
+                        text = transaction.senderReceiverName,
+                        maxLines = 1,
                         fontSize = 14.sp,
+                        fontFamily = Roboto,
+                        color = sphinx_action_menu,
+                    )
+
+                    if (transaction.transactionType is TransactionType.Failed) {
+                        Spacer(modifier = Modifier.height(1.dp))
+                        Text(
+                            text = "Failed Payment",
+                            fontSize = 13.sp,
+                            fontFamily = Roboto,
+                            color = primary_red,
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(top = 16.dp),
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Row() {
+                        Text(
+                            text = transaction.amount,
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            fontFamily = Roboto,
+                            fontWeight = FontWeight.Medium,
+                            color = md_theme_dark_tertiary,
+                        )
+                        Text(
+                            text = "sat",
+                            maxLines = 1,
+                            fontSize = 14.sp,
+                            fontFamily = Roboto,
+                            color = textColor,
+                            modifier = Modifier.padding(start = 6.dp, end = 12.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = transaction.date,
+                        fontSize = 10.sp,
                         maxLines = 1,
                         fontFamily = Roboto,
                         fontWeight = FontWeight.Medium,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.padding(end = 12.dp)
                     )
+
+                }
+            }
+            if (showErrorMessage && transaction.transactionType is TransactionType.Failed) {
+                Row {
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "sat",
-                        maxLines = 1,
+                        text = "Failure reason: ${transaction.failedTransactionMessage ?: ""}",
                         fontSize = 14.sp,
                         fontFamily = Roboto,
-                        color = textColor,
-                        modifier = Modifier.padding(start = 6.dp, end = 12.dp)
+                        color = place_holder_text,
+                        modifier = Modifier.padding(start = 60.dp) // Indent to align with the image box
                     )
                 }
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Text(
-                    text = transaction.date,
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                    fontFamily = Roboto,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(end = 12.dp)
-                )
             }
-        }
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Bottom,
-        ) {
             Divider(modifier = Modifier.fillMaxWidth(), color = dividerColor)
         }
     }
@@ -247,4 +291,3 @@ fun LoadingRow() {
 }
 
 fun LazyListState.isScrolledToEnd() = layoutInfo.visibleItemsInfo.lastOrNull()?.index == layoutInfo.totalItemsCount - 1
-
