@@ -45,8 +45,11 @@ fun WebAppUI(
         DashboardViewModel.WebViewState.NonInitialized -> {
             toast("Failed to start WebView Library", primary_red)
         }
-        DashboardViewModel.WebViewState.Failed -> {
+        DashboardViewModel.WebViewState.Error -> {
             toast("Failed to load WebView Library", primary_red)
+        }
+        DashboardViewModel.WebViewState.RestartRequired -> {
+            toast("You need to run Sphinx app as an administrator to use this feature", primary_red)
         }
         else -> {}
     }

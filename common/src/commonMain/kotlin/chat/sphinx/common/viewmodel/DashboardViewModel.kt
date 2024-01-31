@@ -41,7 +41,8 @@ class DashboardViewModel: WindowFocusListener {
         NonInitialized,
         Loading,
         Initialized,
-        Failed
+        Error,
+        RestartRequired
     }
 
     private val webViewState: MutableStateFlow<WebViewState> by lazy {
