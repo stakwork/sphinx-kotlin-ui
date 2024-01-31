@@ -214,6 +214,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
             }
 
             val redemptionCode = RedemptionCode.decode(code)
+
             if (redemptionCode != null && redemptionCode is RedemptionCode.NodeInvite) {
                 LandingScreenState.screenState(LandingScreenType.Loading)
                 getTransportKey(
@@ -223,6 +224,27 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                     redeemInviteDto = null
                 )
                 return@launch
+            }
+
+            if (redemptionCode != null && redemptionCode is RedemptionCode.SwarmConnect) {
+                LandingScreenState.screenState(LandingScreenType.Loading)
+                getTransportKey(
+                    ip = redemptionCode.ip,
+                    nodePubKey = redemptionCode.pubKey,
+                    null,
+                    null,
+                )
+                return@launch
+            }
+            if (redemptionCode != null && redemptionCode is RedemptionCode.SwarmClaim) {
+                LandingScreenState.screenState(LandingScreenType.Loading)
+                getTransportKey(
+                    ip = redemptionCode.ip,
+                    null,
+                    null,
+                    null,
+                    token = redemptionCode.token.toAuthorizationToken()
+                )
             }
 
             toast("The code your entered is not a valid invite or connection code")
@@ -263,6 +285,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     ) {
         val relayUrl = relayDataHandler.formatRelayUrl(ip)
         networkModule.networkClient.setTorRequired(relayUrl.isOnionAddress)
+
         var transportKey: RsaPublicKey? = null
 
         networkQueryRelayKeys.getRelayTransportKey(relayUrl).collect { loadResponse ->
@@ -278,14 +301,80 @@ class SignUpViewModel : PinAuthenticationViewModel() {
             }
         }
 
-        registerTokenAndStartOnBoard(
-            ip,
-            nodePubKey,
-            password,
-            redeemInviteDto,
-            token,
-            transportKey
+        if (token != null) {
+            continueWithToken(
+                token,
+                relayUrl,
+                transportKey,
+                redeemInviteDto
+            )
+        } else {
+            registerTokenAndStartOnBoard(
+                ip,
+                nodePubKey,
+                password,
+                redeemInviteDto,
+                token,
+                transportKey
+            )
+        }
+    }
+
+    private suspend fun continueWithToken(
+        token: AuthorizationToken,
+        relayUrl: RelayUrl,
+        transportKey: RsaPublicKey? = null,
+        redeemInviteDto: RedeemInviteDto?
+    ) {
+        val inviterData: OnBoardInviterData? = redeemInviteDto?.let { dto ->
+            OnBoardInviterData(
+                dto.nickname,
+                dto.pubkey?.toLightningNodePubKey(),
+                dto.route_hint,
+                dto.message,
+                dto.action,
+                dto.pin
+            )
+        }
+
+        val relayTransportToken = transportKey?.let { transportKey ->
+            relayDataHandler.retrieveRelayTransportToken(
+                token,
+                transportKey
+            )
+        } ?: null
+
+        val hMacKey = createHMacKey(
+            relayData = Triple(Pair(token, relayTransportToken), null, relayUrl),
+            transportKey = transportKey
         )
+
+        val step1Message: OnBoardStep.Step1_WelcomeMessage? =
+            onBoardStepHandler.persistOnBoardStep1Data(
+                relayUrl,
+                token,
+                transportKey,
+                hMacKey,
+                inviterData
+            )
+
+        if (step1Message == null) {
+            toast("Generate token failed")
+            LandingScreenState.screenState(LandingScreenType.NewUser)
+        } else {
+            setSignupBasicInfoState {
+                copy(
+                    onboardStep = step1Message
+                )
+            }
+            setSignupInviterState {
+                copy(
+                    welcomeMessage = step1Message.inviterData.message ?: "Welcome to Sphinx!",
+                    friendName = step1Message.inviterData.nickname ?: "Sphinx Support"
+                )
+            }
+            LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
+        }
     }
 
     private var tokenRetries = 0
