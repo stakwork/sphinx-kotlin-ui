@@ -166,7 +166,8 @@ fun TransactionRow(transaction: TransactionState) {
     var showErrorMessage by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier.clickable { showErrorMessage = !showErrorMessage },
+        modifier = Modifier.clickable { showErrorMessage = !showErrorMessage }
+        .background(background)
     ) {
         Column {
             Row(
@@ -204,7 +205,7 @@ fun TransactionRow(transaction: TransactionState) {
                     )
 
                     if (transaction.transactionType is TransactionType.Failed) {
-                        Spacer(modifier = Modifier.height(1.dp))
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "Failed Payment",
                             fontSize = 13.sp,
@@ -236,16 +237,14 @@ fun TransactionRow(transaction: TransactionState) {
                             modifier = Modifier.padding(start = 6.dp, end = 12.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(2.dp))
-
                     Text(
                         text = transaction.date,
                         fontSize = 10.sp,
                         maxLines = 1,
                         fontFamily = Roboto,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.padding(end = 12.dp)
+                        color = textColor,
+                        modifier = Modifier.padding(end = 12.dp, bottom = 16.dp)
                     )
 
                 }
@@ -258,7 +257,7 @@ fun TransactionRow(transaction: TransactionState) {
                         fontSize = 14.sp,
                         fontFamily = Roboto,
                         color = place_holder_text,
-                        modifier = Modifier.padding(start = 60.dp) // Indent to align with the image box
+                        modifier = Modifier.padding(start = 60.dp, bottom = 16.dp)
                     )
                 }
             }
