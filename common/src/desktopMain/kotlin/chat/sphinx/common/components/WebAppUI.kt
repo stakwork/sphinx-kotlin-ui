@@ -20,9 +20,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
+import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.state.AuthorizeViewState
+import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.JsMessageHandler
 import chat.sphinx.common.viewmodel.WebAppViewModel
+import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.getPreferredWindowSize
 import com.multiplatform.webview.jsbridge.WebViewJsBridge
 import com.multiplatform.webview.web.WebView
@@ -32,12 +35,34 @@ import theme.*
 
 @Composable
 fun WebAppUI(
+    dashboardViewModel: DashboardViewModel,
     webAppViewModel: WebAppViewModel
 ) {
+    when (dashboardViewModel.getWebViewState()) {
+        DashboardViewModel.WebViewState.Loading -> {
+            toast("WebView Library is loading, please try again in a few minutes", primary_red)
+        }
+        DashboardViewModel.WebViewState.NonInitialized -> {
+            toast("Failed to start WebView Library", primary_red)
+        }
+        DashboardViewModel.WebViewState.Error -> {
+            toast("Failed to load WebView Library", primary_red)
+        }
+        DashboardViewModel.WebViewState.RestartRequired -> {
+            toast("You need to run Sphinx app as an administrator to use this feature", primary_red)
+        }
+        else -> {}
+    }
+
+    if (!dashboardViewModel.isWebViewLoaded()) {
+        webAppViewModel.toggleWebAppWindow(false, null)
+        return
+    }
+
     var isOpen by remember { mutableStateOf(true) }
+    val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
 
     if (isOpen) {
-        println("WebViewWindow recompose")
         Window(
             onCloseRequest = {
                 webAppViewModel.toggleWebAppWindow(false, null)
@@ -46,7 +71,8 @@ fun WebAppUI(
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
                 size = getPreferredWindowSize(1200, 800)
-            )
+            ),
+            icon = sphinxIcon
         ) {
             Box(
                 modifier = Modifier.fillMaxSize()

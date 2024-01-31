@@ -107,6 +107,7 @@ class WebAppViewModel {
         }
 
         if (!open) {
+            closeAuthorizeView()
             return
         }
 

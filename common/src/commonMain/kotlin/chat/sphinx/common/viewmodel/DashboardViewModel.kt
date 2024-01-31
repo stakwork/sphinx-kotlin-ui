@@ -37,6 +37,18 @@ class DashboardViewModel: WindowFocusListener {
     private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
     private val networkQueryVersion: NetworkQueryVersion = SphinxContainer.networkModule.networkQueryVersion
 
+    enum class WebViewState {
+        NonInitialized,
+        Loading,
+        Initialized,
+        Error,
+        RestartRequired
+    }
+
+    private val webViewState: MutableStateFlow<WebViewState> by lazy {
+        MutableStateFlow(WebViewState.NonInitialized)
+    }
+
     private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
         MutableStateFlow(null)
     }
@@ -59,6 +71,22 @@ class DashboardViewModel: WindowFocusListener {
 
     val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
         get() = _contactWindowStateFlow.asStateFlow()
+
+    fun setWebViewState(state: WebViewState) {
+        webViewState.value = state
+    }
+
+    fun isWebViewLoading() : Boolean {
+        return webViewState.value == WebViewState.Loading
+    }
+
+    fun isWebViewLoaded() : Boolean {
+        return webViewState.value == WebViewState.Initialized
+    }
+
+    fun getWebViewState() : WebViewState {
+        return webViewState.value
+    }
 
     fun toggleContactWindow(open: Boolean, screen: ContactScreenState?) {
         _contactWindowStateFlow.value = Pair(open, screen)
@@ -181,7 +209,7 @@ class DashboardViewModel: WindowFocusListener {
     }
 
     private fun getPackageVersion(){
-        val currentAppVersion = "1.0.23"
+        val currentAppVersion = "1.0.24"
 
         viewModelScope.launch(dispatchers.mainImmediate) {
             networkQueryVersion.getAppVersions().collect { loadResponse ->

@@ -61,8 +61,10 @@ compose.desktop {
     application {
         mainClass = "MainKt"
 
+        jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
         jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
-        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED") // recommended but not necessary
+        jvmArgs("--add-opens", "java.desktop/sun.java2d=ALL-UNNAMED")
+        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
 
         if (System.getProperty("os.name").contains("Mac")) {
             jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
@@ -84,7 +86,7 @@ compose.desktop {
 
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sphinx"
-            packageVersion = "1.0.23"
+            packageVersion = "1.0.24"
 
             val sphinxProperties = Properties().apply {
                 val localPropertiesFile = project.file("../local.properties")
