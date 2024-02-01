@@ -116,6 +116,7 @@ class TransactionsViewModel {
 
     private suspend fun generateTransactionsStateList(
         transactions: List<TransactionDto>
+
     ) {
         val owner = getOwner()
         val transactionsList = mutableListOf<TransactionState>()
@@ -196,6 +197,7 @@ class TransactionsViewModel {
         }
 
         for (transaction in transactions) {
+        try {
             val senderId = contactIdsMap[transaction.id]
             val senderAlias: String? =
                 contactAliasMap[transaction.id]?.value ?: contactsMap[senderId?.value]?.alias?.value
@@ -203,27 +205,43 @@ class TransactionsViewModel {
             val transactionAmount = transaction.amount.toString()
             val date = transaction.date.toDateTime()
             val dateString = date.localDateTimeString(DateTime.getFormateeemmddhmma())
+            val failedTransaction = transaction.error_message
 
-            if (transaction.sender == owner.id.value) {
+
+            if (!failedTransaction.isNullOrBlank()) {
                 transactionsList.add(
                     TransactionState(
                         amount = transactionAmount,
                         date = dateString,
                         senderReceiverName = senderAlias ?: "-",
-                        transactionType = TransactionType.Outgoing
+                        transactionType = TransactionType.Failed,
+                        failedTransactionMessage = failedTransaction
                     )
                 )
-            } else {
+            } else if (transaction.sender == owner.id.value) transactionsList.add(
+                TransactionState(
+                    amount = transactionAmount,
+                    date = dateString,
+                    senderReceiverName = senderAlias ?: "-",
+                    transactionType = TransactionType.Outgoing,
+                    failedTransactionMessage = null
+
+                )
+            ) else {
                 transactionsList.add(
                     TransactionState(
                         amount = transactionAmount,
                         date = dateString,
                         senderReceiverName = senderAlias ?: "-",
-                        transactionType = TransactionType.Incoming
+                        transactionType = TransactionType.Incoming,
+                        failedTransactionMessage = null
                     )
                 )
+
             }
+        } catch (_: Exception){
         }
+    }
 
         val list = transactionViewState.transactionsList.toMutableList()
         list.addAll(transactionsList)
@@ -253,7 +271,9 @@ class TransactionsViewModel {
 
         scope.launch(dispatchers.mainImmediate) {
             loadTransactions()
+
         }
     }
 }
+
 

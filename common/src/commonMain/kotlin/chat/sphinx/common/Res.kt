@@ -57,6 +57,8 @@ object Res {
         const val ic_music = "drawable/ic_music.png"
         const val ic_podcast = "drawable/ic_podcast.png"
 
+        const val ic_warning = "drawable/ic_warning.png"
+
         // chat action sheet
 
     }
