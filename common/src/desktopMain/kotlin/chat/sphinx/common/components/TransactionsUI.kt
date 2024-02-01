@@ -111,15 +111,15 @@ fun TransactionRow(transaction: TransactionState) {
 
     val background = when (transaction.transactionType) {
         is TransactionType.Incoming -> {
-            md_theme_dark_background
+            incoming_pmt_background
         }
 
         is TransactionType.Outgoing -> {
-            md_theme_dark_shadow
+            outgoing_pmt_background
         }
 
         else -> {
-            md_theme_light_shadow
+            failed_pmt_background
         }
     }
 
@@ -167,7 +167,7 @@ fun TransactionRow(transaction: TransactionState) {
 
     Box(
         modifier = Modifier.clickable { showErrorMessage = !showErrorMessage }
-        .background(background)
+            .background(background)
     ) {
         Column {
             Row(
