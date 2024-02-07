@@ -114,9 +114,9 @@ fun main() = application {
                                 )
 
                                 Item("Remove Account from this machine", onClick = {
+                                    dashboardViewModel.clearDatabase()
+                                    dashboardViewModel.deleteCredentials()
                                     sphinxStore.removeAccount()
-                                    // TODO: Hack as logic to recreate database in the same process needs to be reworked...
-                                    exitApplication()
                                 })
                             }
                             else -> {}
@@ -154,14 +154,6 @@ fun main() = application {
                     Menu("Sphinx") {
                         Item("About", icon = sphinxIcon, onClick = { })
                         Item("Exit", onClick = ::exitApplication, shortcut = KeyShortcut(Key.Escape))
-
-                        if (LandingScreenState.isUnlockedSignup()) {
-                            Item("Remove Account from this machine", onClick = {
-                                sphinxStore.removeAccount()
-                                // TODO: Hack as logic to recreate database in the same process needs to be reworked...
-                                exitApplication()
-                            })
-                        }
                     }
                 }
                 AppTheme(useDarkTheme = true) {

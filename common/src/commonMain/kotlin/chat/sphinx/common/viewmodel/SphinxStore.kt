@@ -1,10 +1,12 @@
 package chat.sphinx.common.viewmodel
 
-import androidx.compose.runtime.remember
 import chat.sphinx.authentication.model.OnBoardStep
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.common.state.*
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.features.repository.util.upsertContact
+import chat.sphinx.wrapper.dashboard.ContactId
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class SphinxStore {
@@ -18,14 +20,12 @@ class SphinxStore {
         // TODO: logout Confirmation...
         scope.launch(SphinxContainer.appModule.dispatchers.main) {
 
-            SphinxContainer.appModule.sphinxCoreDBImpl.deleteDatabase()
-
             authenticationStorage.clearAuthenticationStorage()
             authenticationManager.logOut()
             encryptionKeyHandler.clearKeysToRestore()
             // TODO: Restart DB...
 
-            AppState.screenState(ScreenType.LandingScreen)
+            AppState.screenState(ScreenType.SplashScreen)
         }
     }
 

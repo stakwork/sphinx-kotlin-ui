@@ -1,11 +1,16 @@
 package chat.sphinx.common.viewmodel
 
+import androidx.compose.runtime.remember
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.state.DashboardScreenState
 import chat.sphinx.common.state.DashboardScreenType
+import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.concepts.network.query.version.NetworkQueryVersion
 import chat.sphinx.concepts.socket_io.SocketIOManager
+import chat.sphinx.database.core.SphinxDatabaseQueries
 import chat.sphinx.di.container.SphinxContainer
+import chat.sphinx.features.repository.util.deleteAll
+import chat.sphinx.features.repository.util.upsertContact
 import chat.sphinx.logger.d
 import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
@@ -13,6 +18,7 @@ import chat.sphinx.wrapper.bridge.toBridgeAuthorizeMessage
 import chat.sphinx.wrapper.bridge.toBridgeAuthorizeMessageOrNull
 import chat.sphinx.wrapper.bridge.toBridgeSetBudgetMessageOrNull
 import chat.sphinx.wrapper.dashboard.ChatId
+import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
 import chat.sphinx.wrapper.tribe.TribeJoinLink
@@ -30,6 +36,8 @@ import java.awt.event.WindowFocusListener
 class DashboardViewModel: WindowFocusListener {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
+    private val coreDB = SphinxContainer.appModule.coreDBImpl
+    private val authenticationStorage = SphinxContainer.authenticationModule.authenticationStorage
     private val viewModelScope = SphinxContainer.appModule.applicationScope
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
@@ -360,6 +368,23 @@ class DashboardViewModel: WindowFocusListener {
             _restoreStateFlow.value = null
 
             repositoryDashboard.didCancelRestore()
+        }
+    }
+
+    fun clearDatabase() {
+        coreDB.getSphinxDatabaseQueriesOrNull()?.let { queries: SphinxDatabaseQueries ->
+            queries.transaction {
+                deleteAll(queries)
+            }
+        }
+    }
+
+    fun deleteCredentials() {
+        val onBoardStepHandler = OnBoardStepHandler()
+
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            authenticationStorage.removeCredentials()
+            onBoardStepHandler.finishOnBoardSteps()
         }
     }
 }
