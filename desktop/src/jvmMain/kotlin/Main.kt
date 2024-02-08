@@ -19,6 +19,7 @@ import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.components.toast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
@@ -43,10 +44,12 @@ fun main() = application {
     val sphinxStore = remember { SphinxStore() }
     var currentWindow: MutableState<ComposeWindow?> = remember { mutableStateOf(null) }
 
+    val restoreExistingUserViewModel = remember { RestoreExistingUserViewModel() }
+
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
             Window(
-                onCloseRequest = ::exitApplication,
+                onCloseRequest = {},
                 title = "Sphinx",
                 state = WindowState(
                     position = WindowPosition.Aligned(Alignment.Center),
@@ -56,7 +59,6 @@ fun main() = application {
             ) {
                 MenuBar {
                     Menu("Sphinx") {
-                        Item("About", icon = sphinxIcon, onClick = { })
                         Item("Exit", onClick = ::exitApplication, shortcut = KeyShortcut(Key.Escape))
                     }
                 }
@@ -84,7 +86,7 @@ fun main() = application {
             WebViewInitializing(dashboardViewModel)
 
             Window(
-                onCloseRequest = ::exitApplication,
+                onCloseRequest = {},
                 title = "Sphinx",
                 state = WindowState(
                     position = WindowPosition.Aligned(Alignment.Center),
@@ -114,9 +116,9 @@ fun main() = application {
                                 )
 
                                 Item("Remove Account from this machine", onClick = {
-                                    dashboardViewModel.clearDatabase()
-                                    dashboardViewModel.deleteCredentials()
                                     sphinxStore.removeAccount()
+                                    dashboardViewModel.clearDatabase()
+                                    exitApplication()
                                 })
                             }
                             else -> {}
@@ -140,7 +142,7 @@ fun main() = application {
         }
         ScreenType.LandingScreen -> {
             Window(
-                onCloseRequest = ::exitApplication,
+                onCloseRequest = {},
                 title = "Sphinx",
                 state = WindowState(
                     position = WindowPosition.Aligned(Alignment.Center),
@@ -152,12 +154,11 @@ fun main() = application {
 
                 MenuBar {
                     Menu("Sphinx") {
-                        Item("About", icon = sphinxIcon, onClick = { })
                         Item("Exit", onClick = ::exitApplication, shortcut = KeyShortcut(Key.Escape))
                     }
                 }
                 AppTheme(useDarkTheme = true) {
-                    LandingScreen()
+                    LandingScreen(restoreExistingUserViewModel)
                     DesktopSphinxToast("Sphinx")
                 }
             }

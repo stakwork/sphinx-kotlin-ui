@@ -42,16 +42,15 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
     }
 
     override fun onPINTextChanged(text: String) {
-        if(text.length==6){
+        if (text.length==6) {
             onSubmitPIN()
         }
-            setPINState {
-                copy(
-                    sphinxPIN = text,
-                    errorMessage = null
-                )
-            }
-
+        setPINState {
+            copy(
+                sphinxPIN = text,
+                errorMessage = null
+            )
+        }
     }
 
     fun onSubmitKeys() {
@@ -279,6 +278,13 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
 
         LandingScreenState.screenState(LandingScreenType.RestoreExistingUserSuccess)
         OnboardingState.status(OnboardingStatus.Successful)
+
+        setPINState {
+            copy(
+                sphinxPIN = "",
+                errorMessage = null
+            )
+        }
     }
 
     @OptIn(UnencryptedDataAccess::class)

@@ -1,9 +1,10 @@
 package chat.sphinx.common.components
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import chat.sphinx.common.components.landing.*
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
@@ -12,9 +13,10 @@ import chat.sphinx.common.viewmodel.SignUpViewModel
 
 
 @Composable
-fun LandingScreen() {
+fun LandingScreen(
+    restoreExistingUserViewModel: RestoreExistingUserViewModel
+) {
     val signUpViewModel = remember { SignUpViewModel() }
-    val restoreExistingUserViewModel = remember { RestoreExistingUserViewModel() }
 
     Box(
         modifier = Modifier.fillMaxSize(),

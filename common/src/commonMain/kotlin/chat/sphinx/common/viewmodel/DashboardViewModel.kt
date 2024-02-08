@@ -1,10 +1,9 @@
 package chat.sphinx.common.viewmodel
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
-import chat.sphinx.common.state.ContactScreenState
-import chat.sphinx.common.state.DashboardScreenState
-import chat.sphinx.common.state.DashboardScreenType
 import chat.sphinx.authentication.model.OnBoardStepHandler
+import chat.sphinx.common.state.*
 import chat.sphinx.concepts.network.query.version.NetworkQueryVersion
 import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.database.core.SphinxDatabaseQueries
@@ -33,7 +32,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
 
-class DashboardViewModel: WindowFocusListener {
+class DashboardViewModel(): WindowFocusListener {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val coreDB = SphinxContainer.appModule.coreDBImpl
@@ -376,15 +375,6 @@ class DashboardViewModel: WindowFocusListener {
             queries.transaction {
                 deleteAll(queries)
             }
-        }
-    }
-
-    fun deleteCredentials() {
-        val onBoardStepHandler = OnBoardStepHandler()
-
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            authenticationStorage.removeCredentials()
-            onBoardStepHandler.finishOnBoardSteps()
         }
     }
 }

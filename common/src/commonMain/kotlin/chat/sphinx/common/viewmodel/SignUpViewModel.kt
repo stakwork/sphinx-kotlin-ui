@@ -453,7 +453,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                         relayTransportToken
                     )
                 } else {
-                    toast("Generate token failed")
+                    toast("Generate token failed: ${(generateTokenResponse as Response.Error<ResponseError>).message}")
                     LandingScreenState.screenState(LandingScreenType.NewUser)
                 }
             }

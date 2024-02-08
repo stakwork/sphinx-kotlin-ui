@@ -23,9 +23,6 @@ class SphinxStore {
             authenticationStorage.clearAuthenticationStorage()
             authenticationManager.logOut()
             encryptionKeyHandler.clearKeysToRestore()
-            // TODO: Restart DB...
-
-            AppState.screenState(ScreenType.SplashScreen)
         }
     }
 
