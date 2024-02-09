@@ -24,10 +24,7 @@ import chat.sphinx.crypto.common.clazzes.PasswordGenerator
 import chat.sphinx.crypto.common.clazzes.UnencryptedString
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
-import chat.sphinx.response.LoadResponse
-import chat.sphinx.response.Response
-import chat.sphinx.response.ResponseError
-import chat.sphinx.response.message
+import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.chat.ChatHost
 import chat.sphinx.wrapper.chat.ChatUUID
@@ -453,7 +450,10 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                         relayTransportToken
                     )
                 } else {
-                    toast("Generate token failed: ${(generateTokenResponse as Response.Error<ResponseError>).message}")
+                    tokenRetries = 0
+                    toast(
+                        "Generate token failed: ${(generateTokenResponse as Response.Error<ResponseError>).message} \n Exception: ${(generateTokenResponse as Response.Error<ResponseError>).exception?.localizedMessage ?: ""}"
+                    )
                     LandingScreenState.screenState(LandingScreenType.NewUser)
                 }
             }
