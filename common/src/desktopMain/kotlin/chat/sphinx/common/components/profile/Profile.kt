@@ -10,7 +10,6 @@ import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -32,8 +30,6 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import chat.sphinx.common.DesktopResource
 import chat.sphinx.common.components.PhotoUrlImage
-import chat.sphinx.common.components.QRDetail
-import chat.sphinx.common.components.TransactionsUI
 import chat.sphinx.common.components.notifications.DesktopSphinxConfirmAlert
 import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.components.pin.ChangePin
@@ -42,8 +38,6 @@ import chat.sphinx.common.state.ContentState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.ProfileViewModel
 import chat.sphinx.common.viewmodel.ResetPinViewModel
-import chat.sphinx.common.viewmodel.TransactionsViewModel
-import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.PinExportKeysViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.response.LoadResponse
@@ -53,9 +47,8 @@ import chat.sphinx.utils.getPreferredWindowSize
 import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.media.isImage
-import com.example.compose.AppTheme
-import theme.badge_red
 import kotlinx.coroutines.launch
+import theme.badge_red
 import utils.deduceMediaType
 
 @Composable
@@ -74,7 +67,7 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
             title = "Profile",
             state = WindowState(
                 position = WindowPosition.Aligned(Alignment.Center),
-                size = getPreferredWindowSize(420, 830)
+                size = getPreferredWindowSize(420, 928)
             ),
             icon = sphinxIcon,
         ) {
@@ -152,6 +145,31 @@ fun Profile(dashboardViewModel: DashboardViewModel) {
                     ) {
                         Tabs(viewModel, dashboardViewModel)
                     }
+                    Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 10.dp)
+
+                    Column(modifier = Modifier.padding(top = 16.dp, start = 40.dp, end = 40.dp, bottom = 24.dp)) {
+                        Text(
+                            "Sync more devices",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.align(
+                                Alignment.CenterHorizontally
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        val onTapBackUpKeys = remember { mutableStateOf(false) }
+
+                        CommonButton("Backup your key", endIcon = Icons.Default.VpnKey) {
+                            dashboardViewModel.toggleBackUpWindow(true)
+                            onTapBackUpKeys.value = true
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(0.dp))
+
+                    Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 10.dp)
+
                     saveButton(viewModel)
                 }
             }
@@ -432,29 +450,7 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                 )
                 Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
             }
-        }
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 10.dp)
-
-        Column(modifier = Modifier.padding(top = 16.dp, start = 40.dp, end = 40.dp, bottom = 24.dp)) {
-            Text(
-                "Sync more devices",
-                color = MaterialTheme.colorScheme.tertiary,
-                fontSize = 12.sp,
-                modifier = Modifier.align(
-                    Alignment.CenterHorizontally
-                )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            val onTapBackUpKeys = remember { mutableStateOf(false) }
-
-            CommonButton("Backup your key", endIcon = Icons.Default.VpnKey) {
-                dashboardViewModel.toggleBackUpWindow(true)
-                onTapBackUpKeys.value = true
-            }
+            Spacer(modifier = Modifier.height(28.dp))
         }
     }
 
@@ -514,8 +510,8 @@ fun saveButton(viewModel: ProfileViewModel) {
     Column(
         Modifier
             .fillMaxWidth()
-            .height(104.dp)
-            .padding(start = 40.dp, end = 40.dp, bottom = 16.dp),
+            .height(128.dp)
+            .padding(start = 40.dp, end = 40.dp, bottom = 40.dp),
     ) {
         Box(
             Modifier.fillMaxWidth().height(40.dp),
@@ -540,7 +536,7 @@ fun saveButton(viewModel: ProfileViewModel) {
         CommonButton(
             "Save Changes",
             customColor = MaterialTheme.colorScheme.secondaryContainer,
-            enabled = viewModel.profileState.saveButtonEnabled,
+            enabled = viewModel.profileState.saveButtonEnabled
         ) {
             viewModel.updateOwnerDetails()
         }
