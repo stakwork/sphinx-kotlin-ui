@@ -1,9 +1,15 @@
 package chat.sphinx.common.chatMesssageUI
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.FileCopy
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,14 +18,17 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.JitsiCallViewModel
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.wrapper.message.retrieveSphinxCallLink
 import theme.primary_green
-import chat.sphinx.wrapper.message.toSphinxCallLink
 
 @Composable
 fun JitsiAudioVideoCall(
-    chatMessage: ChatMessage
+    chatMessage: ChatMessage,
+    dashboardViewModel: DashboardViewModel,
+    jitsiCallViewModel: JitsiCallViewModel,
 ) {
     val uriHandler = LocalUriHandler.current
     val sphinxCallLink = chatMessage.message.retrieveSphinxCallLink()
@@ -46,7 +55,11 @@ fun JitsiAudioVideoCall(
         Button(
             onClick = {
                 sphinxCallLink?.audioCallLink?.let {
-                    uriHandler.openUri(it)
+                    if (dashboardViewModel.isWebViewRestartRequired()) {
+                        uriHandler.openUri(it)
+                    } else {
+                        jitsiCallViewModel.toggleJitsiCallWindow(true, it)
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth(),

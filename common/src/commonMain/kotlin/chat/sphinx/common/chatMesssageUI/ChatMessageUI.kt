@@ -4,31 +4,38 @@ import Roboto
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Text
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.ChatMessage
+import chat.sphinx.common.state.BubbleBackground
+import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.JitsiCallViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.common.viewmodel.chat.payment.PaymentViewModel
-import chat.sphinx.wrapper.message.*
-import androidx.compose.ui.text.font.FontStyle
-import chat.sphinx.common.state.BubbleBackground
-import chat.sphinx.wrapper.chat.isTribe
 import chat.sphinx.utils.containLinksWithPreview
+import chat.sphinx.wrapper.chat.isTribe
+import chat.sphinx.wrapper.message.MessageType
+import chat.sphinx.wrapper.message.isGroupAction
+import chat.sphinx.wrapper.message.isMediaMessage
+import chat.sphinx.wrapper.message.retrieveTextToShow
 
 @Composable
 fun ChatMessageUI(
     chatMessage: ChatMessage,
-    chatViewModel: ChatViewModel
+    chatViewModel: ChatViewModel,
+    dashboardViewModel: DashboardViewModel,
+    jitsiCallViewModel: JitsiCallViewModel
 ) {
     print("rebuilding ${chatMessage.message.id}")
 
@@ -154,6 +161,8 @@ fun ChatMessageUI(
                                         ChatCard(
                                             chatMessage,
                                             chatViewModel,
+                                            dashboardViewModel,
+                                            jitsiCallViewModel,
                                             modifier = if (messageContainsLinks) {
                                                 Modifier.width(350.dp)
                                             } else {

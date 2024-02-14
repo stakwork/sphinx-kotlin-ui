@@ -91,6 +91,10 @@ class DashboardViewModel(): WindowFocusListener {
         return webViewState.value == WebViewState.Initialized
     }
 
+    fun isWebViewRestartRequired() : Boolean {
+        return webViewState.value == WebViewState.RestartRequired
+    }
+
     fun getWebViewState() : WebViewState {
         return webViewState.value
     }

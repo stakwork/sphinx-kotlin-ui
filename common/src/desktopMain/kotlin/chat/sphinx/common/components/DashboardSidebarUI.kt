@@ -24,6 +24,7 @@ import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.common.state.ContactScreenState
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.JitsiCallViewModel
 import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
@@ -38,6 +39,7 @@ import theme.sphinx_orange
 fun DashboardSidebarUI(
     dashboardViewModel: DashboardViewModel,
     webAppViewModel: WebAppViewModel,
+    jitsiCallViewModel: JitsiCallViewModel,
 ) {
 
     val chatListViewModel = remember { ChatListViewModel() }
@@ -223,6 +225,7 @@ fun DashboardSidebarUI(
             QRWindow(dashboardViewModel)
             JoinTribeWindow(dashboardViewModel)
             WebAppWindow(dashboardViewModel, webAppViewModel)
+            JitsiCallWindow(dashboardViewModel, jitsiCallViewModel)
             AuthorizeWindow(webAppViewModel)
         }
     }
@@ -326,6 +329,17 @@ fun WebAppWindow(
     val webAppWindowState by webAppViewModel.webAppWindowStateFlow.collectAsState()
     if (webAppWindowState) {
         WebAppUI(dashboardViewModel, webAppViewModel)
+    }
+}
+
+@Composable
+fun JitsiCallWindow(
+    dashboardViewModel: DashboardViewModel,
+    jitsiCallViewModel: JitsiCallViewModel
+) {
+    val jitsiCallWindowState by jitsiCallViewModel.jitsiCallWindowStateFlow.collectAsState()
+    if (jitsiCallWindowState) {
+        JitsiCallUI(dashboardViewModel, jitsiCallViewModel)
     }
 }
 

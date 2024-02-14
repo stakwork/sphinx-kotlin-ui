@@ -1,7 +1,6 @@
 package chat.sphinx.common.chatMesssageUI
 
 import Roboto
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -9,11 +8,8 @@ import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -32,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.components.*
 import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.BubbleBackground
+import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.JitsiCallViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import chat.sphinx.utils.linkify.LinkTag
 import chat.sphinx.utils.linkify.SphinxLinkify
@@ -39,20 +37,18 @@ import chat.sphinx.utils.toAnnotatedString
 import chat.sphinx.wrapper.lightning.toLightningNodePubKey
 import chat.sphinx.wrapper.lightning.toVirtualLightningNodeAddress
 import chat.sphinx.wrapper.message.*
+import chat.sphinx.wrapper.message.media.*
+import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import theme.badge_red
 import theme.light_divider
-import chat.sphinx.wrapper.message.MessageType
-import chat.sphinx.wrapper.message.isSphinxCallLink
-import chat.sphinx.wrapper.message.media.*
-import chat.sphinx.wrapper.message.retrieveTextToShow
-import chat.sphinx.wrapper.tribe.toTribeJoinLink
-import com.multiplatform.webview.web.WebView
 import theme.sphinx_orange
 
 @Composable
 fun ChatCard(
     chatMessage: ChatMessage,
     chatViewModel: ChatViewModel,
+    dashboardViewModel: DashboardViewModel,
+    jitsiCallViewModel: JitsiCallViewModel,
     modifier: Modifier? = null
 ) {
     val uriHandler = LocalUriHandler.current
@@ -67,7 +63,11 @@ fun ChatCard(
 
         when {
             chatMessage.message.isSphinxCallLink -> {
-                JitsiAudioVideoCall(chatMessage)
+                JitsiAudioVideoCall(
+                    chatMessage,
+                    dashboardViewModel,
+                    jitsiCallViewModel
+                )
             }
             chatMessage.message.type == MessageType.DirectPayment -> {
                 DirectPaymentUI(chatMessage, chatViewModel)

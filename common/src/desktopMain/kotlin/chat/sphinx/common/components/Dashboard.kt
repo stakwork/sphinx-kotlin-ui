@@ -39,6 +39,7 @@ import chat.sphinx.common.components.tribe.NotificationLevel
 import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.JitsiCallViewModel
 import chat.sphinx.common.viewmodel.LockedDashboardViewModel
 import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.common.viewmodel.chat.ChatContactViewModel
@@ -77,6 +78,7 @@ actual fun Dashboard(
     var chatViewModel: ChatViewModel? = null
 
     val webAppViewModel = remember { WebAppViewModel() }
+    val jitsiCallViewModel = remember { JitsiCallViewModel() }
 
     when (DashboardScreenState.screenState()) {
         DashboardScreenType.Unlocked -> {
@@ -108,7 +110,7 @@ actual fun Dashboard(
                 }
 
                 first(300.dp) {
-                    DashboardSidebarUI(dashboardViewModel, webAppViewModel)
+                    DashboardSidebarUI(dashboardViewModel, webAppViewModel, jitsiCallViewModel)
                 }
                 second(700.dp) {
                     val scaffoldState = rememberScaffoldState(rememberDrawerState(DrawerValue.Closed))
@@ -131,7 +133,7 @@ actual fun Dashboard(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             chatViewModel?.let { chatViewModel ->
-                                MessageListUI(chatViewModel, dashboardViewModel)
+                                MessageListUI(chatViewModel, dashboardViewModel, jitsiCallViewModel)
                             }
                         }
                         AttachmentPreview(

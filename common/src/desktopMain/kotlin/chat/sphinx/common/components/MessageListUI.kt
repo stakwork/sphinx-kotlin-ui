@@ -1,10 +1,18 @@
 package chat.sphinx.common.components
 
 import androidx.compose.foundation.VerticalScrollbar
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +23,7 @@ import chat.sphinx.common.models.ChatMessage
 import chat.sphinx.common.state.MessageListData
 import chat.sphinx.common.state.MessageListState
 import chat.sphinx.common.viewmodel.DashboardViewModel
+import chat.sphinx.common.viewmodel.JitsiCallViewModel
 import chat.sphinx.common.viewmodel.chat.ChatViewModel
 import kotlinx.coroutines.launch
 
@@ -22,7 +31,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun MessageListUI(
     chatViewModel: ChatViewModel,
-    dashboardViewModel: DashboardViewModel
+    dashboardViewModel: DashboardViewModel,
+    jitsiCallViewModel: JitsiCallViewModel
 ) {
     chatViewModel.screenInit()
 
@@ -49,7 +59,8 @@ fun MessageListUI(
                         items,
                         listState,
                         chatViewModel,
-                        dashboardViewModel
+                        dashboardViewModel,
+                        jitsiCallViewModel
                     )
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -74,7 +85,8 @@ fun ChatMessagesList(
     items: SnapshotStateList<ChatMessage>,
     listState: LazyListState,
     chatViewModel: ChatViewModel,
-    dashboardViewModel: DashboardViewModel
+    dashboardViewModel: DashboardViewModel,
+    jitsiCallViewModel: JitsiCallViewModel
 ) {
     val scope = rememberCoroutineScope()
 
@@ -103,7 +115,9 @@ fun ChatMessagesList(
             } else {
                 ChatMessageUI(
                     item,
-                    chatViewModel
+                    chatViewModel,
+                    dashboardViewModel,
+                    jitsiCallViewModel
                 )
             }
         }

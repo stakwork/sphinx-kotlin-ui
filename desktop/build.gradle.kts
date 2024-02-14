@@ -110,6 +110,10 @@ compose.desktop {
                     }
                 }
                 iconFile.set(project.file("sphinx-logo.icns"))
+                entitlementsFile.set(project.file("default.entitlements"))
+                infoPlist {
+                    extraKeysRawXml = macExtraPlistKeys
+                }
             }
             windows {
                 iconFile.set(project.file("sphinx-logo-64.ico"))
@@ -121,3 +125,29 @@ compose.desktop {
         }
     }
 }
+
+val macExtraPlistKeys: String
+    get() = """
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.gl.sphinxDesktop</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sphinx.chat</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.social-networking</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sphinx would like to use your microphone to record audio messages and join calls</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Sphinx would like to use your camera on video calls</string>
+    """
