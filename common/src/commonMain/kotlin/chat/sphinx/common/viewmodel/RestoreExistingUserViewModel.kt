@@ -111,6 +111,7 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
 
                                 is Response.Success -> {
                                     transportKey = RsaPublicKey(loadResponse.value.transport_key.toCharArray())
+                                    relayDataHandler.persistRelayTransportKey(transportKey)
                                 }
                             }
                         }
