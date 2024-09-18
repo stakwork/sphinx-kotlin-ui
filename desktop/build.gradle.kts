@@ -46,7 +46,8 @@ kotlin {
                 implementation("com.soywiz.korlibs.korau:korau:$korauVersion")
                 implementation("org.jetbrains.compose.ui:ui-graphics:1.5.1")
                 implementation("uk.co.caprica:vlcj:4.7.1")
-                
+                implementation("net.java.dev.jna:jna:5.13.0")
+
 
 //                implementation ("com.github.skydoves:landscapist-glide:1.3.6")
 //                implementation ("io.coil-kt:coil-compose:1.4.0")
