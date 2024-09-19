@@ -32,6 +32,20 @@ kotlin {
             val korauVersion = "3.2.0"
             val korioVersion = "3.2.0"
 
+            val osName = System.getProperty("os.name").toLowerCase()
+            val osArch = System.getProperty("os.arch").toLowerCase()
+
+            // Set the resources srcDir based on the OS and architecture
+            val nativeResourceDir = when {
+                "mac" in osName && "aarch64" in osArch -> "src/jvmMain/resources/natives/macos/aarch64"
+                "mac" in osName && "x86_64" in osArch -> "src/jvmMain/resources/natives/macos/x86_64"
+                "win" in osName && "x86_64" in osArch -> "src/jvmMain/resources/natives/windows/x86_64"
+                "win" in osName && "amd64" in osArch -> "src/jvmMain/resources/natives/windows/x86_64" // sometimes Windows x86_64 arch is reported as amd64
+                else -> throw IllegalArgumentException("Unsupported OS/architecture combination: $osName, $osArch")
+            }
+            resources.srcDir(nativeResourceDir)
+
+
             dependencies {
                 implementation(project(":common"))
                 implementation(compose.desktop.currentOs)
