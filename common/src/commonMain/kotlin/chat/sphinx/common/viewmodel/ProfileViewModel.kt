@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.state.ProfileState
-import chat.sphinx.concepts.network.query.relay_keys.NetworkQueryRelayKeys
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -37,7 +36,6 @@ class ProfileViewModel {
 
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val networkClient = SphinxContainer.networkModule.networkClient
-    private val networkQueryRelayKeys: NetworkQueryRelayKeys = SphinxContainer.networkModule.networkQueryRelayKeys
     private val repositoryModule = SphinxContainer.repositoryModule(sphinxNotificationManager)
     private val contactRepository = repositoryModule.contactRepository
     private val lightningRepository = repositoryModule.lightningRepository
@@ -278,18 +276,6 @@ class ProfileViewModel {
                 toast("Testing new Relay Url", color = primary_green)
 
                 var transportKey: RsaPublicKey? = null
-
-                networkQueryRelayKeys.getRelayTransportKey(relayUrl).collect { loadResponse ->
-                    Exhaustive@
-                    when (loadResponse) {
-                        is LoadResponse.Loading -> {}
-                        is Response.Error -> {}
-
-                        is Response.Success -> {
-                            transportKey = RsaPublicKey(loadResponse.value.transport_key.toCharArray())
-                        }
-                    }
-                }
 
                 val transportToken = relayDataHandler.retrieveRelayTransportToken(
                     authorizationToken,

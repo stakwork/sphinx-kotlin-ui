@@ -6,18 +6,13 @@ import androidx.compose.runtime.setValue
 import chat.sphinx.authentication.KeyRestoreResponse
 import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
-import chat.sphinx.concepts.network.query.relay_keys.model.PostHMacKeyDto
 import chat.sphinx.crypto.common.annotations.RawPasswordAccess
-import chat.sphinx.crypto.common.annotations.UnencryptedDataAccess
 import chat.sphinx.crypto.common.clazzes.*
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.response.LoadResponse
-import chat.sphinx.response.Response
 import chat.sphinx.wrapper.relay.*
 import chat.sphinx.wrapper.rsa.RsaPrivateKey
 import chat.sphinx.wrapper.rsa.RsaPublicKey
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class RestoreExistingUserViewModel: PINHandlingViewModel() {
@@ -26,7 +21,6 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
         SphinxContainer.networkModule.relayDataHandlerImpl
     )
     private val relayDataHandler = SphinxContainer.networkModule.relayDataHandlerImpl
-    private val networkQueryRelayKeys = SphinxContainer.networkModule.networkQueryRelayKeys
     private val rsa = SphinxContainer.authenticationModule.rsa
 
     var state: RestoreExistingUserState by mutableStateOf(initialState())
@@ -58,7 +52,7 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
             state.sphinxKeys
         )?.let { redemptionCode ->
 
-            if (redemptionCode is RedemptionCode.AccountRestoration) {
+            if (redemptionCode is RedemptionCode.MnemonicRestoration) {
                 LandingScreenState.screenState(LandingScreenType.ExistingUserPIN)
             } else {
                 setState {
@@ -102,19 +96,6 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
                         SphinxContainer.networkModule.networkClient.setTorRequired(relayUrl.isOnionAddress)
 
                         var transportKey: RsaPublicKey? = null
-
-                        networkQueryRelayKeys.getRelayTransportKey(relayUrl).collect { loadResponse ->
-                            Exhaustive@
-                            when (loadResponse) {
-                                is LoadResponse.Loading -> {}
-                                is Response.Error -> {}
-
-                                is Response.Success -> {
-                                    transportKey = RsaPublicKey(loadResponse.value.transport_key.toCharArray())
-                                    relayDataHandler.persistRelayTransportKey(transportKey)
-                                }
-                            }
-                        }
 
                         var ownerPrivateKey = RsaPrivateKey(
                             Password(decryptedCode.privateKey.value.copyOf()).value
@@ -270,13 +251,6 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
         ownerPrivateKey: RsaPrivateKey,
         transportKey: RsaPublicKey?
     ) {
-        scope.launch(dispatchers.mainImmediate) {
-            getOrCreateHMacKey(
-                ownerPrivateKey,
-                transportKey
-            )
-        }.join()
-
         LandingScreenState.screenState(LandingScreenType.RestoreExistingUserSuccess)
         OnboardingState.status(OnboardingStatus.Successful)
 
@@ -286,98 +260,6 @@ class RestoreExistingUserViewModel: PINHandlingViewModel() {
                 errorMessage = null
             )
         }
-    }
-
-    @OptIn(UnencryptedDataAccess::class)
-    private suspend fun getOrCreateHMacKey(
-        ownerPrivateKey: RsaPrivateKey,
-        transportKey: RsaPublicKey?
-    ) {
-        if (transportKey == null) {
-            return
-        }
-
-        networkQueryRelayKeys.getRelayHMacKey().collect { loadResponse ->
-            Exhaustive@
-            when (loadResponse) {
-                is LoadResponse.Loading -> {}
-                is Response.Error -> {
-                    createHMacKey(
-                        transportKey = transportKey
-                    )?.let { relayHMacKey ->
-                        relayDataHandler.persistRelayHMacKey(relayHMacKey)
-                    }
-                }
-                is Response.Success -> {
-                    val response = rsa.decrypt(
-                        rsaPrivateKey = ownerPrivateKey,
-                        text = EncryptedString(loadResponse.value.encrypted_key),
-                        dispatcher = dispatchers.default
-                    )
-
-                    when (response) {
-                        is Response.Error -> {}
-                        is Response.Error -> {}
-                        is Response.Success -> {
-                            relayDataHandler.persistRelayHMacKey(
-                                RelayHMacKey(
-                                    response.value.toUnencryptedString(trim = false).value
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private suspend fun createHMacKey(
-        relayData: Triple<Pair<AuthorizationToken, TransportToken?>, RequestSignature?, RelayUrl>? = null,
-        transportKey: RsaPublicKey?
-    ): RelayHMacKey? {
-        var hMacKey: RelayHMacKey? = null
-
-        if (transportKey == null) {
-            return null
-        }
-
-        scope.launch(dispatchers.mainImmediate) {
-
-            @OptIn(RawPasswordAccess::class)
-            val hMacKeyString =
-                PasswordGenerator(passwordLength = 20).password.value.joinToString("")
-
-            val encryptionResponse = rsa.encrypt(
-                transportKey,
-                UnencryptedString(hMacKeyString),
-                formatOutput = false,
-                dispatcher = dispatchers.default,
-            )
-
-            when (encryptionResponse) {
-                is Response.Error -> {
-                }
-                is Response.Success -> {
-                    networkQueryRelayKeys.addRelayHMacKey(
-                        PostHMacKeyDto(encryptionResponse.value.value),
-                        relayData
-                    ).collect { loadResponse ->
-                        Exhaustive@
-                        when (loadResponse) {
-                            is LoadResponse.Loading -> {
-                            }
-                            is Response.Error -> {}
-                            is Response.Success -> {
-                                hMacKey = RelayHMacKey(hMacKeyString)
-                            }
-                        }
-                    }
-                }
-            }
-
-        }.join()
-
-        return hMacKey
     }
 
     private fun initialState(): RestoreExistingUserState = RestoreExistingUserState()

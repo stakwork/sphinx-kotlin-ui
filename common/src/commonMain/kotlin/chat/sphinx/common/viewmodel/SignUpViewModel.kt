@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import chat.sphinx.authentication.model.OnBoardInviterData
 import chat.sphinx.authentication.model.OnBoardStep
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.authentication.model.RedemptionCode
@@ -13,15 +12,8 @@ import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationResponse
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.network.query.chat.model.TribeDto
-import chat.sphinx.concepts.network.query.contact.model.GenerateTokenResponse
 import chat.sphinx.concepts.network.query.invite.NetworkQueryInvite
-import chat.sphinx.concepts.network.query.invite.model.RedeemInviteDto
-import chat.sphinx.concepts.network.query.relay_keys.NetworkQueryRelayKeys
-import chat.sphinx.concepts.network.query.relay_keys.model.PostHMacKeyDto
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
-import chat.sphinx.crypto.common.annotations.RawPasswordAccess
-import chat.sphinx.crypto.common.clazzes.PasswordGenerator
-import chat.sphinx.crypto.common.clazzes.UnencryptedString
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
 import chat.sphinx.response.*
@@ -34,16 +26,12 @@ import chat.sphinx.wrapper.invite.InviteString
 import chat.sphinx.wrapper.invite.toValidInviteStringOrNull
 import chat.sphinx.wrapper.lightning.LightningNodePubKey
 import chat.sphinx.wrapper.lightning.NodeBalanceAll
-import chat.sphinx.wrapper.lightning.toLightningNodePubKey
 import chat.sphinx.wrapper.lightning.toLightningRouteHint
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
-import chat.sphinx.wrapper.relay.*
-import chat.sphinx.wrapper.rsa.RsaPublicKey
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import okio.Path
 import theme.badge_red
@@ -55,7 +43,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private val networkModule = SphinxContainer.networkModule
     private val repositoryModule = SphinxContainer.repositoryModule(sphinxNotificationManager)
     private val networkQueryInvite: NetworkQueryInvite = networkModule.networkQueryInvite
-    private val networkQueryRelayKeys: NetworkQueryRelayKeys = networkModule.networkQueryRelayKeys
     private val networkQueryChat: NetworkQueryChat = networkModule.networkQueryChat
     private val relayDataHandler = networkModule.relayDataHandler
     private val networkQueryContact = networkModule.networkQueryContact
@@ -214,34 +201,18 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
             if (redemptionCode != null && redemptionCode is RedemptionCode.NodeInvite) {
                 LandingScreenState.screenState(LandingScreenType.Loading)
-                getTransportKey(
-                    ip = redemptionCode.ip,
-                    nodePubKey = null,
-                    password = redemptionCode.password,
-                    redeemInviteDto = null
-                )
                 return@launch
             }
 
             if (redemptionCode != null && redemptionCode is RedemptionCode.SwarmConnect) {
                 LandingScreenState.screenState(LandingScreenType.Loading)
-                getTransportKey(
-                    ip = redemptionCode.ip,
-                    nodePubKey = redemptionCode.pubKey,
-                    null,
-                    null,
-                )
                 return@launch
             }
             if (redemptionCode != null && redemptionCode is RedemptionCode.SwarmClaim) {
                 LandingScreenState.screenState(LandingScreenType.Loading)
-                getTransportKey(
-                    ip = redemptionCode.ip,
-                    null,
-                    null,
-                    null,
-                    token = redemptionCode.token.toAuthorizationToken()
-                )
+            }
+            if (redemptionCode != null && redemptionCode is RedemptionCode.NewInvite) {
+                LandingScreenState.screenState(LandingScreenType.Loading)
             }
 
             toast("The code your entered is not a valid invite or connection code")
@@ -260,288 +231,12 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                 is Response.Success -> {
                     val inviteResponse = loadResponse.value.response
 
-                    inviteResponse?.invite?.let { invite ->
-                        getTransportKey(
-                            ip = RelayUrl(inviteResponse.ip),
-                            nodePubKey = inviteResponse.pubkey,
-                            password = null,
-                            redeemInviteDto = invite,
-                        )
-                    }
+                    inviteResponse?.invite?.let { invite -> }
                 }
             }
         }
     }
 
-    private suspend fun getTransportKey(
-        ip: RelayUrl,
-        nodePubKey: String?,
-        password: String?,
-        redeemInviteDto: RedeemInviteDto?,
-        token: AuthorizationToken? = null
-    ) {
-        val relayUrl = relayDataHandler.formatRelayUrl(ip)
-        networkModule.networkClient.setTorRequired(relayUrl.isOnionAddress)
-
-        var transportKey: RsaPublicKey? = null
-
-        networkQueryRelayKeys.getRelayTransportKey(relayUrl).collect { loadResponse ->
-            when (loadResponse) {
-                is LoadResponse.Loading -> {}
-                is Response.Error -> {
-                    toast("There was a problem with your code, please try again")
-                    LandingScreenState.screenState(LandingScreenType.NewUser)
-                }
-                is Response.Success -> {
-                    transportKey = RsaPublicKey(loadResponse.value.transport_key.toCharArray())
-                }
-            }
-        }
-
-        if (token != null) {
-            continueWithToken(
-                token,
-                relayUrl,
-                transportKey,
-                redeemInviteDto
-            )
-        } else {
-            registerTokenAndStartOnBoard(
-                ip,
-                nodePubKey,
-                password,
-                redeemInviteDto,
-                token,
-                transportKey
-            )
-        }
-    }
-
-    private suspend fun continueWithToken(
-        token: AuthorizationToken,
-        relayUrl: RelayUrl,
-        transportKey: RsaPublicKey? = null,
-        redeemInviteDto: RedeemInviteDto?
-    ) {
-        val inviterData: OnBoardInviterData? = redeemInviteDto?.let { dto ->
-            OnBoardInviterData(
-                dto.nickname,
-                dto.pubkey?.toLightningNodePubKey(),
-                dto.route_hint,
-                dto.message,
-                dto.action,
-                dto.pin
-            )
-        }
-
-        val relayTransportToken = transportKey?.let { transportKey ->
-            relayDataHandler.retrieveRelayTransportToken(
-                token,
-                transportKey
-            )
-        } ?: null
-
-        val hMacKey = createHMacKey(
-            relayData = Triple(Pair(token, relayTransportToken), null, relayUrl),
-            transportKey = transportKey
-        )
-
-        val step1Message: OnBoardStep.Step1_WelcomeMessage? =
-            onBoardStepHandler.persistOnBoardStep1Data(
-                relayUrl,
-                token,
-                transportKey,
-                hMacKey,
-                inviterData
-            )
-
-        if (step1Message == null) {
-            toast("Generate token failed")
-            LandingScreenState.screenState(LandingScreenType.NewUser)
-        } else {
-            setSignupBasicInfoState {
-                copy(
-                    onboardStep = step1Message
-                )
-            }
-            setSignupInviterState {
-                copy(
-                    welcomeMessage = step1Message.inviterData.message ?: "Welcome to Sphinx!",
-                    friendName = step1Message.inviterData.nickname ?: "Sphinx Support"
-                )
-            }
-            LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
-        }
-    }
-
-    private var tokenRetries = 0
-    private suspend fun registerTokenAndStartOnBoard(
-        ip: RelayUrl,
-        nodePubKey: String?,
-        password: String?,
-        redeemInviteDto: RedeemInviteDto?,
-        token: AuthorizationToken? = null,
-        transportKey: RsaPublicKey? = null,
-        transportToken: TransportToken? = null
-    ) {
-
-        @OptIn(RawPasswordAccess::class)
-        val authToken = token ?: AuthorizationToken(
-            PasswordGenerator(passwordLength = 20).password.value.joinToString("")
-        )
-
-        val relayUrl = relayDataHandler.formatRelayUrl(ip)
-        networkModule.networkClient.setTorRequired(relayUrl.isOnionAddress)
-
-        val inviterData: OnBoardInviterData? = redeemInviteDto?.let { dto ->
-            OnBoardInviterData(
-                dto.nickname,
-                dto.pubkey?.toLightningNodePubKey(),
-                dto.route_hint,
-                dto.message,
-                dto.action,
-                dto.pin
-            )
-        }
-
-        val relayTransportToken = transportToken ?: transportKey?.let { transportKey ->
-            relayDataHandler.retrieveRelayTransportToken(
-                authToken,
-                transportKey
-            )
-        } ?: null
-
-        var generateTokenResponse: LoadResponse<GenerateTokenResponse, ResponseError> = Response.Error(
-            ResponseError("generateToken endpoint failed")
-        )
-
-        if (relayTransportToken != null) {
-            networkQueryContact.generateToken(
-                password,
-                nodePubKey,
-                Triple(Pair(authToken, relayTransportToken), null, relayUrl)
-            ).collect { loadResponse ->
-                generateTokenResponse = loadResponse
-            }
-        } else {
-            networkQueryContact.generateToken(
-                relayUrl,
-                authToken,
-                password,
-                nodePubKey
-            ).collect { loadResponse ->
-                generateTokenResponse = loadResponse
-            }
-        }
-
-        when (generateTokenResponse) {
-            is LoadResponse.Loading -> {}
-            is Response.Error -> {
-                if (tokenRetries < 3) {
-                    tokenRetries += 1
-
-                    registerTokenAndStartOnBoard(
-                        ip,
-                        nodePubKey,
-                        password,
-                        redeemInviteDto,
-                        authToken,
-                        transportKey,
-                        relayTransportToken
-                    )
-                } else {
-                    tokenRetries = 0
-                    toast(
-                        "Generate token failed: ${(generateTokenResponse as Response.Error<ResponseError>).message} \n Exception: ${(generateTokenResponse as Response.Error<ResponseError>).exception?.localizedMessage ?: ""}"
-                    )
-                    LandingScreenState.screenState(LandingScreenType.NewUser)
-                }
-            }
-            is Response.Success -> {
-
-                val hMacKey = createHMacKey(
-                    relayData = Triple(Pair(authToken, relayTransportToken), null, relayUrl),
-                    transportKey = transportKey
-                )
-
-                val step1Message: OnBoardStep.Step1_WelcomeMessage? = onBoardStepHandler.persistOnBoardStep1Data(
-                    relayUrl,
-                    authToken,
-                    transportKey,
-                    hMacKey,
-                    inviterData
-                )
-
-                if (step1Message == null) {
-                    toast("Error persisting signup step. Please try again later.")
-                    LandingScreenState.screenState(LandingScreenType.NewUser)
-                } else {
-                    setSignupBasicInfoState {
-                        copy(
-                            onboardStep = step1Message
-                        )
-                    }
-                    setSignupInviterState {
-                        copy(
-                            welcomeMessage = step1Message.inviterData.message ?: "Welcome to Sphinx!",
-                            friendName = step1Message.inviterData.nickname ?: "Sphinx Support"
-                        )
-                    }
-                    LandingScreenState.screenState(LandingScreenType.OnBoardMessage)
-                }
-            }
-        }
-    }
-
-    private suspend fun createHMacKey(
-        relayData: Triple<Pair<AuthorizationToken, TransportToken?>, RequestSignature?, RelayUrl>? = null,
-        transportKey: RsaPublicKey?
-    ): RelayHMacKey? {
-        var hMacKey: RelayHMacKey? = null
-
-        if (transportKey == null) {
-            return null
-        }
-
-        scope.launch(dispatchers.mainImmediate) {
-
-            @OptIn(RawPasswordAccess::class)
-            val hMacKeyString =
-                PasswordGenerator(passwordLength = 20).password.value.joinToString("")
-
-            val encryptionResponse = rsa.encrypt(
-                transportKey,
-                UnencryptedString(hMacKeyString),
-                formatOutput = false,
-                dispatcher = dispatchers.default,
-            )
-
-            when (encryptionResponse) {
-                is Response.Error -> {
-                }
-                is Response.Success -> {
-                    networkQueryRelayKeys.addRelayHMacKey(
-                        PostHMacKeyDto(encryptionResponse.value.value),
-                        relayData
-                    ).collect { loadResponse ->
-                        when (loadResponse) {
-                            is LoadResponse.Loading -> {
-                            }
-                            is Response.Error -> {
-                                toast("Error creating HMACKey")
-                            }
-                            is Response.Success -> {
-                                hMacKey = RelayHMacKey(hMacKeyString)
-                            }
-                        }
-                    }
-                }
-            }
-
-        }.join()
-
-        return hMacKey
-    }
 
     private var submitJob: Job? = null
     fun onSubmitNicknameAndPin() {
