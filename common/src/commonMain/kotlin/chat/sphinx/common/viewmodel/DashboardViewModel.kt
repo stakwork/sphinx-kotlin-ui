@@ -5,7 +5,6 @@ import androidx.compose.runtime.remember
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.network.query.version.NetworkQueryVersion
-import chat.sphinx.concepts.socket_io.SocketIOManager
 import chat.sphinx.database.core.SphinxDatabaseQueries
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.repository.util.deleteAll
@@ -41,7 +40,6 @@ class DashboardViewModel(): WindowFocusListener {
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-    private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
     private val networkQueryVersion: NetworkQueryVersion = SphinxContainer.networkModule.networkQueryVersion
 
     enum class WebViewState {
@@ -253,7 +251,6 @@ class DashboardViewModel(): WindowFocusListener {
         }
         getRelayKeys()
         networkRefresh()
-        connectSocket()
         getPackageVersion()
 
         viewModelScope.launch(dispatchers.mainImmediate) {
@@ -263,16 +260,9 @@ class DashboardViewModel(): WindowFocusListener {
         }
     }
 
-    private fun connectSocket() {
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            socketIOManager.connect()
-        }
-    }
-
     override fun windowGainedFocus(p0: WindowEvent?) {
         if (DashboardScreenState.screenState() == DashboardScreenType.Unlocked) {
             networkRefresh()
-            connectSocket()
         }
     }
 
