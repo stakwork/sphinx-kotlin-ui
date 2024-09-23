@@ -22,10 +22,7 @@ import chat.sphinx.wrapper.chat.ChatHost
 import chat.sphinx.wrapper.chat.ChatUUID
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.ContactAlias
-import chat.sphinx.wrapper.invite.InviteString
-import chat.sphinx.wrapper.invite.toValidInviteStringOrNull
 import chat.sphinx.wrapper.lightning.LightningNodePubKey
-import chat.sphinx.wrapper.lightning.NodeBalanceAll
 import chat.sphinx.wrapper.lightning.toLightningRouteHint
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
@@ -42,7 +39,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private val authenticationManager = SphinxContainer.authenticationModule.authenticationCoreManager
     private val networkModule = SphinxContainer.networkModule
     private val repositoryModule = SphinxContainer.repositoryModule(sphinxNotificationManager)
-    private val networkQueryInvite: NetworkQueryInvite = networkModule.networkQueryInvite
     private val networkQueryChat: NetworkQueryChat = networkModule.networkQueryChat
     private val relayDataHandler = networkModule.relayDataHandler
     private val networkQueryContact = networkModule.networkQueryContact
@@ -50,6 +46,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private val chatRepository = repositoryModule.chatRepository
     private val contactRepository = repositoryModule.contactRepository
     private val lightningRepository = repositoryModule.lightningRepository
+    private val connectManagerRepository = repositoryModule.connectManagerRepository
     private val onBoardStepHandler = OnBoardStepHandler()
 
     var state: RestoreExistingUserState by mutableStateOf(initialState())
@@ -207,13 +204,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     fun onSubmitInvitationCode() {
         scope.launch(dispatchers.mainImmediate) {
             val code = signupCodeState.invitationCodeText
-            val inviteCode = code.toValidInviteStringOrNull()
-
-            if (inviteCode != null) {
-                LandingScreenState.screenState(LandingScreenType.Loading)
-                redeemInvite(inviteCode)
-                return@launch
-            }
 
             val redemptionCode = RedemptionCode.decode(code)
 
@@ -244,7 +234,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
             if (redemptionCode is RedemptionCode.MnemonicRestoration) {
                 LandingScreenState.screenState(LandingScreenType.Loading)
-                // Set Mnemonic on ConnectManager via ConnectManagerRepository
+                connectManagerRepository.setMnemonicWords(redemptionCode.mnemonic)
                 // Show select network type dialog
                 // Call CreateAccount on ConnectManager
             } else {
@@ -255,25 +245,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
         } ?: run {
             setState {
                 copy(errorMessage = "Invalid Restore string")
-            }
-        }
-    }
-
-
-    private suspend fun redeemInvite(input: InviteString) {
-        networkQueryInvite.redeemInvite(input.value).collect { loadResponse ->
-            when (loadResponse) {
-                is LoadResponse.Loading -> {}
-                is Response.Error -> {
-                    toast("There was a problem with the invitation code, please try later ${loadResponse.message}")
-                    LandingScreenState.screenState(LandingScreenType.NewUser)
-
-                }
-                is Response.Success -> {
-                    val inviteResponse = loadResponse.value.response
-
-                    inviteResponse?.invite?.let { invite -> }
-                }
             }
         }
     }
@@ -372,44 +343,36 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                             }
                         }
 
-                        contactRepository.networkRefreshContacts.collect { refreshResponse ->
-                            when (refreshResponse) {
-                                is LoadResponse.Loading -> {}
+                        contactRepository.updateOwnerNameAndKey(
+                            signupBasicInfoState.nickname,
+                            encryptionKey.publicKey
+                        ).let { updateOwnerResponse ->
+                            when (updateOwnerResponse) {
                                 is Response.Error -> {
-                                    showError("Error retrieving contacts. Please try again")
+                                    showError("Error updating owner nickname. Please try again")
                                 }
                                 is Response.Success -> {
-                                    contactRepository.updateOwnerNameAndKey(
-                                        signupBasicInfoState.nickname,
-                                        encryptionKey.publicKey
-                                    ).let { updateOwnerResponse ->
-                                        when (updateOwnerResponse) {
-                                            is Response.Error -> {
-                                                showError("Error updating owner nickname. Please try again")
-                                            }
-                                            is Response.Success -> {
-                                                val step3Message: OnBoardStep.Step3_Picture? =
-                                                    onBoardStepHandler.persistOnBoardStep3Data(
-                                                        signupBasicInfoState.onboardStep?.inviterData
-                                                    )
+                                    val step3Message: OnBoardStep.Step3_Picture? =
+                                        onBoardStepHandler.persistOnBoardStep3Data(
+                                            signupBasicInfoState.onboardStep?.inviterData
+                                        )
 
-                                                if (step3Message == null) {
-                                                    showError("Error persisting signup step. Please try again later")
-                                                } else {
-                                                    setSignupBasicInfoState {
-                                                        copy(
-                                                            onboardStep = step3Message,
-                                                            showLoading = false
-                                                        )
-                                                    }
-                                                    navigateTo(LandingScreenType.OnBoardLightningProfilePicture)
-                                                }
-                                            }
+                                    if (step3Message == null) {
+                                        showError("Error persisting signup step. Please try again later")
+                                    } else {
+                                        setSignupBasicInfoState {
+                                            copy(
+                                                onboardStep = step3Message,
+                                                showLoading = false
+                                            )
                                         }
+                                        navigateTo(LandingScreenType.OnBoardLightningProfilePicture)
                                     }
                                 }
                             }
                         }
+
+
                     } ?: {
                         showError("Error retrieving your encryption keys. Please try again")
                     }
@@ -475,23 +438,17 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
     private fun getBalances() {
         scope.launch(dispatchers.mainImmediate) {
-            lightningRepository.getAccountBalanceAll().collect { loadResponse ->
-                when (loadResponse) {
-                    LoadResponse.Loading -> {}
-                    is Response.Error -> {}
-                    is Response.Success -> {
-                        val balance = loadResponse.value
-                        val localBalance = balance.localBalance
-                        val remoteBalance = balance.remoteBalance
-
-                        setSignupBasicInfoState {
-                            copy(
-                                balance = NodeBalanceAll(localBalance, remoteBalance)
-                            )
-                        }
-                    }
-                }
-            }
+            //TODO V2 Implement balance
+//
+//            val balance = loadResponse.value
+//            val localBalance = balance.localBalance
+//            val remoteBalance = balance.remoteBalance
+//
+//            setSignupBasicInfoState {
+//                copy(
+//                    balance = NodeBalanceAll(localBalance, remoteBalance)
+//                )
+//            }
         }
     }
 
@@ -578,14 +535,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
     private fun finishInvite(inviteString: String) {
         scope.launch(dispatchers.mainImmediate) {
-            networkQueryInvite.finishInvite(inviteString).collect { loadResponse ->
-                when (loadResponse) {
-                    is LoadResponse.Loading -> {}
-                    else -> {
-                        loadAndJoinDefaultTribeData()
-                    }
-                }
-            }
+            // TODO V2
         }
     }
 
