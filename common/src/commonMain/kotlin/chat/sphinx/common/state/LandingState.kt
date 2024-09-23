@@ -9,9 +9,8 @@ import chat.sphinx.common.components.landing.OnBoardSphinxOnYourPhone
 enum class LandingScreenType {
     LandingPage,
     NewUser,
-    RestoreExistingUser,
+    RestoreUser,
     RestoreExistingUserSuccess,
-    ExistingUserPIN,
     Loading,
     SignupLocked,
     OnBoardMessage,

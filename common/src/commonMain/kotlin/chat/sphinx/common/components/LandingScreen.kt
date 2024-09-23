@@ -8,14 +8,11 @@ import androidx.compose.ui.Modifier
 import chat.sphinx.common.components.landing.*
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
-import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import chat.sphinx.common.viewmodel.SignUpViewModel
 
 
 @Composable
-fun LandingScreen(
-    restoreExistingUserViewModel: RestoreExistingUserViewModel
-) {
+fun LandingScreen() {
     val signUpViewModel = remember { SignUpViewModel() }
 
     Box(
@@ -28,11 +25,8 @@ fun LandingScreen(
             LandingScreenType.NewUser -> {
                 NewUserScreen(signUpViewModel)
             }
-            LandingScreenType.RestoreExistingUser -> {
-                RestoreExistingUserScreen(restoreExistingUserViewModel)
-            }
-            LandingScreenType.ExistingUserPIN -> {
-                ExistingUserPINScreen(restoreExistingUserViewModel)
+            LandingScreenType.RestoreUser -> {
+                RestoreExistingUserScreen(signUpViewModel)
             }
             LandingScreenType.Loading -> {
                 ConnectingDialog()

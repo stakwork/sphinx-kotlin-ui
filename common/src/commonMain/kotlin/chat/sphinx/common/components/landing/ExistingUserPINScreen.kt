@@ -8,19 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import chat.sphinx.common.components.pin.PINScreen
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
-import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import views.BackButton
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun ExistingUserPINScreen(
-    restoreExistingUserViewModel: RestoreExistingUserViewModel
-) {
+fun ExistingUserPINScreen() {
     Row(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -47,7 +42,7 @@ fun ExistingUserPINScreen(
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
-                PINScreen(restoreExistingUserViewModel)
+//                PINScreen(restoreExistingUserViewModel)
             }
         }
     }

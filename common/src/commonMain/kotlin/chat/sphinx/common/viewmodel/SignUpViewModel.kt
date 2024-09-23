@@ -52,6 +52,15 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private val lightningRepository = repositoryModule.lightningRepository
     private val onBoardStepHandler = OnBoardStepHandler()
 
+    var state: RestoreExistingUserState by mutableStateOf(initialState())
+        private set
+
+    private fun initialState(): RestoreExistingUserState = RestoreExistingUserState()
+
+    private inline fun setState(update: RestoreExistingUserState.() -> RestoreExistingUserState) {
+        state = state.update()
+    }
+
     companion object {
         private const val PLANET_SPHINX_TRIBE =
             "sphinx.chat://?action=tribe&uuid=X3IWAiAW5vNrtOX5TLEJzqNWWr3rrUaXUwaqsfUXRMGNF7IWOHroTGbD4Gn2_rFuRZcsER0tZkrLw3sMnzj4RFAk_sx0&host=tribes.sphinx.chat"
@@ -186,6 +195,15 @@ class SignUpViewModel : PinAuthenticationViewModel() {
         }
     }
 
+    fun onKeysTextChanged(text: String) {
+        setState {
+            copy(
+                sphinxKeys = text,
+                errorMessage = null
+            )
+        }
+    }
+
     fun onSubmitInvitationCode() {
         scope.launch(dispatchers.mainImmediate) {
             val code = signupCodeState.invitationCodeText
@@ -218,6 +236,29 @@ class SignUpViewModel : PinAuthenticationViewModel() {
             toast("The code your entered is not a valid invite or connection code")
         }
     }
+
+    fun onSubmitKeys() {
+        RedemptionCode.decode(
+            state.sphinxKeys
+        )?.let { redemptionCode ->
+
+            if (redemptionCode is RedemptionCode.MnemonicRestoration) {
+                LandingScreenState.screenState(LandingScreenType.Loading)
+                // Set Mnemonic on ConnectManager via ConnectManagerRepository
+                // Show select network type dialog
+                // Call CreateAccount on ConnectManager
+            } else {
+                setState {
+                    copy(errorMessage = "Invalid Restore string")
+                }
+            }
+        } ?: run {
+            setState {
+                copy(errorMessage = "Invalid Restore string")
+            }
+        }
+    }
+
 
     private suspend fun redeemInvite(input: InviteString) {
         networkQueryInvite.redeemInvite(input.value).collect { loadResponse ->

@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import chat.sphinx.common.Res
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
-import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
+import chat.sphinx.common.viewmodel.SignUpViewModel
 import chat.sphinx.platform.imageResource
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.utils.onKeyUp
@@ -33,7 +33,8 @@ import views.BackButton
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun RestoreExistingUserScreen(
-    restoreExistingUserViewModel: RestoreExistingUserViewModel
+    signUpViewModel: SignUpViewModel
+
 ) {
     Row(
         modifier = Modifier.fillMaxSize()
@@ -115,10 +116,10 @@ fun RestoreExistingUserScreen(
                                         backgroundColor = MaterialTheme.colorScheme.tertiary,
                                         unfocusedBorderColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
                                     ),
-                                    value = restoreExistingUserViewModel.state.sphinxKeys,
+                                    value = signUpViewModel.state.sphinxKeys,
                                     modifier = Modifier.fillMaxWidth()
-                                        .onKeyEvent(onKeyUp(Key.Enter, restoreExistingUserViewModel::onSubmitKeys)),
-                                    onValueChange = restoreExistingUserViewModel::onKeysTextChanged,
+                                        .onKeyEvent(onKeyUp(Key.Enter, signUpViewModel::onSubmitKeys)),
+                                    onValueChange = signUpViewModel::onKeysTextChanged,
                                     singleLine = true,
                                     placeholder = { Text(text = "Paste your keys...") }
                                 )
@@ -132,15 +133,15 @@ fun RestoreExistingUserScreen(
                         ) {
                             CommonButton(
                                 text = "Submit",
-                                enabled = restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not(),
-                                callback = restoreExistingUserViewModel::onSubmitKeys
+                                enabled = signUpViewModel.state.sphinxKeys.isEmpty().not(),
+                                callback = signUpViewModel::onSubmitKeys
                             )
                             Column(
                                 horizontalAlignment = Alignment.End,
                                 verticalArrangement = Arrangement.Center,
                                 modifier = Modifier.fillMaxSize().padding(16.dp, 0.dp)
                             ) {
-                                val textColor = if (restoreExistingUserViewModel.state.sphinxKeys.isEmpty().not())
+                                val textColor = if (signUpViewModel.state.sphinxKeys.isEmpty().not())
                                     MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onTertiary
                                 Icon(
                                     Icons.Filled.ArrowForward,
@@ -155,7 +156,7 @@ fun RestoreExistingUserScreen(
                     Box(
                         modifier = Modifier.height(20.dp), contentAlignment = Alignment.Center
                     ) {
-                        restoreExistingUserViewModel.state.errorMessage?.let { errorMessage ->
+                        signUpViewModel.state.errorMessage?.let { errorMessage ->
                             Text(
                                 text = errorMessage,
                                 color = badge_red

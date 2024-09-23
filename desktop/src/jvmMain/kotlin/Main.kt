@@ -19,7 +19,6 @@ import chat.sphinx.common.components.notifications.DesktopSphinxToast
 import chat.sphinx.common.components.toast
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.common.viewmodel.RestoreExistingUserViewModel
 import chat.sphinx.common.viewmodel.SphinxStore
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.platform.imageResource
@@ -43,8 +42,6 @@ fun main() = application {
     val onBoardStepHandler = remember { OnBoardStepHandler() }
     val sphinxStore = remember { SphinxStore() }
     var currentWindow: MutableState<ComposeWindow?> = remember { mutableStateOf(null) }
-
-    val restoreExistingUserViewModel = remember { RestoreExistingUserViewModel() }
 
     when (AppState.screenState()) {
         ScreenType.SplashScreen -> {
@@ -158,7 +155,7 @@ fun main() = application {
                     }
                 }
                 AppTheme(useDarkTheme = true) {
-                    LandingScreen(restoreExistingUserViewModel)
+                    LandingScreen()
                     DesktopSphinxToast("Sphinx")
                 }
             }

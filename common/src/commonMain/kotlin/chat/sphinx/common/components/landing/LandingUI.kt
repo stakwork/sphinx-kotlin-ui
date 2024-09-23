@@ -180,7 +180,7 @@ fun RightPortion() {
             Spacer(modifier = Modifier.height(24.dp))
             Row(modifier = Modifier.fillMaxWidth(0.65f)) {
                 CommonButton(text = "Existing user") {
-                    LandingScreenState.screenState(LandingScreenType.RestoreExistingUser)
+                    LandingScreenState.screenState(LandingScreenType.RestoreUser)
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
