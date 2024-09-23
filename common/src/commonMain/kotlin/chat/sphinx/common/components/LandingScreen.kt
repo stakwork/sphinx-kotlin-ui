@@ -3,6 +3,7 @@ package chat.sphinx.common.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import chat.sphinx.common.components.landing.*
@@ -49,6 +50,18 @@ fun LandingScreen() {
             LandingScreenType.OnBoardSphinxOnYourPhone -> {
                 OnBoardSphinxOnYourPhone(signUpViewModel)
             }
+        }
+
+        if (signUpViewModel.showSelectNetworkDialog.value) {
+            SelectNetworkDialog(
+                onDismiss = { signUpViewModel.showSelectNetworkDialog.value = false },
+                onRegtestSelected = {
+                    signUpViewModel.onNetworkTypeSelected(true)
+                },
+                onBitcoinSelected = {
+                    signUpViewModel.onNetworkTypeSelected(false)
+                }
+            )
         }
     }
 

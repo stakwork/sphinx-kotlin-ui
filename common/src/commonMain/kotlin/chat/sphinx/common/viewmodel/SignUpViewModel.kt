@@ -48,15 +48,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private val connectManagerRepository = repositoryModule.connectManagerRepository
     private val onBoardStepHandler = OnBoardStepHandler()
 
-    var state: RestoreExistingUserState by mutableStateOf(initialState())
-        private set
-
-    private fun initialState(): RestoreExistingUserState = RestoreExistingUserState()
-
-    private inline fun setState(update: RestoreExistingUserState.() -> RestoreExistingUserState) {
-        state = state.update()
-    }
-
     companion object {
         private const val PLANET_SPHINX_TRIBE =
             "sphinx.chat://?action=tribe&uuid=X3IWAiAW5vNrtOX5TLEJzqNWWr3rrUaXUwaqsfUXRMGNF7IWOHroTGbD4Gn2_rFuRZcsER0tZkrLw3sMnzj4RFAk_sx0&host=tribes.sphinx.chat"
@@ -121,6 +112,18 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     inline fun setSignupBasicInfoState(update: SignupBasicInfoState.() -> SignupBasicInfoState) {
         signupBasicInfoState = signupBasicInfoState.update()
     }
+
+    var state: RestoreExistingUserState by mutableStateOf(initialState())
+        private set
+
+    private fun initialState(): RestoreExistingUserState = RestoreExistingUserState()
+
+    private inline fun setState(update: RestoreExistingUserState.() -> RestoreExistingUserState) {
+        state = state.update()
+    }
+
+    var showSelectNetworkDialog = mutableStateOf(false)
+        private set
 
     fun navigateTo(screenState: LandingScreenType) {
         LandingScreenState.screenState(screenState)
@@ -232,10 +235,8 @@ class SignUpViewModel : PinAuthenticationViewModel() {
         )?.let { redemptionCode ->
 
             if (redemptionCode is RedemptionCode.MnemonicRestoration) {
-                LandingScreenState.screenState(LandingScreenType.Loading)
                 connectManagerRepository.setMnemonicWords(redemptionCode.mnemonic)
-                // Show select network type dialog
-                // Call CreateAccount on ConnectManager
+                showSelectNetworkDialog.value = true
             } else {
                 setState {
                     copy(errorMessage = "Invalid Restore string")
@@ -248,6 +249,12 @@ class SignUpViewModel : PinAuthenticationViewModel() {
         }
     }
 
+    fun onNetworkTypeSelected(isTestEnvironment: Boolean) {
+        // connectManagerRepository.setNetworkType(networkType)
+        LandingScreenState.screenState(LandingScreenType.Loading)
+        // call createAccount on ConnectManager
+
+    }
 
     private var submitJob: Job? = null
     fun onSubmitNicknameAndPin() {
