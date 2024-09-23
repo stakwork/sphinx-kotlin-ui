@@ -8,7 +8,6 @@ import chat.sphinx.common.state.InviteFriendState
 import chat.sphinx.common.state.JoinTribeState
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
-import chat.sphinx.concepts.network.query.invite.NetworkQueryInvite
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
@@ -27,7 +26,6 @@ class InviteFriendViewModel(
 
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
-    private val networkQueryInvite: NetworkQueryInvite = SphinxContainer.networkModule.networkQueryInvite
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
 
@@ -40,29 +38,6 @@ class InviteFriendViewModel(
         inviteFriendState = inviteFriendState.update()
     }
 
-    init {
-        getNodePrice()
-    }
-
-    private fun getNodePrice() {
-        scope.launch(dispatchers.mainImmediate) {
-            networkQueryInvite.getLowestNodePrice().collect { loadResponse ->
-                when (loadResponse) {
-                    is Response.Success -> {
-                        loadResponse.value.response?.price?.let { price ->
-                            setInviteFriendState {
-                                copy(
-                                    nodePrice = price.toLong().toSat()?.asFormattedString(' '),
-                                )
-                            }
-                        }
-                    }
-
-                    else -> {}
-                }
-            }
-        }
-    }
 
     private var createInviteJob: Job? = null
     fun createNewInvite(){

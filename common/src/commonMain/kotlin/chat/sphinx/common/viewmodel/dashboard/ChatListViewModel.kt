@@ -456,9 +456,7 @@ class ChatListViewModel {
                 "Pay Invite",
                 "Are you sure you want to pay for this invite?"
             ) {
-                scope.launch(dispatchers.mainImmediate) {
-                    repositoryDashboard.payForInvite(invite)
-                }
+                // TODO V2 implement or remove payForInvite
             }
         }
     }
