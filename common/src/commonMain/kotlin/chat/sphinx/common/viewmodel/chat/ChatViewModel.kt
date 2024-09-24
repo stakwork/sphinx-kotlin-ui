@@ -98,7 +98,6 @@ abstract class ChatViewModel(
     private val mediaCacheHandler = SphinxContainer.appModule.mediaCacheHandler
     private val linkPreviewHandler = SphinxContainer.networkModule.linkPreviewHandler
 
-    val networkQueryLightning = SphinxContainer.networkModule.networkQueryLightning
     val networkQueryPeople = SphinxContainer.networkModule.networkQuerySaveProfile
 
     private val colorsHelper = UserColorsHelper(SphinxContainer.appModule.dispatchers)

@@ -103,54 +103,55 @@ class ChatContactViewModel(
     override val checkRoute: Flow<LoadResponse<Boolean, ResponseError>> = flow {
         emit(LoadResponse.Loading)
 
-        val networkFlow: Flow<LoadResponse<RouteSuccessProbabilityDto, ResponseError>>? = let {
-            emit(LoadResponse.Loading)
-
-            var contact: Contact? = contactSharedFlow.replayCache.firstOrNull()
-                ?: contactSharedFlow.firstOrNull()
-
-            if (contact == null) {
-                try {
-                    contactSharedFlow.collect {
-                        if (contact != null) {
-                            contact = it
-                            throw Exception()
-                        }
-                    }
-                } catch (e: Exception) {}
-                delay(25L)
-            }
-
-            contact?.let { nnContact ->
-                nnContact.nodePubKey?.let { pubKey ->
-
-                    nnContact.routeHint?.let { hint ->
-
-                        networkQueryLightning.checkRoute(pubKey, hint)
-
-                    } ?: networkQueryLightning.checkRoute(pubKey)
-
-                }
-            }
-        }
-
-        networkFlow?.let { flow ->
-            flow.collect { response ->
-                when (response) {
-                    LoadResponse.Loading -> {}
-                    is Response.Error -> {
-                        emit(response)
-                    }
-                    is Response.Success -> {
-                        emit(
-                            Response.Success(response.value.isRouteAvailable)
-                        )
-                    }
-                }
-            }
-        } ?: emit(Response.Error(
-            ResponseError("Contact and chatId were null, unable to check route")
-        ))
+//        val networkFlow: Flow<LoadResponse<RouteSuccessProbabilityDto, ResponseError>>? = let {
+//            emit(LoadResponse.Loading)
+//
+//            var contact: Contact? = contactSharedFlow.replayCache.firstOrNull()
+//                ?: contactSharedFlow.firstOrNull()
+//
+//            if (contact == null) {
+//                try {
+//                    contactSharedFlow.collect {
+//                        if (contact != null) {
+//                            contact = it
+//                            throw Exception()
+//                        }
+//                    }
+//                } catch (e: Exception) {}
+//                delay(25L)
+//            }
+//
+//            contact?.let { nnContact ->
+//                nnContact.nodePubKey?.let { pubKey ->
+//
+//                    nnContact.routeHint?.let { hint ->
+//
+//
+//                        networkQueryLightning.checkRoute(pubKey, hint)
+//
+//                    } ?: networkQueryLightning.checkRoute(pubKey)
+//
+//                }
+//            }
+//        }
+//
+//        networkFlow?.let { flow ->
+//            flow.collect { response ->
+//                when (response) {
+//                    LoadResponse.Loading -> {}
+//                    is Response.Error -> {
+//                        emit(response)
+//                    }
+//                    is Response.Success -> {
+//                        emit(
+//                            Response.Success(response.value.isRouteAvailable)
+//                        )
+//                    }
+//                }
+//            }
+//        } ?: emit(Response.Error(
+//            ResponseError("Contact and chatId were null, unable to check route")
+//        ))
     }
 
     override var editMessageState: EditMessageState by mutableStateOf(initialState())

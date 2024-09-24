@@ -79,19 +79,21 @@ class ChatTribeViewModel(
     }
 
     override val checkRoute: Flow<LoadResponse<Boolean, ResponseError>> = flow {
-        networkQueryLightning.checkRoute(chatId).collect { response ->
-            when (response) {
-                is LoadResponse.Loading -> {
-                    emit(response)
-                }
-                is Response.Error -> {
-                    emit(response)
-                }
-                is Response.Success -> {
-                    emit(Response.Success(response.value.isRouteAvailable))
-                }
-            }
-        }
+        // TODO V2 checkRoute
+
+//        networkQueryLightning.checkRoute(chatId).collect { response ->
+//            when (response) {
+//                is LoadResponse.Loading -> {
+//                    emit(response)
+//                }
+//                is Response.Error -> {
+//                    emit(response)
+//                }
+//                is Response.Success -> {
+//                    emit(Response.Success(response.value.isRouteAvailable))
+//                }
+//            }
+//        }
     }
 
     override suspend fun processMemberRequest(contactId: ContactId, messageId: MessageId, type: MessageType) {
