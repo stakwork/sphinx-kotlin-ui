@@ -109,39 +109,41 @@ class CreateTribeViewModel(
                 val host = chat.host
 
                 if (host != null) {
-                    networkQueryChat.getTribeInfo(host, chat.uuid).collect { loadResponse ->
-                        when (loadResponse) {
-                            is LoadResponse.Loading -> {}
+                    // TODO V2 getTribeInfo
 
-                            is Response.Error -> {
-                                toast("There was an error, please try later")
-                            }
-
-                            is Response.Success -> {
-                                createTribeBuilder.load(loadResponse.value)
-
-                                setTagListState()
-
-                                setCreateTribeState {
-                                    copy(
-                                        name = loadResponse.value.name,
-                                        img = loadResponse.value.img?.toPhotoUrl(),
-                                        imgUrl = loadResponse.value.img ?: "",
-                                        description = loadResponse.value.description,
-                                        priceToJoin = loadResponse.value.price_to_join,
-                                        pricePerMessage = loadResponse.value.price_per_message,
-                                        escrowAmount = loadResponse.value.escrow_amount,
-                                        escrowHours = loadResponse.value.escrow_millis / MILLISECONDS_IN_AN_HOUR,
-                                        appUrl = loadResponse.value.app_url ?: "",
-                                        feedUrl = loadResponse.value.feed_url ?: "",
-                                        feedType = loadResponse.value.feed_type?.toFeedType()?.toFeedTypeString() ?: "",
-                                        private = loadResponse.value.private.value,
-                                        unlisted = loadResponse.value.unlisted.value
-                                    )
-                                }
-                            }
-                        }
-                    }
+//                    networkQueryChat.getTribeInfo(host, chat.uuid).collect { loadResponse ->
+//                        when (loadResponse) {
+//                            is LoadResponse.Loading -> {}
+//
+//                            is Response.Error -> {
+//                                toast("There was an error, please try later")
+//                            }
+//
+//                            is Response.Success -> {
+//                                createTribeBuilder.load(loadResponse.value)
+//
+//                                setTagListState()
+//
+//                                setCreateTribeState {
+//                                    copy(
+//                                        name = loadResponse.value.name,
+//                                        img = loadResponse.value.img?.toPhotoUrl(),
+//                                        imgUrl = loadResponse.value.img ?: "",
+//                                        description = loadResponse.value.description,
+//                                        priceToJoin = loadResponse.value.price_to_join,
+//                                        pricePerMessage = loadResponse.value.price_per_message,
+//                                        escrowAmount = loadResponse.value.escrow_amount,
+//                                        escrowHours = loadResponse.value.escrow_millis / MILLISECONDS_IN_AN_HOUR,
+//                                        appUrl = loadResponse.value.app_url ?: "",
+//                                        feedUrl = loadResponse.value.feed_url ?: "",
+//                                        feedType = loadResponse.value.feed_type?.toFeedType()?.toFeedTypeString() ?: "",
+//                                        private = loadResponse.value.private.value,
+//                                        unlisted = loadResponse.value.unlisted.value
+//                                    )
+//                                }
+//                            }
+//                        }
+//                    }
                 }
             }
         }

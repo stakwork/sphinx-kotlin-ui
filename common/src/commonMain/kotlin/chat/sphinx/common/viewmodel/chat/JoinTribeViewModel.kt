@@ -59,46 +59,48 @@ class JoinTribeViewModel(
         scope.launch(dispatchers.mainImmediate) {
             val owner = getOwner()
 
-            networkQueryChat.getTribeInfo(
-                ChatHost(tribeJoinLink.tribeHost),
-                ChatUUID(tribeJoinLink.tribeUUID)
-            ).collect { loadResponse ->
-                when (loadResponse) {
-                    is Response.Success -> {
-                        loadResponse.apply {
+            // TODO V2 getTribeInfo
 
-                            tribeInfo = value
-
-                            val hourToStake: Long = (value.escrow_millis / 60 / 60 / 1000)
-
-                            setJoinTribeState {
-                                copy(
-                                    name = value.name,
-                                    description = value.description,
-                                    img = value.img?.toPhotoUrl(),
-                                    price_to_join = value.price_to_join.toString(),
-                                    price_per_message = value.price_per_message.toString(),
-                                    escrow_amount = value.escrow_amount.toString(),
-                                    hourToStake = hourToStake.toString(),
-                                    userAlias = (owner.alias?.value ?: "").fixedAlias(),
-                                    myPhotoUrl = owner.photoUrl,
-                                    loadingTribe = false
-                                )
-                            }
-                        }
-                    }
-                    is Response.Error -> {
-                        setJoinTribeState {
-                            copy(
-                                loadingTribe = false
-                            )
-                        }
-                        toast("There was an error loading the tribe. Please try again later", primary_red)
-                    }
-
-                    else -> {}
-                }
-            }
+//            networkQueryChat.getTribeInfo(
+//                ChatHost(tribeJoinLink.tribeHost),
+//                ChatUUID(tribeJoinLink.tribeUUID)
+//            ).collect { loadResponse ->
+//                when (loadResponse) {
+//                    is Response.Success -> {
+//                        loadResponse.apply {
+//
+//                            tribeInfo = value
+//
+//                            val hourToStake: Long = (value.escrow_millis / 60 / 60 / 1000)
+//
+//                            setJoinTribeState {
+//                                copy(
+//                                    name = value.name,
+//                                    description = value.description,
+//                                    img = value.img?.toPhotoUrl(),
+//                                    price_to_join = value.price_to_join.toString(),
+//                                    price_per_message = value.price_per_message.toString(),
+//                                    escrow_amount = value.escrow_amount.toString(),
+//                                    hourToStake = hourToStake.toString(),
+//                                    userAlias = (owner.alias?.value ?: "").fixedAlias(),
+//                                    myPhotoUrl = owner.photoUrl,
+//                                    loadingTribe = false
+//                                )
+//                            }
+//                        }
+//                    }
+//                    is Response.Error -> {
+//                        setJoinTribeState {
+//                            copy(
+//                                loadingTribe = false
+//                            )
+//                        }
+//                        toast("There was an error loading the tribe. Please try again later", primary_red)
+//                    }
+//
+//                    else -> {}
+//                }
+//            }
         }
     }
 

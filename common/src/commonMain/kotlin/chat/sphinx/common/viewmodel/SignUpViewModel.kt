@@ -444,7 +444,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
     private fun getBalances() {
         scope.launch(dispatchers.mainImmediate) {
-            //TODO V2 Implement balance
+            // TODO V2 Implement balance
 //
 //            val balance = loadResponse.value
 //            val localBalance = balance.localBalance
@@ -549,23 +549,24 @@ class SignUpViewModel : PinAuthenticationViewModel() {
         scope.launch(dispatchers.mainImmediate) {
             PLANET_SPHINX_TRIBE.toTribeJoinLink()?.let { tribeJoinLink ->
 
-                networkQueryChat.getTribeInfo(
-                    ChatHost(tribeJoinLink.tribeHost),
-                    ChatUUID(tribeJoinLink.tribeUUID)
-                ).collect { loadResponse ->
-                    when (loadResponse) {
-                        is LoadResponse.Loading -> {}
-                        is Response.Error -> {
-                            continueToSphinxOnYourPhone()
-
-                        }
-                        is Response.Success -> {
-                            val tribeInfo = loadResponse.value
-                            tribeInfo.set(tribeJoinLink.tribeHost, tribeJoinLink.tribeUUID)
-                            joinDefaultTribe(tribeInfo)
-                        }
-                    }
-                }
+                // TODO V2 getTribeInfo
+//                networkQueryChat.getTribeInfo(
+//                    ChatHost(tribeJoinLink.tribeHost),
+//                    ChatUUID(tribeJoinLink.tribeUUID)
+//                ).collect { loadResponse ->
+//                    when (loadResponse) {
+//                        is LoadResponse.Loading -> {}
+//                        is Response.Error -> {
+//                            continueToSphinxOnYourPhone()
+//
+//                        }
+//                        is Response.Success -> {
+//                            val tribeInfo = loadResponse.value
+//                            tribeInfo.set(tribeJoinLink.tribeHost, tribeJoinLink.tribeUUID)
+//                            joinDefaultTribe(tribeInfo)
+//                        }
+//                    }
+//                }
             } ?: continueToSphinxOnYourPhone()
         }
     }
