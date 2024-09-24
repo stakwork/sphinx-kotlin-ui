@@ -4,7 +4,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.common.state.*
-import chat.sphinx.concepts.network.query.version.NetworkQueryVersion
 import chat.sphinx.database.core.SphinxDatabaseQueries
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.repository.util.deleteAll
@@ -40,7 +39,6 @@ class DashboardViewModel(): WindowFocusListener {
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-    private val networkQueryVersion: NetworkQueryVersion = SphinxContainer.networkModule.networkQueryVersion
 
     enum class WebViewState {
         NonInitialized,
@@ -216,28 +214,29 @@ class DashboardViewModel(): WindowFocusListener {
         val currentAppVersion = "1.0.28"
 
         viewModelScope.launch(dispatchers.mainImmediate) {
-            networkQueryVersion.getAppVersions().collect { loadResponse ->
-                when (loadResponse) {
-                    is Response.Error -> {
-                        _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
-                    }
-                    is Response.Success -> {
-                        val serverHubVersion = loadResponse.value.kmm
-
-                        currentAppVersion.replace(".", "").toIntOrNull()?.let { currentVersion ->
-                            if (serverHubVersion > currentVersion) {
-                                _packageVersionAndUpgrade.value = Pair(currentAppVersion, true)
-                            }
-                            else {
-                                _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
-                            }
-                        }
-                    }
-                    is LoadResponse.Loading -> {
-
-                    }
-                }
-            }
+            // TODO V2 getAppVersions
+//            networkQueryVersion.getAppVersions().collect { loadResponse ->
+//                when (loadResponse) {
+//                    is Response.Error -> {
+//                        _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
+//                    }
+//                    is Response.Success -> {
+//                        val serverHubVersion = loadResponse.value.kmm
+//
+//                        currentAppVersion.replace(".", "").toIntOrNull()?.let { currentVersion ->
+//                            if (serverHubVersion > currentVersion) {
+//                                _packageVersionAndUpgrade.value = Pair(currentAppVersion, true)
+//                            }
+//                            else {
+//                                _packageVersionAndUpgrade.value = Pair(currentAppVersion, false)
+//                            }
+//                        }
+//                    }
+//                    is LoadResponse.Loading -> {
+//
+//                    }
+//                }
+//            }
         }
     }
 
