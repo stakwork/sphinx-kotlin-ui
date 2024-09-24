@@ -8,7 +8,6 @@ import chat.sphinx.common.state.TransactionType
 import chat.sphinx.common.state.TransactionState
 import chat.sphinx.common.state.TransactionsViewState
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
-import chat.sphinx.concepts.network.query.message.NetworkQueryMessage
 import chat.sphinx.concepts.network.query.message.model.TransactionDto
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
@@ -41,7 +40,6 @@ class TransactionsViewModel {
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val sphinxNotificationManager = createSphinxNotificationManager()
-    private val networkQueryMessage: NetworkQueryMessage = SphinxContainer.networkModule.networkQueryMessage
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
     private val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
     private val messageRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).messageRepository
@@ -86,32 +84,34 @@ class TransactionsViewModel {
     }
 
     private suspend fun loadTransactions() {
-        networkQueryMessage.getPayments(
-            offset = page * itemsPerPage,
-            limit = itemsPerPage
-        ).collect() { loadResponse ->
-            when (loadResponse) {
-                is LoadResponse.Loading -> {}
-                is Response.Error -> {
-                    setTransactionsViewState {
-                        copy(
-                            loadingTransactions = false
-                        )
-                    }
-                }
-                is Response.Success -> {
-                    if (loadResponse.value.isNotEmpty()) {
-                        generateTransactionsStateList(loadResponse.value)
-                    } else {
-                        setTransactionsViewState {
-                            copy(
-                                loadingTransactions = false
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        // TODO V2 getPayments
+
+//        networkQueryMessage.getPayments(
+//            offset = page * itemsPerPage,
+//            limit = itemsPerPage
+//        ).collect() { loadResponse ->
+//            when (loadResponse) {
+//                is LoadResponse.Loading -> {}
+//                is Response.Error -> {
+//                    setTransactionsViewState {
+//                        copy(
+//                            loadingTransactions = false
+//                        )
+//                    }
+//                }
+//                is Response.Success -> {
+//                    if (loadResponse.value.isNotEmpty()) {
+//                        generateTransactionsStateList(loadResponse.value)
+//                    } else {
+//                        setTransactionsViewState {
+//                            copy(
+//                                loadingTransactions = false
+//                            )
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     private suspend fun generateTransactionsStateList(
