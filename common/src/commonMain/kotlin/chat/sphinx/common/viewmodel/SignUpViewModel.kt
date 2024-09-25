@@ -250,10 +250,9 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     }
 
     fun onNetworkTypeSelected(isTestEnvironment: Boolean) {
-        // connectManagerRepository.setNetworkType(networkType)
+        connectManagerRepository.setNetworkType(isTestEnvironment)
+        connectManagerRepository.createOwnerAccount()
         LandingScreenState.screenState(LandingScreenType.Loading)
-        // call createAccount on ConnectManager
-
     }
 
     private var submitJob: Job? = null
