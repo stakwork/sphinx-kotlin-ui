@@ -222,6 +222,10 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                 LandingScreenState.screenState(LandingScreenType.Loading)
             }
             if (redemptionCode != null && redemptionCode is RedemptionCode.NewInvite) {
+                connectManagerRepository.setInviteCode(redemptionCode.code)
+                connectManagerRepository.createOwnerAccount()
+                LandingScreenState.screenState(LandingScreenType.Loading)
+
                 LandingScreenState.screenState(LandingScreenType.Loading)
             }
 
