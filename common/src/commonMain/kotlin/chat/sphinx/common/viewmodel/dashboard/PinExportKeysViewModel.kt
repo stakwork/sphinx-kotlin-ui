@@ -36,12 +36,11 @@ class PinExportKeysViewModel : PinAuthenticationViewModel() {
         scope.launch(dispatchers.mainImmediate) {
             authenticationCoreManager.getEncryptionKey()?.let { encryptionKey ->
                 val passwordPin = Password(pinState.sphinxPIN.toCharArray())
-                val relayUrl = relayDataHandler.retrieveRelayUrl()?.value
                 val authToken = relayDataHandler.retrieveAuthorizationToken()?.value
                 val privateKey = String(encryptionKey.privateKey.value)
                 val publicKey = String(encryptionKey.publicKey.value)
 
-                val keysString = "$privateKey::$publicKey::${relayUrl}::${authToken}"
+                val keysString = "$privateKey::$publicKey::${authToken}"
 
                 try {
                     val encryptedString = AES256JNCryptor()

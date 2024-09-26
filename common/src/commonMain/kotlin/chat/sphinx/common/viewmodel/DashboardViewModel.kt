@@ -204,12 +204,6 @@ class DashboardViewModel(): WindowFocusListener {
         _changePinWindowStateFlow.value = open
     }
 
-    private fun getRelayKeys() {
-        viewModelScope.launch(dispatchers.io) {
-            repositoryDashboard.getAndSaveTransportKey(forceGet = true)
-        }
-    }
-
     private fun getPackageVersion(){
         val currentAppVersion = "1.0.28"
 
@@ -247,7 +241,6 @@ class DashboardViewModel(): WindowFocusListener {
         } else {
             screenInit = true
         }
-        getRelayKeys()
         networkRefresh()
         getPackageVersion()
 

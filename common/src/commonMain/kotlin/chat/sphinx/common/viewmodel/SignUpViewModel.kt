@@ -330,10 +330,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                 completionResponse?.let { _ ->
                     authenticationManager.getEncryptionKey()?.let { encryptionKey ->
                         (signupBasicInfoState.onboardStep as? OnBoardStep.Step1_WelcomeMessage)?.let { onboardStep1 ->
-                            relayDataHandler.persistRelayUrl(onboardStep1.relayUrl)
                             relayDataHandler.persistAuthorizationToken(onboardStep1.authorizationToken)
-                            relayDataHandler.persistRelayTransportKey(onboardStep1.transportKey)
-                            relayDataHandler.persistRelayHMacKey(onboardStep1.hMacKey)
                         }
 
                         val step2Message: OnBoardStep.Step2_Name? =

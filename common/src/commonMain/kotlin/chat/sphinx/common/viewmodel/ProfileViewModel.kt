@@ -8,7 +8,6 @@ import chat.sphinx.common.state.ProfileState
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
-import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.ServersUrlsHelper
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
@@ -16,21 +15,14 @@ import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.toPrivatePhoto
 import chat.sphinx.wrapper.lightning.LightningNodeDescriptor
 import chat.sphinx.wrapper.lightning.VirtualLightningNodeAddress
-import chat.sphinx.wrapper.lightning.toLightningNodePubKey
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
-import chat.sphinx.wrapper.relay.AuthorizationToken
-import chat.sphinx.wrapper.relay.RelayUrl
 import chat.sphinx.wrapper.relay.isOnionAddress
 import chat.sphinx.wrapper.relay.toRelayUrl
-import chat.sphinx.wrapper.rsa.RsaPublicKey
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okio.Path
-import kotlinx.coroutines.flow.collect
 import theme.badge_red
-import theme.primary_green
 
 class ProfileViewModel {
 
@@ -79,7 +71,7 @@ class ProfileViewModel {
                             routeHint = owner.routeHint?.value ?: "",
                             nodeDescription = nodeDescriptor?.value ?: "",
                             photoUrl = owner.photoUrl,
-                            serverUrl = relayDataHandler.retrieveRelayUrl()?.value ?: "",
+                            serverUrl = "",
                             privatePhoto = toPrivatePhotoBoolean(owner.privatePhoto.value)
                         )
                     }
@@ -134,7 +126,7 @@ class ProfileViewModel {
                 contactOwner?.let { owner ->
 
                     val aliasDidChange = owner.alias?.value ?: "" != profileState.alias
-                    val serverUrlDidChange = relayDataHandler.retrieveRelayUrl()?.value ?: "" != profileState.serverUrl
+                    val serverUrlDidChange = false
                     val privatePhotoDidChange = toPrivatePhotoBoolean(owner.privatePhoto.value) != profileState.privatePhoto
                     val meetingServerDidChange = serversUrls.getMeetingServer() != profileState.meetingServerUrl
 
@@ -225,7 +217,7 @@ class ProfileViewModel {
     }
 
     private suspend fun updateRelayUrlIfChanged(callback: () -> Unit)  {
-        val oldRelayUrl = relayDataHandler.retrieveRelayUrl()?.value ?: ""
+        val oldRelayUrl = ""
         val newRelayUrl = profileState.serverUrl
 
         if (newRelayUrl.isEmpty() || oldRelayUrl == newRelayUrl) {
@@ -251,68 +243,11 @@ class ProfileViewModel {
                         message = "The Relay URL to be saved is using \'http\'. Network traffic will not be encrypted. Https is strongly recommended. Please confirm the URL Scheme to use.",
                         confirmButton = "https",
                         cancelButton = "http",
-                        callback = {
-                            val url = relayUrl.value.replace("http://", "https://")
-                            testAndPersistRelayUrl(url.toRelayUrl(), authorizationToken, callback)
-                        },
-                        cancelCallback = {
-                            testAndPersistRelayUrl(relayUrl, authorizationToken, callback)
-                        }
+                        callback = {},
+                        cancelCallback = {}
                     )
-                } else {
-                    testAndPersistRelayUrl(relayUrl, authorizationToken, callback)
                 }
                 return
-            }
-        }
-        testAndPersistRelayUrl(null, null, callback)
-    }
-
-    private fun testAndPersistRelayUrl(relayUrl: RelayUrl?, authorizationToken: AuthorizationToken?, callback: () -> Unit) {
-        scope.launch(dispatchers.mainImmediate){
-            var success = false
-
-            if (relayUrl != null && authorizationToken != null) {
-                toast("Testing new Relay Url", color = primary_green)
-
-                var transportKey: RsaPublicKey? = null
-
-                val transportToken = relayDataHandler.retrieveRelayTransportToken(
-                    authorizationToken,
-                    transportKey
-                )
-
-                lightningRepository.getAccountBalanceAll(
-                    Triple(Pair(authorizationToken, transportToken), null, relayUrl)
-                ).collect { loadResponse ->
-                    Exhaustive@
-                    when (loadResponse) {
-                        is LoadResponse.Loading -> {}
-                        is Response.Error -> {
-                            success = false
-                        }
-                        is Response.Success -> {
-                            transportKey?.let { key ->
-                                relayDataHandler.persistRelayTransportKey(key)
-                            }
-                            success = relayDataHandler.persistRelayUrl(relayUrl)
-                        }
-                    }
-                }
-            }
-
-            setProfileState {
-                copy(
-                    serverUrl = relayDataHandler.retrieveRelayUrl()?.value ?: profileState.serverUrl
-                )
-            }
-
-            if (success) {
-                toast("Relay URL successfully updated", color = primary_green)
-                delay(1000L)
-                callback.invoke()
-            } else {
-                toast("New URL test failed, restoring previous setting…")
             }
         }
     }
