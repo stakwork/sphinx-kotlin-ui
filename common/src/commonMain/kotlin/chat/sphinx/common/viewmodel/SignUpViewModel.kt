@@ -17,8 +17,6 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
 import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
-import chat.sphinx.wrapper.chat.ChatHost
-import chat.sphinx.wrapper.chat.ChatUUID
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.contact.ContactAlias
 import chat.sphinx.wrapper.lightning.LightningNodePubKey
@@ -223,13 +221,8 @@ class SignUpViewModel : PinAuthenticationViewModel() {
             }
             if (redemptionCode != null && redemptionCode is RedemptionCode.NewInvite) {
                 connectManagerRepository.setInviteCode(redemptionCode.code)
-                connectManagerRepository.createOwnerAccount()
-                LandingScreenState.screenState(LandingScreenType.Loading)
-
-                LandingScreenState.screenState(LandingScreenType.Loading)
+                LandingScreenState.screenState(LandingScreenType.OnBoardLightningBasicInfo)
             }
-
-            toast("The code your entered is not a valid invite or connection code")
         }
     }
 
@@ -255,8 +248,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
     fun onNetworkTypeSelected(isTestEnvironment: Boolean) {
         connectManagerRepository.setNetworkType(isTestEnvironment)
-        connectManagerRepository.createOwnerAccount()
-        LandingScreenState.screenState(LandingScreenType.Loading)
+        LandingScreenState.screenState(LandingScreenType.OnBoardLightningBasicInfo)
     }
 
     private var submitJob: Job? = null
@@ -349,35 +341,8 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                             }
                         }
 
-                        contactRepository.updateOwnerNameAndKey(
-                            signupBasicInfoState.nickname,
-                            encryptionKey.publicKey
-                        ).let { updateOwnerResponse ->
-                            when (updateOwnerResponse) {
-                                is Response.Error -> {
-                                    showError("Error updating owner nickname. Please try again")
-                                }
-                                is Response.Success -> {
-                                    val step3Message: OnBoardStep.Step3_Picture? =
-                                        onBoardStepHandler.persistOnBoardStep3Data(
-                                            signupBasicInfoState.onboardStep?.inviterData
-                                        )
-
-                                    if (step3Message == null) {
-                                        showError("Error persisting signup step. Please try again later")
-                                    } else {
-                                        setSignupBasicInfoState {
-                                            copy(
-                                                onboardStep = step3Message,
-                                                showLoading = false
-                                            )
-                                        }
-                                        navigateTo(LandingScreenType.OnBoardLightningProfilePicture)
-                                    }
-                                }
-                            }
-                        }
-
+                        connectManagerRepository.createOwnerAccount(signupBasicInfoState.nickname)
+                        navigateTo(LandingScreenType.Loading)
 
                     } ?: {
                         showError("Error retrieving your encryption keys. Please try again")
