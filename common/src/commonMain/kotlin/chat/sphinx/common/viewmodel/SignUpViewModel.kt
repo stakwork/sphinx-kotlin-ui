@@ -12,15 +12,15 @@ import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationResponse
 import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.network.query.chat.model.TribeDto
+import chat.sphinx.concepts.repository.connect_manager.model.OwnerRegistrationState
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
+import chat.sphinx.database.core.SphinxDatabaseQueries
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.authentication.core.model.AuthenticateFlowResponse
+import chat.sphinx.features.repository.util.deleteAll
 import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
-import chat.sphinx.wrapper.contact.ContactAlias
-import chat.sphinx.wrapper.lightning.LightningNodePubKey
-import chat.sphinx.wrapper.lightning.toLightningRouteHint
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import chat.sphinx.wrapper.tribe.toTribeJoinLink
@@ -53,9 +53,18 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
     init {
         scope.launch(dispatchers.mainImmediate) {
-            restoreSignupStep()
+            listenToOwnerRegistered()
+            clearDatabase()
         }
     }
+    fun clearDatabase() {
+        SphinxContainer.appModule.coreDBImpl.getSphinxDatabaseQueriesOrNull()?.let { queries: SphinxDatabaseQueries ->
+            queries.transaction {
+                deleteAll(queries)
+            }
+        }
+    }
+
 
     override fun onAuthenticationSucceed() {
         scope.launch(dispatchers.mainImmediate) {
@@ -388,6 +397,14 @@ class SignUpViewModel : PinAuthenticationViewModel() {
         }
     }
 
+    private suspend fun listenToOwnerRegistered() {
+        connectManagerRepository.connectionManagerState.collect {
+            if (it is OwnerRegistrationState.OwnerRegistered) {
+                LandingScreenState.screenState(LandingScreenType.OnBoardLightningProfilePicture)
+            }
+        }
+    }
+
     private suspend fun continueToEndScreen() {
         val step4Message: OnBoardStep.Step4_Ready? =
             onBoardStepHandler.persistOnBoardStep4Data(
@@ -461,79 +478,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                 showLoading = true
             )
         }
-        submitJob = scope.launch(dispatchers.mainImmediate) {
-            signupBasicInfoState.onboardStep?.inviterData?.let {
-                if (it.nickname?.isNotEmpty() == true && it.pubkey?.value?.isNotEmpty() == true) {
-                    saveInviterAndFinish(it.nickname!!, it.pubkey!!.value, it.routeHint, it.pin)
-                } else if (it.pin?.isNotEmpty() == true) {
-                    finishInvite(it.pin!!)
-                } else {
-                    loadAndJoinDefaultTribeData()
-                }
-            }
-        }
-    }
-
-    private fun saveInviterAndFinish(
-        nickname: String,
-        pubkey: String,
-        routeHint: String?,
-        inviteString: String? = null
-    ) {
-        scope.launch(dispatchers.mainImmediate) {
-            val alias = ContactAlias(nickname)
-            val pubKey = LightningNodePubKey(pubkey)
-            val lightningRouteHint = routeHint?.toLightningRouteHint()
-
-            contactRepository.createContact(
-                alias,
-                pubKey,
-                lightningRouteHint
-            ).collect { loadResponse ->
-                when (loadResponse) {
-                    LoadResponse.Loading -> {}
-                    else -> {
-                        if (inviteString != null && inviteString.isNotEmpty()) {
-                            finishInvite(inviteString)
-                        } else {
-                            loadAndJoinDefaultTribeData()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun finishInvite(inviteString: String) {
-        scope.launch(dispatchers.mainImmediate) {
-            // TODO V2
-        }
-    }
-
-    private fun loadAndJoinDefaultTribeData() {
-        scope.launch(dispatchers.mainImmediate) {
-            PLANET_SPHINX_TRIBE.toTribeJoinLink()?.let { tribeJoinLink ->
-
-                // TODO V2 getTribeInfo
-//                networkQueryChat.getTribeInfo(
-//                    ChatHost(tribeJoinLink.tribeHost),
-//                    ChatUUID(tribeJoinLink.tribeUUID)
-//                ).collect { loadResponse ->
-//                    when (loadResponse) {
-//                        is LoadResponse.Loading -> {}
-//                        is Response.Error -> {
-//                            continueToSphinxOnYourPhone()
-//
-//                        }
-//                        is Response.Success -> {
-//                            val tribeInfo = loadResponse.value
-//                            tribeInfo.set(tribeJoinLink.tribeHost, tribeJoinLink.tribeUUID)
-//                            joinDefaultTribe(tribeInfo)
-//                        }
-//                    }
-//                }
-            } ?: continueToSphinxOnYourPhone()
-        }
+        continueToSphinxOnYourPhone()
     }
 
     private fun joinDefaultTribe(tribeInfo: TribeDto) {
@@ -594,25 +539,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                 color.value,
                 delay
             )
-        }
-    }
-
-    private suspend fun restoreSignupStep() {
-        onBoardStepHandler.retrieveOnBoardStep()?.let { onBoardStep ->
-            setSignupBasicInfoState {
-                copy(
-                    onboardStep = onBoardStep
-                )
-            }
-
-            if (onBoardStep is OnBoardStep.Step1_WelcomeMessage) {
-                setSignupInviterState {
-                    copy(
-                        welcomeMessage = onBoardStep.inviterData.message ?: "Welcome to Sphinx!",
-                        friendName = onBoardStep.inviterData.nickname ?: "Sphinx Support"
-                    )
-                }
-            }
         }
     }
 
