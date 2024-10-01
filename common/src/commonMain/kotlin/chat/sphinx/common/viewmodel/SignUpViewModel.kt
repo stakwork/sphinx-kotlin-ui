@@ -10,7 +10,6 @@ import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationResponse
-import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.concepts.network.query.chat.model.TribeDto
 import chat.sphinx.concepts.repository.connect_manager.model.OwnerRegistrationState
 import chat.sphinx.concepts.repository.message.model.AttachmentInfo
@@ -23,7 +22,6 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
-import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -36,20 +34,12 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private val authenticationManager = SphinxContainer.authenticationModule.authenticationCoreManager
     private val networkModule = SphinxContainer.networkModule
     private val repositoryModule = SphinxContainer.repositoryModule(sphinxNotificationManager)
-    private val networkQueryChat: NetworkQueryChat = networkModule.networkQueryChat
     private val relayDataHandler = networkModule.relayDataHandler
-    private val networkQueryContact = networkModule.networkQueryContact
-    private val rsa = SphinxContainer.authenticationModule.rsa
     private val chatRepository = repositoryModule.chatRepository
     private val contactRepository = repositoryModule.contactRepository
-    private val lightningRepository = repositoryModule.lightningRepository
     private val connectManagerRepository = repositoryModule.connectManagerRepository
     private val onBoardStepHandler = OnBoardStepHandler()
 
-    companion object {
-        private const val PLANET_SPHINX_TRIBE =
-            "sphinx.chat://?action=tribe&uuid=X3IWAiAW5vNrtOX5TLEJzqNWWr3rrUaXUwaqsfUXRMGNF7IWOHroTGbD4Gn2_rFuRZcsER0tZkrLw3sMnzj4RFAk_sx0&host=tribes.sphinx.chat"
-    }
 
     init {
         scope.launch(dispatchers.mainImmediate) {
