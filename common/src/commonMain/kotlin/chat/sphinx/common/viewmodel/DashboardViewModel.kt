@@ -244,11 +244,13 @@ class DashboardViewModel(): WindowFocusListener {
         networkRefresh()
         getPackageVersion()
 
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            repositoryDashboard.getAccountBalanceStateFlow().collect {
-                _balanceStateFlow.value = it
-            }
-        }
+        // TODO V2 getAccountBalanceStateFlow
+
+//        viewModelScope.launch(dispatchers.mainImmediate) {
+//            repositoryDashboard.getAccountBalanceStateFlow().collect {
+//                _balanceStateFlow.value = it
+//            }
+//        }
     }
 
     override fun windowGainedFocus(p0: WindowEvent?) {
@@ -277,66 +279,67 @@ class DashboardViewModel(): WindowFocusListener {
 
 
     fun networkRefresh() {
-        if (jobNetworkRefresh?.isActive == true) {
-            return
-        }
-
-        viewModelScope.launch(dispatchers.mainImmediate) {
-            repositoryDashboard.networkRefreshBalance.collect { }
-        }
-
-        jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
-
-            repositoryDashboard.networkRefreshLatestContacts.collect { response ->
-                Exhaustive@
-                when (response) {
-                    is LoadResponse.Loading -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Error -> {
-                        _networkStateFlow.value = response
-                    }
-                    is Response.Success -> {
-                        val restoreProgress = response.value
-
-                        if (restoreProgress.restoring) {
-                            _restoreStateFlow.value = restoreProgress
-                        }
-                    }
-                }
-            }
-
-            if (_networkStateFlow.value is Response.Error) {
-                jobNetworkRefresh?.cancel()
-            }
-
-            repositoryDashboard.networkRefreshMessages.collect { response ->
-                Exhaustive@
-                when (response) {
-                    is Response.Success -> {
-                        val restoreProgress = response.value
-
-                        if (restoreProgress.restoring && restoreProgress.progress < 100) {
-                            _restoreStateFlow.value = restoreProgress
-                        } else {
-                            _restoreStateFlow.value = null
-
-                            _networkStateFlow.value = Response.Success(true)
-                        }
-                    }
-                    is Response.Error -> {
-                        _networkStateFlow.value = response
-                    }
-                    is LoadResponse.Loading -> {
-                        _networkStateFlow.value = response
-                    }
-                }
-            }
-
-            if (_networkStateFlow.value is Response.Error) {
-                jobNetworkRefresh?.cancel()
-            }
-        }
+        // TODO V2 networkRefresh
+//        if (jobNetworkRefresh?.isActive == true) {
+//            return
+//        }
+//
+//        viewModelScope.launch(dispatchers.mainImmediate) {
+//            repositoryDashboard.networkRefreshBalance.collect { }
+//        }
+//
+//        jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
+//
+//            repositoryDashboard.networkRefreshLatestContacts.collect { response ->
+//                Exhaustive@
+//                when (response) {
+//                    is LoadResponse.Loading -> {
+//                        _networkStateFlow.value = response
+//                    }
+//                    is Response.Error -> {
+//                        _networkStateFlow.value = response
+//                    }
+//                    is Response.Success -> {
+//                        val restoreProgress = response.value
+//
+//                        if (restoreProgress.restoring) {
+//                            _restoreStateFlow.value = restoreProgress
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (_networkStateFlow.value is Response.Error) {
+//                jobNetworkRefresh?.cancel()
+//            }
+//
+//            repositoryDashboard.networkRefreshMessages.collect { response ->
+//                Exhaustive@
+//                when (response) {
+//                    is Response.Success -> {
+//                        val restoreProgress = response.value
+//
+//                        if (restoreProgress.restoring && restoreProgress.progress < 100) {
+//                            _restoreStateFlow.value = restoreProgress
+//                        } else {
+//                            _restoreStateFlow.value = null
+//
+//                            _networkStateFlow.value = Response.Success(true)
+//                        }
+//                    }
+//                    is Response.Error -> {
+//                        _networkStateFlow.value = response
+//                    }
+//                    is LoadResponse.Loading -> {
+//                        _networkStateFlow.value = response
+//                    }
+//                }
+//            }
+//
+//            if (_networkStateFlow.value is Response.Error) {
+//                jobNetworkRefresh?.cancel()
+//            }
+//        }
     }
 
     fun cancelRestore() {

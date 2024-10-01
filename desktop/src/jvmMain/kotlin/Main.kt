@@ -62,8 +62,6 @@ fun main() = application {
                 AppTheme(useDarkTheme = true) {
                     SphinxSplash()
 
-                    sphinxStore.removeAccount()
-
                     LaunchedEffect(windowState) {
                         delay(1000L)
 
