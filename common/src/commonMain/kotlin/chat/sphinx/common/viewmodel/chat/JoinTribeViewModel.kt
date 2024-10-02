@@ -143,17 +143,17 @@ class JoinTribeViewModel(
             tribeInfo?.amount = joinTribeState.price_to_join.toLong()
 
             tribeInfo?.let { tribeDto ->
-                chatRepository.joinTribe(tribeDto).collect { response ->
-                    when (response) {
-                        is Response.Success -> {
-                            dashboardViewModel.toggleJoinTribeWindow(false)
-                        }
-                        is Response.Error -> {
-                            toast("There was an error joining the tribe. Please try again later", primary_red)
-                        }
-                        else -> {}
-                    }
-                }
+//                chatRepository.joinTribe(tribeDto).collect { response ->
+//                    when (response) {
+//                        is Response.Success -> {
+//                            dashboardViewModel.toggleJoinTribeWindow(false)
+//                        }
+//                        is Response.Error -> {
+//                            toast("There was an error joining the tribe. Please try again later", primary_red)
+//                        }
+//                        else -> {}
+//                    }
+//                }
             }
         }
     }

@@ -795,13 +795,7 @@ abstract class ChatViewModel(
         ) {
             payAttachmentJob = scope.launch(dispatchers.mainImmediate) {
 
-                Exhaustive@
-                when (val response = messageRepository.payAttachment(message)) {
-                    is Response.Error -> {
-                        toast(response.cause.message, color = primary_red)
-                    }
-                    is Response.Success -> {}
-                }
+                messageRepository.payAttachment(message)
             }
         }
     }

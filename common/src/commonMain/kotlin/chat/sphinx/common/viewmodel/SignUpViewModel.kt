@@ -475,18 +475,18 @@ class SignUpViewModel : PinAuthenticationViewModel() {
         scope.launch(dispatchers.mainImmediate) {
             tribeInfo.amount = tribeInfo.price_to_join
 
-            chatRepository.joinTribe(tribeInfo).collect { loadResponse ->
-                when (loadResponse) {
-                    LoadResponse.Loading -> {}
-
-                    is Response.Error -> {
-                        continueToSphinxOnYourPhone()
-                    }
-                    is Response.Success -> {
-                        continueToSphinxOnYourPhone()
-                    }
-                }
-            }
+//            chatRepository.joinTribe(tribeInfo).collect { loadResponse ->
+//                when (loadResponse) {
+//                    LoadResponse.Loading -> {}
+//
+//                    is Response.Error -> {
+//                        continueToSphinxOnYourPhone()
+//                    }
+//                    is Response.Success -> {
+//                        continueToSphinxOnYourPhone()
+//                    }
+//                }
+//            }
         }
     }
 
