@@ -25,12 +25,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import chat.sphinx.common.models.DashboardChat
-import chat.sphinx.common.state.ChatDetailData
-import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.wrapper.DateTime
-import chat.sphinx.wrapper.chat.ChatMuted
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import chat.sphinx.common.Res
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
@@ -43,7 +39,6 @@ import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.util.getInitials
 import chat.sphinx.wrapper_chat.isMuteChat
 import chat.sphinx.wrapper_chat.isOnlyMentions
-import theme.badge_red
 import theme.primary_green
 import theme.selected_chat
 import theme.wash_out_received

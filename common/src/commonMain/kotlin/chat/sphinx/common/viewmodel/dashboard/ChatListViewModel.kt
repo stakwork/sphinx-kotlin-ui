@@ -11,7 +11,6 @@ import chat.sphinx.common.state.ChatDetailState
 import chat.sphinx.common.state.ChatListData
 import chat.sphinx.common.state.ChatListState
 import chat.sphinx.di.container.SphinxContainer
-import chat.sphinx.utils.SphinxDispatchers
 import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.chat.Chat

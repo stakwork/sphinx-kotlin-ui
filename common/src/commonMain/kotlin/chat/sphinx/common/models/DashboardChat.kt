@@ -5,7 +5,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import chat.sphinx.common.state.ChatListData
 import chat.sphinx.wrapper.*
 import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
@@ -22,7 +21,6 @@ import theme.primary_green
 import theme.sphinx_orange
 import kotlin.jvm.JvmName
 import kotlinx.coroutines.flow.Flow
-import java.util.*
 import chat.sphinx.wrapper.invite.Invite as InviteWrapper
 
 /**
