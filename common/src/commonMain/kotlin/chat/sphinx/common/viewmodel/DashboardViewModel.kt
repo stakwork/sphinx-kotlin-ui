@@ -39,6 +39,7 @@ class DashboardViewModel(): WindowFocusListener {
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    private val connectManagerRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).connectManagerRepository
 
     enum class WebViewState {
         NonInitialized,
@@ -241,6 +242,7 @@ class DashboardViewModel(): WindowFocusListener {
         } else {
             screenInit = true
         }
+
         networkRefresh()
         getPackageVersion()
 
