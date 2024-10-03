@@ -7,7 +7,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import chat.sphinx.common.state.*
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.concepts.network.query.lightning.model.route.isRouteAvailable
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.response.ResponseError
@@ -16,8 +15,6 @@ import chat.sphinx.wrapper.chat.*
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
-import chat.sphinx.wrapper.feed.FeedType
-import chat.sphinx.wrapper.feed.FeedUrl
 import chat.sphinx.wrapper.message.MessageId
 import chat.sphinx.wrapper.message.MessageType
 import chat.sphinx.wrapper.message.isMemberApprove
@@ -52,19 +49,21 @@ class ChatTribeViewModel(
     init {
         scope.launch(dispatchers.mainImmediate) {
             chatRepository.getChatById(chatId)?.let { chat : Chat ->
-                chatRepository.updateTribeInfo(chat)?.let { tribeData : TribeData ->
+                // TODO V2 updateTribeInfo
 
-                    _tribeDataStateFlow.value = TribeData(
-                        tribeData.host,
-                        tribeData.chatUUID,
-                        tribeData.appUrl,
-                        tribeData.feedUrl,
-                        tribeData.feedType,
-                    )
-
-                } ?: run {
-                    _tribeDataStateFlow.value = null
-                }
+//                chatRepository.updateTribeInfo(chat,)?.let { tribeData : TribeData ->
+//
+//                    _tribeDataStateFlow.value = TribeData(
+//                        tribeData.host,
+//                        tribeData.chatUUID,
+//                        tribeData.appUrl,
+//                        tribeData.feedUrl,
+//                        tribeData.feedType,
+//                    )
+//
+//                } ?: run {
+//                    _tribeDataStateFlow.value = null
+//                }
 
             } ?: run {
                 _tribeDataStateFlow.value = null
