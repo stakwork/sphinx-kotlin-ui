@@ -4,6 +4,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.common.state.*
+import chat.sphinx.concept_repository_connect_manager.model.NetworkStatus
 import chat.sphinx.database.core.SphinxDatabaseQueries
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.repository.util.deleteAll
@@ -75,6 +76,14 @@ class DashboardViewModel(): WindowFocusListener {
 
     val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
         get() = _contactWindowStateFlow.asStateFlow()
+
+
+    val networkStatusStateFlow: StateFlow<NetworkStatus>
+        get() = connectManagerRepository.networkStatus.asStateFlow()
+
+    val restoreProgressStateFlow: StateFlow<Int?>
+        get() = connectManagerRepository.restoreProgress.asStateFlow()
+
 
     fun setWebViewState(state: WebViewState) {
         webViewState.value = state
