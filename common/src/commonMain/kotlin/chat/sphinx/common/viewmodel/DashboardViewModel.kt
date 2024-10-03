@@ -1,29 +1,16 @@
 package chat.sphinx.common.viewmodel
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.remember
-import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.common.state.*
-import chat.sphinx.concept_repository_connect_manager.model.NetworkStatus
+import chat.sphinx.concepts.repository.connect_manager.model.NetworkStatus
 import chat.sphinx.database.core.SphinxDatabaseQueries
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.repository.util.deleteAll
-import chat.sphinx.features.repository.util.upsertContact
-import chat.sphinx.logger.d
 import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
-import chat.sphinx.wrapper.bridge.toBridgeAuthorizeMessage
-import chat.sphinx.wrapper.bridge.toBridgeAuthorizeMessageOrNull
-import chat.sphinx.wrapper.bridge.toBridgeSetBudgetMessageOrNull
 import chat.sphinx.wrapper.dashboard.ChatId
-import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
 import chat.sphinx.wrapper.tribe.TribeJoinLink
-import com.multiplatform.webview.jsbridge.IJsMessageHandler
-import com.multiplatform.webview.jsbridge.JsMessage
-import com.multiplatform.webview.jsbridge.WebViewJsBridge
-import com.multiplatform.webview.web.WebViewNavigator
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -257,11 +244,11 @@ class DashboardViewModel(): WindowFocusListener {
 
         // TODO V2 getAccountBalanceStateFlow
 
-//        viewModelScope.launch(dispatchers.mainImmediate) {
-//            repositoryDashboard.getAccountBalanceStateFlow().collect {
-//                _balanceStateFlow.value = it
-//            }
-//        }
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            repositoryDashboard.getAccountBalanceStateFlow().collect {
+                _balanceStateFlow.value = it
+            }
+        }
     }
 
     override fun windowGainedFocus(p0: WindowEvent?) {
