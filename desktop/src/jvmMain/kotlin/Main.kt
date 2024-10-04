@@ -66,10 +66,8 @@ fun main() = application {
                         delay(1000L)
 
                         if (SphinxContainer.authenticationModule.authenticationStorage.hasCredential()) {
-                            if (!onBoardStepHandler.isSignupInProgress()) {
-                                ContentState.onContentReady(ScreenType.DashboardScreen)
-                                return@LaunchedEffect
-                            }
+                            ContentState.onContentReady(ScreenType.DashboardScreen)
+                            return@LaunchedEffect
                         }
 
                         sphinxStore.restoreSignupStep()

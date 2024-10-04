@@ -54,9 +54,7 @@ abstract class PinAuthenticationViewModel: PINHandlingViewModel() {
                                 success = true
                             )
                         }
-
                         onAuthenticationSucceed()
-
                     }
                     is AuthenticateFlowResponse.Error -> {
                         setPINState {

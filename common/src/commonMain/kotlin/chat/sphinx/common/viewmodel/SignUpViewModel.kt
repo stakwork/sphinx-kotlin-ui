@@ -38,8 +38,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private val chatRepository = repositoryModule.chatRepository
     private val contactRepository = repositoryModule.contactRepository
     private val connectManagerRepository = repositoryModule.connectManagerRepository
-    private val onBoardStepHandler = OnBoardStepHandler()
-
 
     init {
         scope.launch(dispatchers.mainImmediate) {
@@ -55,27 +53,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
         }
     }
 
-
-    override fun onAuthenticationSucceed() {
-        scope.launch(dispatchers.mainImmediate) {
-            onBoardStepHandler.retrieveOnBoardStep()?.let { onBoardStep ->
-                when (onBoardStep) {
-                    is OnBoardStep.Step2_Name -> {
-                        setPinFields(pinState.sphinxPIN)
-                        LandingScreenState.screenState(LandingScreenType.OnBoardLightningBasicInfo)
-                    }
-                    is OnBoardStep.Step3_Picture -> {
-                        LandingScreenState.screenState(LandingScreenType.OnBoardLightningProfilePicture)
-                    }
-                    is OnBoardStep.Step4_Ready -> {
-                        reloadAccountData()
-                        LandingScreenState.screenState(LandingScreenType.OnBoardLightningReady)
-                    }
-                    else -> {}
-                }
-            }
-        }
-    }
+    override fun onAuthenticationSucceed() {}
 
     var signupCodeState: SignupCodeState by mutableStateOf(initialSignupCodeState())
 
@@ -324,22 +302,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                             relayDataHandler.persistAuthorizationToken(onboardStep1.authorizationToken)
                         }
 
-                        val step2Message: OnBoardStep.Step2_Name? =
-                            onBoardStepHandler.persistOnBoardStep2Data(
-                                signupBasicInfoState.onboardStep?.inviterData
-                            )
-
-                        if (step2Message == null) {
-                            showError("Error persisting signup step. Please try again later")
-                            return@let
-                        } else {
-                            setSignupBasicInfoState {
-                                copy(
-                                    onboardStep = step2Message
-                                )
-                            }
-                        }
-
                         connectManagerRepository.createOwnerAccount(signupBasicInfoState.nickname)
                         navigateTo(LandingScreenType.Loading)
 
@@ -396,22 +358,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     }
 
     private suspend fun continueToEndScreen() {
-        val step4Message: OnBoardStep.Step4_Ready? =
-            onBoardStepHandler.persistOnBoardStep4Data(
-                signupBasicInfoState.onboardStep?.inviterData
-            )
-
-        if (step4Message == null) {
-            showError("Error persisting signup step. Please try again later")
-        } else {
-            setSignupBasicInfoState {
-                copy(
-                    onboardStep = step4Message,
-                    showLoading = false
-                )
-            }
-            navigateTo(LandingScreenType.OnBoardLightningReady)
-        }
+        navigateTo(LandingScreenType.OnBoardLightningReady)
     }
 
     private fun getBalances() {
@@ -497,7 +444,6 @@ class SignUpViewModel : PinAuthenticationViewModel() {
             )
         }
         scope.launch(dispatchers.mainImmediate) {
-            onBoardStepHandler.finishOnBoardSteps()
             LandingScreenState.screenState(LandingScreenType.OnBoardSphinxOnYourPhone)
         }
     }
