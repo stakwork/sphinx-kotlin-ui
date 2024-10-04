@@ -20,12 +20,15 @@ import chat.sphinx.features.repository.util.deleteAll
 import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
+import chat.sphinx.wrapper.lightning.NodeBalanceAll
+import chat.sphinx.wrapper.lightning.toSat
 import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okio.Path
+import okio.blackholeSink
 import theme.badge_red
 
 class SignUpViewModel : PinAuthenticationViewModel() {
@@ -38,6 +41,7 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private val chatRepository = repositoryModule.chatRepository
     private val contactRepository = repositoryModule.contactRepository
     private val connectManagerRepository = repositoryModule.connectManagerRepository
+    private val lightningRepository = repositoryModule.lightningRepository
 
     init {
         scope.launch(dispatchers.mainImmediate) {
@@ -363,17 +367,16 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
     private fun getBalances() {
         scope.launch(dispatchers.mainImmediate) {
-            // TODO V2 Implement balance
-//
-//            val balance = loadResponse.value
-//            val localBalance = balance.localBalance
-//            val remoteBalance = balance.remoteBalance
-//
-//            setSignupBasicInfoState {
-//                copy(
-//                    balance = NodeBalanceAll(localBalance, remoteBalance)
-//                )
-//            }
+            lightningRepository.getAccountBalanceStateFlow().collect {
+                val balance = it?.balance?.value?.toSat()
+                if (balance != null) {
+                    setSignupBasicInfoState {
+                        copy(
+                            balance = NodeBalanceAll(balance, balance)
+                        )
+                    }
+                }
+            }
         }
     }
 

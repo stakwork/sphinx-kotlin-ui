@@ -239,6 +239,7 @@ class DashboardViewModel(): WindowFocusListener {
             screenInit = true
         }
 
+        connectManagerRepository.connectAndSubscribeToMqtt()
         networkRefresh()
         getPackageVersion()
 
