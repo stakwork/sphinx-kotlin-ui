@@ -10,6 +10,7 @@ import chat.sphinx.common.components.landing.*
 import chat.sphinx.common.state.LandingScreenState
 import chat.sphinx.common.state.LandingScreenType
 import chat.sphinx.common.viewmodel.SignUpViewModel
+import theme.primary_green
 
 
 @Composable
@@ -60,6 +61,17 @@ fun LandingScreen() {
                 },
                 onBitcoinSelected = {
                     signUpViewModel.onNetworkTypeSelected(false)
+                }
+            )
+        }
+
+        if (signUpViewModel.showMnemonicDialog.value) {
+            MnemonicDialog(
+                mnemonicWords = signUpViewModel.mnemonic.value,
+                onDismiss = { signUpViewModel.closeMnemonicDialog()
+                },
+                onCopyToClipboard = {
+                    signUpViewModel.toast("Mnemonic words copied to clipboard", color = primary_green)
                 }
             )
         }

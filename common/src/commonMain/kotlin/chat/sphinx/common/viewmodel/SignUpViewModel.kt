@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.authentication.model.OnBoardStep
-import chat.sphinx.authentication.model.OnBoardStepHandler
 import chat.sphinx.authentication.model.RedemptionCode
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.authentication.coordinator.AuthenticationRequest
@@ -26,9 +25,9 @@ import chat.sphinx.wrapper.message.media.MediaType
 import chat.sphinx.wrapper.message.media.toFileName
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import okio.Path
-import okio.blackholeSink
 import theme.badge_red
 
 class SignUpViewModel : PinAuthenticationViewModel() {
@@ -103,6 +102,11 @@ class SignUpViewModel : PinAuthenticationViewModel() {
 
     var showSelectNetworkDialog = mutableStateOf(false)
         private set
+
+    var showMnemonicDialog = mutableStateOf(false)
+        private set
+
+    val mnemonic = mutableStateOf("")
 
     fun navigateTo(screenState: LandingScreenType) {
         LandingScreenState.screenState(screenState)
@@ -356,9 +360,24 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     private suspend fun listenToOwnerRegistered() {
         connectManagerRepository.connectionManagerState.collect {
             if (it is OwnerRegistrationState.OwnerRegistered) {
-                LandingScreenState.screenState(LandingScreenType.OnBoardLightningProfilePicture)
+
+                val userMnemonic = connectManagerRepository.mnemonicWords.firstOrNull()
+
+                if (userMnemonic?.isNotEmpty() == true) {
+                    mnemonic.value = userMnemonic
+                    showMnemonicDialog.value = true
+                }
+                else {
+                    LandingScreenState.screenState(LandingScreenType.OnBoardLightningProfilePicture)
+                }
             }
         }
+    }
+
+    fun closeMnemonicDialog() {
+        showMnemonicDialog.value = false
+        connectManagerRepository.cleanMnemonic()
+        LandingScreenState.screenState(LandingScreenType.OnBoardLightningProfilePicture)
     }
 
     private suspend fun continueToEndScreen() {
