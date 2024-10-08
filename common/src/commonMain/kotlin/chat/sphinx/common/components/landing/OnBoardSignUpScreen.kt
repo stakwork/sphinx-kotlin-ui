@@ -159,39 +159,49 @@ fun BasicInfoScreen(viewModel: SignUpViewModel) {
 }
 
 
+
 @Composable
 fun ProfileImage(viewModel: SignUpViewModel) {
     Column(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Center,
     ) {
-        BackButton {
-            viewModel.navigateTo(LandingScreenType.OnBoardLightningBasicInfo)
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+                .padding(top = 36.dp),
+
+            ) {
+            Text(
+                text = viewModel.signupBasicInfoState.nickname,
+                fontSize = 30.sp,
+                color = md_theme_dark_onBackground,
+                fontFamily = Roboto,
+                fontWeight = FontWeight.W400,
+            )
         }
     }
     Column(
-        modifier = Modifier.fillMaxSize().padding(top = 96.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 96.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-
-        ) {
-        Text(
-            text = viewModel.signupBasicInfoState.nickname,
-            fontSize = 30.sp,
-            color = md_theme_dark_onBackground,
-            fontFamily = Roboto,
-            fontWeight = FontWeight.W400,
-        )
-        Spacer(modifier = Modifier.height(64.dp))
+    ) {
+        Spacer(modifier = Modifier.height(16.dp)) // Add spacer to avoid overlap
         ProfileBox(viewModel.signupBasicInfoState.userPicture?.filePath, viewModel)
     }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom,
-        modifier = Modifier.fillMaxSize().padding(bottom = 80.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 80.dp)
     ) {
         SignupUploadImageButton(viewModel)
         Spacer(modifier = Modifier.height(18.dp))
-        Box(modifier = Modifier.height(48.dp).width(259.dp)) {
+        Box(modifier = Modifier
+            .height(48.dp)
+            .width(259.dp)) {
             CommonButton(
                 text = if (viewModel.signupBasicInfoState.userPicture == null) "Skip" else "Continue",
                 true,
@@ -202,7 +212,6 @@ fun ProfileImage(viewModel: SignUpViewModel) {
         }
     }
 }
-
 @Composable
 fun EndScreen(viewModel: SignUpViewModel) {
     Column(
@@ -229,20 +238,7 @@ fun EndScreen(viewModel: SignUpViewModel) {
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "spend ${viewModel.signupBasicInfoState.balance.localBalance.asFormattedString(' ', true)},",
-            fontSize = 18.sp,
-            color = Color.White,
-            fontFamily = Roboto,
-            fontWeight = FontWeight.Light,
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = "or receive up to ${
-                viewModel.signupBasicInfoState.balance.remoteBalance.asFormattedString(
-                    ' ',
-                    true
-                )
-            }.",
+            text = "and spend up to ${viewModel.signupBasicInfoState.balance.localBalance.asFormattedString(' ', true)} sats.",
             fontSize = 18.sp,
             color = Color.White,
             fontFamily = Roboto,

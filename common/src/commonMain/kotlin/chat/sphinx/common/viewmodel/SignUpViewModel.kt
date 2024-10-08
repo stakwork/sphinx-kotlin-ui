@@ -310,6 +310,12 @@ class SignUpViewModel : PinAuthenticationViewModel() {
                             relayDataHandler.persistAuthorizationToken(onboardStep1.authorizationToken)
                         }
 
+                        setSignupBasicInfoState {
+                            copy(
+                                showLoading = false
+                            )
+                        }
+
                         connectManagerRepository.createOwnerAccount(signupBasicInfoState.nickname)
                         navigateTo(LandingScreenType.Loading)
 
@@ -381,6 +387,11 @@ class SignUpViewModel : PinAuthenticationViewModel() {
     }
 
     private suspend fun continueToEndScreen() {
+        setSignupBasicInfoState {
+            copy(
+                showLoading = false
+            )
+        }
         navigateTo(LandingScreenType.OnBoardLightningReady)
     }
 
