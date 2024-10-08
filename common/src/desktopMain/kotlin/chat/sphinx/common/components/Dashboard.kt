@@ -165,7 +165,7 @@ actual fun Dashboard(
 
             ImageFullScreen(fullScreenImageState)
 
-            val restoreState by dashboardViewModel.restoreStateFlow.collectAsState()
+            val restoreState by dashboardViewModel.restoreProgressStateFlow.collectAsState()
             restoreState?.let { restoreState ->
                 if (restoreState.restoring) {
                     RestoreProgressUI(

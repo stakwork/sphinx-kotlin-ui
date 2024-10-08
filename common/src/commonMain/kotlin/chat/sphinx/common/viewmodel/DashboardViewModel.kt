@@ -64,14 +64,6 @@ class DashboardViewModel(): WindowFocusListener {
     val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
         get() = _contactWindowStateFlow.asStateFlow()
 
-
-    val networkStatusStateFlow: StateFlow<NetworkStatus>
-        get() = connectManagerRepository.networkStatus.asStateFlow()
-
-    val restoreProgressStateFlow: StateFlow<Int?>
-        get() = connectManagerRepository.restoreProgress.asStateFlow()
-
-
     fun setWebViewState(state: WebViewState) {
         webViewState.value = state
     }
@@ -274,6 +266,13 @@ class DashboardViewModel(): WindowFocusListener {
     val restoreStateFlow: StateFlow<RestoreProgress?>
         get() = _restoreStateFlow.asStateFlow()
 
+    val networkStatusStateFlow: StateFlow<NetworkStatus>
+        get() = connectManagerRepository.networkStatus.asStateFlow()
+
+    val restoreProgressStateFlow: StateFlow<RestoreProgress?>
+        get() = connectManagerRepository.restoreProgress.asStateFlow()
+
+
     private var jobNetworkRefresh: Job? = null
 
 
@@ -287,7 +286,14 @@ class DashboardViewModel(): WindowFocusListener {
 //            repositoryDashboard.networkRefreshBalance.collect { }
 //        }
 //
-//        jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
+        jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
+            restoreProgressStateFlow.collect { response ->
+                response?.let { restoreProgress ->
+                    if (restoreProgress.restoring) {
+                        _restoreStateFlow.value = restoreProgress
+                    }
+                }
+            }
 //
 //            repositoryDashboard.networkRefreshLatestContacts.collect { response ->
 //                Exhaustive@
@@ -312,33 +318,12 @@ class DashboardViewModel(): WindowFocusListener {
 //                jobNetworkRefresh?.cancel()
 //            }
 //
-//            repositoryDashboard.networkRefreshMessages.collect { response ->
-//                Exhaustive@
-//                when (response) {
-//                    is Response.Success -> {
-//                        val restoreProgress = response.value
-//
-//                        if (restoreProgress.restoring && restoreProgress.progress < 100) {
-//                            _restoreStateFlow.value = restoreProgress
-//                        } else {
-//                            _restoreStateFlow.value = null
-//
-//                            _networkStateFlow.value = Response.Success(true)
-//                        }
-//                    }
-//                    is Response.Error -> {
-//                        _networkStateFlow.value = response
-//                    }
-//                    is LoadResponse.Loading -> {
-//                        _networkStateFlow.value = response
-//                    }
-//                }
-//            }
+
 //
 //            if (_networkStateFlow.value is Response.Error) {
 //                jobNetworkRefresh?.cancel()
 //            }
-//        }
+        }
     }
 
     fun cancelRestore() {
