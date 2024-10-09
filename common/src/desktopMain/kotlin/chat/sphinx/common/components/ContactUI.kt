@@ -3,14 +3,12 @@ package chat.sphinx.common.components
 import CommonButton
 import Roboto
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +29,6 @@ import chat.sphinx.common.viewmodel.contact.AddContactViewModel
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.contact.EditContactViewModel
 import chat.sphinx.common.viewmodel.contact.InviteFriendViewModel
-import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
@@ -142,6 +139,38 @@ fun AddNewContactOnSphinx(dashboardViewModel: DashboardViewModel) {
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "AMOUNT TO GIFT (SATS)",
+                fontSize = 10.sp,
+                fontFamily = SphinxFonts.montserratFamily,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = viewModel.inviteFriendState.amount,
+                onValueChange = {
+                    if (it.all { char -> char.isDigit() }) {
+                        viewModel.onAmountChange(it)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontFamily = Roboto
+                ),
+                singleLine = true,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = light_divider,
+                    unfocusedBorderColor = light_divider,
+                    backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background
+                )
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 text = "INCLUDE A MESSAGE",
                 fontSize = 10.sp,

@@ -5,19 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import chat.sphinx.common.state.InviteFriendState
-import chat.sphinx.common.state.JoinTribeState
 import chat.sphinx.common.viewmodel.DashboardViewModel
-import chat.sphinx.concepts.network.query.chat.NetworkQueryChat
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
-import chat.sphinx.wrapper.lightning.asFormattedString
-import chat.sphinx.wrapper.lightning.toSat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
-import theme.primary_green
 import theme.primary_red
 
 class InviteFriendViewModel(
@@ -85,6 +79,14 @@ class InviteFriendViewModel(
         setInviteFriendState {
             copy(
                 nickname = text
+            )
+        }
+    }
+
+    fun onAmountChange(text: String) {
+        setInviteFriendState {
+            copy(
+                amount = text
             )
         }
     }
