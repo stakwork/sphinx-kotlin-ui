@@ -1,11 +1,13 @@
 package chat.sphinx.common.viewmodel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.repository.connect_manager.model.NetworkStatus
 import chat.sphinx.database.core.SphinxDatabaseQueries
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.repository.util.deleteAll
-import chat.sphinx.response.*
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
@@ -263,20 +265,15 @@ class DashboardViewModel(): WindowFocusListener {
         get() = connectManagerRepository.restoreProgress.asStateFlow()
 
 
-    private var jobNetworkRefresh: Job? = null
+    var isRestoreCancelledState: Boolean by mutableStateOf(initialRestoreCancelledState())
+
+    private fun initialRestoreCancelledState(): Boolean = false
+
+    private var jobRestore: Job? = null
 
 
     fun networkRefresh() {
-        // TODO V2 networkRefresh
-//        if (jobNetworkRefresh?.isActive == true) {
-//            return
-//        }
-//
-//        viewModelScope.launch(dispatchers.mainImmediate) {
-//            repositoryDashboard.networkRefreshBalance.collect { }
-//        }
-//
-        jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
+        jobRestore = viewModelScope.launch(dispatchers.mainImmediate) {
             restoreProgressStateFlow.collect { response ->
                 response?.let { restoreProgress ->
                     if (restoreProgress.restoring) {
@@ -317,14 +314,9 @@ class DashboardViewModel(): WindowFocusListener {
     }
 
     fun cancelRestore() {
-        jobNetworkRefresh?.cancel()
-
-        viewModelScope.launch(dispatchers.mainImmediate) {
-
-            _restoreStateFlow.value = null
-
-            repositoryDashboard.didCancelRestore()
-        }
+        jobRestore?.cancel()
+        _restoreStateFlow.value = null
+        isRestoreCancelledState = true
     }
 
     fun clearDatabase() {

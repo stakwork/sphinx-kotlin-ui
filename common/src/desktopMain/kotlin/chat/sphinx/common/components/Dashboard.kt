@@ -167,7 +167,7 @@ actual fun Dashboard(
 
             val restoreState by dashboardViewModel.restoreProgressStateFlow.collectAsState()
             restoreState?.let { restoreState ->
-                if (restoreState.restoring) {
+                if (restoreState.restoring && !dashboardViewModel.isRestoreCancelledState) {
                     RestoreProgressUI(
                         dashboardViewModel,
                         restoreState
