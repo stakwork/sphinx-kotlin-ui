@@ -252,19 +252,9 @@ class DashboardViewModel(): WindowFocusListener {
 
     override fun windowLostFocus(p0: WindowEvent?) { }
 
-    private val _networkStateFlow: MutableStateFlow<LoadResponse<Boolean, ResponseError>> by lazy {
-        MutableStateFlow(LoadResponse.Loading)
-    }
-
     private val _restoreStateFlow: MutableStateFlow<RestoreProgress?> by lazy {
         MutableStateFlow(null)
     }
-
-    val networkStateFlow: StateFlow<LoadResponse<Boolean, ResponseError>>
-        get() = _networkStateFlow.asStateFlow()
-
-    val restoreStateFlow: StateFlow<RestoreProgress?>
-        get() = _restoreStateFlow.asStateFlow()
 
     val networkStatusStateFlow: StateFlow<NetworkStatus>
         get() = connectManagerRepository.networkStatus.asStateFlow()
@@ -331,7 +321,6 @@ class DashboardViewModel(): WindowFocusListener {
 
         viewModelScope.launch(dispatchers.mainImmediate) {
 
-            _networkStateFlow.value = Response.Success(true)
             _restoreStateFlow.value = null
 
             repositoryDashboard.didCancelRestore()

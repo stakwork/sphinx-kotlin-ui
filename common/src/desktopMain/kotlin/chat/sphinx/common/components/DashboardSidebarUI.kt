@@ -27,6 +27,7 @@ import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
+import chat.sphinx.concepts.repository.connect_manager.model.NetworkStatus
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
 import theme.place_holder_text
@@ -131,8 +132,8 @@ fun DashboardSidebarUI(
                             IconButton(
                                 onClick = {}
                             ) {
-                                val networkState by dashboardViewModel.networkStateFlow.collectAsState()
-                                if (networkState is LoadResponse.Loading) {
+                                val networkState by dashboardViewModel.networkStatusStateFlow.collectAsState()
+                                if (networkState is NetworkStatus.Loading) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
                                         color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary,
@@ -142,7 +143,7 @@ fun DashboardSidebarUI(
                                     Icon(
                                         Icons.Default.FlashOn,
                                         contentDescription = "Connection Status",
-                                        tint = if (networkState is Response.Success) {
+                                        tint = if (networkState is NetworkStatus.Connected) {
                                             primary_green
                                         } else {
                                             primary_red

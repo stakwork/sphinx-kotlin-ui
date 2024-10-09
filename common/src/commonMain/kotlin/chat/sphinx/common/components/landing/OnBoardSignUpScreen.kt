@@ -238,7 +238,7 @@ fun EndScreen(viewModel: SignUpViewModel) {
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "and spend up to ${viewModel.signupBasicInfoState.balance.localBalance.asFormattedString(' ', true)} sats.",
+            text = "and spend up to ${viewModel.signupBasicInfoState.balance.localBalance.asFormattedString(' ', true)}.",
             fontSize = 18.sp,
             color = Color.White,
             fontFamily = Roboto,
