@@ -9,20 +9,27 @@ import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.response.LoadResponse
 import chat.sphinx.response.Response
+import chat.sphinx.response.ResponseError
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.lightning.NodeBalance
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import theme.primary_red
 
 class InviteFriendViewModel(
     val dashboardViewModel: DashboardViewModel
 ) {
-
     val scope = SphinxContainer.appModule.applicationScope
+    private val viewModelScope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
-
+    private val connectManagerRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).connectManagerRepository
+    private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
 
     var inviteFriendState: InviteFriendState by mutableStateOf(initialState())
 
@@ -32,6 +39,20 @@ class InviteFriendViewModel(
         inviteFriendState = inviteFriendState.update()
     }
 
+    private val _balanceStateFlow: MutableStateFlow<NodeBalance?> by lazy {
+        MutableStateFlow(null)
+    }
+
+    val balanceStateFlow: StateFlow<NodeBalance?>
+        get() = _balanceStateFlow.asStateFlow()
+
+    init {
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            repositoryDashboard.getAccountBalanceStateFlow().collect {
+                _balanceStateFlow.value = it
+            }
+        }
+    }
 
     private var createInviteJob: Job? = null
     fun createNewInvite(){
@@ -40,39 +61,33 @@ class InviteFriendViewModel(
         }
         createInviteJob = scope.launch(dispatchers.mainImmediate) {
 
-            setInviteFriendState {
-                copy(
-                    createInviteStatus = LoadResponse.Loading
-                )
-            }
-
+            val balance = balanceStateFlow.value?.balance?.value
             val nickname = inviteFriendState.nickname
             val message = if (inviteFriendState.welcomeMessage.trim().isNotEmpty()) {
                 inviteFriendState.welcomeMessage
             } else {
                 "Welcome to Sphinx!"
             }
+            val amount = inviteFriendState.amount.toLongOrNull()
 
-            contactRepository.createNewInvite(nickname, message).collect { loadResponse ->
-
-                setInviteFriendState {
-                    copy(
-                        createInviteStatus = loadResponse
-                    )
-                }
-
-                when(loadResponse){
-                    is LoadResponse.Loading -> {}
-                    is Response.Error -> {
-                        toast("There was an error, please try later")
-                    }
-                    is Response.Success -> {
-                        dashboardViewModel.toggleContactWindow(false, null)
-                    }
-                }
+            if (amount == null || amount <= 0) {
+                toast("Please enter a valid amount")
+                return@launch
             }
-        }
 
+            if (balance == null || amount >= balance) {
+                toast("Insufficient balance")
+                return@launch
+            }
+
+            connectManagerRepository.createInvite(
+                nickname = nickname,
+                welcomeMessage = message,
+                sats = amount
+            )
+
+            dashboardViewModel.toggleContactWindow(false, null)
+        }
     }
 
     fun onNicknameChange(text: String) {
@@ -106,7 +121,7 @@ class InviteFriendViewModel(
     ) {
         scope.launch(dispatchers.mainImmediate) {
             sphinxNotificationManager.toast(
-                "Contact UI",
+                "Add New Friend",
                 message,
                 color.value,
                 delay
