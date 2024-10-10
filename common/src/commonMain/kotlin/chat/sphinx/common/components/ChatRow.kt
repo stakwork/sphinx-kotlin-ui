@@ -64,14 +64,8 @@ fun ChatRow(
         modifier = Modifier
             .clickable {
                 if (dashboardChat is DashboardChat.Inactive.Invite) {
-                    dashboardChat.invite?.let { invite ->
-                        if (invite.status.isReady() || invite.status.isDelivered()) {
-                            dashboardViewModel.toggleQRWindow(true, "INVITE CODE", invite.inviteString.value)
-                        } else if (invite.status.isPaymentPending()) {
-                            chatListViewModel.payForInvite(invite)
-                        } else if (invite.status.isExpired()) {
-                            chatListViewModel.deleteInvite(invite)
-                        }
+                    dashboardChat.invite.let { invite ->
+                        dashboardViewModel.toggleQRWindow(true, "INVITE CODE", invite.inviteString.value)
                     }
                     return@clickable
                 }

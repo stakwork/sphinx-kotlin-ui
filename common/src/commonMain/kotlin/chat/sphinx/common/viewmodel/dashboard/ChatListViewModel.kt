@@ -14,6 +14,7 @@ import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.utils.UserColorsHelper
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.chat.Chat
+import chat.sphinx.wrapper.chat.ChatStatus
 import chat.sphinx.wrapper.chat.getColorKey
 import chat.sphinx.wrapper.chat.isConversation
 import chat.sphinx.wrapper.contact.*
@@ -79,7 +80,6 @@ class ChatListViewModel {
         }
 
         scope.launch(dispatchers.mainImmediate) {
-            delay(25L)
 
             repositoryDashboard.getAllChatsFlow.distinctUntilChanged().collect { chats ->
                 collectionLock.withLock {
@@ -88,7 +88,6 @@ class ChatListViewModel {
                     val newList = ArrayList<DashboardChat>(chats.size)
                     val contactsAdded = mutableListOf<ContactId>()
 
-                    withContext(dispatchers.default) {
                         for (chat in chats) {
                             val message: Message? = chat.latestMessageId?.let {
                                 repositoryDashboard.getMessageById(it).firstOrNull()
@@ -106,7 +105,28 @@ class ChatListViewModel {
                                     }
                                 }
 
-                                if (!contact.isBlocked()) {
+                                if (contact.status is ContactStatus.Pending) {
+                                    newList.add(
+                                        DashboardChat.Inactive.Conversation(contact, null)
+                                    )
+                                }
+
+                                if (contact.isInviteContact()) {
+                                    var contactInvite: Invite? = null
+
+                                    contact.inviteId?.let { inviteId ->
+                                        scope.launch {
+                                            contactInvite = repositoryDashboard.getInviteById(inviteId).firstOrNull()
+                                        }
+                                    }
+                                    if (contactInvite != null) {
+                                        newList.add(
+                                            DashboardChat.Inactive.Invite(contact, contactInvite!!, null)
+                                        )
+                                    }
+                                }
+
+                                if (!contact.isBlocked() && chat.status is ChatStatus.Approved) {
                                     contactsAdded.add(contactId)
 
                                     newList.add(
@@ -131,54 +151,52 @@ class ChatListViewModel {
                                     )
                                 )
                             }
-                        }
                     }
 
-                    if (contactsCollectionInitialized) {
-                        withContext(dispatchers.default) {
-                            for (contact in _contactsStateFlow.value) {
-
-                                if (!contactsAdded.contains(contact.id)) {
-                                    if (contact.isInviteContact()) {
-                                        var contactInvite: Invite? = null
-
-                                        contact.inviteId?.let { inviteId ->
-                                            contactInvite = withContext(dispatchers.io) {
-                                                repositoryDashboard.getInviteById(inviteId).firstOrNull()
-                                            }
-                                        }
-
-                                        if (contactInvite != null) {
-                                            newList.add(
-                                                DashboardChat.Inactive.Invite(
-                                                    contact,
-                                                    contactInvite!!,
-                                                    getColorFor(contact, null)
-                                                )
-                                            )
-                                            continue
-                                        }
-                                    }
-                                    newList.add(
-                                        DashboardChat.Inactive.Conversation(contact, getColorFor(contact, null))
-                                    )
-                                }
-
-                            }
-                        }
-                    }
+//                    if (contactsCollectionInitialized) {
+//                        withContext(dispatchers.default) {
+//                            for (contact in _contactsStateFlow.value) {
+//
+//                                if (!contactsAdded.contains(contact.id)) {
+//                                    if (contact.isInviteContact()) {
+//                                        var contactInvite: Invite? = null
+//
+//                                        contact.inviteId?.let { inviteId ->
+//                                            contactInvite = withContext(dispatchers.io) {
+//                                                repositoryDashboard.getInviteById(inviteId).firstOrNull()
+//                                            }
+//                                        }
+//
+//                                        if (contactInvite != null) {
+//                                            newList.add(
+//                                                DashboardChat.Inactive.Invite(
+//                                                    contact,
+//                                                    contactInvite!!,
+//                                                    getColorFor(contact, null)
+//                                                )
+//                                            )
+//                                            continue
+//                                        }
+//                                    }
+//                                    newList.add(
+//                                        DashboardChat.Inactive.Conversation(contact, getColorFor(contact, null))
+//                                    )
+//                                }
+//
+//                            }
+//                        }
+//                    }
                     dashboardChats = ArrayList(newList.sortedByDescending { it.sortBy })
                     filterChats(searchText.value)
                 }
             }
         }
 
-        scope.launch(dispatchers.mainImmediate) {
-            delay(50L)
-            repositoryDashboard.getAllInvites.distinctUntilChanged().collect {
-                updateChatListContacts(_contactsStateFlow.value)
-            }
-        }
+//        scope.launch(dispatchers.mainImmediate) {
+//            repositoryDashboard.getAllInvites.distinctUntilChanged().collect {
+//                updateChatListContacts(_contactsStateFlow.value)
+//            }
+//        }
     }
 
     private suspend fun reloadChatDetailsOnFirstMessageSent(
