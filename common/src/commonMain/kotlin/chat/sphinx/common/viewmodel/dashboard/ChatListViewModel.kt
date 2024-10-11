@@ -115,10 +115,11 @@ class ChatListViewModel {
                                     var contactInvite: Invite? = null
 
                                     contact.inviteId?.let { inviteId ->
-                                        scope.launch {
-                                            contactInvite = repositoryDashboard.getInviteById(inviteId).firstOrNull()
+                                        contactInvite = withContext(dispatchers.io) {
+                                            repositoryDashboard.getInviteById(inviteId).firstOrNull()
                                         }
                                     }
+
                                     if (contactInvite != null) {
                                         newList.add(
                                             DashboardChat.Inactive.Invite(contact, contactInvite!!, null)

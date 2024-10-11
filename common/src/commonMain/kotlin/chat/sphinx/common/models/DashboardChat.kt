@@ -469,7 +469,7 @@ sealed class DashboardChat {
 
                 return when (invite?.status) {
                     is InviteStatus.Pending -> {
-                        "Looking for an available node for ${contact.alias?.value ?: "unknown"}"
+                        "Ready! Tap to share."
                     }
                     is InviteStatus.Ready, InviteStatus.Delivered -> {
                         "Ready! Tap to share. Expires in 24 hrs"
@@ -502,7 +502,7 @@ sealed class DashboardChat {
 
                 return when (invite?.status) {
                     is InviteStatus.Pending -> {
-                        Pair(Icons.Filled.Pending, sphinx_orange)
+                        Pair(Icons.Filled.Check, primary_green)
                     }
                     is InviteStatus.Ready, InviteStatus.Delivered -> {
                         Pair(Icons.Filled.Done, primary_green)

@@ -11,8 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -30,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import chat.sphinx.common.Res
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
+import chat.sphinx.concepts.repository.connect_manager.model.NetworkStatus
 import chat.sphinx.platform.imageResource
 import chat.sphinx.wrapper.invite.isDelivered
 import chat.sphinx.wrapper.invite.isExpired
@@ -40,6 +40,7 @@ import chat.sphinx.wrapper.util.getInitials
 import chat.sphinx.wrapper_chat.isMuteChat
 import chat.sphinx.wrapper_chat.isOnlyMentions
 import theme.primary_green
+import theme.primary_red
 import theme.selected_chat
 import theme.wash_out_received
 
@@ -119,13 +120,29 @@ fun ChatRow(
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    if (dashboardChat.isEncrypted())
+                    if (dashboardChat is DashboardChat.Active.Conversation) {
                         Icon(
                             Icons.Filled.Lock,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
                             tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                         )
+                    }
+                    if (dashboardChat is DashboardChat.Inactive.Conversation) {
+                        Icon(
+                            Icons.Filled.LockOpen,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                        )
+                        Icon(
+                            Icons.Default.FlashOn,
+                            contentDescription = "Connection Status",
+                            tint = Color.Yellow,
+                            modifier = Modifier.size(14.dp)
+                        )
+
+                    }
                     Box(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterEnd
