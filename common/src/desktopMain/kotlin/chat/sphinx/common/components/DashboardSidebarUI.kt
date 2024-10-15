@@ -83,8 +83,9 @@ fun DashboardSidebarUI(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
                         ) {
+                            // Implement show user alias
                             androidx.compose.material3.Text(
-                                text = "Alejandro",
+                                text = "Unknown",
                                 color = MaterialTheme.colorScheme.tertiary,
                                 fontWeight = FontWeight.W600,
                                 fontFamily = SphinxFonts.montserratFamily,
@@ -131,6 +132,40 @@ fun DashboardSidebarUI(
                                 fontSize = 12.sp
                             )
                         }
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    IconButton(
+                        modifier = Modifier.size(24.dp),
+                        onClick = {})
+                    {
+                        Icon(
+                            Icons.Default.QrCode,
+                            contentDescription = "QR Code",
+                            tint = place_holder_text
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        modifier = Modifier.size(24.dp),
+                        onClick = {}
+                    ) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = "Refresh",
+                            tint = place_holder_text
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        modifier = Modifier.size(24.dp),
+                        onClick = {}
+                    ) {
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = place_holder_text
+                        )
                     }
                 }
             }
