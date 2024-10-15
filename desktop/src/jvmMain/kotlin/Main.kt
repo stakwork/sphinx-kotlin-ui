@@ -43,7 +43,7 @@ fun main() = application {
     val sphinxStore = remember { SphinxStore() }
     var currentWindow: MutableState<ComposeWindow?> = remember { mutableStateOf(null) }
 
-    when (AppState.screenState()) {
+    when (ScreenType.DashboardScreen) {
         ScreenType.SplashScreen -> {
             Window(
                 onCloseRequest = {},
