@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.TabRowDefaults.Indicator
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.MaterialTheme
@@ -41,10 +43,7 @@ import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.wrapper.lightning.asFormattedString
 import chat.sphinx.wrapper.message.media.isImage
 import kotlinx.coroutines.launch
-import theme.place_holder_text
-import theme.primary_green
-import theme.primary_red
-import theme.sphinx_orange
+import theme.*
 import utils.deduceMediaType
 
 @Composable
@@ -54,6 +53,7 @@ fun DashboardSidebarUI(
 ) {
     val chatListViewModel = remember { ChatListViewModel() }
     val uriHandler = LocalUriHandler.current
+    var selectedTabIndex by remember { mutableStateOf(0) }
 
     Box(
         Modifier
@@ -63,8 +63,8 @@ fun DashboardSidebarUI(
         Column(modifier = Modifier.background(androidx.compose.material3.MaterialTheme.colorScheme.background)) {
             TopAppBar(
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
-                contentColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
-                elevation = 8.dp,
+                contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
+                elevation = 0.dp, // Set to 0.dp to remove unintended shadow effect
                 modifier = Modifier.padding(8.dp)
             ) {
                 Row(
@@ -83,7 +83,7 @@ fun DashboardSidebarUI(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
                         ) {
-                            // Implement show user alias
+                            // TODO V2 Implement show user alias
                             androidx.compose.material3.Text(
                                 text = "Unknown",
                                 color = MaterialTheme.colorScheme.tertiary,
@@ -174,22 +174,26 @@ fun DashboardSidebarUI(
                 title = {
                     CustomTextField(
                         leadingIcon = {
-                            Icon(
-                                Icons.Filled.Search,
-                                null,
-                                modifier = Modifier.width(30.dp),
-                                tint = place_holder_text
-                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                         },
                         trailingIcon = {
                             if (chatListViewModel.searchText.value?.text?.isNotEmpty() == true) {
                                 Icon(
                                     Icons.Filled.Cancel,
-                                    null,
+                                    contentDescription = null,
                                     tint = place_holder_text,
-                                    modifier = Modifier.width(16.dp).clickable {
-                                        chatListViewModel.filterChats(TextFieldValue(""))
-                                    },
+                                    modifier = Modifier
+                                        .width(28.dp)
+                                        .clickable {
+                                            chatListViewModel.filterChats(TextFieldValue(""))
+                                        }
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Filled.Search,
+                                    contentDescription = null,
+                                    modifier = Modifier.width(28.dp),
+                                    tint = place_holder_text
                                 )
                             }
                         },
@@ -208,19 +212,103 @@ fun DashboardSidebarUI(
                         value = chatListViewModel.searchText.value ?: TextFieldValue("")
                     )
                 },
-                elevation = 8.dp,
+                elevation = 4.dp,
                 actions = {
                     IconButton(onClick = {
                         dashboardViewModel.toggleContactWindow(true, ContactScreenState.Choose)
                     }) {
                         Icon(
-                            Icons.Default.PersonAddAlt,
-                            contentDescription = "Add a person",
-                            tint = place_holder_text
+                            Icons.Default.ChevronLeft,
+                            contentDescription = "Hide",
+                            tint = place_holder_text,
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 }
             )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(modifier = Modifier.fillMaxWidth(0.6f)) {
+                    TabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.primary,
+                        indicator = { tabPositions ->
+                            Indicator(
+                                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    ) {
+                        val tabs = listOf("Friends", "Tribes")
+                        tabs.forEachIndexed { index, title ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { selectedTabIndex = index },
+                                text = {
+                                    Text(
+                                        text = title,
+                                        fontSize = 12.sp,
+                                        color = if (selectedTabIndex == index) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onBackground
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .align(Alignment.TopEnd)
+                            .offset(x = (-4).dp, y = 4.dp)
+                            .background(color = primary_blue, shape = CircleShape)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterVertically),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    IconButton(
+                        onClick = {
+                            // Handle the click event
+                        },
+                        modifier = Modifier.padding(end = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add",
+                            tint = place_holder_text
+                        )
+                    }
+                }
+            }
+
+            // Display content based on the selected tab
+            when (selectedTabIndex) {
+                0 -> {
+                    // Friends tab content
+                    ChatListUI(
+                        chatListViewModel,
+                        dashboardViewModel
+                    )
+                }
+                1 -> {
+                    // Tribes tab content
+                    TribesListUI(
+                        dashboardViewModel
+                    )
+                }
+            }
 
             ChatListUI(
                 chatListViewModel,
@@ -239,6 +327,17 @@ fun DashboardSidebarUI(
             AuthorizeWindow(webAppViewModel)
         }
     }
+}
+
+@Composable
+fun TribesListUI(
+    dashboardViewModel: DashboardViewModel,
+) {
+    // TODO V2 Implement tribe list
+    Text(
+        text = "Tribes content goes here",
+        modifier = Modifier.padding(16.dp),
+    )
 }
 
 @Composable
