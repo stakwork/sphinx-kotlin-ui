@@ -18,33 +18,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import chat.sphinx.common.components.profile.Profile
 import chat.sphinx.common.components.tribe.CreateTribeView
 import chat.sphinx.common.components.tribe.JoinTribeView
 import chat.sphinx.common.components.tribe.TribeDetailView
 import chat.sphinx.common.state.AuthorizeViewState
 import chat.sphinx.common.state.ContactScreenState
-import chat.sphinx.common.state.ContentState
-import chat.sphinx.common.state.ContentState.scope
 import chat.sphinx.common.viewmodel.DashboardViewModel
 import chat.sphinx.common.viewmodel.WebAppViewModel
 import chat.sphinx.common.viewmodel.contact.QRCodeViewModel
 import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 import chat.sphinx.concepts.repository.connect_manager.model.NetworkStatus
-import chat.sphinx.response.LoadResponse
-import chat.sphinx.response.Response
 import chat.sphinx.utils.SphinxFonts
 import chat.sphinx.wrapper.lightning.asFormattedString
-import chat.sphinx.wrapper.message.media.isImage
-import kotlinx.coroutines.launch
 import theme.*
-import utils.deduceMediaType
 
 @Composable
 fun DashboardSidebarUI(
@@ -54,6 +50,7 @@ fun DashboardSidebarUI(
     val chatListViewModel = remember { ChatListViewModel() }
     val uriHandler = LocalUriHandler.current
     var selectedTabIndex by remember { mutableStateOf(0) }
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
     Box(
         Modifier
@@ -64,7 +61,7 @@ fun DashboardSidebarUI(
             TopAppBar(
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
-                elevation = 0.dp, // Set to 0.dp to remove unintended shadow effect
+                elevation = 0.dp,
                 modifier = Modifier.padding(8.dp)
             ) {
                 Row(
@@ -137,8 +134,8 @@ fun DashboardSidebarUI(
 
                     IconButton(
                         modifier = Modifier.size(24.dp),
-                        onClick = {})
-                    {
+                        onClick = {}
+                    ) {
                         Icon(
                             Icons.Default.QrCode,
                             contentDescription = "QR Code",
@@ -159,16 +156,19 @@ fun DashboardSidebarUI(
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         modifier = Modifier.size(24.dp),
-                        onClick = {}
+                        onClick = {
+                            isMenuExpanded = !isMenuExpanded
+                        }
                     ) {
                         Icon(
-                            Icons.Default.Menu,
-                            contentDescription = "Menu",
+                            if (isMenuExpanded) Icons.Default.Close else Icons.Default.Menu,
+                            contentDescription = if (isMenuExpanded) "Close Menu" else "Open Menu",
                             tint = place_holder_text
                         )
                     }
                 }
             }
+
             TopAppBar(
                 backgroundColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
                 title = {
@@ -226,6 +226,7 @@ fun DashboardSidebarUI(
                     }
                 }
             )
+
 
             Row(
                 modifier = Modifier
@@ -295,19 +296,8 @@ fun DashboardSidebarUI(
 
             // Display content based on the selected tab
             when (selectedTabIndex) {
-                0 -> {
-                    // Friends tab content
-                    ChatListUI(
-                        chatListViewModel,
-                        dashboardViewModel
-                    )
-                }
-                1 -> {
-                    // Tribes tab content
-                    TribesListUI(
-                        dashboardViewModel
-                    )
-                }
+                0 -> ChatListUI(chatListViewModel, dashboardViewModel)
+                1 -> TribesListUI(dashboardViewModel)
             }
 
             ChatListUI(
@@ -326,9 +316,166 @@ fun DashboardSidebarUI(
             WebAppWindow(dashboardViewModel, webAppViewModel)
             AuthorizeWindow(webAppViewModel)
         }
+
+        if (isMenuExpanded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .wrapContentHeight()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 64.dp)
+                    .background(
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(16.dp)
+                    .zIndex(2f)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Profile Option
+                    MenuItem(icon = Icons.Default.Person, title = "Profile")
+                    // Transactions Option
+                    MenuItem(icon = Icons.Default.Subject, title = "Transactions")
+                    // Request Payment Option
+                    MenuItem(icon = Icons.Default.NorthEast, title = "Request Payment")
+                    // Pay Invoice Option
+                    MenuItem(icon = Icons.Default.SouthWest, title = "Pay Invoice")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // Connect with Friend
+                    CommonMenuButton(
+                        text = "Connect with Friend",
+                        customColor = MaterialTheme.colorScheme.tertiary,
+                        iconColor = Color.Black,
+                        startIcon = Icons.Default.QrCode,
+                        textColor = Color.Black,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp) // Make the button smaller
+                            .padding(vertical = 4.dp),
+                        callback = { /* TODO: Connect with Friend logic */ }
+                    )
+                    // Add Friend Button
+                    CommonMenuButton(
+                        text = "Add Friend",
+                        customColor = primary_green,
+                        startIcon = Icons.Default.Add,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                            .padding(vertical = 4.dp),
+                        textColor = MaterialTheme.colorScheme.tertiary,
+                        callback = { /* TODO: Add Friend logic */ }
+                    )
+                    // Create Tribe Button
+                    CommonMenuButton(
+                        text = "Create Tribe",
+                        customColor = primary_blue,
+                        startIcon = Icons.Default.Add,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                            .padding(vertical = 4.dp),
+                        textColor = MaterialTheme.colorScheme.tertiary,
+                        callback = { /* TODO: Create Tribe logic */ }
+
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Version 1.0.0",
+                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.align(Alignment.Start)
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        text = "© 2024 Stakwork All rights reserved",
+                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                        color = place_holder_text,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
+        }
     }
 }
 
+@Composable
+fun MenuItem(icon: ImageVector, title: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable { /* TODO: Handle click */ },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = place_holder_text
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = title,
+            style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+            color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+fun CommonMenuButton(
+    text: String,
+    enabled: Boolean? = true,
+    customColor: Color? = null,
+    startIcon: ImageVector? = null,
+    iconColor: Color = Color.White,
+    textButtonSize: TextUnit = 12.sp,
+    textColor: Color,
+    fontWeight: FontWeight = FontWeight.W500,
+    modifier: Modifier = Modifier,
+    callback: () -> Unit
+) {
+    val color = if (enabled == true) {
+        textColor
+    } else {
+        textColor?.copy(alpha = 0.7f) ?: androidx.compose.material3.MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
+    }
+
+    Button(
+        shape = RoundedCornerShape(23.dp),
+        colors = ButtonDefaults.buttonColors(backgroundColor = customColor ?: color),
+        modifier = modifier,
+        onClick = {
+            if (enabled == true) callback()
+        }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (startIcon != null) {
+                Icon(
+                    imageVector = startIcon,
+                    contentDescription = "",
+                    tint = iconColor,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
+            Text(
+                text = text,
+                fontSize = textButtonSize,
+                color = textColor,
+                fontWeight = fontWeight,
+                fontFamily = Roboto,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
 @Composable
 fun TribesListUI(
     dashboardViewModel: DashboardViewModel,
