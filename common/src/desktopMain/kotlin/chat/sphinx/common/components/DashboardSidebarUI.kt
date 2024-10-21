@@ -51,6 +51,7 @@ fun DashboardSidebarUI(
     val uriHandler = LocalUriHandler.current
     var selectedTabIndex by remember { mutableStateOf(0) }
     var isMenuExpanded by remember { mutableStateOf(false) }
+    val unseenTribeMessagesCount by dashboardViewModel.unseenTribeMessagesCount.collectAsState()
 
     Box(
         Modifier
@@ -80,7 +81,6 @@ fun DashboardSidebarUI(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
                         ) {
-                            // TODO V2 Implement show user alias
                             androidx.compose.material3.Text(
                                 text = dashboardViewModel.accountOwnerStateFlow.collectAsState().value?.alias?.value ?: "User",
                                 color = MaterialTheme.colorScheme.tertiary,
@@ -134,7 +134,7 @@ fun DashboardSidebarUI(
 
                     IconButton(
                         modifier = Modifier.size(24.dp),
-                        onClick = {}
+                        onClick = {dashboardViewModel.triggerOwnerQRCode()}
                     ) {
                         Icon(
                             Icons.Default.QrCode,
@@ -145,7 +145,10 @@ fun DashboardSidebarUI(
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
                         modifier = Modifier.size(24.dp),
-                        onClick = {}
+                        onClick = {
+                            dashboardViewModel.triggerNetworkRefresh()
+                            isMenuExpanded = !isMenuExpanded
+                        }
                     ) {
                         Icon(
                             Icons.Default.Refresh,
@@ -215,7 +218,6 @@ fun DashboardSidebarUI(
                 elevation = 4.dp,
                 actions = {
                     IconButton(onClick = {
-                        dashboardViewModel.toggleContactWindow(true, ContactScreenState.Choose)
                     }) {
                         Icon(
                             Icons.Default.ChevronLeft,
@@ -264,13 +266,15 @@ fun DashboardSidebarUI(
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .align(Alignment.TopEnd)
-                            .offset(x = (-4).dp, y = 4.dp)
-                            .background(color = primary_blue, shape = CircleShape)
-                    )
+                    if ((unseenTribeMessagesCount ?: 0L) > 0L) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .align(Alignment.TopEnd)
+                                .offset(x = (-4).dp, y = 4.dp)
+                                .background(color = primary_blue, shape = CircleShape)
+                        )
+                    }
                 }
 
                 Box(
@@ -328,9 +332,15 @@ fun DashboardSidebarUI(
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     // Profile Option
-                    MenuItem(icon = Icons.Default.Person, title = "Profile")
+                    MenuItem(icon = Icons.Default.Person, title = "Profile", clickAction = {
+                        dashboardViewModel.toggleProfileWindow(true)
+                        isMenuExpanded = !isMenuExpanded
+                    })
                     // Transactions Option
-                    MenuItem(icon = Icons.Default.Subject, title = "Transactions")
+                    MenuItem(icon = Icons.Default.Subject, title = "Transactions", clickAction = {
+                        dashboardViewModel.toggleTransactionsWindow(true)
+                        isMenuExpanded = !isMenuExpanded
+                    })
                     // Request Payment Option
                     MenuItem(icon = Icons.Default.NorthEast, title = "Request Payment")
                     // Pay Invoice Option
@@ -347,7 +357,10 @@ fun DashboardSidebarUI(
                             .fillMaxWidth()
                             .height(40.dp) // Make the button smaller
                             .padding(vertical = 4.dp),
-                        callback = { /* TODO: Connect with Friend logic */ }
+                        callback = {
+                            dashboardViewModel.triggerOwnerQRCode()
+                            isMenuExpanded = !isMenuExpanded
+                        }
                     )
                     // Add Friend Button
                     CommonMenuButton(
@@ -359,7 +372,10 @@ fun DashboardSidebarUI(
                             .height(40.dp)
                             .padding(vertical = 4.dp),
                         textColor = MaterialTheme.colorScheme.tertiary,
-                        callback = { /* TODO: Add Friend logic */ }
+                        callback = {
+                            dashboardViewModel.toggleContactWindow(true, ContactScreenState.Choose)
+                            isMenuExpanded = !isMenuExpanded
+                        }
                     )
                     // Create Tribe Button
                     CommonMenuButton(
@@ -371,7 +387,10 @@ fun DashboardSidebarUI(
                             .height(40.dp)
                             .padding(vertical = 4.dp),
                         textColor = MaterialTheme.colorScheme.tertiary,
-                        callback = { /* TODO: Create Tribe logic */ }
+                        callback = {
+                            dashboardViewModel.toggleCreateTribeWindow(true, null)
+                            isMenuExpanded = !isMenuExpanded
+                        }
 
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -398,12 +417,18 @@ fun DashboardSidebarUI(
 }
 
 @Composable
-fun MenuItem(icon: ImageVector, title: String) {
+fun MenuItem(
+    icon: ImageVector,
+    title: String,
+    clickAction: (() -> Unit)? = null
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable { /* TODO: Handle click */ },
+            .clickable {
+                clickAction?.invoke()
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(

@@ -1,6 +1,5 @@
 package chat.sphinx.common.viewmodel
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,12 +12,12 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
+import chat.sphinx.wrapper.lightning.LightningNodeDescriptor
 import chat.sphinx.wrapper.lightning.NodeBalance
+import chat.sphinx.wrapper.lightning.VirtualLightningNodeAddress
 import chat.sphinx.wrapper.tribe.TribeJoinLink
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
 
@@ -201,6 +200,25 @@ class DashboardViewModel(): WindowFocusListener {
         _changePinWindowStateFlow.value = open
     }
 
+    val unseenTribeMessagesCount: StateFlow<Long?> = repositoryDashboard.getUnseenTribeMessagesCount()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0L)
+
+    private fun getNodeDescriptor(owner: Contact): LightningNodeDescriptor? {
+        owner.routeHint?.let {
+            if (it.value.isNotEmpty()) {
+                return VirtualLightningNodeAddress("${owner.nodePubKey?.value ?: ""}_${it.value}")
+            }
+        }
+        return owner.nodePubKey
+    }
+
+    fun triggerOwnerQRCode() {
+        val owner = accountOwnerStateFlow.value
+        val nodeDescriptor = owner?.let { getNodeDescriptor(it) }
+        toggleQRWindow(true, "PUBLIC KEY", nodeDescriptor?.value ?: "")
+    }
+
+
     private fun getPackageVersion(){
         val currentAppVersion = "1.0.28"
 
@@ -318,6 +336,19 @@ class DashboardViewModel(): WindowFocusListener {
 //            }
         }
     }
+
+    private var jobNetworkRefresh: Job? = null
+
+    fun triggerNetworkRefresh() {
+        if (jobNetworkRefresh?.isActive == true) {
+            return
+        }
+
+        jobNetworkRefresh = viewModelScope.launch(dispatchers.mainImmediate) {
+            connectManagerRepository.reconnectMqtt()
+        }
+    }
+
 
     fun cancelRestore() {
         jobRestore?.cancel()

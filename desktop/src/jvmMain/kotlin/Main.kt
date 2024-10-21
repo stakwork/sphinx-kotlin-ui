@@ -100,16 +100,6 @@ fun main() = application {
                         })
                         when (DashboardScreenState.screenState()) {
                             DashboardScreenType.Unlocked -> {
-                                Item("Profile", onClick = {
-                                    dashboardViewModel.toggleProfileWindow(true)}
-                                )
-                                Item("Transactions", onClick = {
-                                    dashboardViewModel.toggleTransactionsWindow(true)}
-                                )
-                                Item("Create Tribe", onClick = {
-                                    dashboardViewModel.toggleCreateTribeWindow(true, null)}
-                                )
-
                                 Item("Remove Account from this machine", onClick = {
                                     sphinxStore.removeAccount()
                                     dashboardViewModel.clearDatabase()
