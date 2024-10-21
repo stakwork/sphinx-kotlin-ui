@@ -9,7 +9,7 @@ enum class DashboardScreenType {
 }
 
 object DashboardScreenState {
-    private var screen: MutableState<DashboardScreenType> = mutableStateOf(DashboardScreenType.Unlocked)
+    private var screen: MutableState<DashboardScreenType> = mutableStateOf(DashboardScreenType.Locked)
 
     fun screenState() : DashboardScreenType {
         return screen.value

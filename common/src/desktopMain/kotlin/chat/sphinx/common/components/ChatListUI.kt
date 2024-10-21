@@ -18,7 +18,8 @@ import chat.sphinx.common.viewmodel.dashboard.ChatListViewModel
 @Composable
 fun ChatListUI(
     chatListViewModel: ChatListViewModel,
-    dashboardViewModel: DashboardViewModel
+    dashboardViewModel: DashboardViewModel,
+    isTribe: Boolean = false
 ) {
     val listState = rememberLazyListState()
 
@@ -30,7 +31,12 @@ fun ChatListUI(
                     state = listState,
                     contentPadding = PaddingValues(top = 1.dp)
                 ) {
-                    items(chatListData.dashboardChats) { dashboardChat ->
+                    val chatList = if (isTribe) { chatListData.dashboardChats.filter { it.isTribe() }
+                    } else {
+                        chatListData.dashboardChats.filter { !it.isTribe() }
+                    }
+
+                    items(chatList) { dashboardChat ->
                         ChatRow(
                             dashboardChat = dashboardChat,
                             selected = dashboardChat.dashboardChatId == chatListData.selectedDashboardId,

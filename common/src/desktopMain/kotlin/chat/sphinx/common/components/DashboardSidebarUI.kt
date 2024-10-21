@@ -82,7 +82,7 @@ fun DashboardSidebarUI(
                         ) {
                             // TODO V2 Implement show user alias
                             androidx.compose.material3.Text(
-                                text = "Unknown",
+                                text = dashboardViewModel.accountOwnerStateFlow.collectAsState().value?.alias?.value ?: "User",
                                 color = MaterialTheme.colorScheme.tertiary,
                                 fontWeight = FontWeight.W600,
                                 fontFamily = SphinxFonts.montserratFamily,
@@ -296,14 +296,9 @@ fun DashboardSidebarUI(
 
             // Display content based on the selected tab
             when (selectedTabIndex) {
-                0 -> ChatListUI(chatListViewModel, dashboardViewModel)
-                1 -> TribesListUI(dashboardViewModel)
+                0 -> ChatListUI(chatListViewModel, dashboardViewModel, false)
+                1 -> ChatListUI(chatListViewModel, dashboardViewModel, true)
             }
-
-            ChatListUI(
-                chatListViewModel,
-                dashboardViewModel
-            )
 
             AboutSphinxWindow(dashboardViewModel)
             AddContactWindow(dashboardViewModel)

@@ -1,5 +1,6 @@
 package chat.sphinx.common.viewmodel
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +10,7 @@ import chat.sphinx.database.core.SphinxDatabaseQueries
 import chat.sphinx.di.container.SphinxContainer
 import chat.sphinx.features.repository.util.deleteAll
 import chat.sphinx.utils.notifications.createSphinxNotificationManager
+import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
 import chat.sphinx.wrapper.lightning.NodeBalance
@@ -51,6 +53,9 @@ class DashboardViewModel(): WindowFocusListener {
         get() = _balanceStateFlow.asStateFlow()
 
 
+    val accountOwnerStateFlow: StateFlow<Contact?>
+        get() = contactRepository.accountOwner
+
     private val _packageVersionAndUpgrade: MutableStateFlow<Pair<String?, Boolean>> by lazy {
         MutableStateFlow(Pair(null, false))
     }
@@ -65,6 +70,7 @@ class DashboardViewModel(): WindowFocusListener {
 
     val contactWindowStateFlow: StateFlow<Pair<Boolean, ContactScreenState?>>
         get() = _contactWindowStateFlow.asStateFlow()
+
 
     fun setWebViewState(state: WebViewState) {
         webViewState.value = state
@@ -225,6 +231,7 @@ class DashboardViewModel(): WindowFocusListener {
         }
     }
 
+
     private var screenInit: Boolean = false
     fun screenInit() {
         if (screenInit) {
@@ -232,11 +239,9 @@ class DashboardViewModel(): WindowFocusListener {
         } else {
             screenInit = true
         }
-
         connectManagerRepository.connectAndSubscribeToMqtt()
         networkRefresh()
         getPackageVersion()
-
         // TODO V2 getAccountBalanceStateFlow
 
         viewModelScope.launch(dispatchers.mainImmediate) {
@@ -251,6 +256,7 @@ class DashboardViewModel(): WindowFocusListener {
             networkRefresh()
         }
     }
+
 
     override fun windowLostFocus(p0: WindowEvent?) { }
 
@@ -326,4 +332,5 @@ class DashboardViewModel(): WindowFocusListener {
             }
         }
     }
+
 }
