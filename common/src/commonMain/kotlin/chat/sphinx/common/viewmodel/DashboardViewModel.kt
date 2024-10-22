@@ -218,6 +218,9 @@ class DashboardViewModel(): WindowFocusListener {
         toggleQRWindow(true, "PUBLIC KEY", nodeDescriptor?.value ?: "")
     }
 
+    fun forceDisconnectMqtt() {
+        connectManagerRepository.disconnectMqtt()
+    }
 
     private fun getPackageVersion(){
         val currentAppVersion = "1.0.28"

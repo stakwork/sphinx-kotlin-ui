@@ -17,6 +17,7 @@ data class ProfileState(
    val photoUrl: PhotoUrl? = null,
    val privatePhoto: Boolean? = null,
    val meetingServerUrl: String = "",
+   val defaultTipAmount: String = "",
    val saveButtonEnabled: Boolean = false,
    val status: LoadResponse<Any, ResponseError>? = null,
    val profilePicture: MutableState<AttachmentInfo?> = mutableStateOf(null),

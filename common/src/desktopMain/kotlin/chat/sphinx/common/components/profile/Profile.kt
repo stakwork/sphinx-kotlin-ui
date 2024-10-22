@@ -6,6 +6,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -210,29 +212,29 @@ fun AdvanceTab(
     dashboardViewModel: DashboardViewModel
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
-            Column {
-                Text(
-                    text = "Server URL",
-                    fontSize = 12.sp,
-                    fontFamily = Roboto,
-                    color = Color.Gray,
-                )
-                BasicTextField(
-                    value = viewModel.profileState.serverUrl,
-                    onValueChange = {
-                        viewModel.onServerUrlChanged(it)
-                    },
-                    enabled = true,
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
-                    singleLine = true,
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
-                )
-                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
-            }
-            Spacer(modifier = Modifier.height(28.dp))
-        }
+//        Column(modifier = Modifier.padding(top = 22.dp, start = 32.dp, end = 32.dp)) {
+//            Column {
+//                Text(
+//                    text = "Server URL",
+//                    fontSize = 12.sp,
+//                    fontFamily = Roboto,
+//                    color = Color.Gray,
+//                )
+//                BasicTextField(
+//                    value = viewModel.profileState.serverUrl,
+//                    onValueChange = {
+//                        viewModel.onServerUrlChanged(it)
+//                    },
+//                    enabled = true,
+//                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+//                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+//                    singleLine = true,
+//                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary)
+//                )
+//                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
+//            }
+//            Spacer(modifier = Modifier.height(28.dp))
+//        }
 
 //        Row(
 //            horizontalArrangement = Arrangement.SpaceAround,
@@ -278,16 +280,18 @@ fun AdvanceTab(
             )
         }
         Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 10.dp)
-//        Box(modifier = Modifier.clickable {  }) {
-//            Text(
-//                "Change Privacy Pin",
-//                textAlign = TextAlign.Center,
-//                modifier = Modifier.fillMaxWidth().padding(24.dp),
-//                fontSize = 12.sp,
-//                color = MaterialTheme.colorScheme.secondary
-//            )
-//        }
-//        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
+        Box(modifier = Modifier.clickable {
+            dashboardViewModel.forceDisconnectMqtt()
+        }) {
+            Text(
+                "Disconnect Mqtt",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.secondary
+            )
+        }
+        Divider(color = MaterialTheme.colorScheme.onSecondaryContainer, thickness = 4.dp)
     }
     if (dashboardViewModel.changePinWindowStateFlow.collectAsState().value) {
         ResetPin(dashboardViewModel)
@@ -421,6 +425,29 @@ fun BasicTab(viewModel: ProfileViewModel, dashboardViewModel: DashboardViewModel
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
                     singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
+                )
+                Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        Column(modifier = Modifier.padding(start = 32.dp, end = 32.dp)) {
+            Column {
+                Text(
+                    text = "Default Tip Amount",
+                    fontSize = 12.sp,
+                    fontFamily = Roboto,
+                    color = Color.Gray,
+                )
+                BasicTextField(
+                    value = viewModel.profileState.defaultTipAmount,
+                    onValueChange = { viewModel.onDefaultTipAmountChange(it) },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    textStyle = TextStyle(fontSize = 18.sp, color = Color.White, fontFamily = Roboto),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
                 )
                 Divider(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), color = Color.Gray)

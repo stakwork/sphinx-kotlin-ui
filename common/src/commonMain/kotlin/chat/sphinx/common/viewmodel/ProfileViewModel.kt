@@ -34,6 +34,7 @@ class ProfileViewModel {
     private val relayDataHandler = SphinxContainer.networkModule.relayDataHandlerImpl
     private val serversUrls = ServersUrlsHelper()
 
+
     val scope = SphinxContainer.appModule.applicationScope
     val dispatchers = SphinxContainer.appModule.dispatchers
 
@@ -97,6 +98,15 @@ class ProfileViewModel {
         setProfileState {
             copy(
                 meetingServerUrl = text,
+            )
+        }
+        toggleSaveButton()
+    }
+
+    fun onDefaultTipAmountChange(text: String){
+        setProfileState {
+            copy(
+                defaultTipAmount = text,
             )
         }
         toggleSaveButton()

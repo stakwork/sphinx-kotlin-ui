@@ -34,6 +34,7 @@ class PinExportKeysViewModel : PinAuthenticationViewModel() {
     @OptIn(RawPasswordAccess::class, InternalAPI::class)
     override fun onAuthenticationSucceed() {
         scope.launch(dispatchers.mainImmediate) {
+
             authenticationCoreManager.getEncryptionKey()?.let { encryptionKey ->
                 val passwordPin = Password(pinState.sphinxPIN.toCharArray())
                 val authToken = relayDataHandler.retrieveAuthorizationToken()?.value
