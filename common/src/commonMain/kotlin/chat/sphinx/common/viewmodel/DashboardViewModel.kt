@@ -3,6 +3,7 @@ package chat.sphinx.common.viewmodel
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import chat.sphinx.authentication.model.OnBoardStepHandler
+import chat.sphinx.common.models.DashboardChat
 import chat.sphinx.common.state.*
 import chat.sphinx.concepts.network.query.version.NetworkQueryVersion
 import chat.sphinx.concepts.socket_io.SocketIOManager
@@ -16,11 +17,20 @@ import chat.sphinx.utils.notifications.createSphinxNotificationManager
 import chat.sphinx.wrapper.bridge.toBridgeAuthorizeMessage
 import chat.sphinx.wrapper.bridge.toBridgeAuthorizeMessageOrNull
 import chat.sphinx.wrapper.bridge.toBridgeSetBudgetMessageOrNull
+import chat.sphinx.wrapper.chat.Chat
+import chat.sphinx.wrapper.chat.toChatUUID
+import chat.sphinx.wrapper.contact.Contact
 import chat.sphinx.wrapper.dashboard.ChatId
 import chat.sphinx.wrapper.dashboard.ContactId
 import chat.sphinx.wrapper.dashboard.RestoreProgress
+import chat.sphinx.wrapper.ExternalAuthorizeLink
+import chat.sphinx.wrapper.PeopleConnectLink
 import chat.sphinx.wrapper.lightning.NodeBalance
+import chat.sphinx.wrapper.lightning.toLightningNodePubKey
+import chat.sphinx.wrapper.toExternalAuthorizeLink
+import chat.sphinx.wrapper.toPeopleConnectLink
 import chat.sphinx.wrapper.tribe.TribeJoinLink
+import chat.sphinx.wrapper.tribe.toTribeJoinLink
 import com.multiplatform.webview.jsbridge.IJsMessageHandler
 import com.multiplatform.webview.jsbridge.JsMessage
 import com.multiplatform.webview.jsbridge.WebViewJsBridge
@@ -29,8 +39,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import java.awt.Desktop
 import java.awt.event.WindowEvent
 import java.awt.event.WindowFocusListener
+import java.net.URI
 
 class DashboardViewModel(): WindowFocusListener {
     val scope = SphinxContainer.appModule.applicationScope
@@ -41,8 +54,10 @@ class DashboardViewModel(): WindowFocusListener {
     private val sphinxNotificationManager = createSphinxNotificationManager()
     private val repositoryDashboard = SphinxContainer.repositoryModule(sphinxNotificationManager).repositoryDashboard
     private val contactRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).contactRepository
+    private val chatRepository = SphinxContainer.repositoryModule(sphinxNotificationManager).chatRepository
     private val socketIOManager: SocketIOManager = SphinxContainer.networkModule.socketIOManager
     private val networkQueryVersion: NetworkQueryVersion = SphinxContainer.networkModule.networkQueryVersion
+    private val relayDataHandler = SphinxContainer.networkModule.relayDataHandler
 
     enum class WebViewState {
         NonInitialized,
@@ -184,6 +199,139 @@ class DashboardViewModel(): WindowFocusListener {
 
     fun toggleJoinTribeWindow(open: Boolean, tribeJoinLink: TribeJoinLink? = null) {
         _joinTribeStateFlow.value = Pair(open, tribeJoinLink)
+    }
+
+    fun handleDeepLink(deepLink: String?) {
+        viewModelScope.launch(dispatchers.mainImmediate) {
+            val link = deepLink?.trim() ?: return@launch
+
+            link.toTribeJoinLink()?.let {
+                handleTribeJoinLink(it)
+                return@launch
+            }
+
+            link.toPeopleConnectLink()?.let {
+                handlePeopleConnectLink(it)
+                return@launch
+            }
+
+            link.toExternalAuthorizeLink()?.let {
+                handleExternalAuthorizeLink(it)
+                return@launch
+            }
+        }
+    }
+
+    private suspend fun handleTribeJoinLink(link: TribeJoinLink) {
+        val existingChat = link.tribeUUID.toChatUUID()?.let { chatUUID ->
+            chatRepository.getChatByUUID(chatUUID).firstOrNull()
+        }
+
+        if (existingChat != null && selectDashboardChatFor(existingChat)) {
+            return
+        }
+
+        toggleJoinTribeWindow(true, link)
+    }
+
+    private suspend fun handlePeopleConnectLink(link: PeopleConnectLink) {
+        val publicKey = link.publicKey.toLightningNodePubKey() ?: return
+        val contact = contactRepository.getContactByPubKey(publicKey).firstOrNull()
+
+        if (contact != null && selectDashboardChatFor(contact)) {
+            return
+        }
+
+        toggleContactWindow(true, ContactScreenState.AlreadyOnSphinx(publicKey))
+    }
+
+    private suspend fun handleExternalAuthorizeLink(link: ExternalAuthorizeLink) {
+        val relayUrl = relayDataHandler.retrieveRelayUrl() ?: return
+
+        when (val response = repositoryDashboard.authorizeExternal(
+            relayUrl.value,
+            link.host,
+            link.challenge
+        )) {
+            is Response.Success -> openExternalUrl("https://${link.host}?challenge=${link.challenge}")
+            is Response.Error -> println("Authorization failed: ${response.cause.message}")
+        }
+    }
+
+    private fun selectDashboardChatFor(chat: Chat): Boolean {
+        val dashboardChat = currentDashboardChats().firstOrNull {
+            when (it) {
+                is DashboardChat.Active.Conversation -> it.chat.id == chat.id
+                is DashboardChat.Active.GroupOrTribe -> it.chat.id == chat.id
+                else -> false
+            }
+        }
+
+        return dashboardChat?.let(::selectDashboardChat) ?: false
+    }
+
+    private fun selectDashboardChatFor(contact: Contact): Boolean {
+        val dashboardChat = currentDashboardChats().firstOrNull {
+            when (it) {
+                is DashboardChat.Active.Conversation -> it.contact.id == contact.id
+                is DashboardChat.Inactive.Conversation -> it.contact.id == contact.id
+                is DashboardChat.Inactive.Invite -> it.contact.id == contact.id
+                else -> false
+            }
+        }
+
+        return dashboardChat?.let(::selectDashboardChat) ?: false
+    }
+
+    private fun currentDashboardChats(): List<DashboardChat> =
+        (ChatListState.screenState() as? ChatListData.PopulatedChatListData)?.dashboardChats ?: emptyList()
+
+    private fun selectDashboardChat(dashboardChat: DashboardChat): Boolean {
+        (ChatListState.screenState() as? ChatListData.PopulatedChatListData)?.let { currentState ->
+            ChatListState.screenState(
+                ChatListData.PopulatedChatListData(
+                    currentState.dashboardChats,
+                    dashboardChat.dashboardChatId
+                )
+            )
+        }
+
+        ChatDetailState.screenState(
+            when (dashboardChat) {
+                is DashboardChat.Active.Conversation -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedContactChatDetail(
+                        dashboardChat.chat.id,
+                        dashboardChat.contact.id,
+                        dashboardChat
+                    )
+                }
+                is DashboardChat.Active.GroupOrTribe -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedTribeChatDetail(
+                        dashboardChat.chat.id,
+                        dashboardChat
+                    )
+                }
+                is DashboardChat.Inactive.Conversation -> {
+                    ChatDetailData.SelectedChatDetailData.SelectedContactDetail(
+                        dashboardChat.contact.id,
+                        dashboardChat
+                    )
+                }
+                else -> return false
+            }
+        )
+
+        return true
+    }
+
+    private fun openExternalUrl(url: String) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(URI(url))
+            }
+        } catch (e: Exception) {
+            println("Unable to open external URL: $url")
+        }
     }
 
     private val _backUpWindowStateFlow: MutableStateFlow<Boolean> by lazy {
