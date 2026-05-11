@@ -103,6 +103,10 @@ compose.desktop {
                     bundleID = macOsBundleID
                 }
 
+                infoPlist {
+                    extraKeysRawXml = macExtraPlistKeys
+                }
+
                 signing {
                     if (macOsSigningIdentity?.isNotEmpty() == true) {
                         sign.set(true)
@@ -121,3 +125,20 @@ compose.desktop {
         }
     }
 }
+
+val macExtraPlistKeys: String
+    get() = """
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleTypeRole</key>
+                <string>Viewer</string>
+                <key>CFBundleURLName</key>
+                <string>Sphinx deep links</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>sphinx.chat</string>
+                </array>
+            </dict>
+        </array>
+    """.trimIndent()

@@ -36,9 +36,13 @@ import theme.Spacing
 import java.io.File
 
 @OptIn(ExperimentalComposeUiApi::class)
-fun main() = application {
+fun main(args: Array<String>) {
+    DesktopDeepLinkManager.register(args)
+
+    application {
     val windowState = rememberWindowState()
     val sphinxIcon = imageResource(DesktopResource.drawable.sphinx_icon)
+    val deepLink by DesktopDeepLinkManager.deepLink.collectAsState()
 
     val onBoardStepHandler = remember { OnBoardStepHandler() }
     val sphinxStore = remember { SphinxStore() }
@@ -84,6 +88,12 @@ fun main() = application {
         ScreenType.DashboardScreen -> {
             val dashboardViewModel = remember { DashboardViewModel() }
             WebViewInitializing(dashboardViewModel)
+            LaunchedEffect(deepLink) {
+                deepLink?.let { link ->
+                    dashboardViewModel.handleDeepLink(link)
+                    DesktopDeepLinkManager.clear(link)
+                }
+            }
 
             Window(
                 onCloseRequest = {},
@@ -215,6 +225,7 @@ fun main() = application {
 //        }
 //    }
 }
+}
 
 @Composable
 fun WebViewInitializing(
@@ -273,4 +284,3 @@ fun WebViewInitializing(
         }
     }
 }
-
